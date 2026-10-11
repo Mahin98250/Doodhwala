@@ -125,7 +125,7 @@ function setupOrdersRealtime(user){
       if(document.visibilityState==="hidden")return;
       clearTimeout(window.__ordersRealtimeRefresh);
       window.__ordersRealtimeRefresh=setTimeout(function(){
-        loadOrders().catch(function(err){console.warn("Orders realtime refresh failed",err)});
+        loadOrders({silent:true}).catch(function(err){console.warn("Orders realtime refresh failed",err)});
       },250);
     });
   window.__doodhwalaOrdersChannel=channel;
@@ -147,7 +147,7 @@ function setupOrdersRealtime(user){
       try{Doodhwala.supabase.removeChannel(channel)}catch(_){}
       setupOrdersRealtime(user);
       if(document.visibilityState!=="hidden"){
-        loadOrders().catch(function(err){console.warn("Orders realtime reconnect refresh failed",err)});
+        loadOrders({silent:true}).catch(function(err){console.warn("Orders realtime reconnect refresh failed",err)});
       }
     },delay);
   });
@@ -213,7 +213,7 @@ function renderOrderCard(o,events){
     '</article>';
 }
 
-async function loadOrders(){
+async function loadOrders(options={}){
   if(!window.Doodhwala?.configured){
     $("ordersState").textContent="Supabase is not configured.";
     return;
@@ -229,7 +229,7 @@ async function loadOrders(){
 
   $("ordersGate").classList.add("hidden");
   $("ordersList").classList.remove("hidden");
-  $("ordersState").textContent="Loading your latest orders…";
+  if(!options.silent)$("ordersState").textContent="Loading your latest orders…";
   setupOrdersRealtime(user);
 
   const result=await Doodhwala.supabase
@@ -314,7 +314,7 @@ async function loadOrders(){
 
 document.addEventListener("visibilitychange",function(){
   if(document.visibilityState==="visible"){
-    loadOrders().catch(function(err){console.warn("Orders foreground refresh failed",err)});
+    loadOrders({silent:true}).catch(function(err){console.warn("Orders foreground refresh failed",err)});
   }
 });
 
@@ -324,4 +324,16 @@ if($("refreshOrders")){
 
 clearInterval(window.__orderPromiseTimer);
 window.__orderPromiseTimer=setInterval(refreshOrderPromises,1000);
-loadOrders();
+clearInterval(window.__ordersFallbackTimer);
+window.__ordersFallbackTimer=setInterval(function(){
+  if(document.visibilityState!=="hidden"){
+    loadOrders({silent:true}).catch(function(err){
+      console.warn("Orders fallback refresh failed",err);
+      $("ordersState").textContent="Connection interrupted. Your orders are saved; we'll retry automatically.";
+    });
+  }
+},60000);
+loadOrders().catch(function(err){
+  console.warn("Initial orders load failed",err);
+  $("ordersState").textContent="Couldn't load your orders yet. Check your connection; we'll retry automatically.";
+});
