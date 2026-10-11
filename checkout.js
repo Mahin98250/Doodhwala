@@ -4,10 +4,13 @@ let cart=window.DoodhwalaResilience?.readObjectStorage(CART_KEY,{})||{};
 let checkoutKeys=window.DoodhwalaResilience?.readObjectStorage(CHECKOUT_KEYS_KEY,{})||{};
 const $=id=>document.getElementById(id);
 let sessionUser=null;
+let savedAddressId=null;
 let appliedPromo=null;
 const LOCATION_KEY="doodhwala-customer-location-v1";
-function readCustomerLocation(){try{const v=JSON.parse(localStorage.getItem(LOCATION_KEY)||"null");if(v&&Number.isFinite(+v.latitude)&&Number.isFinite(+v.longitude))return{latitude:+v.latitude,longitude:+v.longitude,accuracy:+v.accuracy||null};}catch(_){}return null}
-function syncCheckoutLocation(){const pos=readCustomerLocation();const state=$("checkoutLocationState"),lat=$("addressLatitude"),lng=$("addressLongitude");if(pos){lat.value=pos.latitude;lng.value=pos.longitude;state.textContent="Pinned delivery location is ready";state.style.color="#17603f"}else{lat.value="";lng.value="";state.textContent="No exact location selected — set it from the location picker"}}
+function validCoordinates(latitude,longitude){return Number.isFinite(latitude)&&Number.isFinite(longitude)&&latitude>=-90&&latitude<=90&&longitude>=-180&&longitude<=180}
+function readCustomerLocation(){try{const v=JSON.parse(localStorage.getItem(LOCATION_KEY)||"null");const latitude=Number(v?.latitude),longitude=Number(v?.longitude);if(v&&validCoordinates(latitude,longitude))return{latitude,longitude,accuracy:Number(v.accuracy)||null,savedAt:v.savedAt||null};}catch(_){}return null}
+function syncCheckoutLocation(){const pos=readCustomerLocation();const state=$("checkoutLocationState"),lat=$("addressLatitude"),lng=$("addressLongitude");if(pos){lat.value=pos.latitude;lng.value=pos.longitude;state.textContent="Pinned delivery location is ready";state.style.color="#17603f";return}const latitude=lat.value===""?NaN:Number(lat.value),longitude=lng.value===""?NaN:Number(lng.value);const hasSavedPin=validCoordinates(latitude,longitude);state.textContent=hasSavedPin?"Saved delivery coordinates are ready":"No exact location selected — set it from the location picker";state.style.color=hasSavedPin?"#17603f":"";if(!hasSavedPin){lat.value="";lng.value=""}}
+
 
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function showError(message){$("checkoutState").textContent=message;$("checkoutState").style.color="#a44c3e"}
@@ -27,15 +30,29 @@ async function load(){
  if(addresses?.[0])fillAddress(addresses[0]);
  renderItems();
 }
-function fillAddress(a){$("recipient").value=a.recipient_name||sessionUser?.user_metadata?.full_name||"";$("addressPhone").value=a.phone||"";$("addressLine").value=a.address_line||"";$("addressArea").value=a.area_name||"";$("addressCity").value=a.city||"Ahmedabad";$("addressPin").value=a.pin_code||"";$("defaultAddress").checked=Boolean(a.is_default);$("addressLatitude").value=a.latitude??"";$("addressLongitude").value=a.longitude??"";syncCheckoutLocation()}
+function fillAddress(a){savedAddressId=a.id||null;$("recipient").value=a.recipient_name||sessionUser?.user_metadata?.full_name||"";$("addressPhone").value=a.phone||"";$("addressLine").value=a.address_line||"";$("addressArea").value=a.area_name||"";$("addressCity").value=a.city||"Ahmedabad";$("addressPin").value=a.pin_code||"";$("defaultAddress").checked=Boolean(a.is_default);$("addressLatitude").value=a.latitude??"";$("addressLongitude").value=a.longitude??"";syncCheckoutLocation()}
 $("addressForm").onsubmit=async e=>{
  e.preventDefault();if(!Doodhwala.configured||!sessionUser)return;
- const pos=readCustomerLocation(); const row={user_id:sessionUser.id,label:"Home",recipient_name:$("recipient").value.trim(),phone:$("addressPhone").value.replace(/\D/g,""),address_line:$("addressLine").value.trim(),area_name:$("addressArea").value.trim(),city:$("addressCity").value.trim(),pin_code:$("addressPin").value.trim(),latitude:pos?.latitude??(Number($("addressLatitude").value)||null),longitude:pos?.longitude??(Number($("addressLongitude").value)||null),is_default:$("defaultAddress").checked};
+ const pos=readCustomerLocation();
+ const fieldLatitude=$("addressLatitude").value===""?NaN:Number($("addressLatitude").value);
+ const fieldLongitude=$("addressLongitude").value===""?NaN:Number($("addressLongitude").value);
+ const hasFieldCoordinates=validCoordinates(fieldLatitude,fieldLongitude);
+ const row={user_id:sessionUser.id,label:"Home",recipient_name:$("recipient").value.trim(),phone:$("addressPhone").value.replace(/\D/g,""),address_line:$("addressLine").value.trim(),area_name:$("addressArea").value.trim(),city:$("addressCity").value.trim(),pin_code:$("addressPin").value.trim(),latitude:hasFieldCoordinates?fieldLatitude:(pos?.latitude??null),longitude:hasFieldCoordinates?fieldLongitude:(pos?.longitude??null),is_default:$("defaultAddress").checked};
  if(!/^\d{10}$/.test(row.phone)||!/^\d{6}$/.test(row.pin_code)){showError("Enter a valid 10-digit phone and 6-digit PIN.");return}
- const {data,error}=await Doodhwala.supabase.from("addresses").insert(row).select().single();
- if(error){showError(error.message);return}
- window.__addressId=data.id;$("checkoutState").textContent="Address saved. Ready to place the order.";$("checkoutState").style.color="";
+ const submitButton=$("addressForm").querySelector('button[type="submit"]');
+ if(submitButton){submitButton.disabled=true;submitButton.textContent="Saving…"}
+ try{
+  const result=savedAddressId
+    ?await Doodhwala.supabase.from("addresses").update(row).eq("id",savedAddressId).eq("user_id",sessionUser.id).select().single()
+    :await Doodhwala.supabase.from("addresses").insert(row).select().single();
+  if(result.error)throw result.error;
+  if(!result.data?.id)throw new Error("Address could not be confirmed. Please try again.");
+  savedAddressId=result.data.id;window.__addressId=savedAddressId;
+  $("checkoutState").textContent="Address saved. Ready to place the order.";$("checkoutState").style.color="";
+ }catch(error){showError(String(error?.message||"").toLowerCase().includes("duplicate")?"This default address conflicts with another saved address. Change the default selection and retry.":(error?.message||"Could not save your address. Check your connection and retry."))}
+ finally{if(submitButton){submitButton.disabled=false;submitButton.textContent="Save address"}}
 };
+
 async function applyPromo(){
  const input=$("promoCode"),state=$("promoState"),button=$("applyPromo");if(!input||!state||!button)return;
  const code=input.value.trim().toUpperCase();if(!code){appliedPromo=null;state.textContent="Enter a promo code.";state.style.color="#a44c3e";renderItems();return}
@@ -54,36 +71,60 @@ function removeProviderFromCart(providerId){Object.keys(cart).forEach(function(k
 $("applyPromo")?.addEventListener("click",applyPromo);
 $("promoCode")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyPromo()}});
 
+let placingOrder=false;
 $("placeOrder").onclick=async()=>{
- if(!sessionUser||!Doodhwala.configured){return}
- let addressId=window.__addressId;
- if(!addressId){const {data,error}=await Doodhwala.supabase.from("addresses").select("*").eq("user_id",sessionUser.id).order("is_default",{ascending:false}).limit(1);if(error||!data?.[0]){showError("Save a delivery address first.");return}addressId=data[0].id}
- const groups=grouped();if(!groups.length){showError("Your cart has no backend-linked products. Return to the shop and add the milk again.");return}
- $("placeOrder").disabled=true;$("placeOrder").textContent="Securing your order…";
- const orderIds=[],failures=[];
- for(const [providerId,items] of groups){
+ if(placingOrder||!sessionUser||!Doodhwala.configured)return;
+ placingOrder=true;
+ const placeButton=$("placeOrder");
+ try{
+  let addressId=window.__addressId;
+  if(!addressId){
+   let addressResult;
+   try{addressResult=await Doodhwala.supabase.from("addresses").select("*").eq("user_id",sessionUser.id).order("is_default",{ascending:false}).limit(1)}
+   catch(_){showError("We couldn't verify your saved address. Check your connection and retry.");return}
+   if(addressResult.error){showError("We couldn't verify your saved address. Check your connection and retry.");return}
+   if(!addressResult.data?.[0]){showError("Save a delivery address first.");return}
+   addressId=addressResult.data[0].id;
+  }
+  const groups=grouped();
+  if(!groups.length){showError("Your cart has no backend-linked products. Return to the shop and add the milk again.");return}
+  placeButton.disabled=true;placeButton.textContent="Securing your order…";
+  const orderIds=[],failures=[];
+  for(const [providerId,items] of groups){
    const payload=items.map(x=>({product_id:x.productId,quantity:x.qty}));
    const key=idempotencyKeyForProvider(providerId);
    const rpcName=(appliedPromo&&groups.length===1)?"create_order_with_promo":"create_order";
    const rpcArgs={p_provider_id:providerId,p_address_id:addressId,p_items:payload,p_customer_note:$("orderNote").value.trim()||null,p_idempotency_key:key};
    if(rpcName==="create_order_with_promo")rpcArgs.p_promo_code=appliedPromo.code;
-   const {data,error}=await Doodhwala.supabase.rpc(rpcName,rpcArgs);
-   if(error){failures.push(error);continue}
-   orderIds.push(data);
+   let result;
+   try{result=await Doodhwala.supabase.rpc(rpcName,rpcArgs)}
+   catch(error){result={error}}
+   if(!result||result.error){failures.push(result?.error||new Error("Order request did not return a result."));continue}
+   orderIds.push(result.data);
    removeProviderFromCart(providerId);
- }
- if(failures.length){
-   $("placeOrder").disabled=false;$("placeOrder").textContent="Retry remaining orders →";
+  }
+  if(failures.length){
+   placeButton.textContent="Retry remaining orders →";
    renderItems();
    const first=failures[0]?.message||"Some provider orders could not be completed.";
    showError(orderIds.length?"Some orders are already safely placed. Retry the remaining ones — duplicate orders are prevented.":friendlyOrderError(first));
    return;
+  }
+  if(window.DoodhwalaResilience)window.DoodhwalaResilience.removeItem(CART_KEY);else try{localStorage.removeItem(CART_KEY)}catch(_){}
+  checkoutKeys={};saveCheckoutKeys();
+  $("checkoutForm").classList.add("hidden");$("success").classList.remove("hidden");
+  $("successText").textContent=orderIds.length===1?"Order "+orderIds[0]+" has been created.":"We created "+orderIds.length+" provider orders from your cart.";
+  $("successOrders").innerHTML=orderIds.map(id=>'<div class="success-order"><b>Order '+escapeHtml(id)+'</b><br><span>Placed • awaiting provider acceptance</span></div>').join("");
+ }catch(error){
+  console.warn("Checkout submission failed",error);
+  showError("We couldn't finish checkout because of a connection problem. Your cart is kept safe — please retry.");
+  placeButton.textContent="Retry order →";
+ }finally{
+  placeButton.disabled=false;
+  placingOrder=false;
  }
- if(window.DoodhwalaResilience)window.DoodhwalaResilience.removeItem(CART_KEY);else try{localStorage.removeItem(CART_KEY)}catch(_){}checkoutKeys={};saveCheckoutKeys();
- $("checkoutForm").classList.add("hidden");$("success").classList.remove("hidden");
- $("successText").textContent=orderIds.length===1?"Order "+orderIds[0]+" has been created.":"We created "+orderIds.length+" provider orders from your cart.";
- $("successOrders").innerHTML=orderIds.map(id=>'<div class="success-order"><b>Order '+escapeHtml(id)+'</b><br><span>Placed • awaiting provider acceptance</span></div>').join("");
 };
+
 load();
 syncCheckoutLocation();
 window.addEventListener("pageshow",syncCheckoutLocation);
