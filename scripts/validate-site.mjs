@@ -141,6 +141,32 @@ if(localFiles.has("/sw.js")){
   }
 }
 
+
+for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
+  if(!localFiles.has(file)) continue;
+  const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+  if(!html.includes('resilience.js?v=20261011.1')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
+}
+for(const [file,expected] of [["/checkout.html","return=%2FDudh-Wallah%2Fcheckout.html"],["/orders.html","return=%2FDudh-Wallah%2Forders.html"],["/plans.html","return=%2FDudh-Wallah%2Fplans.html"]]){
+  if(localFiles.has(file)){
+    const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+    if(!html.includes(expected)) errors.push(file+" -> sign-in must return to its original page");
+  }
+}
+const resiliencePath=path.join(root,"resilience.js");
+if(fs.existsSync(resiliencePath)){
+  const resilience=fs.readFileSync(resiliencePath,"utf8");
+  for(const contract of ["doodhwala-error-report-queue-v1","persistPending","response.status >= 500","unhandled_rejection","retryRead"]){
+    if(!resilience.includes(contract)) errors.push("resilience.js -> missing recovery contract "+contract);
+  }
+}
+for(const [file,key] of [["/checkout.js","doodhwala-cart"],["/provider.js","doodhwala-provider-v1"]]){
+  if(localFiles.has(file)){
+    const source=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+    if(!source.includes("readObjectStorage")) errors.push(file+" -> persisted state must use safe storage parsing");
+  }
+}
+
 if(errors.length){
   console.error("Doodhwala site contract validation failed:");
   for(const e of errors) console.error(" - "+e);
