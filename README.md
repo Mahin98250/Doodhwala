@@ -118,3 +118,34 @@ The production system should enforce a provider policy at onboarding/admin level
 
 This first build is plain HTML/CSS/JavaScript and can be served by any static web server. It can also be deployed as a static site and installed as a PWA.
 
+## P0 order journey verification (release gate)
+
+The core journey is: **customer checkout → provider order queue → provider status changes → customer tracking**. Use this checklist in an isolated staging Supabase project with authorized test accounts. **Do not create synthetic customer/order records in production to test reporting.** If staging is unavailable, wait for a genuine, agreed order rather than manufacturing a live order.
+
+### Pre-flight
+
+- Confirm a customer account and an approved provider account belong to the same staging project.
+- Confirm the provider is approved, available, has service coverage for the selected delivery pin, and has an available backend-linked milk product.
+- Confirm the browser client contains only the Supabase publishable key; never put the service-role key in the static site.
+- Use a phone-sized browser viewport, then repeat on an installed PWA after the latest service worker activates.
+
+### Customer checks
+
+1. Sign in and open checkout from a real backend-linked product in the provider's catalogue.
+2. Load an existing delivery address, edit it, save it, and verify that the existing address is updated rather than duplicated.
+3. Set or verify the delivery pin; confirm invalid/out-of-range coordinates are not used.
+4. Submit once. Confirm the UI prevents double-submission and the order appears exactly once in the customer order history.
+5. Confirm the success screen's **Track my order** link opens order history. Leave that page open: status should update through Realtime, and the visible-page fallback should refresh within about 60 seconds if an event is missed.
+6. Reload the page and verify the order and latest status remain correct. Test a transient network failure only in staging and verify retry does not create a duplicate order.
+
+### Provider checks
+
+1. Open the provider dashboard for the matching account. The incoming order should appear in the order queue; wait for Realtime, then for the fallback refresh if needed.
+2. Accept the order and move it through the allowed workflow: packing → ready → out for delivery → delivered.
+3. Verify each change appears on the customer's order history and timeline. Check that a stale/expired order cannot be accepted and that unauthorized accounts cannot change the order.
+4. Confirm queue totals change once per transition and no demo listing is presented as a live provider.
+
+### P0 pass criteria
+
+The journey passes only when the same order can be followed end-to-end by its real database ID, the customer and provider see consistent statuses after refresh/reconnect, retry is idempotent, address/pin data are correct, and the journey works on an actual mobile device. Static CI does **not** prove these account-, RLS-, Realtime-, permission-, GPS-, or device-level behaviours. Record any staging order ID and observed timestamps outside production analytics before calling P0 end-to-end complete.
+
