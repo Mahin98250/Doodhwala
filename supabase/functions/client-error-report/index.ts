@@ -5,7 +5,7 @@ const SECRET_KEYS = (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECR
 const SERVICE_KEY = SECRET_KEYS.default || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const PUBLISHABLE_KEYS = (() => { try { return Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}")); } catch { return []; } })();
 const ALLOWED_ORIGINS = new Set(["https://mahin98250.github.io"]);
-const APP_VERSION = "20261009.1";
+const APP_VERSION = "20261011.1";
 const buckets = new Map<string, { start: number; count: number }>();
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 20;
