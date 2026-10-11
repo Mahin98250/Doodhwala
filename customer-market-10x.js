@@ -5,6 +5,9 @@
   const BASE="/Dudh-Wallah/";
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
   const money=v=>"₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2});
+  let realtimeConnected=false;
+  let lastSnapshot=null;
+  let snapshotRefreshInFlight=false;
 
   function styles(){
     if(document.getElementById("customerMarket10xStyles"))return;
@@ -37,7 +40,7 @@
     const user=await currentUser();
     if(!user)return null;
     const [orders,subs,favs,notes]=await Promise.all([
-      api.from("orders").select("id,status,total,created_at,provider_profiles(display_name)").eq("customer_id",user.id).order("created_at",{ascending:false}).limit(6),
+      api.from("orders").select("id,status,total,created_at,promised_delivery_at,provider_profiles(display_name)").eq("customer_id",user.id).order("created_at",{ascending:false}).limit(6),
       api.from("milk_subscriptions").select("id,status,quantity_litres,delivery_time").eq("customer_id",user.id).in("status",["active","paused"]).limit(50),
       api.from("customer_favorites").select("provider_id,product_id").eq("customer_id",user.id).limit(100),
       api.from("customer_notifications").select("id,is_read").eq("customer_id",user.id).limit(50)
@@ -81,6 +84,18 @@
     if(bell)bell.setAttribute("aria-label",Number(unread)>0?"Open notifications":"Open notifications");
   }
 
+  function orderStatusLabel(status){
+    const labels={placed:"Order placed",accepted:"Accepted by seller",preparing:"Preparing your milk",ready:"Ready for dispatch",out_for_delivery:"On the way",delivered:"Delivered",rejected:"Declined",cancelled:"Cancelled"};
+    return labels[String(status||"placed").toLowerCase()]||String(status||"Order update").replace(/_/g," ");
+  }
+
+  function deliveryEta(value){
+    if(!value)return "";
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return "";
+    return " · ETA "+new Intl.DateTimeFormat("en-IN",{hour:"numeric",minute:"2-digit"}).format(date);
+  }
+
   function renderSidebarDesk(snapshot){
     const status=document.getElementById("sidebar10xStatus");
     const title=document.getElementById("sidebar10xOrderTitle");
@@ -89,12 +104,52 @@
     if(!status||!title||!meta||!action)return;
     const active=snapshot?.active;
     window.doodhwalaCurrentOrderId=active?.id?String(active.id):"";
-    status.textContent=active?"CURRENT":"SYNCED";
-    status.classList.toggle("is-live",!!active);
+    window.doodhwalaRecentOrderId=snapshot?.orders?.find(o=>o.status==="delivered")?.id||snapshot?.orders?.[0]?.id||"";
+    status.textContent=active?(realtimeConnected?"LIVE":"CURRENT"):(realtimeConnected?"SYNCED":"CONNECTING");
+    status.classList.toggle("is-live",!!active&&realtimeConnected);
     title.textContent=active?"Order #"+String(active.id).slice(0,8).toUpperCase():(snapshot?.orders?.length?"No active delivery":"No orders yet");
-    meta.textContent=active?String(active.status||"placed").replace(/_/g," ")+" · "+(active.provider_profiles?.display_name||"Local provider"):(snapshot?.orders?.length?"Your latest order is in Order Centre.":"Your live order status will appear here.");
-    action.href=BASE+"orders.html";
-    action.innerHTML='Open order centre <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+    meta.textContent=active?orderStatusLabel(active.status)+" · "+(active.provider_profiles?.display_name||"Local provider")+deliveryEta(active.promised_delivery_at):(snapshot?.orders?.length?"Latest activity is available in Order Centre.":"Your first delivery status will appear here.");
+    action.href=active?BASE+"orders.html":(snapshot?.orders?.length?BASE+"orders.html":BASE+"?view=providers");
+    action.innerHTML=(active?"Track current order":snapshot?.orders?.length?"View order history":"Browse local sellers")+' <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+  }
+
+  function updateDeskSnapshot(snapshot){
+    const desk=document.querySelector(".d10x-desk");
+    if(!desk||!snapshot)return;
+    const active=snapshot.active;
+    const recent=snapshot.orders?.find(o=>o.status==="delivered")||snapshot.orders?.[0];
+    const activeText=active?orderStatusLabel(active.status)+" · "+(active.provider_profiles?.display_name||"Local provider"):"No active delivery right now";
+    const count=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=String(value)};
+    count("d10xCurrentOrderCount",active?"1":"0");
+    count("d10xCurrentOrderStatus",active?orderStatusLabel(active.status):"Nothing active");
+    count("d10xPlansCount",snapshot.subs.length);
+    count("d10xSavedCount",snapshot.favs.filter(x=>x.provider_id).length);
+    count("d10xAlertsCount",snapshot.unread);
+    const focusTitle=document.getElementById("d10xFocusTitle");
+    if(focusTitle)focusTitle.innerHTML=active?'<i class="d10x-live-dot"></i> Your delivery is in progress':"Ready for your next order";
+    const focusText=document.getElementById("d10xFocusText");
+    if(focusText)focusText.textContent=activeText+(recent?" · Latest total "+money(recent.total):"");
+    const progress=document.getElementById("d10xProgress");
+    if(progress)progress.innerHTML=active?renderOrderProgress(active.status):"";
+    const track=document.getElementById("d10xTrack");
+    if(track)track.hidden=!active;
+    const reorder=document.getElementById("d10xReorder");
+    if(reorder)reorder.hidden=!recent;
+    const pill=document.getElementById("d10xSessionPill");
+    if(pill)pill.innerHTML='<i></i>'+(realtimeConnected?"LIVE UPDATES ON":"ACCOUNT SYNCED");
+  }
+
+  async function refreshSnapshot(){
+    if(snapshotRefreshInFlight)return;
+    snapshotRefreshInFlight=true;
+    try{
+      const snapshot=await loadSnapshot();
+      if(snapshot)renderDesk(snapshot);
+    }catch(error){
+      console.warn("Doodhwala delivery desk refresh failed",error);
+    }finally{
+      snapshotRefreshInFlight=false;
+    }
   }
 
   function renderOrderProgress(status){
@@ -105,10 +160,16 @@
 
   function renderDesk(snapshot){
     if(!snapshot)return;
+    lastSnapshot=snapshot;
     styles();
     const hero=document.querySelector(".hero");
     renderSidebarDesk(snapshot);
-    if(!hero||document.querySelector(".d10x-desk"))return;
+    if(!hero)return;
+    if(document.querySelector(".d10x-desk")){
+      updateDeskSnapshot(snapshot);
+      updateBell(snapshot.unread);
+      return;
+    }
     const active=snapshot.active;
     const activeText=active
       ? (String(active.status||"").replace(/_/g," ")+" · "+(active.provider_profiles?.display_name||"Local provider"))
@@ -118,29 +179,30 @@
     const section=document.createElement("section");section.className="d10x-desk";section.innerHTML=
       '<div class="d10x-desk-inner"><div class="d10x-brand-row"><div class="d10x-brand"><img src="/Dudh-Wallah/assets/logo.svg" alt=""><div class="d10x-brand-copy"><small>YOUR PERSONAL DELIVERY DESK</small><b>Doodhwala <em>10X</em></b></div></div><span class="d10x-session-pill"><i></i> ACCOUNT SYNCED</span></div>'+
       '<div class="d10x-desk-head"><div><small>YOUR MILK DESK</small><h2>Everything important, one glance.</h2><p>Orders, recurring plans, saved sellers and alerts — all in one place.</p></div><button class="d10x-desk-link" id="d10xOpenOrders">Open order centre →</button></div>'+
-      '<div class="d10x-stats"><div class="d10x-stat"><span>CURRENT ORDER</span><b>'+(active?"1":"0")+'</b><small>'+esc(active?String(active.status).replace(/_/g," "):"Nothing active")+'</small></div><div class="d10x-stat"><span>DELIVERY PLANS</span><b>'+snapshot.subs.length+'</b><small>Active or paused</small></div><div class="d10x-stat"><span>SAVED</span><b>'+snapshot.favs.filter(x=>x.provider_id).length+'</b><small>Providers & products</small></div><div class="d10x-stat"><span>ALERTS</span><b>'+snapshot.unread+'</b><small>Unread notifications</small></div></div>'+
-      '<div class="d10x-focus"><div class="d10x-focus-copy"><b>'+(active?'<i class="d10x-live-dot"></i> Your delivery is in progress':"Ready for your next order")+'</b><span>'+esc(activeText)+(recent?(" · Latest total "+money(recent.total)):"")+'</span></div><div class="d10x-focus-actions">'+
-      (active?'<button class="d10x-btn" id="d10xTrack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.2 7-12a7 7 0 1 0-14 0c0 6.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.2"/></svg> Track live</button>':"")+
-      (recent?'<button class="d10x-btn secondary" id="d10xReorder">↻ Reorder</button>':"")+
+      '<div class="d10x-stats"><div class="d10x-stat"><span>CURRENT ORDER</span><b id="d10xCurrentOrderCount">'+(active?"1":"0")+'</b><small id="d10xCurrentOrderStatus">'+esc(active?orderStatusLabel(active.status):"Nothing active")+'</small></div><div class="d10x-stat"><span>DELIVERY PLANS</span><b id="d10xPlansCount">'+snapshot.subs.length+'</b><small>Active or paused</small></div><div class="d10x-stat"><span>SAVED</span><b id="d10xSavedCount">'+snapshot.favs.filter(x=>x.provider_id).length+'</b><small>Providers & products</small></div><div class="d10x-stat"><span>ALERTS</span><b id="d10xAlertsCount">'+snapshot.unread+'</b><small>Unread notifications</small></div></div>'+
+      '<div class="d10x-focus"><div class="d10x-focus-copy"><b id="d10xFocusTitle">'+(active?'<i class="d10x-live-dot"></i> Your delivery is in progress':"Ready for your next order")+'</b><span id="d10xFocusText">'+esc(activeText)+(recent?(" · Latest total "+money(recent.total)):"")+'</span></div><div class="d10x-focus-actions">'+
+      '<button class="d10x-btn" id="d10xTrack" '+(active?"":"hidden")+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.2 7-12a7 7 0 1 0-14 0c0 6.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.2"/></svg> Track live</button>'+
+      '<button class="d10x-btn secondary" id="d10xReorder" '+(recent?"":"hidden")+'>↻ Reorder</button>'+
       '<button class="d10x-btn secondary" id="d10xAlerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg> Alerts</button></div></div>'+
-      progress+'</div>';
+      '<div id="d10xProgress">'+progress+'</div></div>';
     hero.insertAdjacentElement("afterend",section);
     document.getElementById("d10xOpenOrders").onclick=()=>location.href=BASE+"orders.html";
     document.getElementById("d10xAlerts").onclick=openAlerts;
     document.getElementById("d10xTrack")?.addEventListener("click",()=>{
-      window.doodhwalaCurrentOrderId=String(active?.id||"");
-      if(window.Doodhwala10X?.openPanel)window.Doodhwala10X.openPanel("tracking");
+      const orderId=String(window.doodhwalaCurrentOrderId||"");
+      if(orderId&&window.Doodhwala10X?.openPanel)window.Doodhwala10X.openPanel("tracking");
       else location.href=BASE+"orders.html";
     });
     document.getElementById("d10xReorder")?.addEventListener("click",async function(){
-      this.disabled=true;this.textContent="Adding…";
+      this.disabled=true;const oldText=this.textContent;this.textContent="Adding…";
       try{
-        if(!recent?.id||!window.Doodhwala10X?.reorder)throw new Error("Reorder is unavailable for this order.");
-        const n=await window.Doodhwala10X.reorder(recent.id);
+        const recentId=String(window.doodhwalaRecentOrderId||"");
+        if(!recentId||!window.Doodhwala10X?.reorder)throw new Error("Reorder is unavailable for this order.");
+        const n=await window.Doodhwala10X.reorder(recentId);
         window.Doodhwala10X.toast?.(n+" L added to cart");
         setTimeout(()=>window.openCart?.(),220);
       }catch(e){window.Doodhwala10X?.toast?.(e.message||"Reorder unavailable")}
-      finally{this.disabled=false;this.textContent="↻ Reorder"}
+      finally{this.disabled=false;this.innerHTML=oldText}
     });
     updateBell(snapshot.unread);
   }
@@ -158,10 +220,19 @@
   async function setupRealtime(user){
     if(!user)return;
     if(window.__customerMarket10xChannel){try{api.removeChannel(window.__customerMarket10xChannel)}catch(_){}}
-    const channel=api.channel("customer-market-"+user.id).on("postgres_changes",{event:"*",schema:"public",table:"customer_notifications",filter:"customer_id=eq."+user.id},async()=>{
-      try{const rows=await api.from("customer_notifications").select("id,is_read").eq("customer_id",user.id).limit(50);updateBell((rows.data||[]).filter(x=>!x.is_read).length)}catch(_){}
+    const channel=api.channel("customer-market-"+user.id)
+      .on("postgres_changes",{event:"*",schema:"public",table:"customer_notifications",filter:"customer_id=eq."+user.id},async()=>{
+        try{const rows=await api.from("customer_notifications").select("id,is_read").eq("customer_id",user.id).limit(50);updateBell((rows.data||[]).filter(x=>!x.is_read).length)}catch(_){}
+        await refreshSnapshot();
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"orders",filter:"customer_id=eq."+user.id},refreshSnapshot)
+      .on("postgres_changes",{event:"*",schema:"public",table:"milk_subscriptions",filter:"customer_id=eq."+user.id},refreshSnapshot)
+      .on("postgres_changes",{event:"*",schema:"public",table:"customer_favorites",filter:"customer_id=eq."+user.id},refreshSnapshot);
+    window.__customerMarket10xChannel=channel;
+    channel.subscribe(status=>{
+      realtimeConnected=status==="SUBSCRIBED";
+      if(lastSnapshot){renderSidebarDesk(lastSnapshot);updateDeskSnapshot(lastSnapshot)}
     });
-    window.__customerMarket10xChannel=channel;channel.subscribe();
   }
 
   async function mount(){
@@ -174,6 +245,7 @@
       const snapshot=await loadSnapshot();
       renderDesk(snapshot);
       await setupRealtime(user);
+      if(!window.__customerMarket10xPoll)window.__customerMarket10xPoll=setInterval(()=>{if(!document.hidden)refreshSnapshot()},60000);
     }catch(e){console.warn("Customer marketplace 10X failed",e)}
   }
 
