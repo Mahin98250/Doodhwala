@@ -142,6 +142,22 @@ if(fs.existsSync(path.join(root,"auth.js"))&&!fs.readFileSync(path.join(root,"au
 if(fs.existsSync(path.join(root,"checkout.js"))&&fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes('let cart=JSON.parse(localStorage.getItem(CART_KEY)')) errors.push("checkout.js -> unguarded cart storage parse");
 if(fs.existsSync(path.join(root,"provider.js"))&&fs.readFileSync(path.join(root,"provider.js"),"utf8").includes('JSON.parse(localStorage.getItem(STORAGE_KEY)')) errors.push("provider.js -> unguarded provider storage parse");
 if(fs.existsSync(path.join(root,"checkout.js"))&&!fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes("readObjectStorage")) errors.push("checkout.js -> safe cart storage recovery missing");
+if(localFiles.has("/checkout.js")){
+  const checkoutText=fs.readFileSync(path.join(root,"checkout.js"),"utf8");
+  for(const contract of ["let savedAddressId=null;","from(\"addresses\").update(row)",".eq(\"user_id\",sessionUser.id)","validCoordinates(latitude,longitude)","let placingOrder=false;","We couldn't finish checkout because of a connection problem.","Retry remaining orders →"])
+    if(!checkoutText.includes(contract)) errors.push("checkout.js -> missing P0 checkout reliability contract "+contract);
+}
+if(localFiles.has("/checkout.html")){
+  const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
+  if(!checkoutHtml.includes('href="/Dudh-Wallah/orders.html">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
+  if(!checkoutHtml.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("checkout.html -> checkout runtime cache version stale");
+}
+if(localFiles.has("/sw.js")){
+  const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
+  if(!swP0.includes('const CACHE="doodhwala-v61"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
+}
+
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
 if(fs.existsSync(path.join(root,"admin.js"))){
   const adminText=fs.readFileSync(path.join(root,"admin.js"),"utf8");
