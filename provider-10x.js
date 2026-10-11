@@ -36,6 +36,10 @@
       .shop-hero{border:1px solid #dbe6dd;border-radius:22px;background:linear-gradient(135deg,#173f2d,#2a6849 70%,#3d815d);color:#fff;padding:20px;box-shadow:0 16px 34px rgba(22,61,42,.16);position:relative;overflow:hidden}
       .shop-hero:after{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:-80px;top:-90px;background:rgba(255,255,255,.09)}
       .shop-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;position:relative;z-index:1}
+      .shop-hero-copy{min-width:0;flex:1}.shop-hero-brandline{display:flex;align-items:center;gap:8px;margin-bottom:9px}.shop-hero-brandline img{width:33px;height:33px;border-radius:10px;border:1px solid rgba(255,255,255,.18)}.shop-hero-brandline b,.shop-hero-brandline small{display:block}.shop-hero-brandline b{font:900 9px Manrope,sans-serif;letter-spacing:.12em;color:#fff}.shop-hero-brandline small{margin-top:3px;color:#c9e5d2;font-size:6px;font-weight:900;letter-spacing:.13em}
+      .shop-hero-statusstack{display:grid;justify-items:end;gap:7px;position:relative;z-index:1;min-width:114px}.shop-live{display:inline-flex;align-items:center;gap:5px}.shop-live i{width:6px;height:6px;border-radius:50%;background:#78e19b;box-shadow:0 0 0 3px rgba(120,225,155,.13)}.shop-live.paused i{background:#ffd1bf;box-shadow:0 0 0 3px rgba(255,209,191,.1)}
+      .shop-hero-current{display:grid;gap:2px;width:100%;padding:10px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.08);text-align:right}.shop-hero-current small{font-size:6px;color:#cde5d4;font-weight:900;letter-spacing:.12em}.shop-hero-current b{font:800 25px Manrope,sans-serif;color:#fff;line-height:1.1}.shop-hero-current span{font-size:7px;color:#d5e9dc;line-height:1.4}.shop-hero-mode{color:#cde5d4;font-size:6px;text-align:right}
+      
       .shop-eyebrow{font-size:8px;font-weight:900;letter-spacing:.15em;color:#cde9d7}
       .shop-hero h3{margin:5px 0 3px;font:800 23px Manrope,sans-serif;letter-spacing:-.04em}
       .shop-hero p{margin:0;color:#dceee3;font-size:9px;line-height:1.55;max-width:620px}
@@ -155,7 +159,7 @@
     const alerts=[];
     if(metrics.placed.length)alerts.push({tone:metrics.placed.some(o=>o.acceptance_deadline_at&&Date.now()>new Date(o.acceptance_deadline_at).getTime())?"danger":"warn",icon:"!",title:metrics.placed.length+" new order"+(metrics.placed.length===1?"":"s")+" waiting",detail:"Accept or decline incoming orders before the response window closes.",view:"orders",cta:"Open queue"});
     if(metrics.overduePromise.length)alerts.push({tone:"danger",icon:"!",title:metrics.overduePromise.length+" delivery"+(metrics.overduePromise.length===1?"":"ies")+" past promise",detail:"Check the delivery queue and update the customer-facing status.",view:"orders",cta:"Review"});
-    if(ps.unavailable)alerts.push({tone:"warn",icon:"🥛",title:ps.unavailable+" milk item"+(ps.unavailable===1?" is":"s are")+" unavailable",detail:"Customers cannot order paused or out-of-stock catalogue items.",view:"products",cta:"Update stock"});
+    if(ps.unavailable)alerts.push({tone:"warn",icon:"!",title:ps.unavailable+" milk item"+(ps.unavailable===1?" is":"s are")+" unavailable",detail:"Customers cannot order paused or out-of-stock catalogue items.",view:"products",cta:"Update stock"});
     if(provider?.backendProviderId&&!provider?.latitude&&!provider?.longitude)alerts.push({tone:"warn",icon:"⌖",title:"Service point not set",detail:"Nearby customer discovery needs a delivery location.",view:"service",cta:"Set area"});
     if(String(provider?.verificationStatus||"pending")!=="approved")alerts.push({tone:"warn",icon:"✓",title:"Marketplace verification pending",detail:"Customers will only discover the store after approval.",view:"profile",cta:"View status"});
     if(!provider?.acceptingOrders&&provider?.backendProviderId)alerts.push({tone:"warn",icon:"Ⅱ",title:"Store is paused",detail:"New customer orders are currently blocked.",view:"overview",action:"resume-store",cta:"Resume store"});
@@ -166,7 +170,7 @@
   function renderHero(ps,metrics){
     const live=provider?.acceptingOrders!==false;
     const mode=provider?.verificationStatus==="approved"?"Verified marketplace":provider?.verificationStatus==="rejected"?"Review required":"Setup & review";
-    return `<div class="shop-hero"><div class="shop-hero-top"><div><span class="shop-eyebrow">SHOPKEEPER COMMAND CENTER</span><h3>Run today’s milk business.</h3><p>Everything important is here first: orders that need a response, delivery pressure, stock, route capacity and today’s sales.</p></div><span class="shop-live ${live?"":"paused"}">${live?"● STORE LIVE":"Ⅱ STORE PAUSED"} · ${esc(mode)}</span></div><div class="shop-hero-actions"><button class="primary" data-shop-go="orders">Open order queue</button><button data-shop-go="route">Today’s route</button><button data-shop-go="products">Update milk</button><button data-shop-go="subscriptions">Recurring customers</button></div></div>`;
+    return `<div class="shop-hero"><div class="shop-hero-top"><div class="shop-hero-copy"><div class="shop-hero-brandline"><img src="/Dudh-Wallah/assets/logo.svg" alt=""><span><b>DOODHWALA 10X</b><small>SELLER OPERATIONS</small></span></div><h3>Run today’s milk business.</h3><p>Live order queue, route pressure, stock and sales — organised for the working day.</p></div><div class="shop-hero-statusstack"><span class="shop-live ${live?"":"paused"}"><i></i>${live?"STORE OPEN":"STORE PAUSED"}</span><div class="shop-hero-current"><small>CURRENT ORDERS</small><b>${metrics.active.length}</b><span>${metrics.placed.length} waiting for a response</span></div><small class="shop-hero-mode">${esc(mode)}</small></div></div><div class="shop-hero-actions"><button class="primary" data-shop-go="orders">Open order queue</button><button data-shop-go="route">Today’s route</button><button data-shop-go="products">Update milk</button><button data-shop-go="subscriptions">Recurring customers</button></div></div>`;
   }
 
   function renderAttention(perf,metrics,ps){
@@ -234,6 +238,12 @@
     const deliveredToday=Number(perf.today_delivered??metrics.deliveredToday.length);
     const salesToday=Number(perf.today_sales??metrics.deliveredToday.reduce((sum,o)=>sum+num(o.total),0));
     const activeOrders=Number(perf.active_orders??metrics.active.length);
+    const sideCount=document.getElementById("providerSideCurrentOrders");
+    if(sideCount)sideCount.textContent=String(metrics.active.length);
+    const sideMeta=document.getElementById("providerSideCurrentMeta");
+    if(sideMeta)sideMeta.textContent=metrics.placed.length?metrics.placed.length+" awaiting seller response":(metrics.active.length?"Order flow in progress":"Queue clear · refresh for updates");
+    const sideState=document.getElementById("providerSideLiveStatus");
+    if(sideState){sideState.textContent="SYNCED";sideState.classList.toggle("is-live",true)}
     host.innerHTML=`<div class="shop-cockpit">${renderHero(ps,metrics)}
       <div class="shop-grid-4">
         <div class="shop-card"><span class="shop-metric-label">NEW ORDERS</span><b class="shop-metric-value">${metrics.placed.length}</b><span class="shop-metric-sub">${metrics.placed.length?"Need a response now":"Queue clear"}</span></div>
@@ -260,6 +270,7 @@
       render(perf,orders);
     }catch(e){
       host.innerHTML='<div class="shop-card"><b>Shopkeeper command center unavailable</b><p style="margin:5px 0 0;color:#6d796f;font-size:9px">'+esc(e.message||"Unable to load live provider data.")+'</p><button class="shop-link" id="shopRetry" style="margin-top:9px">↻ Try again</button></div>';
+      const sideState=document.getElementById("providerSideLiveStatus");if(sideState){sideState.textContent="RETRY";sideState.classList.remove("is-live")}
       host.querySelector("#shopRetry")?.addEventListener("click",refresh);
     }finally{
       state.refreshing=false;

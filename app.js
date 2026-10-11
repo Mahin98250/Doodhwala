@@ -23,7 +23,11 @@ installDiscoveryStyles();
 
 function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function money(value){return "₹"+Number(value||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
-function milkEmoji(type){return type==="buffalo"?"🐃":type==="a2"?"🥛":type==="cow"?"🐄":"🥛"}
+function milkEmoji(type){
+ const label=type==="cow"?"COW":type==="buffalo"?"BUFFALO":type==="a2"?"A2":"FRESH";
+ const size=label==="BUFFALO"?5.3:6.7;
+ return `<svg class="milk-type-art" viewBox="0 0 64 66" role="img" aria-label="${label.toLowerCase()} milk"><rect x="4" y="4" width="56" height="58" rx="16" fill="#f7fbf7" stroke="#d8e7db"/><path d="M26 12h12v7l5 7v24c0 3-2 5-5 5H26c-3 0-5-2-5-5V26l5-7Z" fill="#fff" stroke="#17603f" stroke-width="1.7" stroke-linejoin="round"/><path d="M26 19h12M23 29h18" fill="none" stroke="#17603f" stroke-width="1.7" stroke-linecap="round"/><path d="M32 32c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10Z" fill="#17603f"/><path d="M31 41c1-3 3-4 5-4" fill="none" stroke="#e7bd62" stroke-width="1.6" stroke-linecap="round"/><text x="32" y="59" text-anchor="middle" fill="#3a5b46" font-size="${size}" font-weight="800" font-family="Arial,sans-serif" letter-spacing=".5">${label}</text></svg>`;
+}
 function formatDistance(km){if(km==null||!Number.isFinite(Number(km)))return "Set location";const n=Number(km);return n<1?Math.max(100,Math.round(n*1000))+" m":n.toFixed(n<10?1:0)+" km"}
 function readLocation(){try{const value=JSON.parse(localStorage.getItem(LOCATION_KEY)||"null");if(value&&Number.isFinite(+value.latitude)&&Number.isFinite(+value.longitude))return{latitude:+value.latitude,longitude:+value.longitude};}catch(_){}return null}
 function toast(message){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";t.style.cssText="position:fixed;left:50%;bottom:92px;transform:translate(-50%,15px);background:#17221a;color:#fff;padding:11px 15px;border-radius:999px;font-size:10px;opacity:0;transition:.2s;z-index:10000;pointer-events:none"}t.textContent=message;t.style.opacity="1";t.style.transform="translate(-50%,0)";clearTimeout(window.__toast);window.__toast=setTimeout(()=>{t.style.opacity="0";t.style.transform="translate(-50%,15px)"},1700)}
@@ -73,7 +77,7 @@ function render(){
  if(!list.length){
    if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';return}
    const hasLocation=!!readLocation();
-   grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?"🥛":"⌖")+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or check again later as local providers are onboarded.":"Use your GPS location or tap the map to place your delivery pin. We will then show providers who can actually reach you.")+'</p>'+(hasLocation?'':'<button class="primary" id="setLocationInline">Choose location →</button>')+'</div>';
+   grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg>')+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or check again later as local providers are onboarded.":"Use your GPS location or tap the map to place your delivery pin. We will then show providers who can actually reach you.")+'</p>'+(hasLocation?'':'<button class="primary" id="setLocationInline">Choose location →</button>')+'</div>';
    $("setLocationInline")?.addEventListener("click",()=>window.DoodhwalaLocation?.open?.());
    return;
  }

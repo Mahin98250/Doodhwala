@@ -106,7 +106,7 @@
     if(m.late.length)out.push(["danger","! ",m.late.length+" active deliveries are late","Orders have crossed their late threshold; review the live queue.","orders","Review"]);
     else if(m.atRisk.length)out.push(["warn","~ ",m.atRisk.length+" active deliveries are at risk","Promise times have passed even though the order is not yet marked late.","orders","Review"]);
     if(m.unapproved.length)out.push(["warn","✓",m.unapproved.length+" providers need approval","Unapproved providers can stay off the marketplace.","providers","Review"]);
-    if(m.stockProblems.length)out.push(["warn","🥛",m.stockProblems.length+" catalogue items need attention","Out-of-stock or hidden products reduce marketplace supply.","products","Fix stock"]);
+    if(m.stockProblems.length)out.push(["warn","!",m.stockProblems.length+" catalogue items need attention","Out-of-stock or hidden products reduce marketplace supply.","products","Fix stock"]);
     if(!out.length)out.push(["ok","✓","No major admin risks detected","Core marketplace signals look stable right now.","overview","Clear"]);
     return out.slice(0,6);
   }
