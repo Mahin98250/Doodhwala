@@ -129,7 +129,7 @@
     `;document.head.appendChild(s);
   }
 
-  function findOrderIds(){const set=new Set();if(window.doodhwalaCurrentOrderId)set.add(String(window.doodhwalaCurrentOrderId));document.querySelectorAll(".order-card .order-meta").forEach(el=>{const m=String(el.textContent||"").match(/Order\\s+([0-9a-f-]{16,})/i);if(m)set.add(m[1])});return [...set]}
+  function findOrderIds(){const set=new Set();if(window.doodhwalaCurrentOrderId)set.add(String(window.doodhwalaCurrentOrderId));document.querySelectorAll(".order-card .order-meta").forEach(el=>{const m=String(el.textContent||"").match(/Order\s+([0-9a-f-]{16,})/i);if(m)set.add(m[1])});return [...set]}
   function renderTracking(data){
     const o=data?.order||{},events=data?.events||[];const status=String(o.status||"placed").replace(/_/g," ");
     const eventHtml=events.slice(-8).reverse().map(e=>'<div class="d10-track-row"><i class="d10-track-dot"></i><span><b>'+escapeHtml(String(e.status||"").replace(/_/g," "))+'</b><br>'+escapeHtml(new Date(e.created_at).toLocaleString("en-IN"))+(e.eta_minutes!=null?" · ETA "+escapeHtml(e.eta_minutes)+" min":"")+'</span></div>').join("");
