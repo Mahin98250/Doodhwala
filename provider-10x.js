@@ -45,6 +45,8 @@
       .shop-hero p{margin:0;color:#dceee3;font-size:9px;line-height:1.55;max-width:620px}
       .shop-live{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;border-radius:999px;padding:8px 10px;font-size:8px;font-weight:900;white-space:nowrap;backdrop-filter:blur(10px)}
       .shop-live.paused{background:rgba(255,204,184,.14);color:#ffe1d7}
+      .shop-live.setup{background:rgba(255,222,156,.13);color:#ffedbd;border-color:rgba(255,222,156,.26)}
+      .shop-live.review{background:rgba(255,204,184,.14);color:#ffe1d7}
       .shop-hero-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;position:relative;z-index:1}
       .shop-hero-actions button{border:1px solid rgba(255,255,255,.17);background:rgba(255,255,255,.1);color:#fff;border-radius:11px;padding:9px 11px;font:800 8px "DM Sans",sans-serif;cursor:pointer}
       .shop-hero-actions button.primary{background:#fff;color:#175a3c;border-color:#fff}
@@ -168,9 +170,13 @@
   }
 
   function renderHero(ps,metrics){
-    const live=provider?.acceptingOrders!==false;
+    const hasBackend=!!provider?.backendProviderId;
+    const approved=hasBackend&&provider?.verificationStatus==="approved";
+    const live=approved&&provider?.acceptingOrders!==false;
+    const statusText=!hasBackend?"LOCAL SETUP":provider?.verificationStatus==="rejected"?"REVIEW REQUIRED":!approved?"PENDING REVIEW":live?"STORE OPEN":"STORE PAUSED";
+    const statusClass=live?"":statusText==="STORE PAUSED"?"paused":"setup";
     const mode=provider?.verificationStatus==="approved"?"Verified marketplace":provider?.verificationStatus==="rejected"?"Review required":"Setup & review";
-    return `<div class="shop-hero"><div class="shop-hero-top"><div class="shop-hero-copy"><div class="shop-hero-brandline"><img src="/Dudh-Wallah/assets/logo.svg" alt=""><span><b>DOODHWALA 10X</b><small>SELLER OPERATIONS</small></span></div><h3>Run today’s milk business.</h3><p>Live order queue, route pressure, stock and sales — organised for the working day.</p></div><div class="shop-hero-statusstack"><span class="shop-live ${live?"":"paused"}"><i></i>${live?"STORE OPEN":"STORE PAUSED"}</span><div class="shop-hero-current"><small>CURRENT ORDERS</small><b>${metrics.active.length}</b><span>${metrics.placed.length} waiting for a response</span></div><small class="shop-hero-mode">${esc(mode)}</small></div></div><div class="shop-hero-actions"><button class="primary" data-shop-go="orders">Open order queue</button><button data-shop-go="route">Today’s route</button><button data-shop-go="products">Update milk</button><button data-shop-go="subscriptions">Recurring customers</button></div></div>`;
+    return `<div class="shop-hero"><div class="shop-hero-top"><div class="shop-hero-copy"><div class="shop-hero-brandline"><img src="/Dudh-Wallah/assets/logo.svg" alt=""><span><b>DOODHWALA 10X</b><small>SELLER OPERATIONS</small></span></div><h3>Run today’s milk business.</h3><p>Live order queue, route pressure, stock and sales — organised for the working day.</p></div><div class="shop-hero-statusstack"><span class="shop-live ${statusClass}"><i></i>${statusText}</span><div class="shop-hero-current"><small>CURRENT ORDERS</small><b>${metrics.active.length}</b><span>${metrics.placed.length} waiting for a response</span></div><small class="shop-hero-mode">${esc(mode)}</small></div></div><div class="shop-hero-actions"><button class="primary" data-shop-go="orders">Open order queue</button><button data-shop-go="route">Today’s route</button><button data-shop-go="products">Update milk</button><button data-shop-go="subscriptions">Recurring customers</button></div></div>`;
   }
 
   function renderAttention(perf,metrics,ps){
