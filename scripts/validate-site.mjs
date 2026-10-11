@@ -50,11 +50,28 @@ if(localFiles.has("/sw.js")){
   }
 }else errors.push("required runtime file missing /sw.js");
 
-for(const file of ["/app.js","/auth.js","/checkout.js","/provider.js","/orders.js","/plans.js","/admin.js","/store.js","/product.js","/customer-nav.js","/location.js","/provider-location.js","/supabase-client.js","/supabase-config.js","/pwa-register.js"]){
+for(const file of ["/app.js","/auth.js","/checkout.js","/provider.js","/orders.js","/plans.js","/admin.js","/store.js","/product.js","/customer-nav.js","/location.js","/provider-location.js","/supabase-client.js","/supabase-config.js","/pwa-register.js","/session-controls.js"]){
   if(!localFiles.has(file)) errors.push("required runtime file missing "+file);
 }
 
 
+
+const sessionControlsPath=path.join(root,"session-controls.js");
+if(localFiles.has("/session-controls.js")){
+  const sessionControlsText=fs.readFileSync(sessionControlsPath,"utf8");
+  for(const contract of ['auth.signOut({ scope: "local" })',"Sign out","onAuthStateChange"])
+    if(!sessionControlsText.includes(contract)) errors.push("session-controls.js -> missing session/sign-out contract "+contract);
+}else errors.push("required runtime file missing /session-controls.js");
+for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html"]){
+  if(!localFiles.has(file)) continue;
+  const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+  if(!html.includes('/Dudh-Wallah/session-controls.js?v=20261011.1')) errors.push(file+" -> customer sign-out control missing or cache version stale");
+}
+const profileRegexMigration="/supabase/migrations/20261011151730_fix_customer_profile_phone_regex.sql";
+if(localFiles.has(profileRegexMigration)){
+  const migration=fs.readFileSync(path.join(root,profileRegexMigration.slice(1)),"utf8");
+  if(!(migration.includes("v_phone !~ ") && migration.includes("[+]?[0-9]{10,15}"))) errors.push("profile regex migration -> PostgreSQL-safe phone validation missing");
+}else errors.push("profile regex migration missing");
 
 const pwaRegisterPath=path.join(root,"pwa-register.js");
 if(localFiles.has("/pwa-register.js")){
