@@ -77,7 +77,7 @@ function render(){
  if(!list.length){
    if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';return}
    const hasLocation=!!readLocation();
-   grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?"🥛":"⌖")+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or check again later as local providers are onboarded.":"Use your GPS location or tap the map to place your delivery pin. We will then show providers who can actually reach you.")+'</p>'+(hasLocation?'':'<button class="primary" id="setLocationInline">Choose location →</button>')+'</div>';
+   grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg>')+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or check again later as local providers are onboarded.":"Use your GPS location or tap the map to place your delivery pin. We will then show providers who can actually reach you.")+'</p>'+(hasLocation?'':'<button class="primary" id="setLocationInline">Choose location →</button>')+'</div>';
    $("setLocationInline")?.addEventListener("click",()=>window.DoodhwalaLocation?.open?.());
    return;
  }
