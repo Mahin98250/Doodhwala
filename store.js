@@ -6,7 +6,11 @@ let store=null;
 const $=id=>document.getElementById(id);
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
-function milkEmoji(type){return type==="buffalo"?"🐃":type==="a2"?"🥛":type==="cow"?"🐄":"🥛"}
+function milkEmoji(type){
+ const label=type==="cow"?"COW":type==="buffalo"?"BUFFALO":type==="a2"?"A2":"FRESH";
+ const size=label==="BUFFALO"?5.3:6.7;
+ return `<svg class="milk-type-art" viewBox="0 0 64 66" role="img" aria-label="${label.toLowerCase()} milk"><rect x="4" y="4" width="56" height="58" rx="16" fill="#f7fbf7" stroke="#d8e7db"/><path d="M26 12h12v7l5 7v24c0 3-2 5-5 5H26c-3 0-5-2-5-5V26l5-7Z" fill="#fff" stroke="#17603f" stroke-width="1.7" stroke-linejoin="round"/><path d="M26 19h12M23 29h18" fill="none" stroke="#17603f" stroke-width="1.7" stroke-linecap="round"/><path d="M32 32c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10Z" fill="#17603f"/><path d="M31 41c1-3 3-4 5-4" fill="none" stroke="#e7bd62" stroke-width="1.6" stroke-linecap="round"/><text x="32" y="59" text-anchor="middle" fill="#3a5b46" font-size="${size}" font-weight="800" font-family="Arial,sans-serif" letter-spacing=".5">${label}</text></svg>`;
+}
 function readLocation(){try{const v=JSON.parse(localStorage.getItem(LOCATION_KEY)||"null");if(v&&Number.isFinite(+v.latitude)&&Number.isFinite(+v.longitude))return{latitude:+v.latitude,longitude:+v.longitude};}catch(_){}return null}
 function locationLabel(){return readLocation()?"Near you":"Choose location"}
 function setLocationLabel(){ $("marketLocationLabel").textContent=locationLabel(); }
@@ -65,7 +69,7 @@ function render(){
  $("crumbProvider").textContent=store.provider_name;
  $("storeName").textContent=store.provider_name||"Local milk provider";
  $("storeSub").textContent=[store.area_name,store.city].filter(Boolean).join(" · ")||"Nearby";
- $("storeEmoji").textContent=milkEmoji(store.milk_type);
+ $("storeEmoji").innerHTML=milkEmoji(store.milk_type);
  $("storeDescription").textContent=store.description||"Fresh local milk from an independent provider.";
  $("storeMeta").innerHTML=[
    "★ "+Number(store.rating_avg||0).toFixed(1)+" rating",
