@@ -1,0 +1,24 @@
+name: Production reporting smoke test
+
+on:
+  push:
+    branches:
+      - ops/production-reporting-smoke
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-reporting-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Send synthetic diagnostic to production
+        run: node scripts/production-reporting-smoke.mjs

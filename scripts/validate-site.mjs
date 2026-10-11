@@ -50,10 +50,22 @@ if(localFiles.has("/sw.js")){
   }
 }else errors.push("required runtime file missing /sw.js");
 
-for(const file of ["/app.js","/auth.js","/checkout.js","/provider.js","/orders.js","/plans.js","/admin.js","/store.js","/product.js","/customer-nav.js","/location.js","/provider-location.js","/supabase-client.js","/supabase-config.js"]){
+for(const file of ["/app.js","/auth.js","/checkout.js","/provider.js","/orders.js","/plans.js","/admin.js","/store.js","/product.js","/customer-nav.js","/location.js","/provider-location.js","/supabase-client.js","/supabase-config.js","/pwa-register.js"]){
   if(!localFiles.has(file)) errors.push("required runtime file missing "+file);
 }
 
+
+
+const pwaRegisterPath=path.join(root,"pwa-register.js");
+if(localFiles.has("/pwa-register.js")){
+  const pwaRegisterText=fs.readFileSync(pwaRegisterPath,"utf8");
+  if(!pwaRegisterText.includes("serviceWorker.register")) errors.push("pwa-register.js -> service worker registration call missing");
+  if(!pwaRegisterText.includes('/Dudh-Wallah/sw.js')) errors.push("pwa-register.js -> project-scoped service worker path missing");
+}else errors.push("required runtime file missing /pwa-register.js");
+for(const file of htmlFiles){
+  const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+  if(!html.includes("/Dudh-Wallah/pwa-register.js")) errors.push(file+" -> PWA registration script missing");
+}
 
 const providerJsPath=path.join(root,"provider.js");
 if(fs.existsSync(providerJsPath)){
