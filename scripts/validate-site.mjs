@@ -147,6 +147,11 @@ if(localFiles.has("/checkout.js")){
   for(const contract of ["let savedAddressId=null;","from(\"addresses\").update(row)",".eq(\"user_id\",sessionUser.id)","validCoordinates(latitude,longitude)","let placingOrder=false;","We couldn't finish checkout because of a connection problem.","Retry remaining orders →"])
     if(!checkoutText.includes(contract)) errors.push("checkout.js -> missing P0 checkout reliability contract "+contract);
 }
+if(localFiles.has("/orders.js")){
+  const ordersText=fs.readFileSync(path.join(root,"orders.js"),"utf8");
+  for(const contract of ["async function loadOrders(options={})","window.__ordersFallbackTimer","},60000);","Connection interrupted. Your orders are saved; we'll retry automatically."])
+    if(!ordersText.includes(contract)) errors.push("orders.js -> missing P0 order refresh fallback contract "+contract);
+}
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Dudh-Wallah/orders.html">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
@@ -154,7 +159,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v61"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v62"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
