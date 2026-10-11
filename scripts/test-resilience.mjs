@@ -106,6 +106,7 @@ const resumedWindow = Object.assign({}, window, {
   navigator: { onLine: true },
   addEventListener(name, callback) { resumedEvents.set(name, callback); }
 });
+delete resumedWindow.DoodhwalaResilience;
 vm.runInNewContext(source, {
   window: resumedWindow, document, URL, Map, Date, Math, Promise, Number, Object, String, Array, JSON, RegExp, Error,
   setTimeout, clearTimeout
