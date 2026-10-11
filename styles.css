@@ -447,3 +447,43 @@ footer{padding:0 58px 95px;font-size:9px;color:#859087;display:flex;justify-cont
   .customer-nav-item svg{width:19px;height:19px}
   .customer-nav-item span{font-size:7px}
 }
+
+
+/* Doodhwala 10X: compact, data-driven delivery desk */
+.d10x-sidebar-card{margin-top:auto;margin-bottom:0;padding:14px 12px 12px;border:1px solid rgba(218,231,220,.16);background:linear-gradient(155deg,#153d2b,#20593d 70%,#2c704b);box-shadow:0 15px 32px rgba(12,42,26,.16);border-radius:18px;color:#fff}
+.d10x-sidebar-card .d10x-side-head{display:flex;align-items:center;gap:8px;min-width:0}
+.d10x-side-head>img{width:31px;height:31px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.d10x-side-brand{min-width:0;flex:1}
+.d10x-side-brand>b{display:block;font:800 12px Manrope,sans-serif;letter-spacing:-.03em;color:#fff;white-space:nowrap}
+.d10x-side-brand>b span{display:inline-flex;align-items:center;justify-content:center;margin-left:2px;padding:2px 4px;border-radius:5px;background:#e4bd65;color:#25402e;font-size:8px}
+.d10x-side-brand small{display:block;margin-top:3px;color:#bcd9c5;font-size:6px;font-weight:900;letter-spacing:.11em;white-space:nowrap}
+.d10x-side-status{display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:4px 5px;color:#f1e2b6;font-size:6px;font-weight:900;white-space:nowrap}
+.d10x-side-status:before{content:"";width:5px;height:5px;border-radius:50%;background:#e7bc58}
+.d10x-side-status.is-live{color:#dbf2e1;background:rgba(255,255,255,.08)}
+.d10x-side-status.is-live:before{background:#7ee2a0;box-shadow:0 0 0 3px rgba(126,226,160,.12)}
+.d10x-side-order{display:flex;align-items:center;gap:9px;margin-top:15px;padding:10px 9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.09);border-radius:12px}
+.d10x-side-order-icon{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.11);color:#e7c66d}
+.d10x-side-order-icon svg,.d10x-side-trust svg,.d10x-side-action svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.d10x-side-order-copy{min-width:0}
+.d10x-side-order-copy>small{display:block;color:#b9d6c3;font-size:6px;font-weight:900;letter-spacing:.14em}
+.d10x-side-order-copy>b{display:block;margin-top:4px;color:#fff;font-size:10px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d10x-side-order-copy>p{margin:3px 0 0;color:#d0e3d6;font-size:8px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d10x-side-action{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 2px 8px;color:#fff;text-decoration:none;font-size:9px;font-weight:800}
+.d10x-side-action svg{width:14px;height:14px;transition:transform .18s}
+.d10x-side-action:hover svg{transform:translateX(3px)}
+.d10x-side-trust{display:flex;align-items:center;gap:6px;margin:2px 0 0!important;color:#b7d2c0!important;font-size:7px!important;line-height:1.35!important}
+.d10x-side-trust svg{width:12px;height:12px;flex:0 0 12px}
+.hero-art .house{right:auto;left:20%;bottom:59px;width:86px;height:86px;font-size:0;filter:drop-shadow(0 7px 8px rgba(20,60,30,.08))}
+.hero-art .house svg{width:100%;height:100%;fill:#f7fbf4;stroke:#3c6949;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.hero-art .bottle{display:grid;place-items:center;right:19%;bottom:40px;width:95px;height:110px;font-size:0;transform:rotate(-6deg);filter:drop-shadow(0 7px 8px rgba(20,60,30,.08))}
+.hero-art .bottle svg,.empty-milk-icon svg{width:100%;height:100%;fill:#fff;stroke:#175a3c;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.hero-art .bottle svg .bottle-drop,.empty-milk-icon svg .bottle-drop{fill:#175a3c;stroke:none}
+.hero-art .bottle svg .bottle-leaf{fill:none;stroke:#f4d27f;stroke-width:2.5;stroke-linecap:round}
+.quick button{display:grid;grid-template-columns:43px 1fr;grid-template-rows:auto auto;column-gap:11px;align-items:center}
+.quick-icon{grid-row:1/3;width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:var(--green-wash);color:var(--green)}
+.quick-icon svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.quick button b{margin-top:0;align-self:end}
+.quick button small{align-self:start;margin-top:3px}
+.empty-milk-icon{width:58px;height:70px;margin:0 auto 12px;color:var(--green)}
+.empty-milk-icon svg{display:block}
+@media(max-width:760px){.d10x-sidebar-card{display:none}.hero-art .house{left:18%;bottom:38px;width:62px;height:62px}.hero-art .bottle{right:20%;bottom:22px;width:71px;height:83px}.quick-icon{width:40px;height:40px}}
