@@ -149,6 +149,16 @@
     render(session);
   });
 
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("signedout") === "1") {
+      toast("Signed out successfully on this device.");
+      params.delete("signedout");
+      const cleanUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "") + window.location.hash;
+      window.history.replaceState(null, "", cleanUrl);
+    }
+  } catch (_) {}
+
   window.DoodhwalaSessionControls = {
     signOut: () => signOut(null),
     isSignedIn: () => Boolean(currentSession && currentSession.user)
