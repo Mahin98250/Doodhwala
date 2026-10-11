@@ -3,10 +3,21 @@
   "use strict";
   if (w.DoodhwalaResilience) return;
 
-  const APP_VERSION = "20261009.1";
+  const APP_VERSION = "20261011.1";
   const QUIET_WINDOW = 5 * 60 * 1000;
   const recent = new Map();
-  const pending = [];
+  const QUEUE_KEY = "doodhwala-error-report-queue-v1";
+  const pending = (function () {
+    try {
+      const saved = JSON.parse(w.localStorage.getItem(QUEUE_KEY) || "[]");
+      return Array.isArray(saved) ? saved.filter(function (item) {
+        return item && typeof item === "object" && /^[a-f0-9]{8,64}$/i.test(String(item.fingerprint || ""));
+      }).slice(-12) : [];
+    } catch (_) { return []; }
+  })();
+  function persistPending() {
+    try { w.localStorage.setItem(QUEUE_KEY, JSON.stringify(pending.slice(-12))); } catch (_) {}
+  }
   const nativeFetch = typeof w.fetch === "function" ? w.fetch.bind(w) : null;
   let notice = null;
   let noticeTimer = null;
@@ -61,6 +72,7 @@
     const key = String(w.DOODHWALA_SUPABASE_PUBLISHABLE_KEY || "");
     if (!url || !key) return;
     const item = pending.shift();
+    persistPending();
     const attempt = Number(item.__reportAttempt || 0);
     const payload = Object.assign({}, item);
     delete payload.__reportAttempt;
@@ -71,13 +83,19 @@
       body: JSON.stringify(payload),
       keepalive: true
     }).then(function (response) {
-      if (!response.ok && response.status !== 429) {
+      if (!response.ok) {
+        if ((response.status >= 500 || response.status === 429) && attempt < 2 && pending.length < 12) {
+          item.__reportAttempt = attempt + 1;
+          pending.unshift(item);
+          persistPending();
+        }
         try { if (w.console) w.console.warn("Doodhwala diagnostics endpoint returned", response.status); } catch (_) {}
       }
     }).catch(function () {
       if (attempt < 2 && pending.length < 12) {
         item.__reportAttempt = attempt + 1;
         pending.unshift(item);
+        persistPending();
       }
     }).finally(function () {
       sending = false;
@@ -110,6 +128,7 @@
         status_code: statusCode
       };
       if (pending.length < 12) pending.push(record);
+      persistPending();
       flush();
       return fingerprint;
     } catch (_) {
