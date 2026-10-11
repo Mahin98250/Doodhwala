@@ -329,5 +329,6 @@
     showNotice("A background operation failed", "The page is still available. Check your connection and try the action again once the issue clears.");
   });
 
+  if (pending.length) w.setTimeout(flush, 250);
   try { if (w.console) w.console.info("Doodhwala resilience layer active", APP_VERSION); } catch (_) {}
 })(window, document);
