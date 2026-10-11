@@ -101,8 +101,15 @@ window.navigator.onLine = false;
 recovery.report("manual_report", "error", "Offline diagnostics should survive a reload.");
 const queued = JSON.parse(stored.get("doodhwala-error-report-queue-v1") || "[]");
 assert.ok(queued.some(x => x.message.includes("Offline diagnostics")), "offline diagnostics should be persisted locally");
-window.navigator.onLine = true;
-events.get("online")();
+const resumedEvents = new Map();
+const resumedWindow = Object.assign({}, window, {
+  navigator: { onLine: true },
+  addEventListener(name, callback) { resumedEvents.set(name, callback); }
+});
+vm.runInNewContext(source, {
+  window: resumedWindow, document, URL, Map, Date, Math, Promise, Number, Object, String, Array, JSON, RegExp, Error,
+  setTimeout, clearTimeout
+});
 await new Promise(resolve => setTimeout(resolve, 40));
-assert.equal(JSON.parse(stored.get("doodhwala-error-report-queue-v1") || "[]").length, 0, "successfully delivered diagnostics should leave the persistent queue");
+assert.equal(JSON.parse(stored.get("doodhwala-error-report-queue-v1") || "[]").length, 0, "persisted diagnostics should flush automatically after a page restart");
 console.log("Resilience behavior tests passed: safe storage, retry policy, write no-retry, PII redaction, and durable offline diagnostics.");
