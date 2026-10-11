@@ -487,3 +487,31 @@ footer{padding:0 58px 95px;font-size:9px;color:#859087;display:flex;justify-cont
 .empty-milk-icon{width:58px;height:70px;margin:0 auto 12px;color:var(--green)}
 .empty-milk-icon svg{display:block}
 @media(max-width:760px){.d10x-sidebar-card{display:none}.hero-art .house{left:18%;bottom:38px;width:62px;height:62px}.hero-art .bottle{right:20%;bottom:22px;width:71px;height:83px}.quick-icon{width:40px;height:40px}}
+
+
+/* Doodhwala mobile polish: balanced hero, compact illustration and safer fixed navigation */
+@media(max-width:760px){
+  main{padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+  .hero{padding:20px 14px 10px}
+  .hero h1{font-size:clamp(32px,8.8vw,40px);line-height:1.04;letter-spacing:-.045em;margin:10px 0 11px;max-width:16ch}
+  .hero p{font-size:13px;line-height:1.6;margin:0;max-width:38ch}
+  .location-hero-card{margin:13px 0 8px;padding:10px 11px}
+  .actions{display:flex;gap:9px;margin-top:12px}
+  .actions #explore{flex:1;min-height:46px}
+  .actions #how{display:none}
+  .actions .provider-link{width:100%;justify-content:center;min-height:42px;border:1px solid #dce8de;border-radius:13px;background:#fff;padding:10px 12px}
+  .hero-art{margin-top:12px;min-height:clamp(180px,52vw,235px);border-radius:20px}
+  .sun{width:62px;height:62px;right:22px;top:18px}
+  .hero-art .house{left:18%;bottom:28px;width:54px;height:54px}
+  .hero-art .bottle{right:19%;bottom:15px;width:62px;height:73px}
+  .section{padding:17px 14px}
+  .section-head{gap:10px;align-items:center}
+  .section-head h2{font-size:21px;line-height:1.15}
+  .no-results{padding:26px 18px!important;border-radius:22px!important;background:linear-gradient(145deg,#fff,#f5faf5)!important;border-style:solid!important;box-shadow:0 10px 28px rgba(22,59,37,.055)}
+  .no-results .milk-type-art{display:block;width:76px;height:78px;margin:0 auto 14px}
+  .no-results h3{font-size:18px;line-height:1.25;margin:8px 0}
+  .no-results p{font-size:12px;line-height:1.55;max-width:32ch;margin:0 auto 16px}
+  .no-results .primary{width:100%;max-width:250px;min-height:43px;margin-top:0}
+  .customer-bottom-nav{bottom:calc(8px + env(safe-area-inset-bottom,0px));}
+  .customer-bottom-nav{box-shadow:0 12px 32px rgba(20,45,29,.16)}
+}
