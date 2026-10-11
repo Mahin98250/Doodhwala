@@ -192,7 +192,7 @@ header{
   position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);
   border-radius:999px;padding:5px 8px;font-size:8px;font-weight:800;color:#526158
 }
-.provider-emoji{position:absolute;right:17px;bottom:-9px;font-size:54px}
+.provider-emoji{position:absolute;right:17px;bottom:-9px;width:64px;height:66px;display:grid;place-items:center;filter:drop-shadow(0 7px 8px rgba(20,60,30,.08))}.provider-emoji svg{display:block;width:100%;height:100%}
 .provider-body{padding:16px 14px 14px}
 .name-row{display:flex;justify-content:space-between;gap:8px}
 .provider-name{font-family:Manrope,sans-serif;font-size:14px;font-weight:800;letter-spacing:-.02em}
