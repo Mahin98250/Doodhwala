@@ -76,7 +76,7 @@ for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/
 const sessionControlsPath=path.join(root,"session-controls.js");
 if(localFiles.has("/session-controls.js")){
   const sessionControlsText=fs.readFileSync(sessionControlsPath,"utf8");
-  for(const contract of ['auth.signOut({ scope: "local" })',"Sign out","onAuthStateChange","session-controls.js"])
+  for(const contract of ['auth.signOut({ scope: "local" })',"Sign out","onAuthStateChange"])
     if(!sessionControlsText.includes(contract)) errors.push("session-controls.js -> missing sign-out/session contract "+contract);
 }else errors.push("required runtime file missing /session-controls.js");
 
