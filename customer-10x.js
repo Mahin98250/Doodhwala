@@ -96,7 +96,7 @@
       if(!product||!Number.isFinite(quantity)||quantity<=0){skipped++;continue}
       const key=product.provider_id+":"+product.id;
       const price=Number(product.price_per_litre??i.unit_price??0);
-      if(!cart[key])cart[key]={key,provider:"Your saved provider",milk:product.name||i.product_name_snapshot||"Milk",unitPrice:price,price:root.money(price)+"/ L",qty:0,providerId:product.provider_id,productId:product.id,emoji:"🥛"};
+      if(!cart[key])cart[key]={key,provider:"Your saved provider",milk:product.name||i.product_name_snapshot||"Milk",unitPrice:price,price:root.money(price)+"/ L",qty:0,providerId:product.provider_id,productId:product.id};
       cart[key].milk=product.name||cart[key].milk;
       cart[key].unitPrice=price;cart[key].price=root.money(price)+"/ L";
       cart[key].qty=Number(cart[key].qty||0)+quantity;
