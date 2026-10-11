@@ -106,12 +106,14 @@ const resiliencePath=path.join(root,"resilience.js");
 if(!localFiles.has("/resilience.js")) errors.push("required runtime file missing /resilience.js");
 else{
   const resilienceText=fs.readFileSync(resiliencePath,"utf8");
-  for(const contract of ["unhandledrejection","network_failure","storage_parse_error","retryRead","showRecoveryNotice","client-error-report"])
+  for(const contract of ["unhandledrejection","network_failure","storage_parse_error","retryRead","showRecoveryNotice","client-error-report","doodhwala-error-report-queue-v1","persistPending","response.status >= 500"])
     if(!resilienceText.includes(contract)) errors.push("resilience.js -> missing reliability contract "+contract);
 }
 if(fs.existsSync(path.join(root,"auth.js"))&&!fs.readFileSync(path.join(root,"auth.js"),"utf8").includes('new URL(value,PRODUCTION_ORIGIN+"/auth.html")')) errors.push("auth.js -> safe relative return-path normalization missing");
 if(fs.existsSync(path.join(root,"checkout.js"))&&fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes('let cart=JSON.parse(localStorage.getItem(CART_KEY)')) errors.push("checkout.js -> unguarded cart storage parse");
 if(fs.existsSync(path.join(root,"provider.js"))&&fs.readFileSync(path.join(root,"provider.js"),"utf8").includes('JSON.parse(localStorage.getItem(STORAGE_KEY)')) errors.push("provider.js -> unguarded provider storage parse");
+if(fs.existsSync(path.join(root,"checkout.js"))&&!fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes("readObjectStorage")) errors.push("checkout.js -> safe cart storage recovery missing");
+if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
 if(fs.existsSync(path.join(root,"admin.js"))){
   const adminText=fs.readFileSync(path.join(root,"admin.js"),"utf8");
   if(!adminText.includes("admin_list_client_error_reports")) errors.push("admin.js -> System Health RPC missing");
@@ -124,7 +126,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
 }
 for(const file of htmlFiles){
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261009.2')) errors.push(file+" -> resilience bootstrap missing");
+  if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261011.1')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swCheck=fs.readFileSync(path.join(root,"sw.js"),"utf8");
@@ -151,19 +153,6 @@ for(const [file,expected] of [["/checkout.html","return=%2FDudh-Wallah%2Fcheckou
   if(localFiles.has(file)){
     const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
     if(!html.includes(expected)) errors.push(file+" -> sign-in must return to its original page");
-  }
-}
-const resiliencePath=path.join(root,"resilience.js");
-if(fs.existsSync(resiliencePath)){
-  const resilience=fs.readFileSync(resiliencePath,"utf8");
-  for(const contract of ["doodhwala-error-report-queue-v1","persistPending","response.status >= 500","unhandled_rejection","retryRead"]){
-    if(!resilience.includes(contract)) errors.push("resilience.js -> missing recovery contract "+contract);
-  }
-}
-for(const [file,key] of [["/checkout.js","doodhwala-cart"],["/provider.js","doodhwala-provider-v1"]]){
-  if(localFiles.has(file)){
-    const source=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-    if(!source.includes("readObjectStorage")) errors.push(file+" -> persisted state must use safe storage parsing");
   }
 }
 
