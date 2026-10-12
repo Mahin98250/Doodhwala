@@ -9,8 +9,10 @@ function isLocalOrigin(){return /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(loc
 function productionGoogleUrl(){return productionUrl("/auth.html?oauth=google&return="+encodeURIComponent(getReturnPath()))}
 if(isLocalOrigin()){location.replace(productionGoogleUrl());throw new Error("Local development origin blocked; redirecting to production.")}
 function setMode(next){mode=next;document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));document.getElementById("nameField").style.display=mode==="signup"?"grid":"none";submit.textContent=mode==="signup"?"Create account →":"Sign in →";document.getElementById("authTitle").textContent=mode==="signup"?"Join Doodhwala.":"Welcome back.";document.getElementById("authIntro").textContent=mode==="signup"?"Create your customer account to order local milk and save delivery addresses.":"Sign in to save addresses, place orders and manage your milk deliveries.";forgotAuth.style.display=mode==="signin"?"block":"none"}
+let phoneFormWasVisible=false;
 function setPasswordResetMode(active){
- document.querySelectorAll("#authForm,.auth-tabs,#googleAuth,#forgotAuth,.auth-divider,#phoneToggle,#phoneForm").forEach(el=>el.classList.toggle("hidden",active));
+ document.querySelectorAll("#authForm,.auth-tabs,#googleAuth,#forgotAuth,.auth-divider,#phoneToggle").forEach(el=>el.classList.toggle("hidden",active));
+ if(active){phoneFormWasVisible=!phoneForm.classList.contains("hidden");phoneForm.classList.add("hidden")}else{phoneForm.classList.toggle("hidden",!phoneFormWasVisible);phoneFormWasVisible=false}
  passwordResetForm.classList.toggle("hidden",!active);
  if(active){
   document.getElementById("authTitle").textContent="Choose a new password.";
