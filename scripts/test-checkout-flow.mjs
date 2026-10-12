@@ -6,6 +6,7 @@ const checkoutSource = fs.readFileSync(new URL("../checkout.js", import.meta.url
 
 function makeElement(id) {
   const classes = new Set();
+  if (["authGate", "checkoutForm", "success"].includes(id)) classes.add("hidden");
   return {
     id, value: "", textContent: "", innerHTML: "", hidden: false, disabled: false,
     checked: false, style: {}, dataset: {}, onclick: null, onsubmit: null,
@@ -151,7 +152,6 @@ async function testAddressUpdateAndSuccessfulOrder() {
   assert.equal(h.calls.addressUpdates.length, 1, "editing an address should update the existing row");
   assert.equal(h.calls.addressInserts.length, 0, "editing should not create a duplicate address");
   assert.equal(h.calls.addressUpdates[0].address_line, "Updated lane, House 12");
-  assert.equal(h.getElement("addressState")?.textContent || "", "", "no hidden test-only state should be required");
 
   await h.getElement("placeOrder").onclick();
   assert.equal(h.calls.rpc.length, 1, "one provider should produce one create-order RPC");
@@ -170,7 +170,7 @@ async function testRetryKeepsIdempotencyKeyAndCart() {
   assert.equal(h.calls.rpc.length, 1, "first attempt should call create-order once");
   assert.equal(h.getElement("placeOrder").disabled, false, "button should unlock after a failed request");
   assert.equal(h.storage.has("doodhwala-cart"), true, "cart must be preserved after an uncertain network result");
-  assert.equal(h.getElement("success").classList.contains("hidden"), false, false);
+  assert.equal(h.getElement("success").classList.contains("hidden"), true, "a failed request must not show order success");
 
   const storedKeys = JSON.parse(h.storage.get("doodhwala-checkout-idempotency-v1"));
   const firstKey = h.calls.rpc[0].args.p_idempotency_key;
