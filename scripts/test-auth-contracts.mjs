@@ -13,7 +13,7 @@ assert.ok(routeFunction, "auth.js must define a return-path validator");
 function resolveReturnPath(search) {
   return vm.runInNewContext(
     originDeclaration + "\n" + routeFunction + "\ngetReturnPath()",
-    { location: { search } }
+    { location: { search }, URL, URLSearchParams }
   );
 }
 
