@@ -7,7 +7,8 @@ const origin = "https://mahin98250.github.io";
 const cache = new Map([
   [origin + "/Dudh-Wallah/orders.html", "cached orders page"],
   [origin + "/Dudh-Wallah/index.html", "cached home page"],
-  [origin + "/Dudh-Wallah/styles.css", "cached stylesheet"]
+  [origin + "/Dudh-Wallah/styles.css", "cached stylesheet"],
+  [origin + "/Dudh-Wallah/auth.js", "cached current auth script"]
 ]);
 const handlers = new Map();
 const cacheLookups = [];
@@ -48,6 +49,10 @@ assert.ok(cacheLookups.includes(origin + "/Dudh-Wallah/orders.html"), "query-fre
 
 const queryAsset = await offlineResponse(origin + "/Dudh-Wallah/styles.css?v=999", "no-cors");
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
+const versionedAuth = await offlineResponse(origin + "/Dudh-Wallah/auth.js?v=20261012.1", "no-cors");
+assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
+assert.ok(source.includes('const CACHE="doodhwala-v65"'), "auth recovery cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('/Dudh-Wallah/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Dudh-Wallah/not-cached.html");
 assert.equal(await unknownRoute.text(), "cached home page", "unknown offline navigation should fall back to the cached home page");
