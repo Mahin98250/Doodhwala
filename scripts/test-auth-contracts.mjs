@@ -33,6 +33,11 @@ assert.equal(
   "external return destinations must be rejected"
 );
 assert.equal(
+  resolveReturnPath("?return=%2FDudh-Wallah%2F..%2Fadmin.html"),
+  "/Dudh-Wallah/",
+  "encoded traversal outside the project base must be rejected"
+);
+assert.equal(
   resolveReturnPath("?return=%2FDudh-Wallah%2Fauth.html"),
   "/Dudh-Wallah/",
   "auth must not redirect back to itself"
