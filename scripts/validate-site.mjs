@@ -163,6 +163,14 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
+const adminRealtimeMigration="/supabase/migrations/20261012120000_doodhwala_admin_realtime_data_sync.sql";
+if(!localFiles.has(adminRealtimeMigration)) errors.push("admin live-sync migration missing");
+else{
+  const sql=fs.readFileSync(path.join(root,adminRealtimeMigration.slice(1)),"utf8");
+  for(const table of ["profiles","milk_products","provider_service_areas"])
+    if(!sql.includes("'"+table+"'")) errors.push("admin live-sync migration -> missing realtime publication for "+table);
+  if(!sql.includes("private.is_current_user_admin()")) errors.push("admin live-sync migration -> realtime select policy must be owner-only");
+}
 const resiliencePath=path.join(root,"resilience.js");
 if(!localFiles.has("/resilience.js")) errors.push("required runtime file missing /resilience.js");
 else{
