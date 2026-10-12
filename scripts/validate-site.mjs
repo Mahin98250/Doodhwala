@@ -152,9 +152,16 @@ if(localFiles.has("/admin.js")){
     'table:"profiles"',
     'table:"subscription_deliveries"',
     "refreshAdminIndex(indexKeys)",
-    'const CACHE="doodhwala-v64"'
+    "function refreshAdminSearch()",
+    'const keys=Object.keys(ADMIN_INDEX_JOBS)'
   ]) if(!adminJs.includes(required)) errors.push("admin live sync -> missing integration contract "+required);
-  if(!adminJs.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+}
+const adminHtmlPath=path.join(root,"admin.html");
+if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+if(localFiles.has("/sw.js")){
+  const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
+  if(!swText.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const resiliencePath=path.join(root,"resilience.js");
 if(!localFiles.has("/resilience.js")) errors.push("required runtime file missing /resilience.js");
