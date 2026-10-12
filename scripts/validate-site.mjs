@@ -120,7 +120,7 @@ if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=20261012.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v63"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -143,6 +143,33 @@ if(fs.existsSync(adminIntelPath)){
   const adminIntel=fs.readFileSync(adminIntelPath,"utf8");
   if(!adminIntel.includes("Latest seven dates in the selected overview range")) errors.push("admin-intelligence.js -> GMV range label must match selected range");
   if(!adminIntel.includes("loaded admin index")) errors.push("admin-intelligence.js -> bounded customer index must be disclosed");
+}
+const adminJsPath=path.join(root,"admin.js");
+if(localFiles.has("/admin.js")){
+  const adminJs=fs.readFileSync(adminJsPath,"utf8");
+  for(const required of [
+    "function adminRealtimeCacheKeys(table)",
+    'table:"profiles"',
+    'table:"subscription_deliveries"',
+    "refreshAdminIndex(indexKeys)",
+    "function refreshAdminSearch()",
+    'const keys=Object.keys(ADMIN_INDEX_JOBS)'
+  ]) if(!adminJs.includes(required)) errors.push("admin live sync -> missing integration contract "+required);
+}
+const adminHtmlPath=path.join(root,"admin.html");
+if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+if(localFiles.has("/sw.js")){
+  const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
+  if(!swText.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("sw.js -> latest admin bundle missing from precache");
+}
+const adminRealtimeMigration="/supabase/migrations/20261012120000_doodhwala_admin_realtime_data_sync.sql";
+if(!localFiles.has(adminRealtimeMigration)) errors.push("admin live-sync migration missing");
+else{
+  const sql=fs.readFileSync(path.join(root,adminRealtimeMigration.slice(1)),"utf8");
+  for(const table of ["profiles","milk_products","provider_service_areas"])
+    if(!sql.includes("'"+table+"'")) errors.push("admin live-sync migration -> missing realtime publication for "+table);
+  if(!sql.includes("private.is_current_user_admin()")) errors.push("admin live-sync migration -> realtime select policy must be owner-only");
 }
 const resiliencePath=path.join(root,"resilience.js");
 if(!localFiles.has("/resilience.js")) errors.push("required runtime file missing /resilience.js");
@@ -172,7 +199,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v63"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
@@ -185,7 +212,7 @@ if(fs.existsSync(path.join(root,"admin.js"))){
 if(fs.existsSync(path.join(root,"admin.html"))){
   const adminHtml=fs.readFileSync(path.join(root,"admin.html"),"utf8");
   if(!adminHtml.includes('data-section="health"')) errors.push("admin.html -> System Health navigation missing");
-  if(!adminHtml.includes('admin.js?v=20261009.1')) errors.push("admin.html -> admin runtime cache version stale");
+  if(!adminHtml.includes('admin.js?v=20261012.1')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");

@@ -1,5 +1,21 @@
 const $=id=>document.getElementById(id);
-let overview=null,section="overview",cache={},searchTerm="";
+let overview=null,section="overview",cache={},searchTerm="",currentDetail=null;
+const ADMIN_FALLBACK_INTERVAL_MS=60000;
+function setAdminDetail(type,id){
+ currentDetail={type,id};
+ const targetSection=({order:"orders",provider:"providers",customer:"customers",subscription:"subscriptions"})[type];
+ if(targetSection)section=targetSection;
+ document.querySelectorAll("[data-section]").forEach(x=>x.classList.toggle("active",x.dataset.section===section));
+ const title=$("adminTitle");if(title)title.textContent=section==="overview"?"Business overview":section[0].toUpperCase()+section.slice(1);
+}
+async function refreshCurrentAdminDetail(){
+ const detail=currentDetail;if(!detail)return loadSection(section);
+ if(detail.type==="order")return showOrderDetail(detail.id);
+ if(detail.type==="provider")return openProviderDetail(detail.id);
+ if(detail.type==="customer")return showCustomerDetail(detail.id);
+ if(detail.type==="subscription")return showSubscriptionDetail(detail.id);
+ currentDetail=null;return loadSection(section);
+}
 
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -72,6 +88,7 @@ async function reviewProvider(id,status,button){
  await loadSection("providers");
 }
 async function openProviderDetail(id){
+  setAdminDetail("provider",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_provider_detail",{p_provider_id:id});
     if(error)throw error;
@@ -158,23 +175,71 @@ async function loadAuditSection(){
   cache.audit=await adminRpc("admin_list_audit_log",{p_limit:150});
   table("Admin audit log",[["Time",r=>dateTime(r.created_at)],["Actor",r=>esc(r.actor_name||r.actor_email||"Owner")],["Action",r=>esc(r.action)],["Entity",r=>esc(r.entity_type)],["Details",r=>'<code>'+esc(JSON.stringify(r.details||{}))+'</code>']],cache.audit||[],"No admin actions recorded yet.");
 }
+function adminRealtimeCacheKeys(table){
+ const invalidations={
+  orders:["orders","customers"],
+  provider_profiles:["providers","products","orders"],
+  provider_verifications:["providers","products"],
+  profiles:["customers","orders","subscriptions"],
+  milk_subscriptions:["subscriptions","customers"],
+  subscription_deliveries:["subscriptions","customers"],
+  milk_products:["products","providers"],
+  provider_service_areas:["providers"]
+ };
+ return invalidations[table]||[];
+}
+const ADMIN_INDEX_JOBS={
+ orders:["admin_list_orders",{p_limit:100}],
+ providers:["admin_list_providers",{p_limit:100}],
+ customers:["admin_list_customers",{p_limit:100}],
+ subscriptions:["admin_list_subscriptions",{p_limit:100}],
+ products:["admin_list_products",{p_limit:150}]
+};
+async function refreshAdminIndex(keys){
+ const names=[...new Set(keys||Object.keys(ADMIN_INDEX_JOBS))].filter(key=>ADMIN_INDEX_JOBS[key]);
+ return Promise.allSettled(names.map(async key=>{
+  const [rpc,args]=ADMIN_INDEX_JOBS[key];
+  const rows=await adminRpc(rpc,args);
+  cache[key]=rows||[];
+  return key;
+ }));
+}
+function refreshAdminSearch(){
+ const input=$("adminSearch");
+ if(input&&input.value.trim())renderSearchResults(input.value);
+}
 function setupAdminRealtime(){
  if(!window.Doodhwala?.configured||window.__doodhwalaAdminChannel)return;
- const refresh=function(){
+ const pendingKeys=new Set();
+ const scheduleRefresh=function(table){
+  if(table)adminRealtimeCacheKeys(table).forEach(key=>{delete cache[key];pendingKeys.add(key)});
+  else Object.keys(ADMIN_INDEX_JOBS).forEach(key=>{delete cache[key];pendingKeys.add(key)});
   if(document.visibilityState==="hidden")return;
   clearTimeout(window.__adminRealtimeRefresh);
-  window.__adminRealtimeRefresh=setTimeout(function(){loadSection(section)},300);
+  window.__adminRealtimeRefresh=setTimeout(async function(){
+   const keys=[...pendingKeys];pendingKeys.clear();
+   const activeKey=({orders:"orders",providers:"providers",customers:"customers",subscriptions:"subscriptions",products:"products"})[section];
+   const indexKeys=keys.filter(key=>currentDetail||key!==activeKey);
+   const tasks=[currentDetail?refreshCurrentAdminDetail():loadSection(section)];
+   if(indexKeys.length)tasks.push(refreshAdminIndex(indexKeys));
+   await Promise.allSettled(tasks);
+   if(section==="overview"&&overview)renderOverview();
+   refreshAdminSearch();
+  },300);
+ };
+ const refreshLiveStatus=function(){
+  const s=$("adminLiveStatus");
+  if(s){s.textContent="● Updating";s.classList.add("updating");setTimeout(()=>{s.textContent="● Live";s.classList.remove("updating")},900)}
  };
  const channel=Doodhwala.supabase.channel("admin-live-control")
-  .on("postgres_changes",{event:"*",schema:"public",table:"orders"},function(){
-    const s=$("adminLiveStatus");if(s){s.textContent="● Updating";s.classList.add("updating");setTimeout(()=>{s.textContent="● Live";s.classList.remove("updating")},900)}
-    refresh();
-  })
-  .on("postgres_changes",{event:"*",schema:"public",table:"provider_profiles"},refresh)
-  .on("postgres_changes",{event:"*",schema:"public",table:"provider_verifications"},refresh)
-  .on("postgres_changes",{event:"*",schema:"public",table:"milk_subscriptions"},refresh)
-  .on("postgres_changes",{event:"*",schema:"public",table:"milk_products"},refresh)
-  .on("postgres_changes",{event:"*",schema:"public",table:"provider_service_areas"},refresh);
+  .on("postgres_changes",{event:"*",schema:"public",table:"orders"},function(){refreshLiveStatus();scheduleRefresh("orders")})
+  .on("postgres_changes",{event:"*",schema:"public",table:"provider_profiles"},()=>scheduleRefresh("provider_profiles"))
+  .on("postgres_changes",{event:"*",schema:"public",table:"provider_verifications"},()=>scheduleRefresh("provider_verifications"))
+  .on("postgres_changes",{event:"*",schema:"public",table:"profiles"},()=>scheduleRefresh("profiles"))
+  .on("postgres_changes",{event:"*",schema:"public",table:"milk_subscriptions"},()=>scheduleRefresh("milk_subscriptions"))
+  .on("postgres_changes",{event:"*",schema:"public",table:"subscription_deliveries"},()=>scheduleRefresh("subscription_deliveries"))
+  .on("postgres_changes",{event:"*",schema:"public",table:"milk_products"},()=>scheduleRefresh("milk_products"))
+  .on("postgres_changes",{event:"*",schema:"public",table:"provider_service_areas"},()=>scheduleRefresh("provider_service_areas"));
  window.__doodhwalaAdminChannel=channel;
  channel.subscribe(function(status){
   if(status==="SUBSCRIBED"){window.__adminRealtimeReconnectAttempt=0;const s=$("adminLiveStatus");if(s){s.textContent="● Live";s.classList.remove("updating")}return}
@@ -185,15 +250,16 @@ function setupAdminRealtime(){
   clearTimeout(window.__adminRealtimeReconnectTimer);
   const delay=Math.min(30000,1000*Math.pow(2,attempt-1));
   window.__adminRealtimeReconnectTimer=setTimeout(function(){
-    if(window.__doodhwalaAdminChannel!==channel)return;
-    window.__doodhwalaAdminChannel=null;
-    try{Doodhwala.supabase.removeChannel(channel)}catch(_){}
-    setupAdminRealtime();
-    refresh();
+   if(window.__doodhwalaAdminChannel!==channel)return;
+   window.__doodhwalaAdminChannel=null;
+   try{Doodhwala.supabase.removeChannel(channel)}catch(_){}
+   setupAdminRealtime();
+   scheduleRefresh();
   },delay);
  });
 }
 async function showOrderDetail(id){
+  setAdminDetail("order",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_order_detail",{p_order_id:id});
     if(error)throw error;
@@ -207,6 +273,7 @@ async function showOrderDetail(id){
   }catch(error){alert(error.message||"Unable to load order.")}
 }
 async function showCustomerDetail(id){
+  setAdminDetail("customer",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_customer_detail",{p_customer_id:id});
     if(error)throw error;
@@ -220,6 +287,7 @@ async function showCustomerDetail(id){
   }catch(error){alert(error.message||"Unable to load customer.")}
 }
 async function showSubscriptionDetail(id){
+  setAdminDetail("subscription",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_subscription_detail",{p_subscription_id:id});
     if(error)throw error;
@@ -316,6 +384,7 @@ async function loadSystemHealthSection(){
  }
 }
 async function loadSection(next){
+ currentDetail=null;
  section=next;
  document.querySelectorAll("[data-section]").forEach(x=>x.classList.toggle("active",x.dataset.section===section));
  $("adminTitle").textContent=section==="overview"?"Business overview":section==="health"?"System health":section[0].toUpperCase()+section.slice(1);
@@ -331,8 +400,26 @@ async function loadSection(next){
   if(section==="settings"){$("adminContent").innerHTML='<div class="admin-section"><div class="admin-card"><span class="eyebrow">OWNER SETTINGS</span><h3>Secure control configuration</h3><div class="admin-note">Admin access is controlled by the private <code>admin_allowlist</code>. The admin URL itself is not a security boundary. Add or remove owner emails only through your secure Supabase owner workflow. Never put a service-role key in the frontend.</div><div class="settings-grid"><div><b>Live database</b><span>Supabase · ap-south-1</span></div><div><b>Order model</b><span>Realtime lifecycle + provider capacity</span></div><div><b>Subscriptions</b><span>Scheduled deliveries materialized automatically</span></div><div><b>Marketplace</b><span>Location + provider service-radius discovery</span></div></div></div></div>';return}
  }catch(error){$("adminContent").innerHTML='<div class="admin-section"><div class="admin-card"><div class="admin-note error-note">'+esc(error.message||"Unable to load this section.")+'</div></div></div>'}
 }
-document.querySelectorAll("[data-section]").forEach(b=>b.onclick=()=>loadSection(b.dataset.section));
-document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&!$("adminApp").classList.contains("hidden")){setupAdminRealtime();loadSection(section).catch(function(err){console.warn("Admin foreground refresh failed",err)})}});
+document.querySelectorAll("[data-section]").forEach(b=>b.onclick=()=>{currentDetail=null;loadSection(b.dataset.section)});
+async function refreshAdminVisibleState(){
+ if(document.visibilityState==="hidden"||$("adminApp").classList.contains("hidden")||window.__adminSyncInFlight)return;
+ window.__adminSyncInFlight=true;
+ try{
+  setupAdminRealtime();
+  const activeKey=({orders:"orders",providers:"providers",customers:"customers",subscriptions:"subscriptions",products:"products"})[section];
+  const keys=Object.keys(ADMIN_INDEX_JOBS).filter(key=>currentDetail||key!==activeKey);
+  await Promise.allSettled([currentDetail?refreshCurrentAdminDetail():loadSection(section),refreshAdminIndex(keys)]);
+  if(section==="overview"&&overview)renderOverview();
+  refreshAdminSearch();
+ }finally{window.__adminSyncInFlight=false}
+}
+document.addEventListener("visibilitychange",function(){
+ if(document.visibilityState==="visible")refreshAdminVisibleState().catch(function(err){console.warn("Admin foreground refresh failed",err)});
+});
+clearInterval(window.__adminSyncFallbackTimer);
+window.__adminSyncFallbackTimer=setInterval(function(){
+ refreshAdminVisibleState().catch(function(err){console.warn("Admin fallback refresh failed",err)});
+},ADMIN_FALLBACK_INTERVAL_MS);
 $("refreshAdmin").onclick=()=>loadSection(section);
 $("fromDate").onchange=()=>{if(section==="overview")loadSection("overview")};
 $("toDate").onchange=()=>{if(section==="overview")loadSection("overview")};
@@ -417,5 +504,5 @@ if($("adminMore"))$("adminMore").onclick=function(){
  });
  document.body.appendChild(menu);
 };
-document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&!$("adminApp").classList.contains("hidden")){prefetchAdminData()}});
+
 boot();
