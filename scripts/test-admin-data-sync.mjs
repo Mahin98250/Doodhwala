@@ -40,4 +40,14 @@ for(const table of Object.keys(cases)){
 assert.ok(source.includes("refreshAdminIndex(indexKeys)"),"realtime refresh must reload affected cached indexes");
 assert.ok(source.includes("refreshAdminSearch()"),"realtime refresh must redraw active global search results");
 assert.ok(source.includes("const keys=Object.keys(ADMIN_INDEX_JOBS)"),"foreground return must refresh the global admin index");
-console.log("Admin data-sync checks passed: cache dependencies, realtime table coverage, global search refresh and foreground recovery.");
+const migrationPath="supabase/migrations/20261012120000_doodhwala_admin_realtime_data_sync.sql";
+const migration=fs.readFileSync(new URL("../"+migrationPath,import.meta.url),"utf8");
+for(const table of ["profiles","milk_products","provider_service_areas"]){
+  assert.ok(migration.includes("'"+table+"'"),"migration must publish "+table+" for Realtime");
+}
+assert.ok(migration.includes("private.is_current_user_admin()"),"Realtime SELECT policies must be limited to allowlisted admins");
+assert.ok(source.includes("let overview=null,section=\"overview\",cache={},searchTerm=\"\",currentDetail=null"),"admin details must be tracked for safe refreshes");
+assert.ok(source.includes("async function refreshCurrentAdminDetail()"),"open detail view must refresh in place");
+assert.ok(source.includes("const ADMIN_FALLBACK_INTERVAL_MS=60000"),"admin needs a bounded fallback refresh when realtime events are missed");
+assert.ok(source.includes("window.__adminSyncFallbackTimer"),"visible admin fallback timer must be installed");
+console.log("Admin data-sync checks passed: invalidation dependencies, realtime publication migration, detail preservation, global search and foreground/fallback recovery.");
