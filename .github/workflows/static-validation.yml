@@ -29,6 +29,8 @@ jobs:
         run: node scripts/test-security-contracts.mjs
       - name: Test auth return paths and password recovery
         run: node scripts/test-auth-contracts.mjs
+      - name: Test consolidated RLS policy contracts
+        run: node scripts/test-policy-consolidation.mjs
       - name: Validate site asset contracts
         run: node scripts/validate-site.mjs
       - name: Reject accidental domain-root paths
