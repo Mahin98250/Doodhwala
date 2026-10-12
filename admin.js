@@ -1,5 +1,21 @@
 const $=id=>document.getElementById(id);
-let overview=null,section="overview",cache={},searchTerm="";
+let overview=null,section="overview",cache={},searchTerm="",currentDetail=null;
+const ADMIN_FALLBACK_INTERVAL_MS=60000;
+function setAdminDetail(type,id){
+ currentDetail={type,id};
+ const targetSection=({order:"orders",provider:"providers",customer:"customers",subscription:"subscriptions"})[type];
+ if(targetSection)section=targetSection;
+ document.querySelectorAll("[data-section]").forEach(x=>x.classList.toggle("active",x.dataset.section===section));
+ const title=$("adminTitle");if(title)title.textContent=section==="overview"?"Business overview":section[0].toUpperCase()+section.slice(1);
+}
+async function refreshCurrentAdminDetail(){
+ const detail=currentDetail;if(!detail)return loadSection(section);
+ if(detail.type==="order")return showOrderDetail(detail.id);
+ if(detail.type==="provider")return openProviderDetail(detail.id);
+ if(detail.type==="customer")return showCustomerDetail(detail.id);
+ if(detail.type==="subscription")return showSubscriptionDetail(detail.id);
+ currentDetail=null;return loadSection(section);
+}
 
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -72,6 +88,7 @@ async function reviewProvider(id,status,button){
  await loadSection("providers");
 }
 async function openProviderDetail(id){
+  setAdminDetail("provider",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_provider_detail",{p_provider_id:id});
     if(error)throw error;
@@ -202,8 +219,8 @@ function setupAdminRealtime(){
   window.__adminRealtimeRefresh=setTimeout(async function(){
    const keys=[...pendingKeys];pendingKeys.clear();
    const activeKey=({orders:"orders",providers:"providers",customers:"customers",subscriptions:"subscriptions",products:"products"})[section];
-   const indexKeys=keys.filter(key=>key!==activeKey);
-   const tasks=[loadSection(section)];
+   const indexKeys=keys.filter(key=>currentDetail||key!==activeKey);
+   const tasks=[currentDetail?refreshCurrentAdminDetail():loadSection(section)];
    if(indexKeys.length)tasks.push(refreshAdminIndex(indexKeys));
    await Promise.allSettled(tasks);
    if(section==="overview"&&overview)renderOverview();
@@ -242,6 +259,7 @@ function setupAdminRealtime(){
  });
 }
 async function showOrderDetail(id){
+  setAdminDetail("order",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_order_detail",{p_order_id:id});
     if(error)throw error;
@@ -255,6 +273,7 @@ async function showOrderDetail(id){
   }catch(error){alert(error.message||"Unable to load order.")}
 }
 async function showCustomerDetail(id){
+  setAdminDetail("customer",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_customer_detail",{p_customer_id:id});
     if(error)throw error;
@@ -268,6 +287,7 @@ async function showCustomerDetail(id){
   }catch(error){alert(error.message||"Unable to load customer.")}
 }
 async function showSubscriptionDetail(id){
+  setAdminDetail("subscription",id);
   try{
     const {data,error}=await Doodhwala.supabase.rpc("admin_get_subscription_detail",{p_subscription_id:id});
     if(error)throw error;
@@ -364,6 +384,7 @@ async function loadSystemHealthSection(){
  }
 }
 async function loadSection(next){
+ currentDetail=null;
  section=next;
  document.querySelectorAll("[data-section]").forEach(x=>x.classList.toggle("active",x.dataset.section===section));
  $("adminTitle").textContent=section==="overview"?"Business overview":section==="health"?"System health":section[0].toUpperCase()+section.slice(1);
@@ -379,16 +400,26 @@ async function loadSection(next){
   if(section==="settings"){$("adminContent").innerHTML='<div class="admin-section"><div class="admin-card"><span class="eyebrow">OWNER SETTINGS</span><h3>Secure control configuration</h3><div class="admin-note">Admin access is controlled by the private <code>admin_allowlist</code>. The admin URL itself is not a security boundary. Add or remove owner emails only through your secure Supabase owner workflow. Never put a service-role key in the frontend.</div><div class="settings-grid"><div><b>Live database</b><span>Supabase · ap-south-1</span></div><div><b>Order model</b><span>Realtime lifecycle + provider capacity</span></div><div><b>Subscriptions</b><span>Scheduled deliveries materialized automatically</span></div><div><b>Marketplace</b><span>Location + provider service-radius discovery</span></div></div></div></div>';return}
  }catch(error){$("adminContent").innerHTML='<div class="admin-section"><div class="admin-card"><div class="admin-note error-note">'+esc(error.message||"Unable to load this section.")+'</div></div></div>'}
 }
-document.querySelectorAll("[data-section]").forEach(b=>b.onclick=()=>loadSection(b.dataset.section));
-document.addEventListener("visibilitychange",function(){
- if(document.visibilityState!=="visible"||$("adminApp").classList.contains("hidden"))return;
- setupAdminRealtime();
- const keys=Object.keys(ADMIN_INDEX_JOBS);
- Promise.allSettled([loadSection(section),refreshAdminIndex(keys)]).then(function(){
+document.querySelectorAll("[data-section]").forEach(b=>b.onclick=()=>{currentDetail=null;loadSection(b.dataset.section)});
+async function refreshAdminVisibleState(){
+ if(document.visibilityState==="hidden"||$("adminApp").classList.contains("hidden")||window.__adminSyncInFlight)return;
+ window.__adminSyncInFlight=true;
+ try{
+  setupAdminRealtime();
+  const activeKey=({orders:"orders",providers:"providers",customers:"customers",subscriptions:"subscriptions",products:"products"})[section];
+  const keys=Object.keys(ADMIN_INDEX_JOBS).filter(key=>currentDetail||key!==activeKey);
+  await Promise.allSettled([currentDetail?refreshCurrentAdminDetail():loadSection(section),refreshAdminIndex(keys)]);
   if(section==="overview"&&overview)renderOverview();
   refreshAdminSearch();
- }).catch(function(err){console.warn("Admin foreground refresh failed",err)});
+ }finally{window.__adminSyncInFlight=false}
+}
+document.addEventListener("visibilitychange",function(){
+ if(document.visibilityState==="visible")refreshAdminVisibleState().catch(function(err){console.warn("Admin foreground refresh failed",err)});
 });
+clearInterval(window.__adminSyncFallbackTimer);
+window.__adminSyncFallbackTimer=setInterval(function(){
+ refreshAdminVisibleState().catch(function(err){console.warn("Admin fallback refresh failed",err)});
+},ADMIN_FALLBACK_INTERVAL_MS);
 $("refreshAdmin").onclick=()=>loadSection(section);
 $("fromDate").onchange=()=>{if(section==="overview")loadSection("overview")};
 $("toDate").onchange=()=>{if(section==="overview")loadSection("overview")};
