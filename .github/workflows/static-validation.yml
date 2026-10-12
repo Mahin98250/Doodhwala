@@ -25,6 +25,8 @@ jobs:
         run: node scripts/test-checkout-flow.mjs
       - name: Test admin cross-role realtime cache invalidation
         run: node scripts/test-admin-data-sync.mjs
+      - name: Test security contracts
+        run: node scripts/test-security-contracts.mjs
       - name: Validate site asset contracts
         run: node scripts/validate-site.mjs
       - name: Reject accidental domain-root paths
