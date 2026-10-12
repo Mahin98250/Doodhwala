@@ -400,18 +400,21 @@ function filterProviderOrders(orders){
  if(mode==="completed")return orders.filter(o=>["delivered","rejected","cancelled"].includes(o.status));
  return orders;
 }
-async function loadProviderOrders(){
- const state=$("providerOrderState"),list=$("providerOrders");if(!state||!list)return;
- if(!window.Doodhwala?.configured){state.textContent="Supabase is not configured.";list.innerHTML="";return}
- const {data:userData}=await Doodhwala.supabase.auth.getUser(),user=userData?.user;
- if(!user){state.textContent="Sign in to manage live orders.";list.innerHTML="";return}
- const profile=await Doodhwala.supabase.from("provider_profiles").select("id,acceptance_timeout_minutes,max_open_orders,max_daily_litres").eq("owner_user_id",user.id).limit(1).maybeSingle();
- if(profile.error){state.textContent=profile.error.message;return}
- if(!profile.data){state.textContent="Complete provider onboarding first.";list.innerHTML="";return}async function setupProviderOrderRealtime(user){
+function startProviderOrderFeed(){
+ if(!window.Doodhwala?.configured||window.__providerOrderFeedStarted)return;
+ window.__providerOrderFeedStarted=true;
+ loadProviderOrders().catch(function(err){console.warn("Provider order feed bootstrap failed",err)});
+ clearInterval(window.__providerOrderQueueFallbackTimer);
+ window.__providerOrderQueueFallbackTimer=setInterval(function(){
+  if(document.visibilityState==="hidden"||!dashboard||dashboard.classList.contains("hidden"))return;
+  loadProviderOrders().catch(function(err){console.warn("Provider order queue fallback refresh failed",err)});
+ },45000);
+}
+
+async function setupProviderOrderRealtime(user){
  if(!window.Doodhwala?.configured||!user||window.__doodhwalaProviderOrdersChannel)return;
  const channel=Doodhwala.supabase.channel("provider-orders-"+user.id)
   .on("postgres_changes",{event:"*",schema:"public",table:"orders",filter:"provider_owner_id=eq."+user.id},function(payload){
-   if(payload?.eventType==="INSERT"&&payload?.new?.status==="placed"){toast("New customer order received");try{navigator.vibrate?.([120,60,120])}catch(_){}}
    clearTimeout(window.__providerRealtimeRefresh);window.__providerRealtimeRefresh=setTimeout(loadProviderOrders,250);
   });
  window.__doodhwalaProviderOrdersChannel=channel;
@@ -431,10 +434,29 @@ async function loadProviderOrders(){
   },delay);
  });
 }
+
+async function loadProviderOrders(){
+ const state=$("providerOrderState"),list=$("providerOrders");if(!state||!list)return;
+ if(!window.Doodhwala?.configured){state.textContent="Supabase is not configured.";list.innerHTML="";return}
+ const {data:userData}=await Doodhwala.supabase.auth.getUser(),user=userData?.user;
+ if(!user){state.textContent="Sign in to manage live orders.";list.innerHTML="";return}
+ const profile=await Doodhwala.supabase.from("provider_profiles").select("id,acceptance_timeout_minutes,max_open_orders,max_daily_litres").eq("owner_user_id",user.id).limit(1).maybeSingle();
+ if(profile.error){state.textContent=profile.error.message;return}
+ if(!profile.data){state.textContent="Complete provider onboarding first.";list.innerHTML="";return}
 await setupProviderOrderRealtime(user)
  const result=await Doodhwala.supabase.from("orders").select("id,status,status_reason,subtotal,delivery_fee,total,customer_note,created_at,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,order_items(product_name_snapshot,quantity,unit_price,line_total)").eq("provider_id",profile.data.id).order("created_at",{ascending:false}).limit(50);
  if(result.error){state.textContent=result.error.message;list.innerHTML="";return}
  const orders=result.data||[];
+ const previousIds=window.__providerKnownOrderIds;
+ const currentIds=new Set(orders.map(function(order){return String(order.id)}));
+ if(previousIds){
+  const newlyPlaced=orders.filter(function(order){return order.status==="placed"&&!previousIds.has(String(order.id))});
+  if(newlyPlaced.length){
+   toast(newlyPlaced.length===1?"New customer order received":newlyPlaced.length+" new customer orders received");
+   try{navigator.vibrate?.([120,60,120])}catch(_){}
+  }
+ }
+ window.__providerKnownOrderIds=currentIds;
  renderOrderKpis(orders);
  const filteredOrders=filterProviderOrders(orders);
  const actionCount=orders.filter(o=>o.status==="placed").length;
@@ -515,6 +537,7 @@ async function bootProvider(){
       $("providerAuthLink").textContent="Account";$("providerAuthLink").href="/Dudh-Wallah/provider.html";
       const v=provider.verificationStatus||"pending";
       $("providerMode").textContent=v==="approved"?"CONNECTED • APPROVED":v==="rejected"?"CONNECTED • REJECTED":"CONNECTED • PENDING";
+      startProviderOrderFeed();
       return;
     }
   }
@@ -534,6 +557,7 @@ async function bootProvider(){
            const v=provider.verificationStatus||"pending";
            $("providerMode").textContent=v==="approved"?"CONNECTED • APPROVED":v==="rejected"?"CONNECTED • REJECTED":(res.hasLocation?"CONNECTED • PENDING":"CONNECTED • ADD LOCATION");
            hydrateDashboard();
+           startProviderOrderFeed();
          }else if(res.reason==="not_signed_in"){
            $("providerMode").textContent="LOCAL DEMO";
          }
