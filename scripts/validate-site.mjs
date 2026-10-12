@@ -172,7 +172,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v62"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v63"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
