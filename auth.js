@@ -1,13 +1,74 @@
 const PRODUCTION_ORIGIN="https://mahin98250.github.io/Dudh-Wallah";
 let mode="signin";
 const form=document.getElementById("authForm"),fullName=document.getElementById("fullName"),email=document.getElementById("email"),password=document.getElementById("password"),submit=document.getElementById("submitAuth"),message=document.getElementById("authMessage"),googleAuth=document.getElementById("googleAuth"),forgotAuth=document.getElementById("forgotAuth"),phoneToggle=document.getElementById("phoneToggle"),phoneForm=document.getElementById("phoneForm"),phoneNumber=document.getElementById("phoneNumber"),sendOtp=document.getElementById("sendOtp"),verifyOtp=document.getElementById("verifyOtp"),otpCode=document.getElementById("otpCode");
+const passwordResetForm=document.getElementById("passwordResetForm"),newPassword=document.getElementById("newPassword"),confirmPassword=document.getElementById("confirmPassword"),cancelPasswordReset=document.getElementById("cancelPasswordReset");
 function showMessage(text,error=false){message.textContent=text;message.className="auth-message show"+(error?" error":"")}
-function getReturnPath(){const value=new URLSearchParams(location.search).get("return")||"/Dudh-Wallah/";try{const target=new URL(value,PRODUCTION_ORIGIN+"/auth.html");if(target.origin!==PRODUCTION_ORIGIN||!target.pathname.startsWith("/Dudh-Wallah/")||target.pathname==="/Dudh-Wallah/auth.html")return "/Dudh-Wallah/";return target.pathname+target.search+target.hash}catch(_){return "/Dudh-Wallah/"}}
+function getReturnPath(){const value=new URLSearchParams(location.search).get("return")||"/Dudh-Wallah/";try{const target=new URL(value,PRODUCTION_ORIGIN+"/auth.html");if(target.origin!==new URL(PRODUCTION_ORIGIN).origin||!target.pathname.startsWith("/Dudh-Wallah/")||target.pathname==="/Dudh-Wallah/auth.html")return "/Dudh-Wallah/";return target.pathname+target.search+target.hash}catch(_){return "/Dudh-Wallah/"}}
 function productionUrl(path){return PRODUCTION_ORIGIN+path}
 function isLocalOrigin(){return /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(location.hostname)||location.hostname.endsWith(".local")}
 function productionGoogleUrl(){return productionUrl("/auth.html?oauth=google&return="+encodeURIComponent(getReturnPath()))}
 if(isLocalOrigin()){location.replace(productionGoogleUrl());throw new Error("Local development origin blocked; redirecting to production.")}
 function setMode(next){mode=next;document.querySelectorAll("[data-mode]").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));document.getElementById("nameField").style.display=mode==="signup"?"grid":"none";submit.textContent=mode==="signup"?"Create account →":"Sign in →";document.getElementById("authTitle").textContent=mode==="signup"?"Join Doodhwala.":"Welcome back.";document.getElementById("authIntro").textContent=mode==="signup"?"Create your customer account to order local milk and save delivery addresses.":"Sign in to save addresses, place orders and manage your milk deliveries.";forgotAuth.style.display=mode==="signin"?"block":"none"}
+let phoneFormWasVisible=false;
+function setPasswordResetMode(active){
+ document.querySelectorAll("#authForm,.auth-tabs,#googleAuth,#forgotAuth,.auth-divider,#phoneToggle").forEach(el=>el.classList.toggle("hidden",active));
+ if(active){phoneFormWasVisible=!phoneForm.classList.contains("hidden");phoneForm.classList.add("hidden")}else{phoneForm.classList.toggle("hidden",!phoneFormWasVisible);phoneFormWasVisible=false}
+ passwordResetForm.classList.toggle("hidden",!active);
+ if(active){
+  document.getElementById("authTitle").textContent="Choose a new password.";
+  document.getElementById("authIntro").textContent="Use a strong password you have not used elsewhere.";
+ }else{
+  newPassword.value="";
+  confirmPassword.value="";
+  newPassword.disabled=false;
+  confirmPassword.disabled=false;
+  passwordResetForm.querySelector('button[type="submit"]').disabled=false;
+ }
+}
+function leavePasswordResetMode(){
+ const url=new URL(location.href);
+ url.searchParams.delete("reset");
+ url.hash="";
+ history.replaceState(null,"",url.pathname+url.search);
+ setPasswordResetMode(false);
+ setMode("signin");
+}
+async function checkPasswordResetRoute(){
+ if(new URLSearchParams(location.search).get("reset")!=="1")return false;
+ setPasswordResetMode(true);
+ if(!await ensureReady())return true;
+ try{
+  const {data,error}=await Doodhwala.supabase.auth.getSession();
+  if(error)throw error;
+  if(!data?.session){
+   newPassword.disabled=true;
+   confirmPassword.disabled=true;
+   passwordResetForm.querySelector('button[type="submit"]').disabled=true;
+   showMessage("This password reset link is invalid or has expired. Use Forgot password to request a new link.",true);
+  }
+ }catch(err){showMessage(authError(err),true)}
+ return true;
+}
+passwordResetForm.onsubmit=async function(e){
+ e.preventDefault();
+ if(!await ensureReady())return;
+ const nextPassword=newPassword.value;
+ if(nextPassword.length<8){showMessage("Choose a password with at least 8 characters.",true);return}
+ if(nextPassword!==confirmPassword.value){showMessage("The passwords do not match.",true);return}
+ const saveButton=passwordResetForm.querySelector('button[type="submit"]');
+ saveButton.disabled=true;
+ try{
+  const {data:sessionData,error:sessionError}=await Doodhwala.supabase.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!sessionData?.session)throw new Error("Password reset link expired. Request a new link.");
+  const {error}=await Doodhwala.supabase.auth.updateUser({password:nextPassword});
+  if(error)throw error;
+  try{await Doodhwala.supabase.auth.signOut()}catch(_){}
+  leavePasswordResetMode();
+  showMessage("Password updated successfully. Sign in using your new password.");
+ }catch(err){showMessage(authError(err),true);saveButton.disabled=false}
+};
+cancelPasswordReset.onclick=()=>{leavePasswordResetMode();showMessage("Enter your email and choose Forgot password to request a new link.")};
 function authError(err){const m=String(err?.message||err||"Authentication failed");if(/email.*rate limit|rate limit.*email|email rate.?limit|too many requests/i.test(m))return"Email sending is temporarily rate-limited by Supabase. Stop retrying for now and try again after the limit resets.";if(/password.*weak|password.*breached|compromised/i.test(m))return"Choose a stronger password that has not appeared in known data breaches.";if(/email.*not.*confirm|confirm.*email/i.test(m))return"Your account was created, but your email still needs verification. Check your inbox, then sign in.";if(/invalid login credentials/i.test(m))return"Email or password is incorrect.";if(/already registered|already been registered/i.test(m))return"An account already exists with this email. Try Sign in or reset the password.";if(/redirect.*url|not allowed/i.test(m))return"Authentication is configured, but this site's redirect URL is not allowed in Supabase.";return m}
 function normalizePhone(v){const digits=v.replace(/\D/g,"");if(digits.length===10)return "+91"+digits;if(digits.length===12&&digits.startsWith("91"))return "+"+digits;return v.trim()}
 async function ensureReady(){if(!window.Doodhwala?.configured){showMessage("Supabase is not configured.",true);return false}return true}
@@ -21,7 +82,8 @@ function showProfileCompletion(user){document.querySelectorAll("#authForm,.auth-
 async function finishProfileCompletion(){const btn=document.getElementById("completeProfileBtn");const name=document.getElementById("completeFullName").value.trim();const phone=normalizePhone(document.getElementById("completePhone").value);const address=document.getElementById("completeAddress").value.trim();const area=document.getElementById("completeArea").value.trim();const city=document.getElementById("completeCity").value.trim();const pin=document.getElementById("completePin").value.trim();if(name.length<2){showMessage("Enter your full name.",true);return}if(!/^\+?[0-9]{10,15}$/.test(phone)){showMessage("Enter a valid phone number.",true);return}if(address||area||city||pin){if(!address||!area||!city||!/^\d{6}$/.test(pin)){showMessage("Complete the home address, area, city and 6-digit PIN, or leave the address blank.",true);return}}btn.disabled=true;btn.textContent="Saving…";try{const {error}=await Doodhwala.supabase.rpc("complete_current_customer_profile",{p_full_name:name,p_phone:phone,p_address_line:address||null,p_area_name:area||null,p_city:city||null,p_pin_code:pin||null});if(error)throw error;showMessage("Account completed. Redirecting…");location.replace(getReturnPath())}catch(err){showMessage(authError(err),true);btn.disabled=false;btn.textContent="Save & Continue →"}}
 document.getElementById("profileCompletionForm")?.addEventListener("submit",e=>{e.preventDefault();finishProfileCompletion()});
 async function postAuthRedirect(){const returnPath=getReturnPath();const {data}=await Doodhwala.supabase.auth.getSession();const user=data?.session?.user;if(!user){location.replace(returnPath);return}const {data:isAdmin}=await Doodhwala.supabase.rpc("is_current_user_admin");if(isAdmin===true){showMessage("Admin account verified. Opening Admin Panel…");location.replace("/Dudh-Wallah/admin.html");return}if(isCustomerRoute(returnPath)&&await customerNeedsCompletion(user)){showProfileCompletion(user);return}showMessage("Signed in. Redirecting…");location.replace(returnPath)}
-async function handleExistingSession(){if(!window.Doodhwala?.configured)return;if(new URLSearchParams(location.search).get("oauth")==="google")return;try{const {data}=await Doodhwala.supabase.auth.getSession();const session=data?.session;if(!session?.user)return;await postAuthRedirect()}catch(err){console.warn("Existing session check failed",err)}}
+async function handleExistingSession(){if(new URLSearchParams(location.search).get("reset")==="1")return;if(!window.Doodhwala?.configured)return;if(new URLSearchParams(location.search).get("oauth")==="google")return;try{const {data}=await Doodhwala.supabase.auth.getSession();const session=data?.session;if(!session?.user)return;await postAuthRedirect()}catch(err){console.warn("Existing session check failed",err)}}
+checkPasswordResetRoute();
 handleExistingSession();
 const autoGoogle=new URLSearchParams(location.search).get("oauth")==="google";if(autoGoogle&&!isLocalOrigin())setTimeout(()=>googleAuth.click(),80);
 forgotAuth.onclick=async()=>{if(!await ensureReady())return;const e=email.value.trim();if(!e){showMessage("Enter your email first, then tap Forgot password.",true);return}try{const {error}=await Doodhwala.supabase.auth.resetPasswordForEmail(e,{redirectTo:productionUrl("/auth.html?reset=1&return="+encodeURIComponent(getReturnPath()))});if(error)throw error;showMessage("Password reset email sent. Check your inbox")}catch(err){showMessage(authError(err),true)}};
