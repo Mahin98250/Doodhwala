@@ -94,9 +94,19 @@ if(fs.existsSync(providerJsPath)){
     "provider_delete_product",
     "provider_get_subscriptions",
     "setupProviderOrderRealtime",
+    "function startProviderOrderFeed()",
+    "window.__providerOrderQueueFallbackTimer",
+    "window.__providerKnownOrderIds",
+    "Provider order feed bootstrap failed",
     "setupProviderSubscriptionRealtime",
     "acceptance_window_expired"
   ]) if(!providerJs.includes(contract)) errors.push("provider.js -> missing Phase 2 contract "+contract);
+}
+
+if(localFiles.has("/provider.js")){
+  const providerText=fs.readFileSync(path.join(root,"provider.js"),"utf8");
+  const bootText=providerText.slice(providerText.indexOf("async function bootProvider()"));
+  if((bootText.match(/startProviderOrderFeed\(\);/g)||[]).length<2) errors.push("provider.js -> live and recovered provider boot paths must start the order feed");
 }
 const providerHtmlPath=path.join(root,"provider.html");
 if(fs.existsSync(providerHtmlPath)){
@@ -104,10 +114,13 @@ if(fs.existsSync(providerHtmlPath)){
   if(!providerHtml.includes('data-view="subscriptions"')) errors.push("provider.html -> subscriptions navigation missing");
   if(!providerHtml.includes('id="view-subscriptions"')) errors.push("provider.html -> subscriptions view missing");
   if(!providerHtml.includes("provider.js?v=")) errors.push("provider.html -> provider bundle cache bust missing");
+  if(!providerHtml.includes("/Dudh-Wallah/provider.js?v=20261012.1")) errors.push("provider.html -> provider feed runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
+  if(!swText.includes("/Dudh-Wallah/provider.js?v=20261012.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
+  if(!swText.includes('const CACHE="doodhwala-v63"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
