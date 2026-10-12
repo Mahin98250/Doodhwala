@@ -144,6 +144,18 @@ if(fs.existsSync(adminIntelPath)){
   if(!adminIntel.includes("Latest seven dates in the selected overview range")) errors.push("admin-intelligence.js -> GMV range label must match selected range");
   if(!adminIntel.includes("loaded admin index")) errors.push("admin-intelligence.js -> bounded customer index must be disclosed");
 }
+const adminJsPath=path.join(root,"admin.js");
+if(localFiles.has("/admin.js")){
+  const adminJs=fs.readFileSync(adminJsPath,"utf8");
+  for(const required of [
+    "function adminRealtimeCacheKeys(table)",
+    'table:"profiles"',
+    'table:"subscription_deliveries"',
+    "refreshAdminIndex(indexKeys)",
+    'const CACHE="doodhwala-v64"'
+  ]) if(!adminJs.includes(required)) errors.push("admin live sync -> missing integration contract "+required);
+  if(!adminJs.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+}
 const resiliencePath=path.join(root,"resilience.js");
 if(!localFiles.has("/resilience.js")) errors.push("required runtime file missing /resilience.js");
 else{
