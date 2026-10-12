@@ -52,6 +52,16 @@ assert.ok(sql.includes("grant execute on function private.provider_add_tracking_
 assert.ok(sql.includes("grant execute on function private.submit_order_rating_impl"),"customer rating must remain available to authenticated customers");
 assert.ok(sql.includes("from public, anon, authenticated, service_role"),"internal helper/trigger function execution must be revoked from client roles");
 
+const followupName=fs.readdirSync(migrationsDir).find(name=>/^\\d+_doodhwala_security_default_privileges\\.sql$/.test(name));
+assert.ok(followupName,"schema-specific default privilege correction must be committed");
+const defaultsSql=fs.readFileSync(path.join(migrationsDir,followupName),"utf8").toLowerCase();
+for(const required of [
+  "alter default privileges for role postgres in schema public",
+  "revoke all on tables from public, anon, authenticated",
+  "revoke all on sequences from public, anon, authenticated",
+  "revoke execute on functions from public, anon, authenticated"
+]) assert.ok(defaultsSql.includes(required),"default-privilege correction must include "+required);
+
 if(errors.length){
   console.error("Security contract validation failed:\n - "+errors.join("\n - "));
   process.exit(1);
