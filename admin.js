@@ -196,6 +196,7 @@ function setupAdminRealtime(){
  const pendingKeys=new Set();
  const scheduleRefresh=function(table){
   if(table)adminRealtimeCacheKeys(table).forEach(key=>{delete cache[key];pendingKeys.add(key)});
+  else Object.keys(ADMIN_INDEX_JOBS).forEach(key=>{delete cache[key];pendingKeys.add(key)});
   if(document.visibilityState==="hidden")return;
   clearTimeout(window.__adminRealtimeRefresh);
   window.__adminRealtimeRefresh=setTimeout(async function(){
