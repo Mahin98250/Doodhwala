@@ -21,6 +21,8 @@ jobs:
         run: node scripts/test-service-worker.mjs
       - name: Test resilience recovery behavior
         run: node scripts/test-resilience.mjs
+      - name: Simulate customer checkout and network retry
+        run: node scripts/test-checkout-flow.mjs
       - name: Validate site asset contracts
         run: node scripts/validate-site.mjs
       - name: Reject accidental domain-root paths
