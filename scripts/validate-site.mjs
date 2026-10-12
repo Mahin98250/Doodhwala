@@ -120,7 +120,7 @@ if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=20261012.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v63"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -199,7 +199,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v63"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
@@ -212,7 +212,7 @@ if(fs.existsSync(path.join(root,"admin.js"))){
 if(fs.existsSync(path.join(root,"admin.html"))){
   const adminHtml=fs.readFileSync(path.join(root,"admin.html"),"utf8");
   if(!adminHtml.includes('data-section="health"')) errors.push("admin.html -> System Health navigation missing");
-  if(!adminHtml.includes('admin.js?v=20261009.1')) errors.push("admin.html -> admin runtime cache version stale");
+  if(!adminHtml.includes('admin.js?v=20261012.1')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
