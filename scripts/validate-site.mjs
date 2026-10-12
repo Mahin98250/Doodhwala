@@ -163,7 +163,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes('const CACHE="doodhwala-v64"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
-const adminRealtimeMigration="/supabase/migrations/20261012120000_doodhwala_admin_realtime_data_sync.sql";
+const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
 if(!localFiles.has(adminRealtimeMigration)) errors.push("admin live-sync migration missing");
 else{
   const sql=fs.readFileSync(path.join(root,adminRealtimeMigration.slice(1)),"utf8");

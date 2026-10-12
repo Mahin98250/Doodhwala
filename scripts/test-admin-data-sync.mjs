@@ -40,7 +40,7 @@ for(const table of Object.keys(cases)){
 assert.ok(source.includes("refreshAdminIndex(indexKeys)"),"realtime refresh must reload affected cached indexes");
 assert.ok(source.includes("refreshAdminSearch()"),"realtime refresh must redraw active global search results");
 assert.ok(source.includes("const keys=Object.keys(ADMIN_INDEX_JOBS)"),"foreground return must refresh the global admin index");
-const migrationPath="supabase/migrations/20261012120000_doodhwala_admin_realtime_data_sync.sql";
+const migrationPath="supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
 const migration=fs.readFileSync(new URL("../"+migrationPath,import.meta.url),"utf8");
 for(const table of ["profiles","milk_products","provider_service_areas"]){
   assert.ok(migration.includes("'"+table+"'"),"migration must publish "+table+" for Realtime");
