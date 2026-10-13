@@ -35,6 +35,7 @@ const adminPolicyPath = "supabase/migrations/20261012090500_doodhwala_consolidat
 const leastPrivilegePath = "supabase/migrations/20261012084616_doodhwala_security_least_privilege.sql";
 const secureRpcPath = "supabase/migrations/20261007183000_doodhwala_secure_rpc_wrappers.sql";
 const providerLifecyclePath = "supabase/migrations/20261008030000_provider_order_lifecycle_hardening.sql";
+const providerDashboardPath = "supabase/migrations/20261008024500_provider_phase2_operations.sql";
 const anonWritePath = "supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql";
 const anonPolicyPath = "supabase/migrations/20261013140000_doodhwala_split_anon_provider_read_policies.sql";
 const anonCataloguePath = "supabase/migrations/20261013150000_doodhwala_limit_anon_catalogue_columns.sql";
@@ -48,6 +49,7 @@ const adminPolicies = sql(adminPolicyPath);
 const leastPrivilege = sql(leastPrivilegePath);
 const secureRpc = sql(secureRpcPath);
 const providerLifecycle = sql(providerLifecyclePath);
+const providerDashboard = sql(providerDashboardPath);
 const anonWrite = sql(anonWritePath);
 const anonPolicies = sql(anonPolicyPath);
 const anonCatalogue = sql(anonCataloguePath);
@@ -150,6 +152,20 @@ for (const name of ["milk_products_insert_own", "milk_products_update_own", "mil
 }
 includesAll(providerLifecycle, ["where id=p_order_id and provider_owner_id=v_uid", "authentication_required",
   "order_not_found_or_not_provider"], "provider status mutation authorization");
+
+// Seller-private profile fields are available through the authenticated dashboard RPC,
+// whose implementation binds the row to auth.uid() and accepts no arbitrary owner ID.
+includesAll(providerDashboard, [
+  "create or replace function private.provider_get_dashboard_impl()",
+  "v_uid uuid:=auth.uid()",
+  "where owner_user_id=v_uid",
+  "if not found then raise exception 'provider_not_found'",
+  "'provider',to_jsonb(v_provider)",
+  "create or replace function public.provider_get_dashboard()",
+  "grant execute on function public.provider_get_dashboard() to authenticated"
+], "owner-scoped seller dashboard RPC");
+assert.doesNotMatch(providerDashboard, /provider_get_dashboard_impl\\s*\\([^)]*p_owner/i,
+  "seller dashboard RPC must not accept a caller-supplied owner identity");
 
 // Public RPC wrappers are invoker-security wrappers; the privileged implementations
 // verify the admin allowlist or ownership before reading/mutating protected data.
