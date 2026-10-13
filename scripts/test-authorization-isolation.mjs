@@ -17,7 +17,7 @@ function policy(source, name, file) {
 }
 
 function normalizeSql(value) {
-  return value.toLowerCase().replace(/\\s+/g, " ").replace(/\\s*=\\s*/g, "=").trim();
+  return value.toLowerCase().replace(/\s+/g, " ").replace(/\s*=\s*/g, "=").trim();
 }
 
 function includesAll(source, fragments, label) {
