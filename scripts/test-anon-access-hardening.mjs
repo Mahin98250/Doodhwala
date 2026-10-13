@@ -38,12 +38,12 @@ assert.ok(policySql.includes("private.is_current_user_admin()"), "admin-only vis
 
 assert.match(
   catalogueSql,
-  /revoke\\s+select\\s+on\\s+all\\s+tables\\s+in\\s+schema\\s+public\\s+from\\s+anon\\s*;/,
+  /revoke\s+select\s+on\s+all\s+tables\s+in\s+schema\s+public\s+from\s+anon\s*;/,
   "anonymous users must not have table-level SELECT grants on application data"
 );
 assert.match(
   catalogueSql,
-  /alter\\s+default\\s+privileges\\s+for\\s+role\\s+postgres\\s+in\\s+schema\\s+public\\s+revoke\\s+select\\s+on\\s+tables\\s+from\\s+anon\\s*;/,
+  /alter\s+default\s+privileges\s+for\s+role\s+postgres\s+in\s+schema\s+public\s+revoke\s+select\s+on\s+tables\s+from\s+anon\s*;/,
   "future public tables must not grant anonymous SELECT by default"
 );
 for (const table of ["provider_profiles", "provider_service_areas", "provider_verifications", "milk_products"]) {
@@ -53,7 +53,7 @@ for (const table of ["provider_profiles", "provider_service_areas", "provider_ve
     table + " must grant only the columns needed for public catalogue RPCs"
   );
 }
-const profileGrant = catalogueSql.match(/grant\\s+select\\s*\\(([^)]*)\\)\\s*on\\s+public\\.provider_profiles\\s+to\\s+anon/);
+const profileGrant = catalogueSql.match(/grant\s+select\s*\(([^)]*)\)\s*on\s+public\.provider_profiles\s+to\s+anon/);
 assert.ok(profileGrant, "provider profile column grant must be present");
 for (const privateColumn of ["owner_name", "phone", "owner_user_id"]) {
   assert.ok(!profileGrant[1].includes(privateColumn), "anonymous users must not receive seller " + privateColumn);
