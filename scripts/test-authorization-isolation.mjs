@@ -204,12 +204,12 @@ includesAll(sellerFields, [
   "revoke execute on function public.find_nearby_providers(numeric, numeric, numeric)",
   "revoke execute on function private.find_nearby_providers_private(numeric, numeric, numeric)"
 ], "seller private-column hardening");
-const sellerColumns = sellerFields.match(/grant select\\s*\\(([\\s\\S]*?)\\)\\s*on table public\\.provider_profiles\\s*to authenticated/i);
+const sellerColumns = sellerFields.match(/grant select\s*\(([\s\S]*?)\)\s*on table public\.provider_profiles\s*to authenticated/i);
 assert.ok(sellerColumns, "seller table must receive explicit column-level grants");
-assert.doesNotMatch(sellerColumns[1], /\\b(owner_name|phone)\\b/i, "seller owner name and phone must not be directly readable by all authenticated users");
-const verificationColumns = sellerFields.match(/grant select\\s*\\(([\\s\\S]*?)\\)\\s*on table public\\.provider_verifications\\s*to authenticated/i);
+assert.doesNotMatch(sellerColumns[1], /\b(owner_name|phone)\b/i, "seller owner name and phone must not be directly readable by all authenticated users");
+const verificationColumns = sellerFields.match(/grant select\s*\(([\s\S]*?)\)\s*on table public\.provider_verifications\s*to authenticated/i);
 assert.ok(verificationColumns, "verification table must receive explicit column-level grants");
-assert.doesNotMatch(verificationColumns[1], /\\b(notes|reviewed_at)\\b/i, "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
+assert.doesNotMatch(verificationColumns[1], /\b(notes|reviewed_at)\b/i, "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
 assert.ok(appJs.includes('rpc("find_nearby_providers_v2"'), "current customer discovery must use the safe public catalogue RPC");
 assert.ok(!appJs.includes('rpc("find_nearby_providers"') && !appJs.includes("rpc('find_nearby_providers'"), "customer UI must not call the legacy owner-name-returning RPC");
 
