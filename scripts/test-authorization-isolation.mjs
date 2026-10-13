@@ -37,6 +37,7 @@ const secureRpcPath = "supabase/migrations/20261007183000_doodhwala_secure_rpc_w
 const providerLifecyclePath = "supabase/migrations/20261008030000_provider_order_lifecycle_hardening.sql";
 const providerDashboardPath = "supabase/migrations/20261008024500_provider_phase2_operations.sql";
 const providerOwnProfilePath = "supabase/migrations/20261013170000_doodhwala_hide_provider_owner_uuid.sql";
+const providerProfileUpsertPath = "supabase/migrations/20261013180000_doodhwala_secure_provider_profile_upsert.sql";
 const anonWritePath = "supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql";
 const anonPolicyPath = "supabase/migrations/20261013140000_doodhwala_split_anon_provider_read_policies.sql";
 const anonCataloguePath = "supabase/migrations/20261013150000_doodhwala_limit_anon_catalogue_columns.sql";
@@ -52,6 +53,7 @@ const secureRpc = sql(secureRpcPath);
 const providerLifecycle = sql(providerLifecyclePath);
 const providerDashboard = sql(providerDashboardPath);
 const providerOwnProfile = sql(providerOwnProfilePath);
+const providerProfileUpsert = sql(providerProfileUpsertPath);
 const providerJs = fs.readFileSync(new URL("../provider.js", import.meta.url), "utf8").toLowerCase();
 const anonWrite = sql(anonWritePath);
 const anonPolicies = sql(anonPolicyPath);
@@ -187,6 +189,24 @@ includesAll(providerOwnProfile, [
 assert.ok(!providerJs.includes('.eq("owner_user_id"'), "seller dashboard must not filter directly on owner_user_id");
 assert.ok((providerJs.match(/rpc\("provider_get_own_profile"\)/g) || []).length >= 3,
   "store status, route and order views must use the owner-scoped profile RPC");
+
+// Seller profile writes must derive the owner from auth.uid(), validate fields,
+// and never ask the browser to write owner_user_id directly.
+includesAll(providerProfileUpsert, [
+  "create or replace function private.provider_upsert_own_profile_impl(",
+  "v_uid uuid := auth.uid()",
+  "values (",
+  "v_uid, v_display_name, v_owner_name, v_phone, v_milk_type",
+  "on conflict (owner_user_id) do update set",
+  "raise exception 'invalid_provider_phone'",
+  "raise exception 'invalid_provider_pin'",
+  "create or replace function public.provider_upsert_own_profile(",
+  "revoke execute on function public.provider_upsert_own_profile",
+  "from public, anon",
+  "grant execute on function public.provider_upsert_own_profile"
+], "owner-scoped provider profile write RPC");
+assert.ok(providerJs.includes('rpc("provider_upsert_own_profile"'), "seller profile save must use the owner-scoped write RPC");
+assert.ok(!providerJs.includes('.from("provider_profiles").upsert'), "seller UI must not upsert private profile rows directly");
 
 // Public RPC wrappers are invoker-security wrappers; the privileged implementations
 // verify the admin allowlist or ownership before reading/mutating protected data.
