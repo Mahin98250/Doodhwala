@@ -793,3 +793,50 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .quick button{grid-template-columns:35px minmax(0,1fr);column-gap:8px;padding:10px}
   .quick-icon{width:35px;height:35px}
 }
+
+
+/* Phase 1 — shared interaction and responsive quality baseline */
+:root{
+  --focus-ring:0 0 0 4px rgba(37,112,72,.13);
+  --shadow-card:0 7px 24px rgba(24,58,35,.055);
+  --shadow-card-hover:0 15px 34px rgba(24,58,35,.11);
+}
+img,svg{max-width:100%}
+button,input,select,textarea{font:inherit}
+button:disabled,[aria-disabled="true"]{cursor:not-allowed;opacity:.58}
+input,select,textarea{
+  accent-color:var(--green);
+}
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+select:focus-visible,textarea:focus-visible{
+  border-color:#8fb99a;
+  box-shadow:var(--focus-ring);
+}
+a,button{touch-action:manipulation}
+::placeholder{color:#929e95;opacity:1}
+:where(.provider,.product-card,.order-card,.panel,.admin-card,.metric,.kpi-grid article){
+  min-width:0;
+}
+:where(.provider,.product-card,.order-card,.panel,.admin-card,.metric,.kpi-grid article) :where(h1,h2,h3,p){
+  overflow-wrap:anywhere;
+}
+:where(.primary,.secondary,.filter-button,.provider-primary,.add,.plan-add){
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+@media(hover:none){
+  .provider:hover,.product-card:hover,.quick button:hover{transform:none}
+}
+@media(max-width:760px){
+  :where(button,.primary,.secondary,.filter-button,.provider-primary){
+    min-height:40px;
+  }
+  :where(input,select,textarea){max-width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
