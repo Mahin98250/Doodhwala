@@ -51,7 +51,7 @@ const queryAsset = await offlineResponse(origin + "/Dudh-Wallah/styles.css?v=999
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Dudh-Wallah/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v65"'), "auth recovery cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v66"'), "auth recovery cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Dudh-Wallah/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Dudh-Wallah/not-cached.html");
