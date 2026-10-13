@@ -22,7 +22,7 @@ for (const file of pages) {
   assert.ok(html.includes("styles.css?v=20261013.3"), file + " must use current shared legal-footer styles");
 }
 const sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-assert.ok(sw.includes('const CACHE="doodhwala-v68"'), "PWA cache revision must advance for legal content");
+assert.ok(sw.includes('const CACHE="doodhwala-v69"'), "PWA cache revision must advance for legal content");
 assert.ok(sw.includes('"/Dudh-Wallah/legal.html"'), "legal center must be precached");
 assert.ok(sw.includes('"/Dudh-Wallah/styles.css?v=20261013.3"'), "current shared stylesheet must be precached");
 console.log("Legal policy draft checks passed: draft warnings, all core policy sections, truthful missing-contact/refund disclosures, site navigation and PWA precache.");
