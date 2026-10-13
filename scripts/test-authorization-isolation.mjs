@@ -204,12 +204,20 @@ includesAll(sellerFields, [
   "revoke execute on function public.find_nearby_providers(numeric, numeric, numeric)",
   "revoke execute on function private.find_nearby_providers_private(numeric, numeric, numeric)"
 ], "seller private-column hardening");
-const sellerColumns = sellerFields.match(/grant select\s*\(([\s\S]*?)\)\s*on table public\.provider_profiles\s*to authenticated/i);
-assert.ok(sellerColumns, "seller table must receive explicit column-level grants");
-assert.doesNotMatch(sellerColumns[1], /\b(owner_name|phone)\b/i, "seller owner name and phone must not be directly readable by all authenticated users");
-const verificationColumns = sellerFields.match(/grant select\s*\(([\s\S]*?)\)\s*on table public\.provider_verifications\s*to authenticated/i);
-assert.ok(verificationColumns, "verification table must receive explicit column-level grants");
-assert.doesNotMatch(verificationColumns[1], /\b(notes|reviewed_at)\b/i, "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
+const normalizedSellerSql = normalizeSql(sellerFields);
+const profileGrantEnd = normalizedSellerSql.indexOf(") on table public.provider_profiles to authenticated");
+assert.ok(profileGrantEnd > 0, "seller profile grant must be explicit and column-scoped");
+const profileGrantStart = normalizedSellerSql.lastIndexOf("grant select (", profileGrantEnd);
+assert.ok(profileGrantStart >= 0, "seller profile grant must begin with a SELECT column list");
+const profileColumns = normalizedSellerSql.slice(profileGrantStart + "grant select (".length, profileGrantEnd);
+assert.ok(!/\\b(owner_name|phone)\\b/i.test(profileColumns), "seller owner name and phone must not be directly readable by all authenticated users");
+
+const verificationGrant = "grant select (provider_id, status) on table public.provider_verifications to authenticated";
+assert.ok(normalizedSellerSql.includes(verificationGrant), "verification access must be limited to provider_id and status");
+const verificationGrantEnd = normalizedSellerSql.indexOf(") on table public.provider_verifications to authenticated");
+const verificationGrantStart = normalizedSellerSql.lastIndexOf("grant select (", verificationGrantEnd);
+const verificationColumns = normalizedSellerSql.slice(verificationGrantStart + "grant select (".length, verificationGrantEnd);
+assert.ok(!/\\b(notes|reviewed_at)\\b/i.test(verificationColumns), "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
 assert.ok(appJs.includes('rpc("find_nearby_providers_v2"'), "current customer discovery must use the safe public catalogue RPC");
 assert.ok(!appJs.includes('rpc("find_nearby_providers"') && !appJs.includes("rpc('find_nearby_providers'"), "customer UI must not call the legacy owner-name-returning RPC");
 
