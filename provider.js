@@ -89,7 +89,7 @@ function toast(message){toastEl.textContent=message;toastEl.classList.add("show"
  if(!window.Doodhwala?.configured)return;
  try{
   const {data:userData}=await Doodhwala.supabase.auth.getUser();const user=userData?.user;if(!user)return;
-  const {data,error}=await Doodhwala.supabase.from("provider_profiles").select("id,accepting_orders").eq("owner_user_id",user.id).limit(1).maybeSingle();
+  const {data,error}=await Doodhwala.supabase.rpc("provider_get_own_profile");
   if(error||!data)return;
   provider.backendProviderId=data.id;provider.acceptingOrders=data.accepting_orders!==false;save();renderStoreStatus();
  }catch(err){console.warn("Store status load failed",err)}
@@ -346,7 +346,7 @@ async function loadProviderRoute(dateValue=routeDate){
  const auth=await Doodhwala.supabase.auth.getUser(),user=auth.data?.user;if(!user){state.textContent="Sign in to manage the live route.";kpis.innerHTML="";list.innerHTML='<div class="route-empty"><b>Provider account required.</b><p>Sign in to load your recurring customer route.</p></div>';return}
  let routeProviderId=provider.backendProviderId||null;
  if(!routeProviderId){
-   const profile=await Doodhwala.supabase.from("provider_profiles").select("id").eq("owner_user_id",user.id).maybeSingle();
+   const profile=await Doodhwala.supabase.rpc("provider_get_own_profile");
    if(!profile.error&&profile.data?.id){routeProviderId=profile.data.id;provider.backendProviderId=routeProviderId;save()}
  }
  setupProviderRouteRealtime(user,routeProviderId);
@@ -440,8 +440,8 @@ async function loadProviderOrders(){
  if(!window.Doodhwala?.configured){state.textContent="Supabase is not configured.";list.innerHTML="";return}
  const {data:userData}=await Doodhwala.supabase.auth.getUser(),user=userData?.user;
  if(!user){state.textContent="Sign in to manage live orders.";list.innerHTML="";return}
- const profile=await Doodhwala.supabase.from("provider_profiles").select("id,acceptance_timeout_minutes,max_open_orders,max_daily_litres").eq("owner_user_id",user.id).limit(1).maybeSingle();
- if(profile.error){state.textContent=profile.error.message;return}
+ const profile=await Doodhwala.supabase.rpc("provider_get_own_profile");
+ if(profile.error){state.textContent=profile.error.message==="provider_not_found"?"Complete provider onboarding first.":profile.error.message;list.innerHTML="";return}
  if(!profile.data){state.textContent="Complete provider onboarding first.";list.innerHTML="";return}
 await setupProviderOrderRealtime(user)
  const result=await Doodhwala.supabase.from("orders").select("id,status,status_reason,subtotal,delivery_fee,total,customer_note,created_at,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,order_items(product_name_snapshot,quantity,unit_price,line_total)").eq("provider_id",profile.data.id).order("created_at",{ascending:false}).limit(50);
