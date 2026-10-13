@@ -11,7 +11,7 @@ for (const section of ["id=" + '"privacy"', "id=" + '"terms"', "id=" + '"cancell
 assert.match(legal, /Support contact: not yet available/i, "must not invent a support contact");
 assert.match(legal, /exact legal entity or individual operator/i, "must flag operator legal identity as unconfirmed");
 assert.match(legal, /No specific refund promise/i, "must not invent refund promises");
-assert.match(legal, /not intended to remove rights that consumers have/i, "must preserve applicable consumer rights");
+assert.match(legal, /Nothing in this draft is intended to remove rights that consumers have/i, "must preserve applicable consumer rights");
 assert.match(legal, /not enabled and that no payment is collected/i, "payment disclosure must match the current checkout");
 assert.match(legal, /must be reviewed by a qualified Indian legal professional/i, "legal review must be required before launch");
 for (const file of pages) {
