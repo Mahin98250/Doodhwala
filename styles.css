@@ -620,3 +620,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* Legal & support footer — shared across customer, seller and admin screens */
+.site-legal-footer{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 18px;margin:0 auto;color:#718176;font-size:11px;text-align:center;border-top:1px solid #e2eae1;background:rgba(255,255,255,.72)}
+.site-legal-footer nav{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 16px}
+.site-legal-footer a{color:#17603f;text-decoration:none;font-weight:750}
+.site-legal-footer a:hover{text-decoration:underline;text-underline-offset:3px}
+.site-legal-footer a:focus-visible{outline:3px solid rgba(38,115,74,.28);outline-offset:3px;border-radius:3px}
+.site-legal-footer small{max-width:75ch;line-height:1.55;color:#87958b}
+@media(max-width:760px){.site-legal-footer{padding:18px 13px 24px;gap:9px}.site-legal-footer nav{gap:10px 13px}.site-legal-footer nav a{font-size:11px}}
