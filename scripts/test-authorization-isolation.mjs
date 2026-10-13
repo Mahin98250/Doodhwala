@@ -38,6 +38,7 @@ const providerLifecyclePath = "supabase/migrations/20261008030000_provider_order
 const anonWritePath = "supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql";
 const anonPolicyPath = "supabase/migrations/20261013140000_doodhwala_split_anon_provider_read_policies.sql";
 const anonCataloguePath = "supabase/migrations/20261013150000_doodhwala_limit_anon_catalogue_columns.sql";
+const sellerFieldsPath = "supabase/migrations/20261013160000_doodhwala_protect_seller_private_fields.sql";
 
 const marketplace = sql(marketplacePath);
 const subscriptions = sql(subscriptionsPath);
@@ -50,6 +51,8 @@ const providerLifecycle = sql(providerLifecyclePath);
 const anonWrite = sql(anonWritePath);
 const anonPolicies = sql(anonPolicyPath);
 const anonCatalogue = sql(anonCataloguePath);
+const sellerFields = sql(sellerFieldsPath);
+const appJs = fs.readFileSync(new URL("../app.js", import.meta.url), "utf8").toLowerCase();
 
 // Customer profiles: a user may read/update their own profile only.
 // The sole additional SELECT route is the current-user admin allowlist helper.
@@ -189,5 +192,25 @@ for (const name of ["provider_profiles_select_anon", "provider_verifications_sel
   assert.ok(!p.includes("private.is_current_user_admin"), name + " must not call admin authorization");
   assert.ok(!p.includes("owner_user_id"), name + " must not expose or depend on seller owner identity");
 }
+
+
+ // Seller contact details and moderation notes must not be readable through direct
+// table queries by other authenticated marketplace users.
+includesAll(sellerFields, [
+  "revoke select on table public.provider_profiles from authenticated",
+  "on table public.provider_profiles to authenticated",
+  "revoke select on table public.provider_verifications from authenticated",
+  "grant select (provider_id, status) on table public.provider_verifications to authenticated",
+  "revoke execute on function public.find_nearby_providers(numeric, numeric, numeric)",
+  "revoke execute on function private.find_nearby_providers_private(numeric, numeric, numeric)"
+], "seller private-column hardening");
+const sellerColumns = sellerFields.match(/grant select\\s*\\(([\\s\\S]*?)\\)\\s*on table public\\.provider_profiles\\s*to authenticated/i);
+assert.ok(sellerColumns, "seller table must receive explicit column-level grants");
+assert.doesNotMatch(sellerColumns[1], /\\b(owner_name|phone)\\b/i, "seller owner name and phone must not be directly readable by all authenticated users");
+const verificationColumns = sellerFields.match(/grant select\\s*\\(([\\s\\S]*?)\\)\\s*on table public\\.provider_verifications\\s*to authenticated/i);
+assert.ok(verificationColumns, "verification table must receive explicit column-level grants");
+assert.doesNotMatch(verificationColumns[1], /\\b(notes|reviewed_at)\\b/i, "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
+assert.ok(appJs.includes('rpc("find_nearby_providers_v2"'), "current customer discovery must use the safe public catalogue RPC");
+assert.ok(!/rpc\\(["']find_nearby_providers["']/.test(appJs), "customer UI must not call the legacy owner-name-returning RPC");
 
 console.log("Authorization isolation contracts passed: profile/address ownership, customer/provider order access, recurring plans, delivery events, ratings, seller ownership, protected RPCs, and anonymous catalogue-only access.");
