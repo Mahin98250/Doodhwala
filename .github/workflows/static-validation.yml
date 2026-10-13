@@ -29,6 +29,8 @@ jobs:
         run: node scripts/test-security-contracts.mjs
       - name: Test anonymous access hardening
         run: node scripts/test-anon-access-hardening.mjs
+      - name: Test cross-account and provider authorization isolation
+        run: node scripts/test-authorization-isolation.mjs
       - name: Test legal policy draft and navigation
         run: node scripts/test-legal-contracts.mjs
       - name: Test auth return paths and password recovery
