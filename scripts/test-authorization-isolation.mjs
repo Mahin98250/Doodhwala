@@ -38,6 +38,7 @@ const providerLifecyclePath = "supabase/migrations/20261008030000_provider_order
 const providerDashboardPath = "supabase/migrations/20261008024500_provider_phase2_operations.sql";
 const providerOwnProfilePath = "supabase/migrations/20261013170000_doodhwala_hide_provider_owner_uuid.sql";
 const providerProfileUpsertPath = "supabase/migrations/20261013180000_doodhwala_secure_provider_profile_upsert.sql";
+const providerRlsHelperPath = "supabase/migrations/20261013190000_doodhwala_provider_rls_owner_helper.sql";
 const anonWritePath = "supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql";
 const anonPolicyPath = "supabase/migrations/20261013140000_doodhwala_split_anon_provider_read_policies.sql";
 const anonCataloguePath = "supabase/migrations/20261013150000_doodhwala_limit_anon_catalogue_columns.sql";
@@ -54,6 +55,7 @@ const providerLifecycle = sql(providerLifecyclePath);
 const providerDashboard = sql(providerDashboardPath);
 const providerOwnProfile = sql(providerOwnProfilePath);
 const providerProfileUpsert = sql(providerProfileUpsertPath);
+const providerRlsHelper = sql(providerRlsHelperPath);
 const providerJs = fs.readFileSync(new URL("../provider.js", import.meta.url), "utf8").toLowerCase();
 const anonWrite = sql(anonWritePath);
 const anonPolicies = sql(anonPolicyPath);
@@ -207,6 +209,28 @@ includesAll(providerProfileUpsert, [
 ], "owner-scoped provider profile write RPC");
 assert.ok(providerJs.includes('rpc("provider_upsert_own_profile"'), "seller profile save must use the owner-scoped write RPC");
 assert.ok(!providerJs.includes('.from("provider_profiles").upsert'), "seller UI must not upsert private profile rows directly");
+
+// Policies that previously queried provider_profiles.owner_user_id now use a
+// boolean-only owner helper so private UUID revocation does not break seller RLS.
+includesAll(providerRlsHelper, [
+  "create or replace function private.is_current_user_provider(p_provider_id uuid)",
+  "where pp.id = p_provider_id",
+  "and pp.owner_user_id = auth.uid()",
+  "grant execute on function private.is_current_user_provider(uuid) to authenticated",
+  "create policy milk_products_delete_own",
+  "using (private.is_current_user_provider(provider_id))",
+  "create policy milk_products_insert_own",
+  "with check (private.is_current_user_provider(provider_id))",
+  "create policy milk_products_update_own",
+  "create policy service_area_insert_own",
+  "create policy service_area_update_own",
+  "create policy service_area_select_authenticated",
+  "create policy provider_verifications_select_authenticated",
+  "create policy delivery_tracking_select_own",
+  "create policy order_ratings_select_visible_to_parties"
+], "owner UUID-independent RLS policies");
+assert.ok(!providerRlsHelper.includes("pp.owner_user_id = (select auth.uid())"),
+  "RLS policy expressions must not directly select provider owner UUID");
 
 // Public RPC wrappers are invoker-security wrappers; the privileged implementations
 // verify the admin allowlist or ownership before reading/mutating protected data.
