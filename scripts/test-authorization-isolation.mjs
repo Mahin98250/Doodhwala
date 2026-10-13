@@ -211,6 +211,6 @@ const verificationColumns = sellerFields.match(/grant select\\s*\\(([\\s\\S]*?)\
 assert.ok(verificationColumns, "verification table must receive explicit column-level grants");
 assert.doesNotMatch(verificationColumns[1], /\\b(notes|reviewed_at)\\b/i, "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
 assert.ok(appJs.includes('rpc("find_nearby_providers_v2"'), "current customer discovery must use the safe public catalogue RPC");
-assert.ok(!/rpc\\(["']find_nearby_providers["']/.test(appJs), "customer UI must not call the legacy owner-name-returning RPC");
+assert.ok(!appJs.includes('rpc("find_nearby_providers"') && !appJs.includes("rpc('find_nearby_providers'"), "customer UI must not call the legacy owner-name-returning RPC");
 
 console.log("Authorization isolation contracts passed: profile/address ownership, customer/provider order access, recurring plans, delivery events, ratings, seller ownership, protected RPCs, and anonymous catalogue-only access.");
