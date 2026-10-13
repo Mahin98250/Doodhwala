@@ -210,14 +210,14 @@ assert.ok(profileGrantEnd > 0, "seller profile grant must be explicit and column
 const profileGrantStart = normalizedSellerSql.lastIndexOf("grant select (", profileGrantEnd);
 assert.ok(profileGrantStart >= 0, "seller profile grant must begin with a SELECT column list");
 const profileColumns = normalizedSellerSql.slice(profileGrantStart + "grant select (".length, profileGrantEnd);
-assert.ok(!/\\b(owner_name|phone)\\b/i.test(profileColumns), "seller owner name and phone must not be directly readable by all authenticated users");
+assert.ok(!profileColumns.includes("owner_name") && !profileColumns.includes("phone"), "seller owner name and phone must not be directly readable by all authenticated users");
 
 const verificationGrant = "grant select (provider_id, status) on table public.provider_verifications to authenticated";
 assert.ok(normalizedSellerSql.includes(verificationGrant), "verification access must be limited to provider_id and status");
 const verificationGrantEnd = normalizedSellerSql.indexOf(") on table public.provider_verifications to authenticated");
 const verificationGrantStart = normalizedSellerSql.lastIndexOf("grant select (", verificationGrantEnd);
 const verificationColumns = normalizedSellerSql.slice(verificationGrantStart + "grant select (".length, verificationGrantEnd);
-assert.ok(!/\\b(notes|reviewed_at)\\b/i.test(verificationColumns), "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
+assert.ok(!verificationColumns.includes("notes") && !verificationColumns.includes("reviewed_at"), "moderator notes and review timestamps must not be directly readable by ordinary authenticated users");
 assert.ok(appJs.includes('rpc("find_nearby_providers_v2"'), "current customer discovery must use the safe public catalogue RPC");
 assert.ok(!appJs.includes('rpc("find_nearby_providers"') && !appJs.includes("rpc('find_nearby_providers'"), "customer UI must not call the legacy owner-name-returning RPC");
 
