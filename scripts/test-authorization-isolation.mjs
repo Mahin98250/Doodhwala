@@ -36,6 +36,7 @@ const leastPrivilegePath = "supabase/migrations/20261012084616_doodhwala_securit
 const secureRpcPath = "supabase/migrations/20261007183000_doodhwala_secure_rpc_wrappers.sql";
 const providerLifecyclePath = "supabase/migrations/20261008030000_provider_order_lifecycle_hardening.sql";
 const providerDashboardPath = "supabase/migrations/20261008024500_provider_phase2_operations.sql";
+const providerOwnProfilePath = "supabase/migrations/20261013170000_doodhwala_hide_provider_owner_uuid.sql";
 const anonWritePath = "supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql";
 const anonPolicyPath = "supabase/migrations/20261013140000_doodhwala_split_anon_provider_read_policies.sql";
 const anonCataloguePath = "supabase/migrations/20261013150000_doodhwala_limit_anon_catalogue_columns.sql";
@@ -50,6 +51,8 @@ const leastPrivilege = sql(leastPrivilegePath);
 const secureRpc = sql(secureRpcPath);
 const providerLifecycle = sql(providerLifecyclePath);
 const providerDashboard = sql(providerDashboardPath);
+const providerOwnProfile = sql(providerOwnProfilePath);
+const providerJs = fs.readFileSync(new URL("../provider.js", import.meta.url), "utf8").toLowerCase();
 const anonWrite = sql(anonWritePath);
 const anonPolicies = sql(anonPolicyPath);
 const anonCatalogue = sql(anonCataloguePath);
@@ -166,6 +169,24 @@ includesAll(providerDashboard, [
 ], "owner-scoped seller dashboard RPC");
 const dashboardSignature = providerDashboard.slice(providerDashboard.indexOf("create or replace function private.provider_get_dashboard_impl()"), providerDashboard.indexOf("returns jsonb", providerDashboard.indexOf("create or replace function private.provider_get_dashboard_impl()")));
 assert.ok(dashboardSignature.includes("private.provider_get_dashboard_impl()") && !dashboardSignature.includes("p_owner"), "seller dashboard RPC must not accept a caller-supplied owner identity");
+
+// The seller owner UUID is not directly selectable by authenticated customers.
+// Operational lookups go through an RPC that derives ownership from auth.uid().
+includesAll(providerOwnProfile, [
+  "create or replace function private.provider_get_own_profile_impl()",
+  "v_uid uuid := auth.uid()",
+  "where pp.owner_user_id = v_uid",
+  "'id', pp.id",
+  "'accepting_orders', pp.accepting_orders",
+  "create or replace function public.provider_get_own_profile()",
+  "revoke select (owner_user_id)",
+  "from authenticated",
+  "grant execute on function public.provider_get_own_profile() to authenticated",
+  "revoke execute on function public.provider_get_own_profile() from public, anon"
+], "owner UUID isolation RPC");
+assert.ok(!providerJs.includes('.eq("owner_user_id"'), "seller dashboard must not filter directly on owner_user_id");
+assert.ok((providerJs.match(/rpc\("provider_get_own_profile"\)/g) || []).length >= 3,
+  "store status, route and order views must use the owner-scoped profile RPC");
 
 // Public RPC wrappers are invoker-security wrappers; the privileged implementations
 // verify the admin allowlist or ownership before reading/mutating protected data.
