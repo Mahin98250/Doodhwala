@@ -16,9 +16,14 @@ function policy(source, name, file) {
   return match[0].toLowerCase();
 }
 
+function normalizeSql(value) {
+  return value.toLowerCase().replace(/\\s+/g, " ").replace(/\\s*=\\s*/g, "=").trim();
+}
+
 function includesAll(source, fragments, label) {
+  const normalizedSource = normalizeSql(source);
   for (const fragment of fragments) {
-    assert.ok(source.includes(fragment.toLowerCase()), label + " must include " + fragment);
+    assert.ok(normalizedSource.includes(normalizeSql(fragment)), label + " must include " + fragment);
   }
 }
 
