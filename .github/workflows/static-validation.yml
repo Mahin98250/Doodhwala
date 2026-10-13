@@ -27,6 +27,8 @@ jobs:
         run: node scripts/test-admin-data-sync.mjs
       - name: Test security contracts
         run: node scripts/test-security-contracts.mjs
+      - name: Test legal policy draft and navigation
+        run: node scripts/test-legal-contracts.mjs
       - name: Test auth return paths and password recovery
         run: node scripts/test-auth-contracts.mjs
       - name: Test consolidated RLS policy contracts
