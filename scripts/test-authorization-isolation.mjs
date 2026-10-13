@@ -164,8 +164,8 @@ includesAll(providerDashboard, [
   "create or replace function public.provider_get_dashboard()",
   "grant execute on function public.provider_get_dashboard() to authenticated"
 ], "owner-scoped seller dashboard RPC");
-assert.doesNotMatch(providerDashboard, /provider_get_dashboard_impl\\s*\\([^)]*p_owner/i,
-  "seller dashboard RPC must not accept a caller-supplied owner identity");
+const dashboardSignature = providerDashboard.slice(providerDashboard.indexOf("create or replace function private.provider_get_dashboard_impl()"), providerDashboard.indexOf("returns jsonb", providerDashboard.indexOf("create or replace function private.provider_get_dashboard_impl()")));
+assert.ok(dashboardSignature.includes("private.provider_get_dashboard_impl()") && !dashboardSignature.includes("p_owner"), "seller dashboard RPC must not accept a caller-supplied owner identity");
 
 // Public RPC wrappers are invoker-security wrappers; the privileged implementations
 // verify the admin allowlist or ownership before reading/mutating protected data.
