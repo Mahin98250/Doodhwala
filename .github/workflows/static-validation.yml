@@ -31,6 +31,8 @@ jobs:
         run: node scripts/test-auth-contracts.mjs
       - name: Test consolidated RLS policy contracts
         run: node scripts/test-policy-consolidation.mjs
+      - name: Test private admin allowlist RLS
+        run: node scripts/test-admin-allowlist-rls.mjs
       - name: Validate site asset contracts
         run: node scripts/validate-site.mjs
       - name: Reject accidental domain-root paths
