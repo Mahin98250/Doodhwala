@@ -47,3 +47,34 @@
 
 /* 10X operations queue */
 .ops-subtitle{margin:4px 0 0;color:#7a887f;font-size:9px}.ops-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px auto;gap:7px;margin:12px 0 9px}.ops-toolbar input,.ops-toolbar select,.ops-toolbar button{height:36px;border:1px solid #d9e3da;border-radius:9px;background:#fbfdfb;padding:0 10px;font:700 9px "DM Sans",sans-serif;color:#26362c;outline:0}.ops-toolbar input:focus,.ops-toolbar select:focus{border-color:#9eb7a3;box-shadow:0 0 0 3px rgba(55,105,69,.08)}.ops-toolbar button{cursor:pointer}.ops-chips{display:flex;gap:6px;overflow:auto;padding-bottom:9px}.ops-chips button{border:1px solid #dce5dd;background:#f8faf8;border-radius:999px;padding:7px 10px;white-space:nowrap;color:#637168;font:800 8px "DM Sans",sans-serif;cursor:pointer}.ops-chips button b{margin-left:3px;color:#25382b}.ops-chips button.active,.ops-chips button:hover{background:#edf6ef;border-color:#c5d8c8;color:#2e6240}.ops-row.urgent{background:#fffaf5}.ops-row.late{background:#fff8f7}.ops-row.at-risk{background:#fffdf5}.ops-row td small{display:block;color:#87938b;font-size:7px;margin-top:3px}.ops-row .ops-label{font-weight:800}.row-link{border:0;background:transparent;padding:0;text-align:left;cursor:pointer;color:#244e32}.row-link:hover{text-decoration:underline}.admin-table .hidden{display:none}.ops-card .table-scroll{max-height:62vh;overflow:auto}.ops-card .table thead th{position:sticky;top:0;z-index:2;background:#f7faf7}.admin-toast{position:fixed;right:18px;bottom:18px;z-index:50;border-radius:10px;padding:10px 13px;background:#173426;color:#fff;font:800 9px "DM Sans",sans-serif;box-shadow:0 15px 35px rgba(0,0,0,.15)}.admin-toast.error{background:#8a3f31}.admin-toast.hidden{display:none}@media(max-width:800px){.ops-toolbar{grid-template-columns:1fr 1fr}.ops-toolbar input{grid-column:1/-1}.ops-toolbar button{grid-column:1/-1}.ops-card .table-scroll{max-height:none}.admin-table{min-width:760px}}@media(max-width:520px){.ops-toolbar{grid-template-columns:1fr}.ops-toolbar input,.ops-toolbar button{grid-column:auto}}
+
+
+/* Phase 1 — admin console visual refinement */
+.admin-page{background:linear-gradient(145deg,#f7f9f6,#f0f5ef);-webkit-font-smoothing:antialiased}
+.admin-side{background:linear-gradient(180deg,#10271a,#143522 78%,#173b29);border-right:1px solid rgba(255,255,255,.06)}
+.admin-side button{min-height:39px;border:1px solid transparent;transition:background .18s,border-color .18s,transform .18s}
+.admin-side button.active{background:linear-gradient(100deg,#244c34,#1c402b);border-color:rgba(255,255,255,.06);box-shadow:inset 3px 0 #80bd8f}
+.admin-top{background:rgba(248,250,247,.92);border-bottom-color:#e1e9e0}
+.admin-search{border-color:#dfe8df;box-shadow:0 4px 14px rgba(22,55,34,.035)}
+.admin-search:focus-within{border-color:#a9c9b0;box-shadow:0 0 0 3px rgba(46,115,74,.08),0 8px 24px rgba(22,54,35,.07)}
+.admin-section{padding-top:25px}
+.metric,.admin-card,.ops-card{border-color:#e1e9e0;box-shadow:0 5px 18px rgba(22,55,34,.03);transition:border-color .18s,box-shadow .18s,transform .18s}
+.metric:hover{border-color:#cbdccb;box-shadow:0 12px 26px rgba(22,55,34,.06);transform:translateY(-1px)}
+.admin-card{border-radius:18px}
+.admin-hero{box-shadow:0 16px 36px rgba(23,52,38,.13);border-color:rgba(255,255,255,.12)}
+.admin-table th{background:#f7faf7}
+.admin-table tbody tr:hover,.table tbody tr:hover{background:#f7fbf7}
+.admin-table td,.admin-table th{border-bottom-color:#eaf0e9}
+.admin-list-head button,.admin-detail-head>button,.admin-period button{transition:background .18s,border-color .18s,transform .18s}
+.admin-list-head button:hover,.admin-detail-head>button:hover,.admin-period button:hover{background:#f5faf5;border-color:#c8d9ca}
+.admin-gate{background:radial-gradient(ellipse at 50% 35%,rgba(220,239,222,.5),transparent 25rem)}
+@media(max-width:900px){
+ .admin-top{background:rgba(248,250,247,.96)}
+ .admin-section{padding-top:17px}
+ .admin-hero{padding:18px;border-radius:17px}
+ .admin-hero h2{font-size:21px}
+ .metric{padding:14px;border-radius:15px}
+ .metric b{font-size:24px}
+ .admin-card{padding:15px}
+}
+@media(prefers-reduced-motion:reduce){.admin-page *{transition-duration:.01ms!important;animation-duration:.01ms!important}}
