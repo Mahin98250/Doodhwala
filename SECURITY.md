@@ -1,28 +1,55 @@
-# Security
+# Security & Release Readiness
+
+Last repository/security review: 2026-10-13. This document records implementation safeguards and remaining launch checks; it is not a certification that the application is secure or legally compliant.
 
 ## Security baseline
 
 Doodhwala is a static GitHub Pages frontend backed by Supabase. The browser must use only a **publishable** Supabase key. Publishable keys are public by design; data isolation comes from Row Level Security (RLS), minimal database grants, and authenticated RPCs—not from hiding the project URL or publishable key.
 
-The production database hardening migration keeps existing row-scoped customer/provider CRUD grants intact while removing unnecessary TRUNCATE, REFERENCES, and TRIGGER privileges from public API roles. New database objects created by the migration role default to no grants for PUBLIC, anon, or authenticated until a migration explicitly grants what is required. Security-definer functions in public and private use an empty search path and fully qualified database objects.
+The production database hardening migrations remove unnecessary TRUNCATE, REFERENCES, and TRIGGER privileges from public API roles and set safer default privileges for objects created by the migration role. Security-definer functions in public/private use an empty search path and fully qualified database objects. The private owner allowlist is the admin authorization boundary; profile account_type is not an authorization source.
 
-The private owner allowlist remains the admin authorization boundary. The profile account_type column is not an authorization source; regular users cannot set it to impersonate a privileged role.
+## Repository and live database review (2026-10-13)
+
+- Live Supabase schema inspection found RLS enabled on the reviewed tables in the public and private schemas. Most public tables have row policies. This is a useful baseline, **not** proof that every policy is logically correct; cross-account and cross-role negative tests remain required.
+- Supabase Security Advisor reports an INFO finding for `private.admin_allowlist` (RLS enabled, no policies). This is intentional defense-in-depth only if the `private` schema is not exposed through the Data API and the table is accessible solely to the tightly scoped database authorization helper/owner. Do not add broad client policies to silence this finding.
+- Supabase Security Advisor reports an INFO finding for `public.client_error_reports` (RLS enabled, no policies). The live privilege check showed table privileges only for `postgres` and `service_role`, not `anon` or `authenticated`. Keep it that way if error reports are managed through the intended restricted RPCs; verify the RPC authorization and payload scrubbing before release.
+- Supabase Security Advisor reports **Leaked Password Protection Disabled**. The current Supabase plan does not make this dashboard feature available, so it has not been enabled. Track this as a known limitation; do not claim it is enabled. Keep password strength checks, email verification, rate-limit awareness and admin MFA where available.
+- The application currently has no published customer support contact. The legal center is explicitly marked as a draft and must not be presented as final or as proof of compliance.
+- No production order or account data was modified as part of this read-only review.
 
 ## Required release checks
 
-- Keep the Supabase private schema out of the Data API's exposed schemas. Expose only schemas required by the application (normally public and graphql_public).
+### Database and authorization
+- Keep the Supabase private schema out of the Data API exposed-schema list. Confirm this in the Supabase dashboard; the SQL inspection tool could not read the PostgREST schema configuration.
 - Confirm every exposed table has RLS enabled and narrowly scoped policies. A policy does not replace SQL grants; both layers matter.
-- Never place Supabase secret or service-role keys in browser files, GitHub Pages, HTML, or a client-side environment variable.
-- Apply database migrations through review and CI. New functions need explicit EXECUTE grants to exactly the roles that need them.
-- Do not create fake production orders to test authorization. Use isolated staging accounts/project or a genuine, authorized order.
-- Run Supabase Security Advisors after schema changes and inspect logs for unexpected RPC errors, auth failures, and report-volume spikes.
+- Test customer A cannot read or mutate customer B's profile, addresses, orders, subscriptions, favourites, loyalty records or support tickets.
+- Test a provider can access only its own private seller data and only the customer/order fields needed to fulfil its own orders.
+- Test non-admin accounts cannot access admin RPCs, reports, audit logs, or the private allowlist even if client-side account metadata is manipulated.
+- Review every SECURITY DEFINER function, exposed RPC, execute grant, storage bucket and Edge Function whenever changed.
+- Do not create fake production orders to test authorization. Use an isolated staging project/accounts or a genuine, authorized order.
+- Run Supabase Security Advisors after schema changes and inspect logs for unexpected RPC errors, auth failures and report-volume spikes.
 
-## Dashboard actions (manual)
+### Authentication and browser security
+- Never place Supabase secret or service-role keys in browser files, GitHub Pages, HTML, or client-side environment variables.
+- Require email verification where configured; review password policy, recovery redirects, allowed OAuth redirect URLs, session revocation and admin MFA.
+- Keep account roles and ownership enforced by server/database checks, never by hidden buttons or browser-supplied role fields.
+- Minimise sensitive information in logs and error reports. Never log passwords, OTPs, access tokens, full payment credentials or unnecessary delivery details.
+- Pin third-party dependencies; review whether externally loaded scripts can be self-hosted or given Subresource Integrity where supported. Changes must be tested against the current application.
+- GitHub Pages does not provide this repository with a general custom response-header configuration. Review hosting options for appropriate security headers before commercial launch; do not add a restrictive Content Security Policy blindly because the current pages use inline code and third-party assets.
+- Test keyboard navigation, accessible error feedback, mobile layouts and offline/PWA cache updates.
 
-The current Supabase Security Advisor reports **Leaked Password Protection Disabled**. Enable it in the Supabase Dashboard under **Authentication → Attack Protection → Leaked Password Protection**. This is an Auth project setting, not a SQL/RLS setting; the connected project-management tools available to this repository workflow do not expose a safe Auth-settings update action.
+### Legal, privacy and consumer protection
+- `legal.html` is a draft, not a final contract. Have qualified Indian counsel review it and verify the current commencement and applicability of relevant laws before launch.
+- Confirm the exact legal operator name, address, seller relationship, data flows, retention schedule and support/grievance contacts. Do not invent these details.
+- Publish operationally accurate cancellation/refund and subscription rules; do not promise remedies or response times the business cannot honour.
+- Implement and test user requests for data correction/deletion/withdrawal where applicable, including a way to verify the requester and document the outcome.
+- Verify which food-business registrations, licences, product disclosures and seller checks apply. Never show a verified/compliant badge without the corresponding completed review.
+- Only collect agreement to the final, approved policy versions. Do not ask users to accept a draft as though it were binding.
 
-Also require MFA for the admin/owner account where practical, review allowed auth redirect URLs, and confirm the private schema is not in the Data API's exposed-schema list. These Dashboard settings must be verified by an owner.
+## Dashboard actions requiring an owner
+
+The current Supabase Security Advisor reports **Leaked Password Protection Disabled**. This is an Auth project setting, not a SQL/RLS setting, and the feature is unavailable on the current plan. It cannot be enabled through the repository. Also require MFA for the admin/owner account where practical, review allowed auth redirect URLs, and confirm the private schema is not in the Data API's exposed-schema list. These dashboard settings must be verified by an owner when the relevant controls are available.
 
 ## Incident response
 
-If a service-role/secret key may have leaked, revoke or rotate it immediately in Supabase, update only server-side consumers, review access and Edge Function logs, and invalidate affected sessions where appropriate. A leaked publishable key alone is not a secret incident, but any associated RLS/grant gap must be treated seriously.
+If a Supabase secret/service-role key may have leaked, revoke or rotate it immediately in Supabase, update only server-side consumers, review access and Edge Function logs, and invalidate affected sessions where appropriate. A leaked publishable key alone is not a secret incident, but any associated RLS/grant gap must be treated seriously. Establish and publish a real security-reporting channel before the legal/security policy is finalised.
