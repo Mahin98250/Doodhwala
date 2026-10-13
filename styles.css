@@ -630,3 +630,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .site-legal-footer a:focus-visible{outline:3px solid rgba(38,115,74,.28);outline-offset:3px;border-radius:3px}
 .site-legal-footer small{max-width:75ch;line-height:1.55;color:#87958b}
 @media(max-width:760px){.site-legal-footer{padding:18px 13px 24px;gap:9px}.site-legal-footer nav{gap:10px 13px}.site-legal-footer nav a{font-size:11px}}
+
+
+.legal-inline-note{margin:12px 0;color:#718176;font-size:11px;line-height:1.65}
+.legal-inline-note a{color:#17603f;font-weight:750;text-decoration:underline;text-underline-offset:2px}
+.legal-inline-note a:focus-visible{outline:3px solid rgba(38,115,74,.28);outline-offset:3px}
