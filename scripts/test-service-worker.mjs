@@ -60,6 +60,7 @@ assert.equal(await versionedAuth.text(), "cached current auth script", "offline 
 assert.ok(source.includes('const CACHE="doodhwala-v69"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Dudh-Wallah/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 assert.ok(source.includes('/Dudh-Wallah/provider.js?v=20261013.1'), "the current seller authorization script must be explicitly precached");
+assert.ok(source.includes('/Dudh-Wallah/provider.css?v=20261013.2'), "the current seller mobile navigation styles must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Dudh-Wallah/not-cached.html");
 assert.equal(await unknownRoute.text(), "cached home page", "unknown offline navigation should fall back to the cached home page");
