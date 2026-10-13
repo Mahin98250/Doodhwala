@@ -39,6 +39,7 @@ const providerDashboardPath = "supabase/migrations/20261008024500_provider_phase
 const providerOwnProfilePath = "supabase/migrations/20261013170000_doodhwala_hide_provider_owner_uuid.sql";
 const providerProfileUpsertPath = "supabase/migrations/20261013180000_doodhwala_secure_provider_profile_upsert.sql";
 const providerRlsHelperPath = "supabase/migrations/20261013190000_doodhwala_provider_rls_owner_helper.sql";
+const providerDirectWritePath = "supabase/migrations/20261013200000_doodhwala_revoke_provider_direct_writes.sql";
 const anonWritePath = "supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql";
 const anonPolicyPath = "supabase/migrations/20261013140000_doodhwala_split_anon_provider_read_policies.sql";
 const anonCataloguePath = "supabase/migrations/20261013150000_doodhwala_limit_anon_catalogue_columns.sql";
@@ -56,6 +57,7 @@ const providerDashboard = sql(providerDashboardPath);
 const providerOwnProfile = sql(providerOwnProfilePath);
 const providerProfileUpsert = sql(providerProfileUpsertPath);
 const providerRlsHelper = sql(providerRlsHelperPath);
+const providerDirectWrite = sql(providerDirectWritePath);
 const providerJs = fs.readFileSync(new URL("../provider.js", import.meta.url), "utf8").toLowerCase();
 const anonWrite = sql(anonWritePath);
 const anonPolicies = sql(anonPolicyPath);
@@ -231,6 +233,19 @@ includesAll(providerRlsHelper, [
 ], "owner UUID-independent RLS policies");
 assert.ok(!providerRlsHelper.includes("pp.owner_user_id = (select auth.uid())"),
   "RLS policy expressions must not directly select provider owner UUID");
+
+// Direct authenticated writes to provider_profiles are closed entirely. The
+// only browser mutation path is the validated owner-scoped profile RPC.
+includesAll(providerDirectWrite, [
+  "revoke insert, update, delete",
+  "on table public.provider_profiles",
+  "from authenticated",
+  "revoke insert (",
+  "revoke update (",
+  "from authenticated"
+], "provider profile direct-write revocation");
+assert.ok(providerJs.includes('rpc("provider_upsert_own_profile"'), "seller profile changes must use the secure write RPC");
+assert.ok(!providerJs.includes('.from("provider_profiles").upsert'), "browser must not directly upsert provider profiles");
 
 // Public RPC wrappers are invoker-security wrappers; the privileged implementations
 // verify the admin allowlist or ownership before reading/mutating protected data.
