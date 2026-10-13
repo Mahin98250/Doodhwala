@@ -7,6 +7,7 @@ const origin = "https://mahin98250.github.io";
 const cache = new Map([
   [origin + "/Dudh-Wallah/orders.html", "cached orders page"],
   [origin + "/Dudh-Wallah/index.html", "cached home page"],
+  [origin + "/Dudh-Wallah/legal.html", "cached legal draft"],
   [origin + "/Dudh-Wallah/styles.css", "cached stylesheet"],
   [origin + "/Dudh-Wallah/auth.js", "cached current auth script"]
 ]);
@@ -43,6 +44,11 @@ async function offlineResponse(url, mode = "navigate") {
   return await responsePromise;
 }
 
+const legalRoute = await offlineResponse(origin + "/Dudh-Wallah/legal.html#privacy");
+assert.equal(await legalRoute.text(), "cached legal draft", "legal center should be available offline after it is precached");
+assert.ok(source.includes('"/Dudh-Wallah/legal.html"'), "legal center must be included in the PWA precache");
+assert.ok(source.includes('styles.css?v=20261013.2'), "legal footer styling must be included in the PWA precache");
+
 const queryRoute = await offlineResponse(origin + "/Dudh-Wallah/orders.html?filter=active");
 assert.equal(await queryRoute.text(), "cached orders page", "offline query route must serve its own cached page");
 assert.ok(cacheLookups.includes(origin + "/Dudh-Wallah/orders.html"), "query-free path should be checked");
@@ -51,7 +57,7 @@ const queryAsset = await offlineResponse(origin + "/Dudh-Wallah/styles.css?v=999
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Dudh-Wallah/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v66"'), "auth recovery cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v67"'), "auth recovery cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Dudh-Wallah/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Dudh-Wallah/not-cached.html");
