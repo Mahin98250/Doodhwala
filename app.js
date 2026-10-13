@@ -16,7 +16,7 @@ const grid=$("providersGrid"),cartCount=$("cartCount"),mobileCartCount=$("mobile
 function installDiscoveryStyles(){
  if(document.getElementById("doodhwalaDiscoveryStyles"))return;
  const style=document.createElement("style");style.id="doodhwalaDiscoveryStyles";
- style.textContent=".discover-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:8px 0}.discover-toolbar span{font-size:9px;color:var(--muted)}.discover-toolbar select{height:34px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 10px;font-size:9px;color:var(--ink);outline:0}.provider-live{cursor:default}.provider-live .cover{cursor:pointer}.provider-distance{position:absolute;right:10px;top:10px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,225,.9);font-size:7px;font-weight:800}.service-good{color:#17603f}.service-bad{color:#a3483e}.service-neutral{color:#6f7c73}.service-warning{margin-top:9px;padding:8px 9px;background:#fff4ef;border:1px solid #f0ddd7;border-radius:10px;color:#a3483e;font-size:8px}.milk-open{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;color:inherit}.store-link{border:0;background:transparent;color:var(--green);font-size:8px;font-weight:900;padding:3px;cursor:pointer}.no-results .primary{margin-top:8px}@media(max-width:760px){.discover-toolbar{padding-top:8px}.discover-toolbar select{height:36px}.provider-distance{font-size:6.5px}}";
+ style.textContent=".discover-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:8px 0}.discover-toolbar span{font-size:9px;color:var(--muted)}.discover-toolbar select{height:34px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 10px;font-size:9px;color:var(--ink);outline:0}.provider-live{cursor:default}.provider-live .cover{cursor:pointer}.provider-distance{position:absolute;right:10px;top:10px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,225,.9);font-size:7px;font-weight:800}.service-good{color:#17603f}.service-bad{color:#a3483e}.service-neutral{color:#6f7c73}.service-warning{margin-top:9px;padding:8px 9px;background:#fff4ef;border:1px solid #f0ddd7;border-radius:10px;color:#a3483e;font-size:8px}.milk-open{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;color:inherit}.store-link{border:0;background:transparent;color:var(--green);font-size:8px;font-weight:900;padding:3px;cursor:pointer}.no-results .primary{margin-top:8px}.empty-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:13px}.empty-actions button{min-height:39px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:10px;font-weight:800}.empty-actions button.primary{border-color:transparent;background:var(--green);color:#fff}.no-results[role=status]{text-align:center}@media(max-width:760px){.discover-toolbar{padding-top:8px}.discover-toolbar select{height:36px}.provider-distance{font-size:6.5px}.empty-actions{gap:7px}.empty-actions button{flex:1;min-width:125px}}";
  document.head.appendChild(style);
 }
 installDiscoveryStyles();
@@ -30,7 +30,7 @@ function milkEmoji(type){
 }
 function formatDistance(km){if(km==null||!Number.isFinite(Number(km)))return "Set location";const n=Number(km);return n<1?Math.max(100,Math.round(n*1000))+" m":n.toFixed(n<10?1:0)+" km"}
 function readLocation(){try{const value=JSON.parse(localStorage.getItem(LOCATION_KEY)||"null");if(value&&Number.isFinite(+value.latitude)&&Number.isFinite(+value.longitude))return{latitude:+value.latitude,longitude:+value.longitude};}catch(_){}return null}
-function toast(message){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";t.style.cssText="position:fixed;left:50%;bottom:92px;transform:translate(-50%,15px);background:#17221a;color:#fff;padding:11px 15px;border-radius:999px;font-size:10px;opacity:0;transition:.2s;z-index:10000;pointer-events:none"}t.textContent=message;t.style.opacity="1";t.style.transform="translate(-50%,0)";clearTimeout(window.__toast);window.__toast=setTimeout(()=>{t.style.opacity="0";t.style.transform="translate(-50%,15px)"},1700)}
+function toast(message){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.setAttribute("aria-live","polite");t.setAttribute("aria-atomic","true");t.style.cssText="position:fixed;left:50%;bottom:92px;transform:translate(-50%,15px);background:#17221a;color:#fff;padding:11px 15px;border-radius:999px;font-size:10px;opacity:0;transition:.2s;z-index:10000;pointer-events:none"}t.textContent=message;t.style.opacity="1";t.style.transform="translate(-50%,0)";clearTimeout(window.__toast);window.__toast=setTimeout(()=>{t.style.opacity="0";t.style.transform="translate(-50%,15px)"},2200)}
 function savedLocationLabel(){return readLocation()?"Near you":"Choose location"}
 
 function filtered(){
@@ -75,6 +75,17 @@ function render(){
    return;
  }
  if(!list.length){
+   const hasSearch=Boolean(query.trim()),hasTypeFilter=activeFilter!=="all";
+   if(hasSearch||hasTypeFilter){
+     const filterNames={cow:"Cow milk",buffalo:"Buffalo milk",a2:"A2 milk",subscription:"Daily plans"};
+     const detail=hasSearch?'No providers match “'+escapeHtml(query.trim())+'”.':"No providers match the current selection.";
+     const hint=hasTypeFilter?'Selected filter: '+escapeHtml(filterNames[activeFilter]||activeFilter)+'. Try clearing it or searching another term.':"Try a different name, milk type, product or area.";
+     const actions=(hasSearch?'<button type="button" id="clearDiscoverySearch">Clear search</button>':"")+(hasTypeFilter?'<button type="button" id="clearDiscoveryFilter" class="primary">Show all providers</button>':"");
+     grid.innerHTML='<div class="no-results" role="status" aria-live="polite"><div style="font-size:32px">⌕</div><h3>No matching providers</h3><p>'+detail+" "+hint+'</p><div class="empty-actions">'+actions+'</div></div>';
+     $("clearDiscoverySearch")?.addEventListener("click",()=>{query="";const input=$("search");if(input)input.value="";render();input?.focus()});
+     $("clearDiscoveryFilter")?.addEventListener("click",()=>filter("all"));
+     return;
+   }
    if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';return}
    const hasLocation=!!readLocation();
    grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg>')+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or change your delivery area. We will show providers who serve the selected location.":"Use your GPS location or choose an area on the map to see providers who can deliver to you.")+'</p>'+'<button class="primary" id="setLocationInline">'+(hasLocation?"Change location →":"Choose location →")+'</button>'+'</div>';
@@ -105,9 +116,10 @@ function add(key){
  if(!productId){toast("Product is no longer available in the live catalogue");return}
  const itemKey=p.providerId+":"+productId;
  cart[itemKey]??={key:itemKey,provider:p.name,milk:m[0],price:m[1],unitPrice:Number(String(m[1]).replace(/[^0-9.]/g,""))||0,qty:0,emoji:milkEmoji(p.type),providerId:p.providerId,productId};
- cart[itemKey].qty+=1;saveCart();updateCart();toast(m[0]+" added");
+ cart[itemKey].qty+=1;const persisted=saveCart();updateCart();toast(persisted?m[0]+" added":"Added, but this device could not save your cart. Keep this tab open.");
 }
-function saveCart(){localStorage.setItem("doodhwala-cart",JSON.stringify(cart));window.dispatchEvent(new Event("doodhwala:cart-updated"))}
+function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);window.dispatchEvent(new Event("doodhwala:cart-updated"));return persisted}
+function writeLocalState(key,value){if(window.DoodhwalaResilience?.writeStorage)return window.DoodhwalaResilience.writeStorage(key,value);try{localStorage.setItem(key,JSON.stringify(value));return true}catch(_){return false}}
 function entries(){return Object.values(cart).filter(x=>Number(x.qty)>0)}
 function updateCart(){
  const list=entries(),count=list.reduce((sum,x)=>sum+Number(x.qty||0),0);
@@ -120,8 +132,8 @@ function updateCart(){
  $("total").textContent=money(total);
  cartItems.querySelectorAll("[data-qty]").forEach(b=>b.onclick=()=>qty(b.dataset.qty));
 }
-function qty(value){const i=value.lastIndexOf(":");const key=value.slice(0,i),delta=Number(value.slice(i+1));if(!cart[key])return;cart[key].qty=Math.max(0,Number(cart[key].qty)+delta);if(!cart[key].qty)delete cart[key];saveCart();updateCart()}
-function toggleFavorite(id){const i=favorites.indexOf(id);if(i>=0){favorites.splice(i,1);toast("Removed from saved")}else{favorites.push(id);toast("Provider saved")}localStorage.setItem("doodhwala-favorites",JSON.stringify(favorites));render()}
+function qty(value){const i=value.lastIndexOf(":");const key=value.slice(0,i),delta=Number(value.slice(i+1));if(!cart[key])return;cart[key].qty=Math.max(0,Number(cart[key].qty)+delta);if(!cart[key].qty)delete cart[key];const persisted=saveCart();updateCart();if(!persisted)toast("Cart updated temporarily; browser storage is unavailable.")}
+function toggleFavorite(id){const i=favorites.indexOf(id),removing=i>=0;if(removing)favorites.splice(i,1);else favorites.push(id);const persisted=writeLocalState("doodhwala-favorites",favorites);render();toast(!persisted?"Updated for this session, but could not save on this device.":(removing?"Removed from saved":"Provider saved"))}
 
 function filter(v){activeFilter=v;document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("active",b.dataset.filter===v));document.querySelectorAll(".quick button").forEach(b=>b.classList.toggle("selected",b.dataset.filter===v));render()}
 function navigateHomeView(destination){
