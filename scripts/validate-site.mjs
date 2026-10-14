@@ -56,6 +56,18 @@ for(const file of ["/app.js","/auth.js","/checkout.js","/provider.js","/orders.j
 
 
 
+const providerCssPath=path.join(root,"provider.css");
+if(localFiles.has("/provider.css")){
+  const providerCssText=fs.readFileSync(providerCssPath,"utf8");
+  if(!providerCssText.includes("padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile content must clear the safe-area-aware bottom navigation");
+  if(!providerCssText.includes("height:calc(70px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile navigation must respect device safe-area inset");
+  if(!providerCssText.includes("grid-template-columns:repeat(7,minmax(0,1fr))")) errors.push("provider.css -> all seven seller navigation destinations must remain visible on mobile");
+  const providerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
+  if(!providerHtml.includes('/Dudh-Wallah/provider.css?v=20261013.3')) errors.push("provider.html -> seller mobile CSS cache version stale");
+  const providerSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
+  if(!providerSw.includes('/Dudh-Wallah/provider.css?v=20261013.3')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
+}else errors.push("required seller mobile stylesheet missing /provider.css");
+
 const sessionControlsPath=path.join(root,"session-controls.js");
 if(localFiles.has("/session-controls.js")){
   const sessionControlsText=fs.readFileSync(sessionControlsPath,"utf8");
