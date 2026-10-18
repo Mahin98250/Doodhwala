@@ -149,3 +149,12 @@ The core journey is: **customer checkout → provider order queue → provider s
 
 The journey passes only when the same order can be followed end-to-end by its real database ID, the customer and provider see consistent statuses after refresh/reconnect, retry is idempotent, address/pin data are correct, and the journey works on an actual mobile device. Static CI does **not** prove these account-, RLS-, Realtime-, permission-, GPS-, or device-level behaviours. Record any staging order ID and observed timestamps outside production analytics before calling P0 end-to-end complete.
 
+---
+
+## Project links
+
+- **GitHub profile:** https://github.com/Mahin98250
+- **Portfolio repository:** https://github.com/Mahin98250/Porfolio
+- **More projects:** https://github.com/Mahin98250?tab=repositories
+
+> Live demo links will be added only after the deployment URL is verified.
