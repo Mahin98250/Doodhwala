@@ -135,7 +135,19 @@ async function main(req: Request) {
       idempotency_key: idempotencyKey, gateway_name: null,
     }),
   });
-  if (insert.status === 409) return json({ error: "idempotency_conflict" }, 409, origin);
+  if (insert.status === 409) {
+    // Concurrent retries can race after both observe no existing row. Re-read the
+    // unique-key winner and return it only if its order terms match this request.
+    const racedResponse = await rest("payment_transactions?customer_id=eq." + encodeURIComponent(user.id) + "&idempotency_key=eq." + encodeURIComponent(idempotencyKey) + "&select=id,order_id,amount_paise,currency,method,status,created_at&limit=1");
+    if (racedResponse.ok) {
+      const racedRows = await racedResponse.json();
+      const raced = racedRows[0];
+      if (raced && raced.order_id === orderId && Number(raced.amount_paise) === amountPaise && raced.method === method) {
+        return json({ ok: true, payment: raced, gateway_ready: false, next_step: "payment_provider_setup_required", money_moved: false }, 200, origin);
+      }
+    }
+    return json({ error: "idempotency_conflict" }, 409, origin);
+  }
   if (!insert.ok) return json({ error: "payment_intent_create_failed" }, 502, origin);
   const rows = await insert.json();
   return json({
