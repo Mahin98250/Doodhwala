@@ -49,11 +49,19 @@ async function main(req: Request) {
   const auth = req.headers.get("authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token || token === auth) return json({ error: "authentication_required" }, 401, origin);
+  // Fail closed when the publishable-key allow-list is absent or malformed.
+  // Never forward an empty or caller-controlled API key to Supabase Auth.
+  if (!Array.isArray(PUBLISHABLE_KEYS) || PUBLISHABLE_KEYS.length === 0 ||
+      PUBLISHABLE_KEYS.some((key) => typeof key !== "string" || key.length === 0)) {
+    return json({ error: "payment_auth_not_configured" }, 503, origin);
+  }
   const apiKey = req.headers.get("apikey") || "";
-  if (PUBLISHABLE_KEYS.length && !PUBLISHABLE_KEYS.includes(apiKey)) return json({ error: "invalid_api_key" }, 401, origin);
+  if (!apiKey || !PUBLISHABLE_KEYS.includes(apiKey)) {
+    return json({ error: "invalid_api_key" }, 401, origin);
+  }
 
   const userResponse = await fetch(PROJECT_URL + "/auth/v1/user", {
-    headers: { apikey: apiKey || String(PUBLISHABLE_KEYS[0] || ""), Authorization: "Bearer " + token },
+    headers: { apikey: apiKey, Authorization: "Bearer " + token },
   });
   if (!userResponse.ok) return json({ error: "invalid_session" }, 401, origin);
   const user = await userResponse.json();
