@@ -237,7 +237,17 @@ $("closeCompareFooter")?.addEventListener("click",closeCompareDialog);
 $("clearCompare")?.addEventListener("click",()=>clearComparison());
 $("clearCompareInside")?.addEventListener("click",()=>clearComparison(true));
 $("compareDialog")?.addEventListener("click",event=>{if(event.target.id==="compareDialog")closeCompareDialog()});
-document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!$("compareDialog")?.hidden)closeCompareDialog()});
+document.addEventListener("keydown",event=>{
+ const overlay=$("compareDialog");
+ if(!overlay||overlay.hidden)return;
+ if(event.key==="Escape"){closeCompareDialog();return}
+ if(event.key!=="Tab")return;
+ const focusable=overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])');
+ if(!focusable.length)return;
+ const first=focusable[0],last=focusable[focusable.length-1];
+ if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+ else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+});
 $("explore")?.addEventListener("click",()=>navigateHomeView("providers"));
 $("filterButton")?.addEventListener("click",()=>$("chips")?.scrollIntoView({behavior:"smooth",block:"center"}));
 
