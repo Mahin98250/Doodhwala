@@ -27,6 +27,8 @@ jobs:
         run: node scripts/test-discovery-enhancements.mjs
       - name: Test product-detail null and price recovery
         run: node scripts/test-product-runtime.mjs
+      - name: Test PWA registration diagnostics
+        run: node scripts/test-pwa-registration.mjs
       - name: Test admin cross-role realtime cache invalidation
         run: node scripts/test-admin-data-sync.mjs
       - name: Test security contracts
