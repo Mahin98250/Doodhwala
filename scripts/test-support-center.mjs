@@ -1,0 +1,30 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const root = new URL("../", import.meta.url);
+const html = fs.readFileSync(new URL("../support.html", import.meta.url), "utf8");
+const client = fs.readFileSync(new URL("../support.js", import.meta.url), "utf8");
+const adminHtml = fs.readFileSync(new URL("../admin.html", import.meta.url), "utf8");
+const admin = fs.readFileSync(new URL("../admin.js", import.meta.url), "utf8");
+const migration = fs.readFileSync(new URL("../supabase/migrations/20261022203000_doodhwala_support_operations.sql", import.meta.url), "utf8");
+const sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+
+assert.match(html, /id="supportForm"/, "customer support request form must exist");
+assert.match(html, /id="faqList"/, "automated self-service answers must exist");
+assert.match(client, /db\.rpc\("create_support_ticket"/, "ticket submission must use the backend RPC");
+assert.match(client, /auth\.getSession\(\)/, "support requests must require a signed-in account");
+assert.match(client, /p_order_id:orderId/, "optional order reference must be passed to the backend");
+assert.match(migration, /private\.is_current_user_admin\(\)/, "ticket administration must use the private owner allowlist");
+assert.match(migration, /customer_id = auth\.uid\(\)/, "order references must be checked against the signed-in customer");
+assert.match(migration, /Unsupported support category/, "backend must reject forged categories");
+assert.match(migration, /admin_list_support_tickets/, "secure owner-only queue RPC must exist");
+assert.match(migration, /admin_update_support_ticket/, "secure status/priority triage RPC must exist");
+assert.match(migration, /errcode='42501'/, "unauthorized admin RPC access must fail closed");
+assert.match(adminHtml, /data-section="support"/, "owner navigation must expose support inbox");
+assert.match(admin, /section==="support"/, "owner console must route to support inbox");
+assert.match(admin, /admin_list_support_tickets/, "owner console must load ticket queue through RPC");
+assert.match(admin, /admin_update_support_ticket/, "owner console must update status and priority through RPC");
+assert.match(sw, /admin\.js\?v=20261022\.2/, "service worker must precache current admin runtime");
+assert.match(sw, /admin\.css\?v=20261022\.2/, "service worker must precache current admin styling");
+assert.match(sw, /const CACHE="doodhwala-v79"/, "support inbox release must refresh installed PWAs");
+console.log("Support centre contracts passed: FAQ, authenticated ticket form, owner-only triage RPCs, status controls, and PWA cache.");
