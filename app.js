@@ -109,7 +109,7 @@ function render(){
      '<div class="cover" data-store="'+escapeHtml(p.id)+'"><span>'+escapeHtml(p.tag)+'</span><div class="provider-emoji">'+milkEmoji(p.type)+'</div><div class="provider-distance '+badgeClass+'">⌖ '+escapeHtml(locationBadge)+'</div></div>'+
      '<div class="provider-body"><div class="name-row"><div><div class="provider-name">'+escapeHtml(p.name)+'</div><div class="meta">'+escapeHtml(p.area)+' · ★ '+escapeHtml(p.rating)+'</div></div><div class="provider-actions">'+(p.verified?'<span class="verified">Verified</span>':'')+'<button class="save-provider'+(saved?" saved":"")+'" data-save="'+escapeHtml(p.id)+'" aria-label="'+(saved?"Remove from saved":"Save provider")+'">'+(saved?"♥":"♡")+'</button></div></div>'+
      (p.isServiceable===false?'<div class="service-warning">This provider is outside the current delivery zone.</div>':"")+
-     '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
+     '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false&&Number.isFinite(Number(p.productPrices?.[i]))&&Number(p.productPrices[i])>0?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
      '<div class="provider-foot"><span>'+(p.delivery||"Local route")+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
  }).join("");
  grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
@@ -123,9 +123,11 @@ function add(key){
  const parts=key.split(":"),providerKey=parts[0],index=Number(parts[1]),p=providers.find(x=>x.id===providerKey),m=p?.milks?.[index];
  if(!p||!m||p.isServiceable===false)return;
  const productId=p.productIds?.[index]||null;
+ const unitPrice=Number(p.productPrices?.[index]);
  if(!productId){toast("Product is no longer available in the live catalogue");return}
+ if(!Number.isFinite(unitPrice)||unitPrice<=0){toast("This product has no valid price yet and cannot be added");return}
  const itemKey=p.providerId+":"+productId;
- cart[itemKey]??={key:itemKey,provider:p.name,milk:m[0],price:m[1],unitPrice:Number(String(m[1]).replace(/[^0-9.]/g,""))||0,qty:0,emoji:milkEmoji(p.type),providerId:p.providerId,productId};
+ cart[itemKey]??={key:itemKey,provider:p.name,milk:m[0],price:money(unitPrice)+" / L",unitPrice,qty:0,emoji:milkEmoji(p.type),providerId:p.providerId,productId};
  cart[itemKey].qty+=1;const persisted=saveCart();updateCart();toast(persisted?m[0]+" added":"Added, but this device could not save your cart. Keep this tab open.");
 }
 function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);window.dispatchEvent(new Event("doodhwala:cart-updated"));return persisted}
@@ -275,7 +277,7 @@ async function loadRemoteProviders(lat=null,lng=null){
      distanceKm:row.distance_km==null?null:Number(row.distance_km),serviceRadiusKm:row.service_radius_km==null?null:Number(row.service_radius_km),
      isServiceable:row.is_serviceable==null?null:Boolean(row.is_serviceable),
      subscription:products.some(p=>p.daily_available),productDailyAvailable:products.map(p=>Boolean(p.daily_available)),
-     productIds:products.map(p=>p.id),milks:products.map(p=>[p.name,money(p.price_per_litre)+" / L"])
+     productIds:products.map(p=>p.id),productPrices:products.map(p=>Number(p.price_per_litre)),milks:products.map(p=>[p.name,Number.isFinite(Number(p.price_per_litre))&&Number(p.price_per_litre)>0?money(p.price_per_litre)+" / L":"Price unavailable"])
    }
  });
  window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
