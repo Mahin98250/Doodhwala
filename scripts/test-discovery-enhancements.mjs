@@ -31,3 +31,7 @@ assert.ok(html.includes('/Dudh-Wallah/styles.css?v=20261022.1'), "homepage must 
 assert.ok(html.includes('/Dudh-Wallah/app.js?v=20261022.1'), "homepage must request the current app version");
 
 console.log("Customer discovery enhancements passed: delivery-only filter, escaped seller comparison, responsive modal, and PWA cache contracts.");
+
+assert.match(app, /event\.key!=="Tab"/, "comparison dialog must manage keyboard tab focus");
+assert.match(app, /document\.activeElement===first/, "comparison dialog must keep keyboard focus inside the overlay");
+assert.match(css, /body\.compare-open\{overflow:hidden/, "background scrolling must be locked while the comparison sheet is open");
