@@ -92,6 +92,7 @@ The repository now contains an initial code foundation for the selected direct-s
 - COD collection is separately confirmed by the seller after delivery.
 - New orders begin in `selection_pending` so the seller cannot accept before the customer payment choice is saved.
 - A database trigger guards payment-sensitive columns against direct table updates; ownership-checked RPCs use a transaction-local capability to update them.
-- Static regression checks were added to CI for ownership, idempotency, payment-choice race protection, and manual confirmation.
+- Static regression checks were added to CI for ownership, idempotency, payment-choice race protection, and manual confirmation. The UPI-instruction RPC now returns payee details only for an authenticated customer's own order while it remains pending verification and is not rejected/cancelled, reducing stale-screen and duplicate-payment risk.
+- Latest static validation passed before this final guard migration; validation for the newest migration/test commit is running. Pages deployment of the latest commit is not yet confirmed.
 
 **Not yet verified:** Supabase migration application, live database execution, seller account/UPI validity, end-to-end UPI-app handoff on physical devices, and a real order/payment cycle. Do not represent the flow as production-ready until those checks are completed.
