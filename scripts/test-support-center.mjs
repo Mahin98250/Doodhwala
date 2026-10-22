@@ -19,7 +19,7 @@ assert.match(migration, /customer_id = auth\.uid\(\)/, "order references must be
 assert.match(migration, /Unsupported support category/, "backend must reject forged categories");
 assert.match(migration, /admin_list_support_tickets/, "secure owner-only queue RPC must exist");
 assert.match(migration, /admin_update_support_ticket/, "secure status/priority triage RPC must exist");
-assert.match(migration, /errcode='42501'/, "unauthorized admin RPC access must fail closed");
+assert.match(migration, /errcode\s*=\s*'42501'/, "unauthorized admin RPC access must fail closed");
 assert.match(adminHtml, /data-section="support"/, "owner navigation must expose support inbox");
 assert.match(admin, /section==="support"/, "owner console must route to support inbox");
 assert.match(admin, /admin_list_support_tickets/, "owner console must load ticket queue through RPC");
