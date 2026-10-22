@@ -384,7 +384,9 @@ async function loadSystemHealthSection(){
  }
 }
 async function loadSupportTicketsSection(statusFilter="all"){
- const data=await adminRpc("admin_list_support_tickets",{p_status:statusFilter==="all"?null:statusFilter,p_limit:150});
+ const c=$("adminContent");let data;
+ try{data=await adminRpc("admin_list_support_tickets",{p_status:statusFilter==="all"?null:statusFilter,p_limit:150})}
+ catch(error){c.innerHTML='<div class="admin-section"><article class="admin-card"><span class="eyebrow">SUPPORT SETUP</span><h3>Support inbox needs its database update</h3><p class="ops-subtitle">The customer help page is in place, but owner ticket triage stays disabled until the support-operations migration is applied to Supabase. No tickets have been changed.</p><p class="ops-subtitle">Migration file: <code>supabase/migrations/20261022203000_doodhwala_support_operations.sql</code></p></article></div>';return}
  const rows=Array.isArray(data)?data:[];
  const c=$("adminContent");
  const counts={open:0,in_progress:0,resolved:0,closed:0};rows.forEach(t=>{if(counts[t.status]!==undefined)counts[t.status]++});
