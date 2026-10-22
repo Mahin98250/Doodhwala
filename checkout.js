@@ -88,6 +88,14 @@ $("placeOrder").onclick=async()=>{
   }
   const groups=grouped();
   if(!groups.length){showError("Your cart has no backend-linked products. Return to the shop and add the milk again.");return}
+  const paymentMethod=document.querySelector('input[name="paymentMethod"]:checked')?.value==="direct_upi"?"direct_upi":"cod";
+  if(paymentMethod==="direct_upi"){
+   for(const [providerId] of groups){
+    let readiness;
+    try{readiness=await Doodhwala.supabase.rpc("customer_check_provider_direct_upi",{p_provider_id:providerId})}catch(error){readiness={error}}
+    if(readiness?.error||readiness?.data!==true){showError("Direct UPI is not set up for every seller in this cart. Choose Cash on Delivery or ask the seller to configure their UPI details.");return}
+   }
+  }
   placeButton.disabled=true;placeButton.textContent="Securing your order…";
   const orderIds=[],failures=[];
   for(const [providerId,items] of groups){
@@ -100,6 +108,10 @@ $("placeOrder").onclick=async()=>{
    try{result=await Doodhwala.supabase.rpc(rpcName,rpcArgs)}
    catch(error){result={error}}
    if(!result||result.error){failures.push(result?.error||new Error("Order request did not return a result."));continue}
+   let paymentResult;
+   try{paymentResult=await Doodhwala.supabase.rpc("customer_set_order_payment_method",{p_order_id:result.data,p_method:paymentMethod})}
+   catch(error){paymentResult={error}}
+   if(paymentResult?.error){failures.push(paymentResult.error);continue}
    orderIds.push(result.data);
    removeProviderFromCart(providerId);
   }
@@ -113,7 +125,7 @@ $("placeOrder").onclick=async()=>{
   if(window.DoodhwalaResilience)window.DoodhwalaResilience.removeItem(CART_KEY);else try{localStorage.removeItem(CART_KEY)}catch(_){}
   checkoutKeys={};saveCheckoutKeys();
   $("checkoutForm").classList.add("hidden");$("success").classList.remove("hidden");
-  $("successText").textContent=orderIds.length===1?"Order "+orderIds[0]+" has been created.":"We created "+orderIds.length+" provider orders from your cart.";
+  $("successText").textContent=(orderIds.length===1?"Order "+orderIds[0]+" has been created.":"We created "+orderIds.length+" provider orders from your cart.")+(paymentMethod==="direct_upi"?" Direct UPI selected: open your order to pay the seller; payment remains pending until the seller checks their bank/UPI app.":" Cash on Delivery selected. Pay the seller when the milk arrives.");
   $("successOrders").innerHTML=orderIds.map(id=>'<div class="success-order"><b>Order '+escapeHtml(id)+'</b><br><span>Placed • awaiting provider acceptance</span></div>').join("");
  }catch(error){
   console.warn("Checkout submission failed",error);
