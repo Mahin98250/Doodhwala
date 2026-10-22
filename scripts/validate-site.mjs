@@ -63,9 +63,9 @@ if(localFiles.has("/provider.css")){
   if(!providerCssText.includes("height:calc(70px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile navigation must respect device safe-area inset");
   if(!providerCssText.includes("grid-template-columns:repeat(7,minmax(0,1fr))")) errors.push("provider.css -> all seven seller navigation destinations must remain visible on mobile");
   const providerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
-  if(!providerHtml.includes('/Dudh-Wallah/provider.css?v=20261013.3')) errors.push("provider.html -> seller mobile CSS cache version stale");
+  if(!providerHtml.includes('/Dudh-Wallah/provider.css?v=20261022.5')) errors.push("provider.html -> seller mobile CSS cache version stale");
   const providerSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!providerSw.includes('/Dudh-Wallah/provider.css?v=20261013.3')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
+  if(!providerSw.includes('/Dudh-Wallah/provider.css?v=20261022.5')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
 }else errors.push("required seller mobile stylesheet missing /provider.css");
 
 const sessionControlsPath=path.join(root,"session-controls.js");
@@ -126,12 +126,12 @@ if(fs.existsSync(providerHtmlPath)){
   if(!providerHtml.includes('data-view="subscriptions"')) errors.push("provider.html -> subscriptions navigation missing");
   if(!providerHtml.includes('id="view-subscriptions"')) errors.push("provider.html -> subscriptions view missing");
   if(!providerHtml.includes("provider.js?v=")) errors.push("provider.html -> provider bundle cache bust missing");
-  if(!providerHtml.includes("/Dudh-Wallah/provider.js?v=20261013.1")) errors.push("provider.html -> provider feed runtime cache version stale");
+  if(!providerHtml.includes("/Dudh-Wallah/provider.js?v=20261022.5")) errors.push("provider.html -> provider feed runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
-  if(!swText.includes("/Dudh-Wallah/provider.js?v=20261013.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
+  if(!swText.includes("/Dudh-Wallah/provider.js?v=20261022.5")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Dudh-Wallah/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
   if(!swText.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
@@ -208,12 +208,12 @@ if(localFiles.has("/orders.js")){
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Dudh-Wallah/orders.html">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
-  if(!checkoutHtml.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("checkout.html -> checkout runtime cache version stale");
+  if(!checkoutHtml.includes('/Dudh-Wallah/checkout.js?v=20261022.5')) errors.push("checkout.html -> checkout runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swP0.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> P0 checkout cache revision missing");
-  if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
+  if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261022.5')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
