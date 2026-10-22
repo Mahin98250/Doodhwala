@@ -3,6 +3,15 @@ import fs from "node:fs";
 
 const api = fs.readFileSync(new URL("../supabase/functions/doodhwala-pay/index.ts", import.meta.url), "utf8");
 const migration = fs.readFileSync(new URL("../supabase/migrations/20261022120000_doodhwala_pay_foundation.sql", import.meta.url), "utf8");
+const orderStateMachine = fs.readFileSync(new URL("../supabase/migrations/20261007092600_doodhwala_order_state_machine.sql", import.meta.url), "utf8");
+const payableStatusesMatch = api.match(/const payableOrderStatuses = new Set\\(\\[(.*?)\\]\\);/s);
+assert.ok(payableStatusesMatch, "payment intents must use an explicit allowlist of payable order states");
+const payableStatuses = [...payableStatusesMatch[1].matchAll(/"([^"]+)"/g)].map(match => match[1]);
+assert.deepEqual(payableStatuses, ["placed", "accepted", "preparing", "ready", "out_for_delivery"], "only known pre-delivery order states may create payment intents");
+for (const status of ["placed", "accepted", "preparing", "ready", "out_for_delivery", "delivered", "rejected", "cancelled"]) {
+  assert.ok(orderStateMachine.includes("'" + status + "'"), "payment state checks must stay aligned with order status migration: " + status);
+}
+assert.ok(api.includes("!payableOrderStatuses.has(String(order.status))"), "unknown, delivered, rejected and cancelled orders must fail closed");
 
 assert.ok(api.includes("/auth/v1/user"), "payment API must validate the caller session with Supabase Auth");
 assert.ok(api.includes("!PUBLISHABLE_KEYS.length"), "missing publishable-key allowlist configuration must fail closed");
