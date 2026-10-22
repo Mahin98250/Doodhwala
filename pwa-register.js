@@ -7,9 +7,12 @@
     window.navigator.serviceWorker.register("/Dudh-Wallah/sw.js", {
       scope: "/Dudh-Wallah/"
     }).catch(function (error) {
+      const detail = error && (error.name || error.message)
+        ? String(error.name || "Error") + (error.message ? ": " + String(error.message).slice(0, 180) : "")
+        : "Unknown registration error";
       try {
         if (window.console && typeof window.console.warn === "function") {
-          window.console.warn("Doodhwala offline support could not be enabled.", error);
+          window.console.warn("Doodhwala offline support could not be enabled.", detail, error);
         }
       } catch (_) {}
       try {
@@ -17,7 +20,7 @@
           window.DoodhwalaResilience.report(
             "resource_error",
             "warning",
-            "PWA service worker registration failed.",
+            "PWA service worker registration failed: " + detail,
             { resource: "/Dudh-Wallah/sw.js" }
           );
         }

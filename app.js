@@ -4,6 +4,8 @@ let activeFilter="all";
 let query="";
 let browseMode="all";
 let sortMode="closest";
+let onlyServiceable=false;
+let comparedProviderIds=[];
 let dataState="loading";
 let favorites=[];
 let cart={};
@@ -38,8 +40,9 @@ function filtered(){
  const list=providers.filter(p=>{
    const typeOk=activeFilter==="all"||(activeFilter==="subscription"?p.subscription:p.type===activeFilter);
    const savedOk=browseMode!=="saved"||favorites.includes(p.id);
+   const deliveryOk=!onlyServiceable||p.isServiceable===true;
    const text=[p.name,p.area,p.tag,p.city||""].concat((p.milks||[]).flat()).join(" ").toLowerCase();
-   return typeOk&&savedOk&&(!q||text.includes(q));
+   return typeOk&&savedOk&&deliveryOk&&(!q||text.includes(q));
  });
  list.sort((a,b)=>{
    if(sortMode==="rating") return Number(b.rating||0)-Number(a.rating||0);
@@ -55,6 +58,8 @@ function filtered(){
 }
 
 function render(){
+ syncDeliveryFilterControl();
+ renderCompareDock();
  const list=filtered();
  const meta=$("resultMeta");
  if(meta){
@@ -75,15 +80,19 @@ function render(){
    return;
  }
  if(!list.length){
-   const hasSearch=Boolean(query.trim()),hasTypeFilter=activeFilter!=="all";
-   if(hasSearch||hasTypeFilter){
+   const hasSearch=Boolean(query.trim()),hasTypeFilter=activeFilter!=="all",hasDeliveryFilter=onlyServiceable;
+   if(hasSearch||hasTypeFilter||hasDeliveryFilter){
      const filterNames={cow:"Cow milk",buffalo:"Buffalo milk",a2:"A2 milk",subscription:"Daily plans"};
-     const detail=hasSearch?'No providers match “'+escapeHtml(query.trim())+'”.':"No providers match the current selection.";
-     const hint=hasTypeFilter?'Selected filter: '+escapeHtml(filterNames[activeFilter]||activeFilter)+'. Try clearing it or searching another term.':"Try a different name, milk type, product or area.";
-     const actions=(hasSearch?'<button type="button" id="clearDiscoverySearch">Clear search</button>':"")+(hasTypeFilter?'<button type="button" id="clearDiscoveryFilter" class="primary">Show all providers</button>':"");
-     grid.innerHTML='<div class="no-results" role="status" aria-live="polite"><div style="font-size:32px">⌕</div><h3>No matching providers</h3><p>'+detail+" "+hint+'</p><div class="empty-actions">'+actions+'</div></div>';
+     const detail=hasDeliveryFilter&&!hasSearch&&!hasTypeFilter?"No sellers are currently marked as able to deliver to this location.":hasSearch?'No providers match “'+escapeHtml(query.trim())+'”.':"No providers match the current selection.";
+     const hints=[];
+     if(hasTypeFilter)hints.push('Selected filter: '+escapeHtml(filterNames[activeFilter]||activeFilter)+'.');
+     if(hasDeliveryFilter)hints.push("Try another delivery location, or turn off the delivery-only filter.");
+     if(!hints.length)hints.push("Try a different name, milk type, product or area.");
+     const actions=(hasSearch?'<button type="button" id="clearDiscoverySearch">Clear search</button>':"")+(hasTypeFilter?'<button type="button" id="clearDiscoveryFilter" class="primary">Show all milk types</button>':"")+(hasDeliveryFilter?'<button type="button" id="clearDeliveryFilter">Show nearby sellers</button>':"");
+     grid.innerHTML='<div class="no-results" role="status" aria-live="polite"><div style="font-size:32px">⌕</div><h3>No matching providers</h3><p>'+detail+" "+hints.join(" ")+'</p><div class="empty-actions">'+actions+'</div></div>';
      $("clearDiscoverySearch")?.addEventListener("click",()=>{query="";const input=$("search");if(input)input.value="";render();input?.focus()});
      $("clearDiscoveryFilter")?.addEventListener("click",()=>filter("all"));
+     $("clearDeliveryFilter")?.addEventListener("click",()=>{onlyServiceable=false;render()});
      return;
    }
    if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';return}
@@ -100,11 +109,12 @@ function render(){
      '<div class="cover" data-store="'+escapeHtml(p.id)+'"><span>'+escapeHtml(p.tag)+'</span><div class="provider-emoji">'+milkEmoji(p.type)+'</div><div class="provider-distance '+badgeClass+'">⌖ '+escapeHtml(locationBadge)+'</div></div>'+
      '<div class="provider-body"><div class="name-row"><div><div class="provider-name">'+escapeHtml(p.name)+'</div><div class="meta">'+escapeHtml(p.area)+' · ★ '+escapeHtml(p.rating)+'</div></div><div class="provider-actions">'+(p.verified?'<span class="verified">Verified</span>':'')+'<button class="save-provider'+(saved?" saved":"")+'" data-save="'+escapeHtml(p.id)+'" aria-label="'+(saved?"Remove from saved":"Save provider")+'">'+(saved?"♥":"♡")+'</button></div></div>'+
      (p.isServiceable===false?'<div class="service-warning">This provider is outside the current delivery zone.</div>':"")+
-     '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
-     '<div class="provider-foot"><span>'+(p.delivery||"Local route")+'</span><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></article>';
+     '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false&&Number.isFinite(Number(p.productPrices?.[i]))&&Number(p.productPrices[i])>0?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
+     '<div class="provider-foot"><span>'+(p.delivery||"Local route")+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
  }).join("");
  grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
  grid.querySelectorAll("[data-save]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFavorite(b.dataset.save)});
+ grid.querySelectorAll("[data-compare]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleCompare(b.dataset.compare)});
  grid.querySelectorAll("[data-store]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();location.href="/Dudh-Wallah/store.html?provider="+encodeURIComponent(b.dataset.store)});
  grid.querySelectorAll("[data-product]").forEach(b=>b.onclick=e=>{if(b.dataset.product){e.preventDefault();e.stopPropagation();location.href="/Dudh-Wallah/product.html?provider="+encodeURIComponent(b.dataset.provider)+"&product="+encodeURIComponent(b.dataset.product)}});
 }
@@ -113,9 +123,11 @@ function add(key){
  const parts=key.split(":"),providerKey=parts[0],index=Number(parts[1]),p=providers.find(x=>x.id===providerKey),m=p?.milks?.[index];
  if(!p||!m||p.isServiceable===false)return;
  const productId=p.productIds?.[index]||null;
+ const unitPrice=Number(p.productPrices?.[index]);
  if(!productId){toast("Product is no longer available in the live catalogue");return}
+ if(!Number.isFinite(unitPrice)||unitPrice<=0){toast("This product has no valid price yet and cannot be added");return}
  const itemKey=p.providerId+":"+productId;
- cart[itemKey]??={key:itemKey,provider:p.name,milk:m[0],price:m[1],unitPrice:Number(String(m[1]).replace(/[^0-9.]/g,""))||0,qty:0,emoji:milkEmoji(p.type),providerId:p.providerId,productId};
+ cart[itemKey]??={key:itemKey,provider:p.name,milk:m[0],price:money(unitPrice)+" / L",unitPrice,qty:0,emoji:milkEmoji(p.type),providerId:p.providerId,productId};
  cart[itemKey].qty+=1;const persisted=saveCart();updateCart();toast(persisted?m[0]+" added":"Added, but this device could not save your cart. Keep this tab open.");
 }
 function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);window.dispatchEvent(new Event("doodhwala:cart-updated"));return persisted}
@@ -136,6 +148,79 @@ function qty(value){const i=value.lastIndexOf(":");const key=value.slice(0,i),de
 function toggleFavorite(id){const i=favorites.indexOf(id),removing=i>=0;if(removing)favorites.splice(i,1);else favorites.push(id);const persisted=writeLocalState("doodhwala-favorites",favorites);render();toast(!persisted?"Updated for this session, but could not save on this device.":(removing?"Removed from saved":"Provider saved"))}
 
 function filter(v){activeFilter=v;document.querySelectorAll("#chips button").forEach(b=>b.classList.toggle("active",b.dataset.filter===v));document.querySelectorAll(".quick button").forEach(b=>b.classList.toggle("selected",b.dataset.filter===v));render()}
+
+function syncDeliveryFilterControl(){
+ const button=$("deliverableOnly");
+ if(!button)return;
+ button.setAttribute("aria-pressed",onlyServiceable?"true":"false");
+ button.classList.toggle("is-active",onlyServiceable);
+ const label=button.querySelector("[data-delivery-filter-label]");
+ if(label)label.textContent=onlyServiceable?"Showing deliverable":"Can deliver here";
+}
+function toggleDeliveryFilter(){
+ if(!readLocation()){
+   toast("Choose a delivery location first");
+   window.DoodhwalaLocation?.open?.();
+   return;
+ }
+ onlyServiceable=!onlyServiceable;
+ render();
+}
+function selectedForComparison(){
+ return comparedProviderIds.map(id=>providers.find(p=>String(p.id)===String(id))).filter(Boolean).slice(0,3);
+}
+function renderCompareDock(){
+ const dock=$("compareDock");
+ if(!dock)return;
+ const selected=selectedForComparison();
+ dock.hidden=selected.length===0;
+ const title=$("compareDockTitle"),names=$("compareDockNames"),open=$("openCompare");
+ if(title)title.textContent=selected.length===1?"Select one more seller":"Compare "+selected.length+" local sellers";
+ if(names)names.textContent=selected.map(p=>p.name).join(" · ");
+ if(open){open.disabled=selected.length<2;open.textContent=selected.length<2?"Add one more":"Compare now";}
+}
+function toggleCompare(id){
+ const provider=providers.find(p=>String(p.id)===String(id));
+ if(!provider){toast("This seller is no longer in the current catalogue");return}
+ const existing=comparedProviderIds.findIndex(value=>String(value)===String(id));
+ if(existing>=0){comparedProviderIds.splice(existing,1);render();toast("Seller removed from comparison");return}
+ if(comparedProviderIds.length>=3){toast("Compare up to 3 sellers at a time");return}
+ comparedProviderIds.push(id);
+ render();
+ toast(comparedProviderIds.length===1?"Seller added · choose one more to compare":"Seller added to comparison");
+}
+function compareCellProvider(p){
+ const delivery=p.isServiceable===true
+  ?'<span class="compare-status is-good">✓ Can deliver</span>'
+  :p.isServiceable===false
+   ?'<span class="compare-status is-bad">Outside area</span>'
+   :'<span class="compare-status is-neutral">Set location to check</span>';
+ const milk=(p.milks||[]).length
+  ?p.milks.map(m=>'<div class="compare-milk"><b>'+escapeHtml(m[0])+'</b><span>'+escapeHtml(m[1])+'</span></div>').join("")
+  :'<span class="compare-muted">No active products listed</span>';
+ const distance=p.distanceKm==null?'<span class="compare-muted">Set location</span>':escapeHtml(formatDistance(p.distanceKm));
+ const daily=p.subscription?'<span class="compare-status is-good">Available</span>':'<span class="compare-muted">Not listed</span>';
+ return {name:escapeHtml(p.name||"Local seller"),rating:'★ '+escapeHtml(Number(p.rating||0).toFixed(1)),area:escapeHtml([p.area,p.city].filter(Boolean).join(", ")||"Local area"),milk,distance,delivery,window:escapeHtml(p.delivery||"Local route"),daily,store:escapeHtml(p.providerId||p.id)};
+}
+function openCompareDialog(){
+ const selected=selectedForComparison(),overlay=$("compareDialog"),content=$("compareContent");
+ if(selected.length<2){toast("Choose at least 2 sellers to compare");return}
+ if(!overlay||!content)return;
+ const rows=selected.map(compareCellProvider);
+ const columns=rows.map(p=>'<th scope="col"><span class="compare-seller-name">'+p.name+'</span><small>Independent seller</small></th>').join("");
+ const body=[["Rating",p=>p.rating],["Milk & price",p=>p.milk],["Delivery area",p=>p.area],["Distance",p=>p.distance],["Delivery availability",p=>p.delivery],["Delivery window",p=>p.window],["Daily plan",p=>p.daily]];
+ content.innerHTML='<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th scope="col">Compare</th>'+columns+'</tr></thead><tbody>'+body.map(([label,get])=>'<tr><th scope="row">'+label+'</th>'+rows.map(p=>'<td>'+get(p)+'</td>').join("")+'</tr>').join("")+'<tr><th scope="row">Open seller</th>'+rows.map(p=>'<td><button type="button" class="primary compare-open-store" data-compare-store="'+p.store+'">View store →</button></td>').join("")+'</tr></tbody></table></div><p class="compare-footnote">Prices and availability reflect the current catalogue. Confirm the final order total and delivery details at checkout.</p>';
+ content.querySelectorAll("[data-compare-store]").forEach(button=>button.addEventListener("click",()=>{location.href="/Dudh-Wallah/store.html?provider="+encodeURIComponent(button.dataset.compareStore)}));
+ overlay.hidden=false;overlay.setAttribute("aria-hidden","false");document.body.classList.add("compare-open");$("closeCompare")?.focus();
+}
+function closeCompareDialog(){
+ const overlay=$("compareDialog");
+ if(!overlay||overlay.hidden)return;
+ overlay.hidden=true;overlay.setAttribute("aria-hidden","true");document.body.classList.remove("compare-open");$("openCompare")?.focus();
+}
+function clearComparison(closeDialog=false){
+ comparedProviderIds=[];render();if(closeDialog)closeCompareDialog();toast("Comparison cleared");
+}
 function navigateHomeView(destination){
  if(destination==="providers"){browseMode="all";activeFilter=activeFilter||"all";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="saved"){browseMode="saved";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
@@ -147,6 +232,24 @@ document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>filter(b.dat
 document.querySelectorAll(".quick button").forEach(b=>b.onclick=()=>{filter(b.dataset.filter);$("providers")?.scrollIntoView({behavior:"smooth"})});
 $("search")?.addEventListener("input",e=>{query=e.target.value;render()});
 $("providerSort")?.addEventListener("change",e=>{sortMode=e.target.value;const hint=$("discoveryHint");if(hint)hint.textContent=sortMode==="rating"?"Highest rated providers first":sortMode==="price"?"Lowest milk price first":"Closest providers first";render()});
+$("deliverableOnly")?.addEventListener("click",toggleDeliveryFilter);
+$("openCompare")?.addEventListener("click",openCompareDialog);
+$("closeCompare")?.addEventListener("click",closeCompareDialog);
+$("closeCompareFooter")?.addEventListener("click",closeCompareDialog);
+$("clearCompare")?.addEventListener("click",()=>clearComparison());
+$("clearCompareInside")?.addEventListener("click",()=>clearComparison(true));
+$("compareDialog")?.addEventListener("click",event=>{if(event.target.id==="compareDialog")closeCompareDialog()});
+document.addEventListener("keydown",event=>{
+ const overlay=$("compareDialog");
+ if(!overlay||overlay.hidden)return;
+ if(event.key==="Escape"){closeCompareDialog();return}
+ if(event.key!=="Tab")return;
+ const focusable=overlay.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])');
+ if(!focusable.length)return;
+ const first=focusable[0],last=focusable[focusable.length-1];
+ if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+ else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+});
 $("explore")?.addEventListener("click",()=>navigateHomeView("providers"));
 $("filterButton")?.addEventListener("click",()=>$("chips")?.scrollIntoView({behavior:"smooth",block:"center"}));
 
@@ -174,7 +277,7 @@ async function loadRemoteProviders(lat=null,lng=null){
      distanceKm:row.distance_km==null?null:Number(row.distance_km),serviceRadiusKm:row.service_radius_km==null?null:Number(row.service_radius_km),
      isServiceable:row.is_serviceable==null?null:Boolean(row.is_serviceable),
      subscription:products.some(p=>p.daily_available),productDailyAvailable:products.map(p=>Boolean(p.daily_available)),
-     productIds:products.map(p=>p.id),milks:products.map(p=>[p.name,money(p.price_per_litre)+" / L"])
+     productIds:products.map(p=>p.id),productPrices:products.map(p=>Number(p.price_per_litre)),milks:products.map(p=>[p.name,Number.isFinite(Number(p.price_per_litre))&&Number(p.price_per_litre)>0?money(p.price_per_litre)+" / L":"Price unavailable"])
    }
  });
  window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
