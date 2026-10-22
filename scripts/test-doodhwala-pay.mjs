@@ -5,6 +5,9 @@ const api = fs.readFileSync(new URL("../supabase/functions/doodhwala-pay/index.t
 const migration = fs.readFileSync(new URL("../supabase/migrations/20261022120000_doodhwala_pay_foundation.sql", import.meta.url), "utf8");
 
 assert.ok(api.includes("/auth/v1/user"), "payment API must validate the caller session with Supabase Auth");
+assert.ok(api.includes("!PUBLISHABLE_KEYS.length"), "missing publishable-key allowlist configuration must fail closed");
+assert.ok(api.includes("if (!apiKey || !PUBLISHABLE_KEYS.includes(apiKey))"), "missing or unconfigured client apikey must be rejected before authentication");
+assert.doesNotMatch(api, /PUBLISHABLE_KEYS\.length\s*&&/, "an empty allowlist must never disable API-key validation");
 assert.ok(api.includes("customer_id=eq."), "orders and payment status must be scoped to the authenticated customer");
 assert.ok(api.includes("Math.round(total * 100)"), "server must derive the payable amount from the database order total in paise");
 assert.ok(api.includes("idempotency_key"), "payment intents must be idempotent");
