@@ -383,6 +383,22 @@ async function loadSystemHealthSection(){
   if(head)head.insertAdjacentElement("afterend",note);
  }
 }
+async function loadSupportTicketsSection(statusFilter="all"){
+ const data=await adminRpc("admin_list_support_tickets",{p_status:statusFilter==="all"?null:statusFilter,p_limit:150});
+ const rows=Array.isArray(data)?data:[];
+ const c=$("adminContent");
+ const counts={open:0,in_progress:0,resolved:0,closed:0};rows.forEach(t=>{if(counts[t.status]!==undefined)counts[t.status]++});
+ c.innerHTML='<div class="admin-section"><div class="admin-hero"><div><span class="eyebrow">CUSTOMER EXPERIENCE</span><h2>Support inbox</h2><p>Review delivery, order, payment and seller questions. Keep replies factual; do not promise refunds or delivery outcomes before checking.</p></div><div class="admin-hero-actions"><button id="supportRefresh">↻ Refresh inbox</button></div></div><div class="support-admin-summary">'+[['Open',counts.open],['In progress',counts.in_progress],['Resolved',counts.resolved],['Closed',counts.closed]].map(x=>'<div class="metric"><small>'+x[0]+'</small><b>'+x[1]+'</b><span>Loaded tickets</span></div>').join('')+'</div><article class="admin-card admin-list-card ops-card"><div class="admin-list-head"><div><span class="eyebrow">TICKET QUEUE</span><h3>Customer and seller requests</h3><p class="ops-subtitle">Customer details are limited to name and account type. Order ID is shown only for triage.</p></div><select id="supportStatusFilter" aria-label="Filter support tickets"><option value="all">All statuses</option><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></div><div class="table-scroll"><table class="table admin-table"><thead><tr><th>Request</th><th>Customer</th><th>Category / order</th><th>Priority</th><th>Status</th><th>Received</th><th>Update</th></tr></thead><tbody>'+ (rows.length?rows.map(t=>'<tr><td><b>'+esc(t.subject)+'</b><details class="support-ticket-detail"><summary>Read details</summary><p>'+esc(t.description)+'</p></details><small>'+esc(t.id)+'</small></td><td>'+esc(t.customer_name||"Account")+'<small>'+esc(t.customer_account_type||"customer")+'</small></td><td>'+esc(t.category)+'<small>'+(t.order_id?esc(t.order_id):"No linked order")+'</small></td><td><select data-ticket-priority="'+esc(t.id)+'" aria-label="Priority for ticket '+esc(t.subject)+'">'+["low","normal","high","urgent"].map(p=>'<option value="'+p+'" '+(p===t.priority?"selected":"")+'>'+p+'</option>').join('')+'</select></td><td><span class="admin-status '+esc(t.status)+'">'+esc(t.status.replace("_"," "))+'</span></td><td>'+dateTime(t.created_at)+'<small>Updated '+dateTime(t.updated_at)+'</small></td><td><select data-ticket-status="'+esc(t.id)+'" aria-label="Status for ticket '+esc(t.subject)+'">'+["open","in_progress","resolved","closed"].map(st=>'<option value="'+st+'" '+(st===t.status?"selected":"")+'>'+st.replace("_"," ")+'</option>').join('')+'</select><button data-ticket-save="'+esc(t.id)+'">Save</button></td></tr>').join(''):'<tr><td colspan="7" class="empty-table">No tickets match this filter.</td></tr>')+'</tbody></table></div></article></div>';
+ $("supportRefresh").onclick=()=>loadSupportTicketsSection($("supportStatusFilter").value);
+ $("supportStatusFilter").value=statusFilter;
+ $("supportStatusFilter").onchange=()=>loadSupportTicketsSection($("supportStatusFilter").value);
+ c.querySelectorAll("[data-ticket-save]").forEach(button=>button.onclick=async()=>{
+   const id=button.dataset.ticketSave,statusValue=c.querySelector('[data-ticket-status="'+id+'"]').value,priorityValue=c.querySelector('[data-ticket-priority="'+id+'"]').value;
+   button.disabled=true;button.textContent="Saving…";
+   try{await adminRpc("admin_update_support_ticket",{p_ticket_id:id,p_status:statusValue,p_priority:priorityValue});toast("Support ticket updated");await loadSupportTicketsSection($("supportStatusFilter").value)}
+   catch(error){toast(error.message||"Could not update ticket","error");button.disabled=false;button.textContent="Save"}
+ });
+}
 async function loadSection(next){
  currentDetail=null;
  section=next;
@@ -391,6 +407,7 @@ async function loadSection(next){
  try{
   if(section==="overview"){await loadOverview();return}
   if(section==="orders"){await loadOrdersSection();return;}
+  if(section==="support"){await loadSupportTicketsSection();return;}
   if(section==="providers"){await loadProvidersSection();return}
   if(section==="customers"){cache.customers=await adminRpc("admin_list_customers",{p_limit:150});table("Customers",[["Customer",r=>"<button data-customer='"+esc(r.id)+"'>"+esc(r.full_name||"—")+"</button>"],["Email",r=>esc(r.email||"—")],["Phone",r=>esc(r.phone||"—")],["Orders",r=>r.order_count],["Active plans",r=>r.active_plan_count],["Joined",r=>dateText(r.created_at)]],cache.customers);$("adminContent").querySelectorAll("[data-customer]").forEach(b=>b.onclick=()=>showCustomerDetail(b.dataset.customer));return}
   if(section==="subscriptions"){cache.subscriptions=await adminRpc("admin_list_subscriptions",{p_limit:150});table("Subscriptions",[["Customer",r=>esc(r.customer_name||"—")],["Provider",r=>esc(r.provider_name||"—")],["Milk",r=>esc(r.product_name||"—")],["Status",r=>'<span class="admin-status '+esc(r.status)+'">'+esc(r.status)+'</span>'],["Qty",r=>Number(r.quantity_litres||0)+" L"],["Period",r=>dateText(r.start_date)+" → "+dateText(r.end_date)],["Deliveries",r=>r.delivery_count],["Action",r=>'<button data-subscription="'+esc(r.id)+'">View</button>']],cache.subscriptions);$("adminContent").querySelectorAll("[data-subscription]").forEach(b=>b.onclick=()=>showSubscriptionDetail(b.dataset.subscription));return}
@@ -496,7 +513,7 @@ if($("adminMore"))$("adminMore").onclick=function(){
  const existing=$("adminMoreMenu");if(existing){existing.remove();return}
  const menu=document.createElement("div");menu.id="adminMoreMenu";
  menu.style.cssText="position:fixed;z-index:10001;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));width:min(250px,calc(100vw - 24px));padding:10px;border:1px solid #d7dfd8;border-radius:16px;background:#fff;box-shadow:0 14px 36px rgba(13,37,23,.22);display:grid;gap:5px";
- [["Search records","search"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
+ [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
  const button=document.createElement("button");button.type="button";button.textContent=item[0];
  button.style.cssText="padding:12px;border:0;border-radius:10px;background:#f5f8f5;color:#17251c;text-align:left;font:700 13px system-ui;cursor:pointer";
  button.onclick=()=>{menu.remove();if(item[1]==="search"){const input=$("adminSearch");if(input){input.focus();input.select()}}else navTo(item[1])};
