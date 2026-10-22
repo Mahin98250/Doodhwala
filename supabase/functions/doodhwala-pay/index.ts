@@ -110,7 +110,8 @@ async function main(req: Request) {
   const orders = await orderResponse.json();
   const order = orders[0];
   if (!order) return json({ error: "order_not_found" }, 404, origin);
-  if (["cancelled", "rejected", "refunded"].includes(String(order.status))) return json({ error: "order_not_payable" }, 409, origin);
+  const payableOrderStatuses = new Set(["placed", "accepted", "preparing", "ready", "out_for_delivery"]);
+  if (!payableOrderStatuses.has(String(order.status))) return json({ error: "order_not_payable" }, 409, origin);
 
   const total = Number(order.total);
   if (!Number.isFinite(total) || total <= 0 || total > 10_000_000) return json({ error: "invalid_order_amount" }, 409, origin);
