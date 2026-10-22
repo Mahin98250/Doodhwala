@@ -6,6 +6,19 @@ let store=null,product=null,qty=1;
 const $=id=>document.getElementById(id);
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
+let productToast=null,productToastTimer=null;
+function toast(message){
+ if(!productToast){
+   productToast=document.createElement("div");
+   productToast.setAttribute("role","status");
+   productToast.setAttribute("aria-live","polite");
+   productToast.style.cssText="position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:10000;transform:translateX(-50%);max-width:calc(100vw - 28px);background:#17221a;color:#fff;padding:11px 15px;border-radius:999px;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.18)";
+   document.body.append(productToast);
+ }
+ productToast.textContent=message;
+ clearTimeout(productToastTimer);
+ productToastTimer=setTimeout(()=>{productToast?.remove();productToast=null},2200);
+}
 function milkIcon(type){
  const label=type==="cow"?"COW":type==="buffalo"?"BUFFALO":type==="a2"?"A2":"FRESH";
  const size=label==="BUFFALO"?5.3:6.7;
