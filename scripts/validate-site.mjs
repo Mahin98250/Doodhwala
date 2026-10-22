@@ -229,7 +229,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
 }
 for(const file of htmlFiles){
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261011.1')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
+  if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261022.3')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swCheck=fs.readFileSync(path.join(root,"sw.js"),"utf8");
@@ -250,7 +250,7 @@ if(localFiles.has("/sw.js")){
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!html.includes('resilience.js?v=20261011.1')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
+  if(!html.includes('resilience.js?v=20261022.3')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
 }
 for(const [file,expected] of [["/checkout.html","return=%2FDudh-Wallah%2Fcheckout.html"],["/orders.html","return=%2FDudh-Wallah%2Forders.html"],["/plans.html","return=%2FDudh-Wallah%2Fplans.html"]]){
   if(localFiles.has(file)){
