@@ -5,6 +5,7 @@ const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "
 const payments = read("supabase/migrations/20261022150000_doodhwala_direct_seller_payments.sql");
 const settingsRead = read("supabase/migrations/20261022151000_doodhwala_direct_upi_settings_read.sql");
 const raceGuard = read("supabase/migrations/20261022152000_doodhwala_payment_choice_race_guard.sql");
+const paymentWriteGuard = read("supabase/migrations/20261022153000_doodhwala_guard_payment_field_writes.sql");
 const checkout = read("checkout.js");
 const checkoutHtml = read("checkout.html");
 const provider = read("provider.js");
@@ -24,6 +25,9 @@ assert.match(settingsRead, /where p\.owner_user_id=auth\.uid\(\)/i, "seller sett
 assert.match(raceGuard, /set default 'selection_pending'/i, "new orders must not race into seller acceptance before payment choice is saved");
 assert.match(raceGuard, /payment_method_selection_pending/);
 assert.match(raceGuard, /if v_order\.payment_method=p_method then/i, "payment-choice RPC must be idempotent for retry after a lost response");
+assert.ok(paymentWriteGuard.includes("payment_fields_require_authorized_rpc"), "direct order-table writes must not forge payment fields");
+assert.ok(paymentWriteGuard.includes("current_setting('doodhwala.payment_rpc', true)"), "payment field changes require the trusted transaction capability");
+assert.ok(paymentWriteGuard.includes("set_config('doodhwala.payment_rpc','on',true)"), "ownership-checked RPCs must set the transaction-local capability");
 assert.match(checkout, /customer_check_provider_direct_upi/);
 assert.match(checkout, /customer_set_order_payment_method/);
 assert.match(checkout, /paymentMethod/);
@@ -38,4 +42,4 @@ assert.match(orders, /customer_get_order_direct_upi/);
 assert.match(orders, /upi:\/\/pay\?/);
 assert.match(orders, /Returning here does not prove payment/);
 assert.doesNotMatch(checkout + provider + orders, /upi_pin|bank_password|card_cvv/i, "Doodhwala must never collect payment credentials");
-console.log("Direct seller payment contracts passed: seller-scoped UPI, customer-owned orders, explicit COD, manual confirmation, and payment-choice race protection.");
+console.log("Direct seller payment contracts passed: seller-scoped UPI, customer-owned orders, explicit COD, manual confirmation, race protection, and guarded payment fields.");
