@@ -665,7 +665,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .compare-dock-actions .primary:disabled{opacity:.48;cursor:not-allowed;box-shadow:none}
 .compare-clear{border:1px solid #dfe8df;background:#fff;color:#566a5b;border-radius:11px;padding:10px 12px;font-size:11px;font-weight:800;cursor:pointer}
 .compare-overlay{position:fixed;z-index:10030;inset:0;display:grid;place-items:center;padding:22px;background:rgba(14,31,20,.52);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);overflow-y:auto}
-.compare-panel{width:min(1080px,100%);max-height:min(88svh,920px);overflow:auto;padding:clamp(20px,3vw,30px);border:1px solid rgba(255,255,255,.8);border-radius:25px;background:#fbfdfb;box-shadow:0 32px 100px rgba(0,0,0,.26);outline:0}
+body.compare-open{overflow:hidden;overscroll-behavior:none}
+.compare-panel{width:min(1080px,100%);max-height:min(88svh,920px);overflow:auto;overscroll-behavior:contain;padding:clamp(20px,3vw,30px);border:1px solid rgba(255,255,255,.8);border-radius:25px;background:#fbfdfb;box-shadow:0 32px 100px rgba(0,0,0,.26);outline:0}
 .compare-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 22px;padding:0 0 18px;border-bottom:1px solid #e5ece4}
 .compare-panel-head h2{margin:7px 0 6px;font-size:clamp(25px,3vw,34px);line-height:1.08;letter-spacing:-.045em;color:#182b1f}
 .compare-panel-head p{margin:0;color:#6b7b6f;font-size:13px;line-height:1.6}
