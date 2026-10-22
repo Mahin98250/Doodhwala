@@ -158,3 +158,19 @@ The journey passes only when the same order can be followed end-to-end by its re
 - **More projects:** https://github.com/Mahin98250?tab=repositories
 
 > Live demo links will be added only after the deployment URL is verified.
+
+## Doodhwala Pay — foundation in progress
+
+The payment foundation introduces a server-owned `payment_transactions` ledger and an authenticated `doodhwala-pay` Edge Function for idempotent payment-intent creation and customer-owned status lookup. Amounts are derived from the stored order total on the server and converted to integer paise.
+
+**Important launch boundary:** this is not yet a live payment gateway and it does not collect or move money. UPI/card/net-banking/wallet collection remains disabled until a suitable acquiring/payment provider is selected, credentials are configured as server-side secrets, signed webhooks are implemented and verified, and the required legal/compliance review is completed. Never collect card numbers, CVV, UPI PINs, or banking passwords in Doodhwala. Never mark an order paid from a browser redirect or client callback alone.
+
+Before enabling live collection:
+1. Apply the reviewed SQL migration `20261022120000_doodhwala_pay_foundation.sql`.
+2. Deploy `supabase/functions/doodhwala-pay` with JWT/session verification behavior tested against the production project.
+3. Select a payment provider/acquirer and configure its credentials only as server-side secrets.
+4. Implement provider-specific order creation, signed webhook verification, replay protection, reconciliation, refunds and idempotent state transitions.
+5. Add sandbox and end-to-end tests for success, failure, cancellation, duplicate webhooks, partial refunds and amount mismatch.
+6. Review applicable Indian payment, tax, privacy, marketplace and consumer-protection requirements with qualified professionals before production collection.
+
+The current API explicitly reports `gateway_ready: false` and `money_moved: false`; an intent is not proof of payment.
