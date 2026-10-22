@@ -95,6 +95,8 @@ function createHarness(options = {}) {
       calls.rpc.push({ name, args: structuredClone(args) });
       rpcAttempts += 1;
       if (options.failFirstRpc && rpcAttempts === 1) throw new Error("simulated network interruption");
+      if (name === "customer_check_provider_direct_upi") return { data: true, error: null };
+      if (name === "customer_set_order_payment_method") return { data: { order_id: args.p_order_id, payment_method: args.p_method }, error: null };
       return { data: "staging-order-001", error: null };
     }
   };
@@ -118,7 +120,7 @@ function createHarness(options = {}) {
     DoodhwalaResilience: resilience,
     addEventListener() {}
   };
-  const document = { getElementById: getElement };
+  const document = { getElementById: getElement, querySelector() { return { value: "cod" }; } };
   const Doodhwala = { configured: true, supabase };
   window.Doodhwala = Doodhwala;
 
@@ -154,8 +156,10 @@ async function testAddressUpdateAndSuccessfulOrder() {
   assert.equal(h.calls.addressUpdates[0].address_line, "Updated lane, House 12");
 
   await h.getElement("placeOrder").onclick();
-  assert.equal(h.calls.rpc.length, 1, "one provider should produce one create-order RPC");
+  assert.equal(h.calls.rpc.filter(call => call.name === "create_order").length, 1, "one provider should produce one create-order RPC");
   assert.equal(h.calls.rpc[0].name, "create_order");
+  assert.equal(h.calls.rpc[1].name, "customer_set_order_payment_method");
+  assert.equal(h.calls.rpc[1].args.p_method, "cod");
   assert.equal(h.calls.rpc[0].args.p_address_id, "staging-address-001", "order should use the saved address ID");
   assert.equal(h.getElement("success").classList.contains("hidden"), false, "successful order should show the success state");
   assert.match(h.getElement("successText").textContent, /staging-order-001/);
@@ -167,7 +171,7 @@ async function testRetryKeepsIdempotencyKeyAndCart() {
   await settle();
 
   await h.getElement("placeOrder").onclick();
-  assert.equal(h.calls.rpc.length, 1, "first attempt should call create-order once");
+  assert.equal(h.calls.rpc.filter(call => call.name === "create_order").length, 1, "first attempt should call create-order once");
   assert.equal(h.getElement("placeOrder").disabled, false, "button should unlock after a failed request");
   assert.equal(h.storage.has("doodhwala-cart"), true, "cart must be preserved after an uncertain network result");
   assert.equal(h.getElement("success").classList.contains("hidden"), true, "a failed request must not show order success");
@@ -177,8 +181,8 @@ async function testRetryKeepsIdempotencyKeyAndCart() {
   assert.equal(storedKeys["provider-1"].key, firstKey, "idempotency key should persist after an uncertain request");
 
   await h.getElement("placeOrder").onclick();
-  assert.equal(h.calls.rpc.length, 2, "retry should attempt the order again");
-  assert.equal(h.calls.rpc[1].args.p_idempotency_key, firstKey, "retry must reuse the same idempotency key");
+  assert.equal(h.calls.rpc.filter(call => call.name === "create_order").length, 2, "retry should attempt the order again");
+  assert.equal(h.calls.rpc.filter(call => call.name === "create_order")[1].args.p_idempotency_key, firstKey, "retry must reuse the same idempotency key");
   assert.equal(h.getElement("success").classList.contains("hidden"), false, "second successful attempt should show order confirmation");
   assert.equal(h.storage.has("doodhwala-cart"), false, "cart should clear only after a confirmed successful attempt");
 }
