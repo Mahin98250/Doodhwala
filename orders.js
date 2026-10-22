@@ -176,6 +176,7 @@ function renderTimeline(events){
   }).join("")+'</div>';
 }
 
+function paymentStatusLabel(o){const map={unpaid:"Payment not selected",payment_pending_verification:"UPI payment pending seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Pay seller on delivery",paid_cod:"Cash collection confirmed",payment_failed:"Payment failed",refund_or_reversal_review:"Payment issue needs review"};return map[o.payment_status]||"Payment status unavailable"}
 function renderOrderCard(o,events){
   const provider=o.provider_profiles||{};
   const items=o.order_items||[];
@@ -193,7 +194,7 @@ function renderOrderCard(o,events){
     o.delivery_address_line,
     [o.delivery_area_name,o.delivery_city,o.delivery_pin_code].filter(Boolean).join(", ")
   ].filter(Boolean).join(", ");
-  return '<article class="order-card">'+
+  const paymentMethod=o.payment_method==="direct_upi"?"Direct seller UPI":"Cash on Delivery";const paymentAction=o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>Payment · '+esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
     '<div class="order-card-head"><div><div class="order-provider">'+
       esc(provider.display_name||"Local milk provider")+
       '</div><div class="order-meta">Order '+esc(o.id)+" · "+esc(when(o.created_at))+
@@ -204,7 +205,7 @@ function renderOrderCard(o,events){
     '<div class="customer-address"><b>Delivery</b><br>'+
       esc(o.delivery_recipient_name||"")+" · "+esc(o.delivery_phone||"")+"<br>"+esc(address)+
       '</div>'+
-    deliveryPromise(o)+
+    deliveryPromise(o)+paymentPanel+
     (o.customer_note?'<div class="customer-note">Note: '+esc(o.customer_note)+'</div>':"")+
     renderTimeline(events)+
     renderRating(o)+
@@ -234,7 +235,7 @@ async function loadOrders(options={}){
 
   const result=await Doodhwala.supabase
     .from("orders")
-    .select("id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)")
+    .select("id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,payment_method,payment_status,payment_reference,payment_confirmed_at,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)")
     .eq("customer_id",user.id)
     .order("created_at",{ascending:false})
     .limit(50);
@@ -271,6 +272,7 @@ async function loadOrders(options={}){
     return renderOrderCard(o,eventsBy[o.id]||[]);
   }).join("");
 
+  $("ordersList").querySelectorAll("[data-pay-direct-upi]").forEach(function(button){button.addEventListener("click",async function(){button.disabled=true;button.textContent="Loading seller details…";try{const {data,error}=await Doodhwala.supabase.rpc("customer_get_order_direct_upi",{p_order_id:button.dataset.payDirectUpi});if(error||!data?.upi_id||!data?.payee_name)throw error||new Error("Seller UPI details are unavailable.");const amount=Number(data.amount);if(!Number.isFinite(amount)||amount<=0)throw new Error("Invalid order amount.");const uri="upi://pay?pa="+encodeURIComponent(data.upi_id)+"&pn="+encodeURIComponent(data.payee_name)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Doodhwala order "+data.order_id);alert("Pay only if the UPI app shows payee "+data.payee_name+" and amount ₹"+amount.toFixed(2)+". After paying, the seller must verify receipt in their bank/UPI app. Returning here does not prove payment.");window.location.href=uri;}catch(err){$("ordersState").textContent=err?.message||"Could not open seller UPI details."}finally{button.disabled=false;button.textContent="Pay seller with UPI"}})});
   $("ordersList").querySelectorAll("[data-cancel-order]").forEach(function(button){
     button.addEventListener("click",function(){
       cancelOrder(button.dataset.cancelOrder,button);
