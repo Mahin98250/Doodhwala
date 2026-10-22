@@ -45,15 +45,18 @@ async function main(req: Request) {
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
   if (limited(req)) return json({ error: "rate_limited" }, 429, origin);
   if (!PROJECT_URL || !SERVICE_KEY) return json({ error: "payment_service_not_configured" }, 503, origin);
+  // Never silently fall back to an empty or caller-supplied API key. Missing key
+  // allow-list configuration is a deployment error, not a reason to relax auth.
+  if (!PUBLISHABLE_KEYS.length) return json({ error: "payment_auth_not_configured" }, 503, origin);
 
   const auth = req.headers.get("authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token || token === auth) return json({ error: "authentication_required" }, 401, origin);
   const apiKey = req.headers.get("apikey") || "";
-  if (PUBLISHABLE_KEYS.length && !PUBLISHABLE_KEYS.includes(apiKey)) return json({ error: "invalid_api_key" }, 401, origin);
+  if (!apiKey || !PUBLISHABLE_KEYS.includes(apiKey)) return json({ error: "invalid_api_key" }, 401, origin);
 
   const userResponse = await fetch(PROJECT_URL + "/auth/v1/user", {
-    headers: { apikey: apiKey || String(PUBLISHABLE_KEYS[0] || ""), Authorization: "Bearer " + token },
+    headers: { apikey: apiKey, Authorization: "Bearer " + token },
   });
   if (!userResponse.ok) return json({ error: "invalid_session" }, 401, origin);
   const user = await userResponse.json();
