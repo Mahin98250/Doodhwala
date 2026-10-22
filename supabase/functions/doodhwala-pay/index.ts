@@ -44,13 +44,13 @@ async function main(req: Request) {
   if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ error: "origin_not_allowed" }, 403, null);
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
   if (limited(req)) return json({ error: "rate_limited" }, 429, origin);
-  if (!PROJECT_URL || !SERVICE_KEY) return json({ error: "payment_service_not_configured" }, 503, origin);
+  if (!PROJECT_URL || !SERVICE_KEY || !PUBLISHABLE_KEYS.length) return json({ error: "payment_service_not_configured" }, 503, origin);
 
   const auth = req.headers.get("authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token || token === auth) return json({ error: "authentication_required" }, 401, origin);
   const apiKey = req.headers.get("apikey") || "";
-  if (PUBLISHABLE_KEYS.length && !PUBLISHABLE_KEYS.includes(apiKey)) return json({ error: "invalid_api_key" }, 401, origin);
+  if (!apiKey || !PUBLISHABLE_KEYS.includes(apiKey)) return json({ error: "invalid_api_key" }, 401, origin);
 
   const userResponse = await fetch(PROJECT_URL + "/auth/v1/user", {
     headers: { apikey: apiKey || String(PUBLISHABLE_KEYS[0] || ""), Authorization: "Bearer " + token },
