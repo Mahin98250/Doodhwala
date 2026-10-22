@@ -59,9 +59,29 @@ async function main(req: Request) {
   const user = await userResponse.json();
   if (!user?.id) return json({ error: "invalid_session" }, 401, origin);
 
-  let rawBody: string;
-  try { rawBody = await req.text(); } catch { return json({ error: "invalid_json" }, 400, origin); }
-  if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) return json({ error: "request_too_large" }, 413, origin);
+  const declaredLength = Number(req.headers.get("content-length") || 0);
+  if (declaredLength > MAX_BODY_BYTES) return json({ error: "request_too_large" }, 413, origin);
+  let rawBody = "";
+  try {
+    const reader = req.body?.getReader();
+    if (!reader) return json({ error: "invalid_json" }, 400, origin);
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_BODY_BYTES) {
+        await reader.cancel();
+        return json({ error: "request_too_large" }, 413, origin);
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+    rawBody = new TextDecoder().decode(bytes);
+  } catch { return json({ error: "invalid_json" }, 400, origin); }
   let body: Record<string, unknown>;
   try { body = JSON.parse(rawBody); } catch { return json({ error: "invalid_json" }, 400, origin); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return json({ error: "invalid_request" }, 400, origin);
