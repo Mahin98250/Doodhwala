@@ -133,7 +133,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=20261013.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Dudh-Wallah/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v76"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -173,7 +173,7 @@ const adminHtmlPath=path.join(root,"admin.html");
 if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v76"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
@@ -212,7 +212,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v76"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261011.4')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
@@ -229,7 +229,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
 }
 for(const file of htmlFiles){
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261022.3')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
+  if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261022.4')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swCheck=fs.readFileSync(path.join(root,"sw.js"),"utf8");
@@ -254,7 +254,7 @@ if(!productSw.includes('/Dudh-Wallah/product.js?v=20261022.5')) errors.push("sw.
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!html.includes('resilience.js?v=20261022.3')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
+  if(!html.includes('resilience.js?v=20261022.4')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
 }
 for(const [file,expected] of [["/checkout.html","return=%2FDudh-Wallah%2Fcheckout.html"],["/orders.html","return=%2FDudh-Wallah%2Forders.html"],["/plans.html","return=%2FDudh-Wallah%2Fplans.html"]]){
   if(localFiles.has(file)){

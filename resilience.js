@@ -3,7 +3,7 @@
   "use strict";
   if (w.DoodhwalaResilience) return;
 
-  const APP_VERSION = "20261011.1";
+  const APP_VERSION = "20261022.4";
   const QUIET_WINDOW = 5 * 60 * 1000;
   const recent = new Map();
   const QUEUE_KEY = "doodhwala-error-report-queue-v1";
@@ -122,6 +122,7 @@
         event_type: eventType,
         severity: severity === "critical" ? "critical" : severity === "warning" ? "warning" : "error",
         fingerprint: fingerprint,
+        app_version: APP_VERSION,
         message: safeMessage,
         route: route,
         resource: resource,

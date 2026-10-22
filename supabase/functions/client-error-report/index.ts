@@ -5,7 +5,8 @@ const SECRET_KEYS = (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECR
 const SERVICE_KEY = SECRET_KEYS.default || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const PUBLISHABLE_KEYS = (() => { try { return Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}")); } catch { return []; } })();
 const ALLOWED_ORIGINS = new Set(["https://mahin98250.github.io"]);
-const APP_VERSION = "20261011.1";
+const LEGACY_APP_VERSION = "20261011.1";
+const APP_VERSION_PATTERN = /^\d{8}\.\d{1,3}$/;
 const buckets = new Map<string, { start: number; count: number }>();
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 20;
@@ -124,6 +125,8 @@ Deno.serve(async (req: Request) => {
 
   const statusRaw = Number(input.status_code);
   const statusCode = Number.isInteger(statusRaw) && statusRaw >= 100 && statusRaw <= 599 ? statusRaw : null;
+  const suppliedAppVersion = String(input.app_version || "");
+  const clientAppVersion = APP_VERSION_PATTERN.test(suppliedAppVersion) ? suppliedAppVersion : LEGACY_APP_VERSION;
   const row = {
     severity,
     event_type: eventType,
@@ -132,7 +135,7 @@ Deno.serve(async (req: Request) => {
     route: cleanPath(input.route),
     resource: cleanResource(input.resource),
     status_code: statusCode,
-    app_version: APP_VERSION,
+    app_version: clientAppVersion,
     environment: "production",
   };
 
@@ -164,7 +167,7 @@ Deno.serve(async (req: Request) => {
 
   const alertUrl = Deno.env.get("DOODHWALA_ALERT_WEBHOOK_URL");
   if (!recent && alertUrl && severity !== "warning") {
-    const message = "[Doodhwala " + severity.toUpperCase() + "] " + row.event_type + ": " + row.message + " | route: " + row.route + " | HTTP: " + (row.status_code ?? "n/a") + " | fingerprint: " + row.fingerprint;
+    const message = "[Doodhwala " + severity.toUpperCase() + "] " + row.event_type + ": " + row.message + " | route: " + row.route + " | app: " + row.app_version + " | HTTP: " + (row.status_code ?? "n/a") + " | fingerprint: " + row.fingerprint;
     try {
       const alert = await fetch(alertUrl, {
         method: "POST",
