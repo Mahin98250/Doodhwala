@@ -35,3 +35,8 @@ console.log("Customer discovery enhancements passed: delivery-only filter, escap
 assert.match(app, /event\.key!=="Tab"/, "comparison dialog must manage keyboard tab focus");
 assert.match(app, /document\.activeElement===first/, "comparison dialog must keep keyboard focus inside the overlay");
 assert.match(css, /body\.compare-open\{overflow:hidden/, "background scrolling must be locked while the comparison sheet is open");
+
+assert.match(app, /const unitPrice=Number\(p\.productPrices\?\.\[index\]\)/, "cart must use validated numeric product price");
+assert.match(app, /unitPrice<=0/, "cart must reject missing, invalid, or zero milk prices");
+assert.match(app, /Price unavailable/, "invalid catalogue prices must not be shown as ₹0");
+assert.match(app, /Number\(p\.productPrices\[i\]\)>0/, "Add button must be hidden for invalid prices");
