@@ -6,6 +6,7 @@ const payments = read("supabase/migrations/20261022150000_doodhwala_direct_selle
 const settingsRead = read("supabase/migrations/20261022151000_doodhwala_direct_upi_settings_read.sql");
 const raceGuard = read("supabase/migrations/20261022152000_doodhwala_payment_choice_race_guard.sql");
 const paymentWriteGuard = read("supabase/migrations/20261022153000_doodhwala_guard_payment_field_writes.sql");
+const pendingOnly = read("supabase/migrations/20261022154000_doodhwala_direct_upi_pending_only.sql");
 const checkout = read("checkout.js");
 const checkoutHtml = read("checkout.html");
 const provider = read("provider.js");
@@ -38,6 +39,8 @@ assert.match(provider, /provider_save_direct_upi/);
 assert.match(provider, /provider_confirm_direct_upi_payment/);
 assert.match(provider, /provider_confirm_cod_collected/);
 assert.match(provider, /bank settlement is not independently verified/);
+assert.ok(pendingOnly.includes("o.payment_status='payment_pending_verification'"), "UPI instructions must only be returned while verification is pending");
+assert.ok(pendingOnly.includes("o.status not in ('rejected','cancelled')"), "cancelled/rejected orders must not receive fresh UPI instructions");
 assert.match(orders, /customer_get_order_direct_upi/);
 assert.match(orders, /upi:\/\/pay\?/);
 assert.match(orders, /Returning here does not prove payment/);
