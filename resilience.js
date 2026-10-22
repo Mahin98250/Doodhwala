@@ -320,8 +320,13 @@
       return;
     }
     const error = event && event.error;
-    report("runtime_error", "critical", error && error.message || event && event.message || "An unexpected JavaScript error occurred.", { resource: event && event.filename || null });
-    showNotice("Something went wrong", "Doodhwala caught an unexpected error. Your current page has been kept open; reload or use the safe navigation option.");
+    const rawMessage = error && error.message || event && event.message || "An unexpected JavaScript error occurred.";
+    const line = Number(event && event.lineno) || 0;
+    const column = Number(event && event.colno) || 0;
+    const locationHint = line ? " (line " + line + (column ? ", column " + column : "") + ")" : "";
+    report("runtime_error", "critical", rawMessage + locationHint, { resource: event && event.filename || null });
+    try { if (w.console && typeof w.console.error === "function") w.console.error("Doodhwala runtime error", rawMessage, { resource: safeResource(event && event.filename), line: line || null, column: column || null, stack: error && safeText(error.stack, 1200) }); } catch (_) {}
+    showNotice("Something went wrong", "Doodhwala caught an unexpected error. Diagnostic details were recorded where reporting is configured. Reload the page or use the safe navigation option.");
   }, true);
   w.addEventListener("unhandledrejection", function (event) {
     const reason = event && event.reason;
