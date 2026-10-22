@@ -12,7 +12,7 @@ assert.ok(api.includes("idempotency_conflict"), "reusing a key for different ord
 assert.ok(api.includes("payment_provider_setup_required"), "online payments must fail closed until an actual provider is configured");
 assert.ok(api.includes("money_moved: false"), "intent creation must never claim funds were collected");
 assert.ok(api.includes('return json({ ok: true }, 200, origin)'), "CORS preflight must not return a body with a 204 status");
-assert.ok(api.includes("new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES"), "request size must be checked even without Content-Length");
+assert.ok(api.includes("req.body?.getReader()") && api.includes("if (size > MAX_BODY_BYTES)"), "request stream must be bounded before buffering, even without Content-Length");
 assert.doesNotMatch(api, /input\.(card_number|cvv|upi_pin|bank_password)/i, "the app must never collect sensitive payment credentials");
 assert.ok(api.includes("get_status"), "customer-owned payment status lookup must exist");
 assert.match(migration, /enable row level security/i, "payment ledger must have RLS enabled");
