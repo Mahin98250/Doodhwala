@@ -1,6 +1,6 @@
 # DoodhWala: Cost-efficient direct-to-seller payment design
 
-**Status:** Proposed architecture; not a live payment integration  
+**Status:** MVP code foundation committed; database migrations are not confirmed applied and live payments are not enabled  
 **Date:** 22 October 2026  
 **Business model:** Marketplace; independent milk sellers fulfil orders  
 **Goal:** Avoid percentage-based platform payment fees where possible and have customer money go directly to the responsible seller, while keeping order tracking and operational costs low.
@@ -78,3 +78,20 @@ If DoodhWala later needs fully automatic confirmation, refunds, platform commiss
 The Ministry of Finance published an MDR FAQ in September 2026 describing which UPI merchant transaction categories remain free and which may attract MDR. Applicable terms depend on the actual transaction and merchant classification. Read the current official guidance: https://financialservices.gov.in/faqs-merchant-discount-rate-mdr-select-upi-p2m-transactions
 
 This design document is engineering guidance, not legal or regulatory advice. It does not certify DoodhWala or any seller as eligible for a specific UPI fee treatment.
+
+
+## Implementation progress — 22 October 2026
+
+The repository now contains an initial code foundation for the selected direct-seller-UPI + COD flow:
+
+- Checkout lets the customer choose direct seller UPI or COD.
+- Direct UPI checkout checks that each seller has enabled UPI settings before creating orders.
+- Seller dashboard includes owner-scoped UPI ID/payee configuration.
+- Customer order view can launch a UPI intent using the order's amount and seller details.
+- Payment status stays pending until the seller explicitly attests they checked their bank/UPI app; a redirect or customer click never marks it paid.
+- COD collection is separately confirmed by the seller after delivery.
+- New orders begin in `selection_pending` so the seller cannot accept before the customer payment choice is saved.
+- A database trigger guards payment-sensitive columns against direct table updates; ownership-checked RPCs use a transaction-local capability to update them.
+- Static regression checks were added to CI for ownership, idempotency, payment-choice race protection, and manual confirmation.
+
+**Not yet verified:** Supabase migration application, live database execution, seller account/UPI validity, end-to-end UPI-app handoff on physical devices, and a real order/payment cycle. Do not represent the flow as production-ready until those checks are completed.
