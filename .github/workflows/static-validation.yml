@@ -29,6 +29,8 @@ jobs:
         run: node scripts/test-doodhwala-pay-state.mjs
       - name: Simulate customer checkout and network retry
         run: node scripts/test-checkout-flow.mjs
+      - name: Test direct seller UPI and COD contracts
+        run: node scripts/test-direct-seller-payments.mjs
       - name: Test customer discovery enhancements
         run: node scripts/test-discovery-enhancements.mjs
       - name: Test product-detail null and price recovery
