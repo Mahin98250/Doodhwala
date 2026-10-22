@@ -13,7 +13,20 @@ const cache = new Map([
 ]);
 const handlers = new Map();
 const cacheLookups = [];
+const installWarnings = [];
+let skipWaitingCalls = 0;
+const optionalFailure = "/Dudh-Wallah/provider.css?v=20261013.3";
+const installCache = {
+  async addAll(urls) {
+    for (const asset of urls) await this.add(asset);
+  },
+  async add(asset) {
+    if (asset === optionalFailure) throw new Error("simulated transient optional asset failure");
+    cache.set(new URL(asset, origin).href, "installed:" + asset);
+  }
+};
 const fakeCaches = {
+  async open() { return installCache; },
   async match(requestOrUrl) {
     const key = typeof requestOrUrl === "string" ? new URL(requestOrUrl, origin).href : requestOrUrl.url;
     cacheLookups.push(key);
@@ -23,7 +36,8 @@ const fakeCaches = {
 };
 const fakeSelf = {
   location: { origin },
-  addEventListener(type, callback) { handlers.set(type, callback); }
+  addEventListener(type, callback) { handlers.set(type, callback); },
+  async skipWaiting() { skipWaitingCalls++; }
 };
 vm.runInNewContext(source, {
   self: fakeSelf,
@@ -31,7 +45,8 @@ vm.runInNewContext(source, {
   fetch: async () => { throw new TypeError("offline"); },
   URL,
   Response,
-  Promise
+  Promise,
+  console: { warn(...args) { installWarnings.push(args); } }
 });
 
 async function offlineResponse(url, mode = "navigate") {
@@ -68,6 +83,15 @@ const unknownRoute = await offlineResponse(origin + "/Dudh-Wallah/not-cached.htm
 assert.equal(await unknownRoute.text(), "cached home page", "unknown offline navigation should fall back to the cached home page");
 
 console.log("Service-worker offline route recovery passed: query routes, versioned assets, and final navigation fallback.");
+
+let installPromise;
+handlers.get("install")({ waitUntil(promise) { installPromise = promise; } });
+assert.ok(installPromise, "service worker install handler must register its completion promise");
+await installPromise;
+assert.equal(skipWaitingCalls, 1, "optional asset failures must not block service worker activation");
+assert.ok(cache.has(origin + "/Dudh-Wallah/index.html"), "core offline shell must be cached before activation");
+assert.ok(installWarnings.some(args => String(args[0]).includes("optional offline asset")), "optional cache failures must be reported for diagnosis");
+
 
 assert.ok(source.includes('/Dudh-Wallah/product.js?v=20261022.4'), "the guarded product detail runtime must be explicitly precached");
 
