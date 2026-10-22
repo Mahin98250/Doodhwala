@@ -40,7 +40,7 @@ async function rest(path: string, init: RequestInit = {}) {
 
 async function main(req: Request) {
   const origin = req.headers.get("origin");
-  if (req.method === "OPTIONS") return json({ ok: true }, 204, origin);
+  if (req.method === "OPTIONS") return json({ ok: true }, 200, origin);
   if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ error: "origin_not_allowed" }, 403, null);
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
   if (limited(req)) return json({ error: "rate_limited" }, 429, origin);
