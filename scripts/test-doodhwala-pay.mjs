@@ -9,6 +9,7 @@ assert.ok(api.includes("customer_id=eq."), "orders and payment status must be sc
 assert.ok(api.includes("Math.round(total * 100)"), "server must derive the payable amount from the database order total in paise");
 assert.ok(api.includes("idempotency_key"), "payment intents must be idempotent");
 assert.ok(api.includes("idempotency_conflict"), "reusing a key for different order terms must fail");
+assert.ok(api.includes("Concurrent retries can race") && api.includes("racedRows"), "concurrent idempotent retries must safely return the existing matching intent");
 assert.ok(api.includes("payment_provider_setup_required"), "online payments must fail closed until an actual provider is configured");
 assert.ok(api.includes("money_moved: false"), "intent creation must never claim funds were collected");
 assert.ok(api.includes('return json({ ok: true }, 200, origin)'), "CORS preflight must not return a body with a 204 status");
