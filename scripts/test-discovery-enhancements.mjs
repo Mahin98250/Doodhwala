@@ -40,3 +40,7 @@ assert.match(app, /const unitPrice=Number\(p\.productPrices\?\.\[index\]\)/, "ca
 assert.match(app, /unitPrice<=0/, "cart must reject missing, invalid, or zero milk prices");
 assert.match(app, /Price unavailable/, "invalid catalogue prices must not be shown as ₹0");
 assert.match(app, /Number\(p\.productPrices\[i\]\)>0/, "Add button must be hidden for invalid prices");
+
+const resilience = fs.readFileSync(new URL("../resilience.js", import.meta.url), "utf8");
+assert.match(resilience, /event\.lineno/, "runtime error reports should include source line numbers when available");
+assert.match(resilience, /event\.colno/, "runtime error reports should include source column numbers when available");
