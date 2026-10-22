@@ -63,9 +63,9 @@ if(localFiles.has("/provider.css")){
   if(!providerCssText.includes("height:calc(70px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile navigation must respect device safe-area inset");
   if(!providerCssText.includes("grid-template-columns:repeat(7,minmax(0,1fr))")) errors.push("provider.css -> all seven seller navigation destinations must remain visible on mobile");
   const providerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
-  if(!providerHtml.includes('/Dudh-Wallah/provider.css?v=20261022.5')) errors.push("provider.html -> seller mobile CSS cache version stale");
+  if(!providerHtml.includes('/Dudh-Wallah/provider.css?v=20261022.6')) errors.push("provider.html -> seller mobile CSS cache version stale");
   const providerSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!providerSw.includes('/Dudh-Wallah/provider.css?v=20261022.5')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
+  if(!providerSw.includes('/Dudh-Wallah/provider.css?v=20261022.6')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
 }else errors.push("required seller mobile stylesheet missing /provider.css");
 
 const sessionControlsPath=path.join(root,"session-controls.js");
@@ -133,7 +133,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=20261022.5")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Dudh-Wallah/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v78"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -173,7 +173,7 @@ const adminHtmlPath=path.join(root,"admin.html");
 if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes('const CACHE="doodhwala-v78"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Dudh-Wallah/admin.js?v=20261012.1")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
@@ -183,6 +183,28 @@ else{
   for(const table of ["profiles","milk_products","provider_service_areas"])
     if(!sql.includes("'"+table+"'")) errors.push("admin live-sync migration -> missing realtime publication for "+table);
   if(!sql.includes("private.is_current_user_admin()")) errors.push("admin live-sync migration -> realtime select policy must be owner-only");
+}
+const supportHtmlPath=path.join(root,"support.html");
+if(localFiles.has("/support.html")){
+  const supportHtml=fs.readFileSync(supportHtmlPath,"utf8");
+  for(const contract of ['id="supportForm"','id="faqList"','create_support_ticket','Never share passwords','/Dudh-Wallah/support.css?v=20261022.1','/Dudh-Wallah/support.js?v=20261022.1'])
+    if(!supportHtml.includes(contract) && contract!=="create_support_ticket" && contract!=="Never share passwords") errors.push("support.html -> missing support experience contract "+contract);
+  if(!supportHtml.includes("Help & Support")) errors.push("support.html -> help title missing");
+}else errors.push("support page missing");
+if(localFiles.has("/support.js")){
+  const supportJs=fs.readFileSync(path.join(root,"support.js"),"utf8");
+  for(const contract of ['db.rpc("create_support_ticket"','auth.getSession()','p_subject:subject','p_description:description','p_order_id:orderId'])
+    if(!supportJs.includes(contract)) errors.push("support.js -> missing secure ticket submission contract "+contract);
+}
+if(localFiles.has("/index.html")){
+  const homeHtml=fs.readFileSync(path.join(root,"index.html"),"utf8");
+  if(homeHtml.includes('Doodhwala <span>10X</span>')) errors.push("index.html -> internal 10X label must not be customer-facing");
+  if(!homeHtml.includes('/Dudh-Wallah/support.html')) errors.push("index.html -> Help & Support entry point missing");
+}
+if(localFiles.has("/provider.html")){
+  const sellerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
+  if(sellerHtml.includes("10X Operations")) errors.push("provider.html -> internal 10X label must not be seller-facing");
+  if(!sellerHtml.includes('/Dudh-Wallah/support.html')) errors.push("provider.html -> Help & Support entry point missing");
 }
 const resiliencePath=path.join(root,"resilience.js");
 if(!localFiles.has("/resilience.js")) errors.push("required runtime file missing /resilience.js");
@@ -212,7 +234,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v77"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v78"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261022.5')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
