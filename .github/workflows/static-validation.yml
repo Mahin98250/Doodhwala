@@ -23,6 +23,8 @@ jobs:
         run: node scripts/test-resilience.mjs
       - name: Test client error-report version contracts
         run: node scripts/test-error-report-version.mjs
+      - name: Test Doodhwala Pay payment-intent security
+        run: node scripts/test-doodhwala-pay.mjs
       - name: Simulate customer checkout and network retry
         run: node scripts/test-checkout-flow.mjs
       - name: Test customer discovery enhancements
