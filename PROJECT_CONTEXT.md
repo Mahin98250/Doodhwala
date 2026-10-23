@@ -148,6 +148,7 @@ When the connection drops or a new person/assistant resumes:
 
 | Date | Update | Evidence / status |
 |---|---|---|
+| 2026-10-23 | Added a shared progressive UI polish layer in `experience-layer.css` and linked it from the customer home, provider, plans, orders, checkout, store, and product pages on branch `feat/premium-marketplace-experience`. | CSS-only interaction layer: shared focus rings, responsive hover/tap states, lightweight motion, modal/dock entrance transitions, and reduced-motion handling. Not yet merged or runtime/device tested. |
 | 2026-10-23 | Created this team handoff and context document. | Commit [`7e3195b`](https://github.com/Mahin98250/Dudh-Wallah/commit/7e3195b75fb3761a56350c7718c2404adf83fb59); documentation only. |
 | 2026-10-23 | Inspected the current `index.html` entry page while checking the “Doodhwala 10x” request. | Current `index.html` uses “Doodhwala” branding and contains no “Doodhwala 10x” / “10x” text. No UI change was made based on this check; investigate other routes or the deployed build before removing anything blindly. |
 | Previously documented in README | Customer/provider workflows, Supabase foundation, order creation, and Doodhwala Pay foundation described. | Treat runtime and production status as unverified until tested; payment gateway is explicitly not ready for live money movement. |
@@ -156,8 +157,8 @@ Add newest entries at the top. Include commit/PR links and test outcomes wheneve
 
 ## 9. Current session checkpoint
 
-**Next task:** locate the exact route/component or deployed asset where the user still sees “Doodhwala 10x” (the current `index.html` does not contain that string), then make a targeted change and verify the actual page. Next, audit the daily customer/seller workflow to identify the highest-value small feature. Keep the working brand as Doodhwala until a final name is approved.
+**Next task:** run a browser/mobile visual and functional pass over the shared experience layer, tune any selector conflicts, and then audit customer/seller workflows for one high-value daily-use feature. Also locate the exact route/component or deployed asset where the user sees “Doodhwala 10x”; current `index.html` does not contain that string. Keep Doodhwala as the working brand until a final name is approved.
 
-**Current verification boundary:** this was a source inspection only. The UI has not been changed, the deployed build was not verified, no new feature has shipped in this session, end-to-end order flow is not verified, and Doodhwala Pay cannot be claimed to collect money.
+**Current verification boundary:** this session made CSS and stylesheet-link changes on a feature branch. No browser/device test or deployment verification has been performed; the changes are not yet merged. End-to-end order flow is not verified, and Doodhwala Pay cannot be claimed to collect money.
 
 **Definition of done for the next session:** a small, reviewed change; checks recorded; no secrets committed; this document updated with actual commit/PR and test results.
