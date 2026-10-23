@@ -134,7 +134,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes("/Doodhwala/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Doodhwala/provider.js?v=20261022.5")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Doodhwala/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v83"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v86"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
