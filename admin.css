@@ -81,3 +81,29 @@
 
 /* Support inbox — clear triage controls and readable ticket details */
 .support-admin-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.support-admin-summary .metric{min-width:0}.support-admin-summary .metric b{font-size:23px}.support-admin-summary .metric span{font-size:9px}.admin-list-head>select,.admin-table td select{border:1px solid #d9e3da;background:#fbfdfb;border-radius:9px;min-height:32px;padding:0 9px;color:#26362c;font:700 9px "DM Sans",sans-serif;max-width:140px}.admin-table td [data-ticket-save]{display:block;margin-top:5px;border:1px solid #cbdccc;background:#edf6ef;color:#235d39;border-radius:8px;padding:6px 10px;font:800 8px "DM Sans",sans-serif;cursor:pointer}.admin-table td [data-ticket-save]:disabled{opacity:.55;cursor:wait}.support-ticket-detail{margin-top:7px;max-width:290px}.support-ticket-detail summary{font-size:8px;color:#2f7450;font-weight:900;cursor:pointer}.support-ticket-detail p{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:10px;background:#f7faf7;border:1px solid #e3ebe3;border-radius:9px;font-size:9px;line-height:1.6;color:#526258}.admin-table td>small{display:block;color:#87938b;font-size:7px;margin-top:4px;overflow-wrap:anywhere}.admin-status.in_progress{background:#edf4ff;color:#355e96}.admin-status.resolved{background:#e6f3e9;color:#17603f}.admin-status.open{background:#fff5dc;color:#84631d}@media(max-width:700px){.support-admin-summary{grid-template-columns:1fr 1fr}.admin-list-head>select{max-width:100%;width:100%}}
+
+
+/* Responsive control-center navigation, inspired by Mahin's admin layout. */
+.admin-side button{display:flex;align-items:center;gap:11px;width:100%;font-weight:750}
+.admin-side button:focus-visible,.admin-mobile-nav button:focus-visible{outline:3px solid #8fc49b;outline-offset:2px}
+.admin-nav-icon{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border-radius:9px;background:rgba(255,255,255,.07);font-size:14px;font-weight:900}
+.admin-side button.active .admin-nav-icon{background:rgba(143,196,155,.17);color:#b5dfbd}
+.admin-mobile-nav{display:none}
+@media(max-width:900px){
+ .admin-app{padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+ .admin-mobile-nav{display:flex;position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:1000;gap:4px;justify-content:space-between;align-items:stretch;padding:7px;border:1px solid rgba(215,228,216,.95);border-radius:23px;background:rgba(255,255,255,.94);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 14px 38px rgba(15,46,27,.16)}
+ .admin-mobile-nav button{display:flex;flex:1;min-width:0;min-height:55px;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px 2px;border:0;border-radius:16px;background:transparent;color:#748078;font:750 9px "DM Sans",system-ui,sans-serif;cursor:pointer}
+ .admin-mobile-nav button span{font-size:18px;line-height:1.1}
+ .admin-mobile-nav button.active{background:#e5f2e7;color:#1d5b3b}
+ .admin-top{padding:16px 15px}
+ .admin-top-main{align-items:flex-start;flex-direction:column;gap:12px}
+ .admin-search{width:100%;max-width:none;box-sizing:border-box}
+ .admin-period{display:flex;gap:6px}
+ .admin-period input{min-width:0;flex:1}
+ .admin-period button{flex:0 0 auto}
+}
+@media(max-width:420px){
+ .admin-mobile-nav{left:8px;right:8px;padding:5px;gap:2px}
+ .admin-mobile-nav button{font-size:8px}
+ .admin-period input{width:0;padding:0 5px;font-size:9px}
+}
