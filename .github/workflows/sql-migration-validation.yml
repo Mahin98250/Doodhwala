@@ -1,0 +1,47 @@
+name: SQL migration validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  nearby-search-migration:
+    name: Validate nearby-search SQL on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create isolated synthetic Supabase-like schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/nearby-search-fixture.sql
+      - name: Apply nearby-search migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023120000_doodhwala_bounded_nearby_provider_search.sql
+      - name: Verify results and longitude-wrap edge cases
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/nearby-search-assertions.sql
