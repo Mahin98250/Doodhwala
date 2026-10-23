@@ -164,7 +164,35 @@ function renderChecklist(){
  $("checklist").innerHTML=items.map((x,i)=>'<button class="check-row '+(x[1]?"done":"")+'" data-check-view="'+x[3]+'"><span>'+(x[1]?"✓":i+1)+'</span><div><b>'+x[0]+'</b><small>'+(x[1]?"Complete":x[2])+'</small></div></button>').join("");
  $("checklist").querySelectorAll("[data-check-view]").forEach(b=>b.onclick=()=>showView(b.dataset.checkView))
 }
-function showView(view){document.querySelectorAll(".provider-view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="orders")loadProviderOrders();if(view==="route")loadProviderRoute(routeDate);if(view==="subscriptions")loadProviderSubscriptions()}
+function billingMoney(paise){return "₹"+(Number(paise||0)/100).toLocaleString("en-IN",{minimumFractionDigits:0,maximumFractionDigits:2})}
+function billingDate(value){return value?new Date(value).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"Not started"}
+async function loadSellerBilling(){
+ const state=$("sellerBillingState"),plansBox=$("sellerBillingPlans"),history=$("sellerBillingHistory");
+ if(!state||!plansBox||!history)return;
+ state.textContent="Loading your subscription records…";
+ if(!window.Doodhwala?.configured){state.textContent="Billing backend is not configured yet.";plansBox.innerHTML="";history.innerHTML="";return}
+ try{
+  const {data:userData,error:userError}=await Doodhwala.supabase.auth.getUser();
+  if(userError||!userData?.user){state.textContent="Sign in with the account linked to your seller profile to manage billing.";plansBox.innerHTML='<div class="order-empty"><b>Sign-in required</b><span>Your subscription records are private to your seller account.</span><a href="/Dudh-Wallah/auth.html?return=%2FDudh-Wallah%2Fprovider.html">Sign in</a></div>';history.innerHTML="";return}
+  const {data,error}=await Doodhwala.supabase.rpc("seller_get_subscription_billing");
+  if(error)throw error;
+  const plans=Array.isArray(data?.plans)?data.plans:[],subs=Array.isArray(data?.subscriptions)?data.subscriptions:[],payments=Array.isArray(data?.payments)?data.payments:[];
+  const active=subs.find(s=>s.status==="active"&&s.expires_at&&new Date(s.expires_at)>new Date());
+  state.textContent=active?"Current plan: "+(active.plan_name||"Seller plan")+" · active until "+billingDate(active.expires_at):"No active paid seller plan. Choose a plan and request collection to get started.";
+  plansBox.innerHTML=plans.length?plans.map(p=>'<article class="seller-plan-card '+(p.featured_placement?"is-featured":"")+'"><div class="seller-plan-top"><span class="seller-plan-tag">'+(p.featured_placement?"FEATURED":"STANDARD")+'</span><span class="seller-plan-price">'+billingMoney(p.monthly_price_paise)+'<small>/month</small></span></div><h3>'+escapeHtml(p.name)+'</h3><p>'+escapeHtml(p.description||"Monthly Doodhwala seller membership.")+'</p><ul><li>Seller profile and marketplace access</li><li>Customer order payments go directly to you</li>'+(p.featured_placement?'<li>Featured in-app promotion while active</li>':'<li>Standard marketplace placement</li>')+'</ul><label>Collection method<select data-billing-method="'+escapeHtml(p.id)+'"><option value="offline_cash">Cash collected at dairy</option><option value="offline_upi">UPI collected by Doodhwala</option><option value="offline_bank_transfer">Bank transfer (offline record)</option><option value="offline_other">Other offline collection</option></select></label><button class="provider-primary" data-request-billing="'+escapeHtml(p.id)+'">Request offline collection →</button><small class="seller-plan-footnote">Plan activates only after an authorized admin records the actual collection.</small></article>').join(""):'<div class="order-empty"><b>No plans are available yet.</b><span>Please contact Doodhwala.</span></div>';
+  plansBox.querySelectorAll("[data-request-billing]").forEach(button=>button.onclick=async()=>{
+   const planId=button.dataset.requestBilling,select=plansBox.querySelector('[data-billing-method="'+planId+'"]'),method=select?.value||"offline_cash";
+   if(!confirm("Request Doodhwala to collect "+(plans.find(p=>p.id===planId)?.name||"this plan")+" payment at your dairy? This does not mark the plan paid."))return;
+   button.disabled=true;button.textContent="Sending request…";
+   try{const {data:result,error:requestError}=await Doodhwala.supabase.rpc("seller_request_subscription",{p_plan_id:planId,p_payment_method:method});if(requestError)throw requestError;state.textContent=result?.message||"Collection request recorded. Waiting for Doodhwala to confirm receipt.";toast("Collection request recorded");await loadSellerBilling()}
+   catch(err){state.textContent=err.message||"Unable to request collection.";button.disabled=false;button.textContent="Request offline collection →"}
+  });
+  const rows=payments.map(pay=>{const sub=subs.find(s=>s.id===pay.subscription_id),status=String(pay.status||"pending").replaceAll("_"," ");return '<div class="seller-billing-row"><div><b>'+billingMoney(pay.amount_paise)+'</b><span>'+(escapeHtml(sub?.plan_name||"Seller plan"))+' · '+escapeHtml(pay.payment_method.replaceAll("_"," "))+'</span></div><span class="seller-billing-status '+(pay.status==="succeeded"?"paid":pay.status==="pending"?"pending":"other")+'">'+escapeHtml(status)+'</span><small>'+(pay.paid_at?"Paid "+billingDate(pay.paid_at):"Created "+billingDate(pay.created_at))+'</small></div>'}).join("");
+  const subRows=subs.map(s=>'<div class="seller-billing-row"><div><b>'+escapeHtml(s.plan_name||"Seller plan")+'</b><span>'+escapeHtml(String(s.status||"").replaceAll("_"," "))+(s.featured_placement?" · Featured placement":"")+'</span></div><small>'+(s.status==="active"?"Expires "+billingDate(s.expires_at):"Requested "+billingDate(s.created_at))+'</small></div>').join("");
+  history.innerHTML=(subRows?'<h4>Memberships</h4>'+subRows:'<p class="muted-copy">No membership records yet.</p>')+(rows?'<h4>Payment history</h4>'+rows:'<p class="muted-copy">No payments recorded yet.</p>');
+ }catch(err){state.textContent=err.message||"Seller billing is not available yet. The billing migration must be reviewed and deployed before this page can load.";plansBox.innerHTML='<div class="order-empty"><b>Billing setup pending</b><span>We will show plans and payment history here once the secure billing backend is enabled. No payment has been taken.</span></div>';history.innerHTML=""}
+}
+function showView(view){document.querySelectorAll(".provider-view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="orders")loadProviderOrders();if(view==="route")loadProviderRoute(routeDate);if(view==="subscriptions")loadProviderSubscriptions();if(view==="billing")loadSellerBilling()}
 async function setupProviderSubscriptionRealtime(user){
  if(!window.Doodhwala?.configured||!user||window.__doodhwalaProviderSubscriptionChannel)return;
  const refresh=function(){
@@ -523,7 +551,7 @@ await setupProviderOrderRealtime(user)
   }
 })
 }
-$("refreshSubscriptions")?.addEventListener("click",loadProviderSubscriptions);
+$("refreshSubscriptions")?.addEventListener("click",loadProviderSubscriptions);\n$("refreshSellerBilling")?.addEventListener("click",loadSellerBilling);
 $("orderFilter")?.addEventListener("change",loadProviderOrders);
 $("refreshOrders")?.addEventListener("click",loadProviderOrders);
 clearInterval(window.__providerDeadlineTimer);window.__providerDeadlineTimer=setInterval(refreshOrderDeadlines,1000);
