@@ -180,3 +180,8 @@ Before enabling live collection:
 6. Review applicable Indian payment, tax, privacy, marketplace and consumer-protection requirements with qualified professionals before production collection.
 
 The current API explicitly reports `gateway_ready: false` and `money_moved: false`; an intent is not proof of payment.
+
+
+## Branding asset contract
+
+`assets/mascot.png` is the shared Doodhwala mascot for customer, seller, owner/admin, account, checkout, support, legal, and offline screens. The browser favicon and PWA manifest use the same asset. When changing the mascot, update this shared asset reference and the service-worker cache revision together so installed apps refresh reliably.
