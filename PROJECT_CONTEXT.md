@@ -3,7 +3,7 @@
 > **Purpose:** This is the durable handoff document for anyone (including AI assistants) continuing work on Doodhwala. Read this before making changes. Update it in the same pull request/commit whenever project direction, implementation status, or important decisions change.
 
 **Last updated:** 2026-10-23  
-**Repository:** https://github.com/Mahin98250/Dudh-Wallah  
+**Repository:** https://github.com/Mahin98250/Doodhwala  
 **Default branch:** `main`  
 **Product:** Doodhwala — a local-first marketplace connecting customers with independent neighbourhood milk sellers.
 
@@ -151,7 +151,7 @@ When the connection drops or a new person/assistant resumes:
 | Date | Update | Evidence / status |
 |---|---|---|
 | 2026-10-23 | Built the first seller subscription billing source slice: secure SQL migration/RPCs, seller Plan & Billing dashboard, owner plan editing, offline collection confirmation, audit log, PWA asset revisions and CI contract test. | Migration `supabase/migrations/20261023190000_seller_subscription_billing.sql`; test `scripts/test-seller-billing-contracts.mjs`; billing UI in `provider.html`/`provider.js`; owner controls in `admin.html`/`admin.js`. Source only: no database migration deployed, no online gateway configured, no real collection performed, and latest CI not yet confirmed. |\n| 2026-10-23 | Added seller subscription billing product specification for ₹2,000 Basic and ₹3,000 Featured (initial proposal), direct seller order payments, and separate online/offline subscription collection. | [`SELLER_SUBSCRIPTION_BILLING.md`](./SELLER_SUBSCRIPTION_BILLING.md), commit `2060daf2b796a594c4fb37f31411262f7563412c`. Documentation only at the time of that commit; billing implementation was added in later feature-branch commits. |\n| 2026-10-23 | Added shared premium interaction polish, Doodhwala Assist user-facing labels, accessible online/offline feedback, and PWA precache revision v82 in PR #31. | Static CI run `39902666809` passed, including JS syntax, site asset contracts, service-worker cache checks and experience-layer tests. Mobile/desktop browser testing remains pending; no live Supabase migration was applied. |
-| 2026-10-23 | Created this team handoff and context document. | Commit [`7e3195b`](https://github.com/Mahin98250/Dudh-Wallah/commit/7e3195b75fb3761a56350c7718c2404adf83fb59); documentation only. |
+| 2026-10-23 | Created this team handoff and context document. | Commit [`7e3195b`](https://github.com/Mahin98250/Doodhwala/commit/7e3195b75fb3761a56350c7718c2404adf83fb59); documentation only. |
 | 2026-10-23 | Inspected the current `index.html` entry page while checking the “Doodhwala 10x” request. | Current `index.html` uses “Doodhwala” branding and contains no “Doodhwala 10x” / “10x” text. No UI change was made based on this check; investigate other routes or the deployed build before removing anything blindly. |
 | Previously documented in README | Customer/provider workflows, Supabase foundation, order creation, and Doodhwala Pay foundation described. | Treat runtime and production status as unverified until tested; payment gateway is explicitly not ready for live money movement. |
 
