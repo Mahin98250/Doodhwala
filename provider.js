@@ -243,6 +243,7 @@ function providerMilkIcon(type){
  return `<svg class="milk-type-art" viewBox="0 0 64 66" role="img" aria-label="${label.toLowerCase()} milk"><rect x="4" y="4" width="56" height="58" rx="16" fill="#f7fbf7" stroke="#d8e7db"/><path d="M26 12h12v7l5 7v24c0 3-2 5-5 5H26c-3 0-5-2-5-5V26l5-7Z" fill="#fff" stroke="#17603f" stroke-width="1.7" stroke-linejoin="round"/><path d="M26 19h12M23 29h18" fill="none" stroke="#17603f" stroke-width="1.7" stroke-linecap="round"/><path d="M32 32c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10Z" fill="#17603f"/><text x="32" y="59" text-anchor="middle" fill="#3a5b46" font-size="${size}" font-weight="800" font-family="Arial,sans-serif" letter-spacing=".5">${label}</text></svg>`;
 }
 function renderProducts(){
+ updateDeliveryReadiness();
  const term=($("productSearch")?.value||"").toLowerCase().trim(),stockFilter=$("stockFilter")?.value||"all";
  const list=provider.products.filter(p=>(!term||p.name.toLowerCase().includes(term))&&(stockFilter==="all"||(stockFilter==="in"&&p.stock)||(stockFilter==="out"&&!p.stock)));
  if(!list.length){$("productTable").innerHTML='<div class="empty-provider-state"><div class="provider-empty-icon">'+providerMilkIcon("mixed")+'</div><h3>No products match</h3><p>Add a milk product or change your filters.</p><button class="secondary" id="emptyAdd">+ Add milk</button></div>';$("emptyAdd")?.addEventListener("click",openProductEditor);return}
