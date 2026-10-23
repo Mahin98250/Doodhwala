@@ -43,6 +43,8 @@ jobs:
         run: node scripts/test-pwa-registration.mjs
       - name: Test premium experience and connection feedback
         run: node scripts/test-experience-layer.mjs
+      - name: Test customer runtime compatibility
+        run: node scripts/test-customer-runtime-compatibility.mjs
       - name: Test admin cross-role realtime cache invalidation
         run: node scripts/test-admin-data-sync.mjs
       - name: Test security contracts
