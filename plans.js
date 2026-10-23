@@ -49,9 +49,9 @@ function setupPlansRealtime(user){
 }
 async function loadContext(){
  try{
-  if(!window.Doodhwala?.configured){$("plansState").textContent="Backend is not configured.";return}
+  if(!window.Doodhwala?.configured||!window.Doodhwala.supabase){$("plansState").textContent="Daily plans are temporarily unavailable. Please try again shortly.";return}
   $("plansState").textContent="Connecting to Doodhwala…";
-  const session=await Promise.race([sup.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Authentication request timed out. Please refresh.")),10000))]);
+  const client=sup();if(!client?.auth?.getSession){$("plansState").textContent="Daily plans are temporarily unavailable. Please try again shortly.";return}const session=await Promise.race([client.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Authentication request timed out")),10000))]);
   user=session.data?.session?.user||null;
   if(!user){
    $("plansGate").classList.remove("hidden");$("plansState").textContent="Sign in to manage recurring milk deliveries.";return;
@@ -67,7 +67,7 @@ async function loadContext(){
   if(providerId&&productId)await loadProductContext();
   else{$("createPlan").classList.remove("hidden");$("planProductTitle").textContent="Choose a milk product first";$("planProviderMeta").textContent="Open a provider from the shop and tap Plan to preselect it."}
   setupPlansRealtime(user);
- }catch(err){console.error(err);$("plansState").textContent=String(err?.message||"Could not load your milk plans.");$("plansGate").classList.add("hidden");}
+ }catch(err){console.error("Daily plans failed to load",err);$("plansState").textContent="We couldn’t load your daily plans. Please refresh and try again.";$("plansGate").classList.add("hidden");}
 }
 async function loadProductContext(){
  const r=await sup.from("milk_products").select("id,name,milk_type,price_per_litre,unit_label,stock,daily_available,is_active,provider_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to,is_active)").eq("id",productId).eq("provider_id",providerId).maybeSingle();
