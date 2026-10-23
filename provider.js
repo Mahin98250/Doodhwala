@@ -136,8 +136,23 @@ function profilePercent(){const fields=[provider.providerName,provider.ownerName
 async function loadProviderUpiSettings(){if(!window.Doodhwala?.configured)return;const {data:userData}=await Doodhwala.supabase.auth.getUser();if(!userData?.user)return;const {data,error}=await Doodhwala.supabase.rpc("provider_get_direct_upi_settings");if(error){const s=$("providerUpiState");if(s)s.textContent="Could not load saved UPI settings.";return}if(!data)return;$("providerUpiId").value=data.upi_id||"";$("providerUpiPayee").value=data.payee_name||"";$("providerUpiEnabled").checked=data.enabled===true;$("providerUpiState").textContent=data.enabled?"Direct UPI is enabled. Customers will be told that you manually verify receipt.":"UPI details saved but direct UPI is disabled."}
 $("saveProviderUpi")?.addEventListener("click",async function(){const button=$("saveProviderUpi"),state=$("providerUpiState"),upiId=$("providerUpiId").value.trim(),payee=$("providerUpiPayee").value.trim(),enabled=$("providerUpiEnabled").checked;if(!upiId||!payee){state.textContent="Enter the UPI ID and exact payee name from your bank/UPI app.";return}button.disabled=true;button.textContent="Saving…";state.textContent="Saving securely…";try{const {error}=await Doodhwala.supabase.rpc("provider_save_direct_upi",{p_upi_id:upiId,p_payee_name:payee,p_enabled:enabled});if(error)throw error;state.textContent=enabled?"UPI details saved and enabled. Verify the displayed payee name before accepting payments.":"UPI details saved; direct UPI remains disabled.";toast("Direct UPI settings saved")}catch(error){state.textContent=String(error?.message||"Could not save UPI details.")}finally{button.disabled=false;button.textContent="Save UPI details"}});
 
+function updateDeliveryReadiness(){
+ const badge=$("readinessBadge");if(!badge)return;
+ const profileReady=Boolean(provider.providerName&&provider.ownerName&&/^\\d{10}$/.test(String(provider.phone||"").replace(/\\D/g,""))&&provider.area&&provider.city&&/^\\d{6}$/.test(String(provider.pin||"")));
+ const locationReady=Number.isFinite(Number(provider.latitude))&&Number.isFinite(Number(provider.longitude))&&provider.latitude!==""&&provider.longitude!=="";
+ const productReady=Array.isArray(provider.products)&&provider.products.some(function(p){return p.stock&&p.isActive!==false});
+ let label="Setup needed",kind="status-warning";
+ if(!provider.backendProviderId){label="Connect account";kind="status-neutral";}
+ else if(provider.verificationStatus==="rejected"){label="Review required";kind="status-danger";}
+ else if(provider.verificationStatus!=="approved"){label="Pending review";kind="status-warning";}
+ else if(provider.acceptingOrders===false){label="Store paused";kind="status-warning";}
+ else if(!profileReady||!locationReady||!productReady){label="Setup needed";kind="status-warning";}
+ else{label="Ready for orders";kind="status-good";}
+ badge.className=kind;badge.textContent=label;
+}
 function hydrateDashboard(){
  loadProviderUpiSettings().catch(function(err){console.warn("Seller UPI settings unavailable",err)});
+ updateDeliveryReadiness();
  $("profileAvatar").textContent=initials(provider.ownerName||provider.providerName);$("sideProviderName").textContent=provider.providerName||"Provider";$("sideProviderArea").textContent=(provider.area||"Local seller")+" · "+(provider.city||"Ahmedabad");$("topProviderName").textContent=provider.providerName||"Provider dashboard";
  $("kpiProducts").textContent=provider.products.length;$("kpiActive").textContent=provider.products.filter(p=>p.stock).length;$("kpiRadius").textContent=(provider.radius||0)+" km";
  const m=provider.metrics||{};$("kpiOpenOrders").textContent=Number(m.open_orders||0);$("kpiSalesToday").textContent=orderMoney(m.sales_today||0);const pct=profilePercent();$("kpiProfile").textContent=pct+"%";$("profileProgress").textContent=pct+"%";$("readinessTime").textContent=(provider.from||"06:00")+" – "+(provider.to||"09:00");$("readinessArea").textContent=provider.area?provider.area+", "+provider.city:"Not set";$("readinessAvailability").textContent=provider.products.filter(p=>p.stock).length+" of "+provider.products.length+" active";$("readinessCapacity").textContent=(provider.maxDailyLitres||250)+" L/day · "+(provider.maxOpenOrders||25)+" open orders";
