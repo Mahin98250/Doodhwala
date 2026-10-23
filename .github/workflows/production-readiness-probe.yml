@@ -1,0 +1,22 @@
+name: Production readiness preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Read-only production backend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run read-only production preflight
+        run: node scripts/production-readiness-probe.mjs
