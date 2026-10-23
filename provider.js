@@ -551,7 +551,8 @@ await setupProviderOrderRealtime(user)
   }
 })
 }
-$("refreshSubscriptions")?.addEventListener("click",loadProviderSubscriptions);\n$("refreshSellerBilling")?.addEventListener("click",loadSellerBilling);
+$("refreshSubscriptions")?.addEventListener("click",loadProviderSubscriptions);
+$("refreshSellerBilling")?.addEventListener("click",loadSellerBilling);
 $("orderFilter")?.addEventListener("change",loadProviderOrders);
 $("refreshOrders")?.addEventListener("click",loadProviderOrders);
 clearInterval(window.__providerDeadlineTimer);window.__providerDeadlineTimer=setInterval(refreshOrderDeadlines,1000);
