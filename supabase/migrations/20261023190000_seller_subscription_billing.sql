@@ -53,6 +53,9 @@ create index if not exists seller_subscription_payments_provider_idx
   on public.seller_subscription_payments(provider_id,created_at desc);
 create index if not exists seller_subscription_payments_status_idx
   on public.seller_subscription_payments(status,created_at desc);
+create unique index if not exists seller_subscription_one_pending_offline_idx
+  on public.seller_subscription_payments(provider_id)
+  where status='pending' and payment_method like 'offline_%';
 
 create table if not exists public.seller_subscription_audit (
   id bigint generated always as identity primary key,
