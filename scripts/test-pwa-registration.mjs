@@ -26,8 +26,8 @@ vm.runInNewContext(source, { window, document, Promise, String });
 await new Promise(resolve => setImmediate(resolve));
 
 assert.equal(calls.length, 1, "PWA registration should be attempted once on a complete document");
-assert.equal(calls[0].path, "/Dudh-Wallah/sw.js", "registration must use the GitHub Pages project path");
-assert.equal(calls[0].options.scope, "/Dudh-Wallah/", "registration must stay within the project scope");
+assert.equal(calls[0].path, "/Doodhwala/sw.js", "registration must use the GitHub Pages project path");
+assert.equal(calls[0].options.scope, "/Doodhwala/", "registration must stay within the project scope");
 assert.equal(reports.length, 1, "registration failure should be sent to the resilience reporter");
 assert.match(reports[0][2], /SecurityError: simulated scope\/install rejection/, "registration report must preserve safe error details");
 assert.ok(warnings.length > 0, "registration failure must still be visible in the browser console");
