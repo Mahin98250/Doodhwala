@@ -88,6 +88,15 @@ $("placeOrder").onclick=async()=>{
   }
   const groups=grouped();
   if(!groups.length){showError("Your cart has no backend-linked products. Return to the shop and add the milk again.");return}
+  // Fail closed before create_order: older/partially migrated databases must never
+  // create an order and then fail while persisting its payment choice.
+  let controlsReadiness;
+  try{controlsReadiness=await Doodhwala.supabase.rpc("customer_order_payment_controls_ready")}
+  catch(error){controlsReadiness={error}}
+  if(controlsReadiness?.error||controlsReadiness?.data?.ready!==true){
+   showError("Checkout is temporarily paused while secure payment controls are being deployed or verified. No order has been placed; your cart is safe. Please try again later.");
+   return;
+  }
   const paymentMethod=document.querySelector('input[name="paymentMethod"]:checked')?.value==="direct_upi"?"direct_upi":"cod";
   if(paymentMethod==="direct_upi"){
    for(const [providerId] of groups){
