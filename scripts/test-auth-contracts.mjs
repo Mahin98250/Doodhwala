@@ -18,31 +18,31 @@ function resolveReturnPath(search) {
 }
 
 assert.equal(
-  resolveReturnPath("?return=%2FDudh-Wallah%2Forders.html%3Fview%3Dactive"),
-  "/Dudh-Wallah/orders.html?view=active",
+  resolveReturnPath("?return=%2FDoodhwala%2Forders.html%3Fview%3Dactive"),
+  "/Doodhwala/orders.html?view=active",
   "valid same-site paths must preserve their intended destination and query"
 );
 assert.equal(
   resolveReturnPath("?return=./provider.html"),
-  "/Dudh-Wallah/provider.html",
+  "/Doodhwala/provider.html",
   "relative provider return paths must resolve inside the GitHub Pages project"
 );
 assert.equal(
   resolveReturnPath("?return=https%3A%2F%2Fevil.example%2Fcollect"),
-  "/Dudh-Wallah/",
+  "/Doodhwala/",
   "external return destinations must be rejected"
 );
 assert.equal(
-  resolveReturnPath("?return=%2FDudh-Wallah%2F..%2Fadmin.html"),
-  "/Dudh-Wallah/",
+  resolveReturnPath("?return=%2FDoodhwala%2F..%2Fadmin.html"),
+  "/Doodhwala/",
   "encoded traversal outside the project base must be rejected"
 );
 assert.equal(
-  resolveReturnPath("?return=%2FDudh-Wallah%2Fauth.html"),
-  "/Dudh-Wallah/",
+  resolveReturnPath("?return=%2FDoodhwala%2Fauth.html"),
+  "/Doodhwala/",
   "auth must not redirect back to itself"
 );
-assert.equal(resolveReturnPath(""), "/Dudh-Wallah/", "missing return paths must use a safe default");
+assert.equal(resolveReturnPath(""), "/Doodhwala/", "missing return paths must use a safe default");
 
 assert.ok(authHtml.includes('id="passwordResetForm"'), "auth page must provide a password-reset form");
 assert.ok(authHtml.includes('id="newPassword"') && authHtml.includes('id="confirmPassword"'), "password reset must confirm the new password");
