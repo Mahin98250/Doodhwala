@@ -6,7 +6,7 @@ assert.ok(fs.existsSync(migrationPath),"seller billing migration must exist");
 const sql=fs.readFileSync(migrationPath,"utf8");
 for(const contract of [
  "public.seller_subscription_plans","public.seller_subscriptions","public.seller_subscription_payments",
- "public.seller_subscription_audit","alter table public.seller_subscription_payments enable row level security",
+ "public.seller_subscription_audit","alter table public.seller_subscription_payments enable row level security",\n "seller_subscription_payment_owner_fk","seller_subscription_one_pending_offline_idx",
  "revoke all on public.seller_subscription_plans, public.seller_subscriptions",
  "public.seller_get_subscription_billing()","public.seller_request_subscription(p_plan_id uuid, p_payment_method text)",
  "public.admin_list_seller_subscription_billing","public.admin_upsert_seller_subscription_plan",
