@@ -131,7 +131,7 @@ $("finishOnboarding").onclick=()=>{
  readOnboarding();const name=$("firstMilkName").value.trim()||"Fresh milk",price=Number($("firstMilkPrice").value);
  if(!price||price<=0){toast("Enter a valid milk price");return}
  provider.products=[{id:newUuid(),name,price,stock:$("firstMilkStock").value==="in",days:$("firstMilkDays").value==="yes",type:provider.type,unit:"1 L"}];
- save();onboarding.classList.add("hidden");dashboard.classList.remove("hidden");hydrateDashboard();syncProviderBackend().then(function(result){if(result.ok){$("providerMode").textContent=result.hasLocation?"CONNECTED • PENDING VERIFICATION":"CONNECTED • ADD LOCATION";$("providerAuthLink").textContent="Account";$("providerAuthLink").href="/Dudh-Wallah/provider.html";toast(result.hasLocation?"Provider saved — pending verification":"Provider saved; location still needed")}else if(result.reason==="not_signed_in"){toast("Demo saved. Sign in to publish your provider")}}).catch(function(err){console.error(err);toast("Provider saved locally; backend sync failed")})
+ save();onboarding.classList.add("hidden");dashboard.classList.remove("hidden");hydrateDashboard();syncProviderBackend().then(function(result){if(result.ok){$("providerMode").textContent=result.hasLocation?"CONNECTED • PENDING VERIFICATION":"CONNECTED • ADD LOCATION";$("providerAuthLink").textContent="Account";$("providerAuthLink").href="/Doodhwala/provider.html";toast(result.hasLocation?"Provider saved — pending verification":"Provider saved; location still needed")}else if(result.reason==="not_signed_in"){toast("Demo saved. Sign in to publish your provider")}}).catch(function(err){console.error(err);toast("Provider saved locally; backend sync failed")})
 };
 function profilePercent(){const fields=[provider.providerName,provider.ownerName,provider.phone,provider.type,provider.area,provider.city,provider.pin,provider.radius,provider.from,provider.to];return Math.round(fields.filter(Boolean).length/fields.length*100)}
 async function loadProviderUpiSettings(){if(!window.Doodhwala?.configured)return;const {data:userData}=await Doodhwala.supabase.auth.getUser();if(!userData?.user)return;const {data,error}=await Doodhwala.supabase.rpc("provider_get_direct_upi_settings");if(error){const s=$("providerUpiState");if(s)s.textContent="Could not load saved UPI settings.";return}if(!data)return;$("providerUpiId").value=data.upi_id||"";$("providerUpiPayee").value=data.payee_name||"";$("providerUpiEnabled").checked=data.enabled===true;$("providerUpiState").textContent=data.enabled?"Direct UPI is enabled. Customers will be told that you manually verify receipt.":"UPI details saved but direct UPI is disabled."}
@@ -173,7 +173,7 @@ async function loadSellerBilling(){
  if(!window.Doodhwala?.configured){state.textContent="Billing backend is not configured yet.";plansBox.innerHTML="";history.innerHTML="";return}
  try{
   const {data:userData,error:userError}=await Doodhwala.supabase.auth.getUser();
-  if(userError||!userData?.user){state.textContent="Sign in with the account linked to your seller profile to manage billing.";plansBox.innerHTML='<div class="order-empty"><b>Sign-in required</b><span>Your subscription records are private to your seller account.</span><a href="/Dudh-Wallah/auth.html?return=%2FDudh-Wallah%2Fprovider.html">Sign in</a></div>';history.innerHTML="";return}
+  if(userError||!userData?.user){state.textContent="Sign in with the account linked to your seller profile to manage billing.";plansBox.innerHTML='<div class="order-empty"><b>Sign-in required</b><span>Your subscription records are private to your seller account.</span><a href="/Doodhwala/auth.html?return=%2FDudh-Wallah%2Fprovider.html">Sign in</a></div>';history.innerHTML="";return}
   const {data,error}=await Doodhwala.supabase.rpc("seller_get_subscription_billing");
   if(error)throw error;
   const plans=Array.isArray(data?.plans)?data.plans:[],subs=Array.isArray(data?.subscriptions)?data.subscriptions:[],payments=Array.isArray(data?.payments)?data.payments:[];
@@ -569,9 +569,9 @@ async function signOutProvider(event){
  }catch(err){console.warn("Local sign-out failed",err)}
  $("providerMode").textContent="LOCAL SETUP";
  $("providerAuthLink").textContent="Sign in";
- $("providerAuthLink").href="/Dudh-Wallah/auth.html?return=/Dudh-Wallah/provider.html";
+ $("providerAuthLink").href="/Doodhwala/auth.html?return=/Doodhwala/provider.html";
  toast("Signed out. Opening customer marketplace…");
- setTimeout(function(){window.location.replace("/Dudh-Wallah/?signedout=1")},350);
+ setTimeout(function(){window.location.replace("/Doodhwala/?signedout=1")},350);
 }
 $("providerStoreToggle")?.addEventListener("click",toggleStoreStatus);
 $("providerSignout")?.addEventListener("click",signOutProvider);
@@ -585,7 +585,7 @@ async function bootProvider(){
     if(live.ok){
       onboarding.classList.add("hidden");dashboard.classList.remove("hidden");
       hydrateDashboard();renderStoreStatus();
-      $("providerAuthLink").textContent="Account";$("providerAuthLink").href="/Dudh-Wallah/provider.html";
+      $("providerAuthLink").textContent="Account";$("providerAuthLink").href="/Doodhwala/provider.html";
       const v=provider.verificationStatus||"pending";
       $("providerMode").textContent=v==="approved"?"CONNECTED • APPROVED":v==="rejected"?"CONNECTED • REJECTED":"CONNECTED • PENDING";
       startProviderOrderFeed();
@@ -600,7 +600,7 @@ async function bootProvider(){
      const auth=await Doodhwala.supabase.auth.getUser();
      if(auth.data?.user){
        $("providerAuthLink").textContent="Account";
-       $("providerAuthLink").href="/Dudh-Wallah/provider.html";
+       $("providerAuthLink").href="/Doodhwala/provider.html";
        try{
          const res=await syncProviderBackend();
          if(res.ok){
