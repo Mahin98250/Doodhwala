@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const BASE = "/Dudh-Wallah/";
+  const BASE = "/Doodhwala/";
   const auth = window.Doodhwala && window.Doodhwala.supabase && window.Doodhwala.supabase.auth;
   if (!auth) return;
 
