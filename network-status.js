@@ -30,7 +30,7 @@
     ".dw-network-status{position:fixed;z-index:30000;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(620px,calc(100% - 24px));display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid #e8c98b;border-radius:14px;background:rgba(255,249,235,.97);color:#6f4a0d;box-shadow:0 12px 35px rgba(34,38,24,.17);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);font:600 12px/1.5 system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}",
     ".dw-network-status[hidden]{display:none!important}",
     ".dw-network-message{flex:1;min-width:0}",
-    ".dw-network-dismiss{flex:0 0 auto;min-height:34px;padding:7px 9px;border:1px solid rgba(111,74,13,.2);border-radius:9px;background:rgba(255,255,255,.72);color:inherit;font:700 10px/1.2 inherit;cursor:pointer}",
+    ".dw-network-dismiss{flex:0 0 auto;min-height:34px;padding:7px 9px;border:1px solid rgba(111,74,13,.2);border-radius:9px;background:rgba(255,255,255,.72);color:inherit;font-family:inherit;font-size:10px;font-weight:700;line-height:1.2;cursor:pointer}",
     ".dw-network-status.is-online{border-color:#b7d9c0;background:rgba(240,250,242,.97);color:#185a36}",
     ".dw-network-status.is-online .dw-network-dismiss{border-color:rgba(24,90,54,.2)}",
     ".dw-network-dismiss:focus-visible{outline:3px solid rgba(35,119,73,.35);outline-offset:2px}",
