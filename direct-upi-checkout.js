@@ -83,8 +83,15 @@
     const upiId = String(payment && payment.upi_id || "").trim();
     const payeeName = String(payment && payment.payee_name || "").trim();
     const orderId = String(payment && payment.order_id || "").trim();
-    if (!upiId || !payeeName || !orderId || !Number.isFinite(amount) || amount <= 0) {
-      throw new Error("Seller payment details are incomplete.");
+    // Treat API/database values as untrusted and align the UPI format with server validation.
+    const validUpiId = /^[A-Za-z0-9._-]{2,200}@[A-Za-z0-9.-]{2,100}$/.test(upiId);
+    const validPayee = payeeName.length >= 2 && payeeName.length <= 120 &&
+      !/[\u0000-\u001f\u007f]/.test(payeeName);
+    const validOrderId = orderId.length >= 1 && orderId.length <= 80 &&
+      !/[\u0000-\u001f\u007f]/.test(orderId);
+    if (!validUpiId || !validPayee || !validOrderId ||
+        !Number.isFinite(amount) || amount <= 0 || !Number.isSafeInteger(Math.round(amount * 100))) {
+      throw new Error("Seller payment details are invalid or incomplete. Please refresh the order and try again.");
     }
     close();
     lastFocused = trigger || document.activeElement;
@@ -99,11 +106,13 @@
       '<div class="dw-upi-field"><label for="dw-upi-vpa">Seller UPI ID</label><div><input id="dw-upi-vpa" readonly><button type="button" class="dw-upi-copy">Copy ID</button></div></div>' +
       '<p id="dw-upi-warning" class="dw-upi-warning">Before approving in your UPI app, check that the payee name and amount match exactly. Never share your UPI PIN or OTP with anyone.</p>' +
       '<div class="dw-upi-actions"></div><p class="dw-upi-status" role="status" aria-live="polite">After paying, return to Doodhwala. The seller must check their bank/UPI app and confirm receipt. Returning here is not proof of payment.</p>' +
-      '<div class="dw-upi-foot"><span>Order ' + orderId.replace(/[&<>"]/g, "") + '</span><span>Funds go directly to the seller</span></div></section>';
+      '<div class="dw-upi-foot"><span class="dw-upi-order-id"></span><span>Funds go directly to the seller</span></div></section>';
     document.body.appendChild(overlay);
     activeModal = overlay;
     overlay.querySelector(".dw-upi-amount").textContent = money(amount);
     overlay.querySelector(".dw-upi-payee").textContent = "Payee: " + payeeName;
+    // Never interpolate API/database values into HTML markup.
+    overlay.querySelector(".dw-upi-order-id").textContent = "Order " + orderId;
     overlay.querySelector("#dw-upi-vpa").value = upiId;
     const status = overlay.querySelector(".dw-upi-status");
     const qrStatus = overlay.querySelector(".dw-upi-qr-status");
