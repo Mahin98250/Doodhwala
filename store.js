@@ -81,7 +81,7 @@ function render(){
  $("productCount").textContent=products.length+" product"+(products.length===1?"":"s");
  $("productGrid").innerHTML=products.length?products.map(p=>{
    const daily=p.daily_available;
-   return '<article class="product-card"><a class="product-icon" href="/Dudh-Wallah/product.html?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'" aria-label="View '+esc(p.name)+'">'+milkEmoji(p.milk_type)+'</a><div><h3>'+esc(p.name)+'</h3><div class="product-type">'+esc(p.milk_type||"milk")+' · '+esc(p.unit_label||"1 L")+'</div><div class="product-price">'+money(p.price_per_litre)+' <span class="product-unit">/ L</span></div><div class="product-actions">'+(store.is_serviceable===false?'<button class="secondary" type="button" disabled>Outside zone</button>':'<button class="primary" type="button" data-add="'+esc(p.id)+'">Add</button>')+'<a class="secondary" href="/Dudh-Wallah/product.html?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'">Details</a></div>'+(daily?'<div style="font-size:8px;color:#17603f;margin-top:7px;font-weight:800">↻ Available for daily plan</div>':"")+'</div></article>'
+   return '<article class="product-card"><a class="product-icon" href="/Doodhwala/product.html?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'" aria-label="View '+esc(p.name)+'">'+milkEmoji(p.milk_type)+'</a><div><h3>'+esc(p.name)+'</h3><div class="product-type">'+esc(p.milk_type||"milk")+' · '+esc(p.unit_label||"1 L")+'</div><div class="product-price">'+money(p.price_per_litre)+' <span class="product-unit">/ L</span></div><div class="product-actions">'+(store.is_serviceable===false?'<button class="secondary" type="button" disabled>Outside zone</button>':'<button class="primary" type="button" data-add="'+esc(p.id)+'">Add</button>')+'<a class="secondary" href="/Doodhwala/product.html?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'">Details</a></div>'+(daily?'<div style="font-size:8px;color:#17603f;margin-top:7px;font-weight:800">↻ Available for daily plan</div>':"")+'</div></article>'
  }).join(""):'<div class="market-empty"><div class="market-empty-icon">'+milkEmoji(store.milk_type)+'</div><h3>No milk products are live yet.</h3><p>This provider has not published an active in-stock product.</p></div>';
  $("productGrid").querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const p=products.find(x=>x.id===b.dataset.add);if(p)addProduct(p)});
  serviceText();
@@ -89,13 +89,13 @@ function render(){
 }
 async function load(){
  setLocationLabel();
- if(!PROVIDER_ID){$("storeState").innerHTML='<div class="market-empty"><h3>Provider not found</h3><p>Return to Explore and choose a local provider.</p><a class="primary" href="/Dudh-Wallah/?view=providers">Explore providers →</a></div>';return}
+ if(!PROVIDER_ID){$("storeState").innerHTML='<div class="market-empty"><h3>Provider not found</h3><p>Return to Explore and choose a local provider.</p><a class="primary" href="/Doodhwala/?view=providers">Explore providers →</a></div>';return}
  if(!window.Doodhwala?.configured){$("storeState").innerHTML='<div class="market-empty"><h3>Marketplace backend is unavailable.</h3><p>Please try again when the connection is restored.</p></div>';return}
  const pos=readLocation();
  $("storeState").innerHTML='<div class="market-empty"><div style="font-size:28px">⌖</div><h3>Loading provider…</h3><p>Getting live catalogue and delivery availability.</p></div>';
  const {data,error}=await sup().rpc("get_provider_storefront",{p_provider_id:PROVIDER_ID,p_latitude:pos?.latitude??null,p_longitude:pos?.longitude??null});
- if(error||!data?.[0]){$("storeState").innerHTML='<div class="market-empty"><h3>Provider unavailable</h3><p>'+esc(error?.message||"This provider is not currently available.")+'</p><a class="primary" href="/Dudh-Wallah/?view=providers">Back to Explore →</a></div>';return}
+ if(error||!data?.[0]){$("storeState").innerHTML='<div class="market-empty"><h3>Provider unavailable</h3><p>'+esc(error?.message||"This provider is not currently available.")+'</p><a class="primary" href="/Doodhwala/?view=providers">Back to Explore →</a></div>';return}
  store=data[0];$("storeState").innerHTML="";render();
 }
-$("storeChangeLocation").onclick=()=>location.href="/Dudh-Wallah/?openLocation=1";
+$("storeChangeLocation").onclick=()=>location.href="/Doodhwala/?openLocation=1";
 load();
