@@ -4,6 +4,7 @@ import fs from "node:fs";
 const read = path => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const migration = read("supabase/migrations/20261023150000_doodhwala_payment_audit_and_reference_guard.sql");
 const sellerPayments = read("supabase/migrations/20261022150000_doodhwala_direct_seller_payments.sql");
+const paymentWriteGuard = read("supabase/migrations/20261022153000_doodhwala_guard_payment_field_writes.sql");
 const provider = read("provider.js");
 const checkout = read("checkout.js");
 const docs = read("PAYMENT_SECURITY_READINESS.md");
@@ -28,7 +29,8 @@ assert.match(provider, /Enter the UPI transaction reference \/ UTR/i);
 assert.match(provider, /valid transaction reference is required\. Nothing was confirmed/i);
 assert.match(provider, /provider_confirm_direct_upi_payment/);
 assert.match(provider, /bank settlement is not independently verified/i);
-assert.match(sellerPayments, /payment_fields_require_authorized_rpc/i);
+assert.match(sellerPayments, /payment_method in \\(\x27direct_upi\x27,\x27cod\x27\\)/i);
+assert.match(paymentWriteGuard, /payment_fields_require_authorized_rpc/i);
 assert.match(checkout, /customer_order_payment_controls_ready/);
 assert.match(docs, /not independently verified/i);
 
