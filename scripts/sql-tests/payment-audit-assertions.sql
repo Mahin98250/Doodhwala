@@ -81,7 +81,7 @@ end
 $$;
 
 
-do $
+do $duplicate_guard$
 begin
   begin
     insert into public.orders(
@@ -101,6 +101,6 @@ begin
       null;
   end;
 end
-$;
+$duplicate_guard$;
 
 select 'payment audit migration assertions passed' as result;
