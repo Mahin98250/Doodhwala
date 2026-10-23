@@ -41,8 +41,6 @@ jobs:
         run: node scripts/test-nearby-provider-search-scalability.mjs
       - name: Test staging load-test safety guards
         run: node scripts/test-staging-load-test-safety.mjs
-      - name: Test staging load-test safety guards
-        run: node scripts/test-staging-load-test-safety.mjs
       - name: Test product-detail null and price recovery
         run: node scripts/test-product-runtime.mjs
       - name: Test PWA registration diagnostics
