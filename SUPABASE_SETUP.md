@@ -77,6 +77,10 @@ The create_order RPC validates the provider, address ownership and product avail
 
 Direct seller UPI + Cash on Delivery are implemented as an MVP: seller-owned UPI instructions, order-scoped customer retrieval, UPI intent/QR checkout, and manual seller attestation. This does not verify bank settlement or provide an automated payment gateway. See [DIRECT_UPI_PAYMENT_FLOW.md](./DIRECT_UPI_PAYMENT_FLOW.md).
 
+### Payment control deployment status
+
+Do not assume the direct-UPI/payment-intent code in the repository has been installed in Supabase. The connected Doodhwala project audit on 2026-10-23 found no payment migrations from `20261022120000` onward, no direct UPI/payment ledger tables or RPCs, and no deployed `doodhwala-pay` Edge Function. Apply the payment migrations in order in an isolated staging project and verify the corrected foreign-key/schema contracts before production. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md). The readiness RPC now makes checkout fail closed when required payment controls are missing, but that guard itself must be deployed with the final payment-controls migration.
+
 ## 7. Provider verification
 
 New providers are automatically created with provider_verifications.status = 'pending'.
