@@ -259,6 +259,7 @@ declare
   v_pay public.seller_subscription_payments%rowtype;
   v_sub public.seller_subscriptions%rowtype;
   v_now timestamptz := now();
+  v_period_start timestamptz;
 begin
   if not coalesce(public.is_current_user_admin(),false) then raise exception 'Owner access required'; end if;
   if p_method not in ('offline_cash','offline_upi','offline_bank_transfer','offline_other') then
@@ -272,12 +273,14 @@ begin
   update public.seller_subscription_payments set status='succeeded',payment_method=p_method,
     provider_reference=nullif(left(coalesce(p_reference,''),160),''),collection_note=nullif(left(coalesce(p_note,''),1000),''),
     collected_by=auth.uid(),paid_at=v_now,updated_at=v_now where id=v_pay.id;
-  update public.seller_subscriptions set status='active',starts_at=v_now,expires_at=v_now+interval '1 month',updated_at=v_now
+  select greatest(v_now,coalesce(max(expires_at) filter (where status='active' and expires_at>v_now),v_now))
+    into v_period_start from public.seller_subscriptions where provider_id=v_pay.provider_id and id<>v_sub.id;
+  update public.seller_subscriptions set status='active',starts_at=v_period_start,expires_at=v_period_start+interval '1 month',updated_at=v_now
     where id=v_sub.id;
   insert into public.seller_subscription_audit(actor_user_id,provider_id,subscription_id,payment_id,action,details)
   values(auth.uid(),v_pay.provider_id,v_sub.id,v_pay.id,'offline_collection_confirmed',
     jsonb_build_object('amount_paise',v_pay.amount_paise,'method',p_method,'reference',left(coalesce(p_reference,''),160)));
-  return jsonb_build_object('payment_id',v_pay.id,'subscription_id',v_sub.id,'payment_status','succeeded','subscription_status','active','expires_at',v_now+interval '1 month');
+  return jsonb_build_object('payment_id',v_pay.id,'subscription_id',v_sub.id,'payment_status','succeeded','subscription_status','active','starts_at',v_period_start,'expires_at',v_period_start+interval '1 month');
 end;
 $$;
 revoke all on function public.admin_record_offline_seller_subscription_payment(uuid,bigint,text,text,text) from public, anon;
