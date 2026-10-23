@@ -32,6 +32,6 @@ assert.match(provider, /bank settlement is not independently verified/i);
 assert.match(sellerPayments, /direct_upi/);
 assert.match(paymentWriteGuard, /payment_fields_require_authorized_rpc/i);
 assert.match(checkout, /customer_order_payment_controls_ready/);
-assert.match(docs, /not independently bank-verified/i);
+assert.match(docs, /has not bank-verified the payment/i);
 
 console.log("Payment reconciliation contracts passed: immutable participant-scoped audit, mandatory UPI reference, guarded seller confirmation, and no false bank-verification claim.");
