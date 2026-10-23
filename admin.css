@@ -107,3 +107,18 @@
  .admin-mobile-nav button{font-size:8px}
  .admin-period input{width:0;padding:0 5px;font-size:9px}
 }
+
+/* Navigation icon cues to match the grouped control-center pattern. */
+.admin-side button[data-section]::before{width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.07);font-size:14px;font-weight:900}
+.admin-side button[data-section="overview"]::before{content:"⌂"}
+.admin-side button[data-section="orders"]::before{content:"◷"}
+.admin-side button[data-section="support"]::before{content:"✉"}
+.admin-side button[data-section="providers"]::before{content:"◉"}
+.admin-side button[data-section="customers"]::before{content:"♙"}
+.admin-side button[data-section="subscriptions"]::before{content:"↻"}
+.admin-side button[data-section="seller-billing"]::before{content:"₹"}
+.admin-side button[data-section="products"]::before{content:"▦"}
+.admin-side button[data-section="health"]::before{content:"♥"}
+.admin-side button[data-section="audit"]::before{content:"≋"}
+.admin-side button[data-section="settings"]::before{content:"⚙"}
+.admin-side button.active::before{background:rgba(143,196,155,.17);color:#b5dfbd}
