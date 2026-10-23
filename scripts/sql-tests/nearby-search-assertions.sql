@@ -54,7 +54,7 @@ begin
 end;
 $$;
 
-do $
+do $$
 declare
   open_index text;
   daily_index text;
@@ -85,6 +85,6 @@ begin
     raise exception 'daily litre-capacity index does not match the production query predicate: %', daily_index;
   end if;
 end;
-$;
+$$;
 
 select 'PASS: bounded nearby-search and order-capacity PostgreSQL integration checks' as result;
