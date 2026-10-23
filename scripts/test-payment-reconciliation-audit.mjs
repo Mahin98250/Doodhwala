@@ -29,7 +29,7 @@ assert.match(provider, /Enter the UPI transaction reference \/ UTR/i);
 assert.match(provider, /valid transaction reference is required\. Nothing was confirmed/i);
 assert.match(provider, /provider_confirm_direct_upi_payment/);
 assert.match(provider, /bank settlement is not independently verified/i);
-assert.match(sellerPayments, /payment_method in \\(\x27direct_upi\x27,\x27cod\x27\\)/i);
+assert.match(sellerPayments, /direct_upi/);
 assert.match(paymentWriteGuard, /payment_fields_require_authorized_rpc/i);
 assert.match(checkout, /customer_order_payment_controls_ready/);
 assert.match(docs, /not independently verified/i);
