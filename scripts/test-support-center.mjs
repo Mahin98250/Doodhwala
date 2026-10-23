@@ -24,7 +24,7 @@ assert.match(adminHtml, /data-section="support"/, "owner navigation must expose 
 assert.match(admin, /section==="support"/, "owner console must route to support inbox");
 assert.match(admin, /admin_list_support_tickets/, "owner console must load ticket queue through RPC");
 assert.match(admin, /admin_update_support_ticket/, "owner console must update status and priority through RPC");
-assert.match(sw, /admin\\.js\\?v=20261022\\.3/, "service worker must precache current admin runtime");
-assert.match(sw, /admin\.css\?v=20261022\.2/, "service worker must precache current admin styling");
-assert.match(sw, /const CACHE="doodhwala-v81"/, "support inbox release must refresh installed PWAs");
+assert.ok(sw.includes("admin.js?v=20261022.3"), "service worker must precache current admin runtime");
+assert.ok(sw.includes("admin.css?v=20261022.2"), "service worker must precache current admin styling");
+assert.ok(sw.includes('const CACHE="doodhwala-v81"'), "support inbox release must refresh installed PWAs");
 console.log("Support centre contracts passed: FAQ, authenticated ticket form, owner-only triage RPCs, status controls, and PWA cache.");
