@@ -19,7 +19,21 @@ assert.match(migration, /order_payment_events_no_mutation/i);
 assert.match(migration, /payment_audit_events_are_immutable/i, "audit trail rows must not be editable or deletable");
 assert.match(migration, /payment_reference_required/i);
 assert.match(migration, /length\(v_reference\) < 6/i);
-assert.match(migration, /v_reference !~ '\^\[A-Za-z0-9\/_-\]\{6,120\}\$'/i);
+assert.ok(migration.includes("v_reference !~ '^[A-Za-z0-9/_-]{6,120}
+assert.match(migration, /bank_settlement_verified_by_doodhwala', false/i, "a seller attestation must not be represented as bank verification");
+assert.match(migration, /revoke execute on function public\.provider_confirm_direct_upi_payment\(uuid, text\) from public, anon/i);
+assert.match(migration, /grant execute on function public\.provider_confirm_direct_upi_payment\(uuid, text\) to authenticated/i);
+
+assert.match(provider, /Enter the UPI transaction reference \/ UTR/i, "seller UI must request the payment reference");
+assert.match(provider, /valid transaction reference is required\. Nothing was confirmed/i, "UI must stop before RPC when the reference is invalid");
+assert.match(provider, /provider_confirm_direct_upi_payment/);
+assert.match(provider, /bank settlement is not independently verified/i);
+assert.match(sellerPayments, /payment_fields_require_authorized_rpc/i, "existing guarded payment-field updates must remain part of the architecture");
+assert.match(checkout, /customer_order_payment_controls_ready/, "checkout must stay closed when required payment migrations are missing");
+assert.match(docs, /not independently verified/i, "payment readiness documentation must disclose the limitation");
+
+console.log("Payment reconciliation contracts passed: immutable participant-scoped audit, mandatory UPI reference, guarded seller confirmation, and no false bank-verification claim.");
+"), "database validation must require a bounded transaction reference");
 assert.match(migration, /bank_settlement_verified_by_doodhwala', false/i, "a seller attestation must not be represented as bank verification");
 assert.match(migration, /revoke execute on function public\.provider_confirm_direct_upi_payment\(uuid, text\) from public, anon/i);
 assert.match(migration, /grant execute on function public\.provider_confirm_direct_upi_payment\(uuid, text\) to authenticated/i);
