@@ -15,5 +15,5 @@ assert.ok(js.includes('provider.verificationStatus!=="approved"'), "unapproved p
 assert.ok(js.includes('provider.acceptingOrders===false'), "paused stores must not appear ready");
 assert.ok(js.includes("!profileReady||!locationReady||!productReady"), "missing profile, location, or stock must block readiness");
 assert.ok(css.includes(".status-neutral") && css.includes(".status-warning") && css.includes(".status-danger"), "all readiness states must be styled");
-assert.ok(sw.includes("provider.js?v=20261023.2") && sw.includes("provider.css?v=20261023.2"), "PWA precache must include current provider assets");
+assert.ok(sw.includes("provider.js?v=20261023.3") && sw.includes("provider.css?v=20261023.3"), "PWA precache must include current provider assets");
 console.log("Provider delivery-readiness contracts passed.");
