@@ -9,6 +9,8 @@ const sw = readFileSync("sw.js", "utf8");
 assert.ok(html.includes('id="readinessBadge"'), "provider dashboard must expose a live readiness status");
 assert.ok(!html.includes('<span class="status-good">Ready</span>'), "readiness must not be hard-coded as green");
 assert.ok(js.includes("function updateDeliveryReadiness()"), "readiness must be computed from provider state");
+assert.ok(js.includes("/^\\\\d{10}$/") && js.includes("/^\\\\d{6}$/"), "phone and PIN checks must use digit regexes");
+assert.ok(js.includes("Number(provider.latitude)>=-90") && js.includes("Number(provider.longitude)<=180"), "service coordinates must be in valid geographic ranges");
 assert.ok(js.includes('provider.verificationStatus!=="approved"'), "unapproved providers must not appear ready");
 assert.ok(js.includes('provider.acceptingOrders===false'), "paused stores must not appear ready");
 assert.ok(js.includes("!profileReady||!locationReady||!productReady"), "missing profile, location, or stock must block readiness");
