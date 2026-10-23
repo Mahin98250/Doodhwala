@@ -17,6 +17,7 @@ create table public.orders (
   id uuid primary key,
   customer_id uuid not null references auth.users(id),
   provider_owner_id uuid not null references auth.users(id),
+  provider_id uuid not null,
   status text not null default 'placed',
   total numeric(12,2) not null check (total >= 0),
   payment_method text not null,
@@ -31,10 +32,11 @@ insert into auth.users(id) values
   ('20000000-0000-4000-8000-000000000002');
 insert into public.orders(
   id, customer_id, provider_owner_id, status, total,
-  payment_method, payment_status
+  payment_method, payment_status, provider_id
 ) values (
   '30000000-0000-4000-8000-000000000003',
   '10000000-0000-4000-8000-000000000001',
   '20000000-0000-4000-8000-000000000002',
-  'placed', 68.00, 'direct_upi', 'payment_pending_verification'
+  'placed', 68.00, 'direct_upi', 'payment_pending_verification',
+  '40000000-0000-4000-8000-000000000004'
 );
