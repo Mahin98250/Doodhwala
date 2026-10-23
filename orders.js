@@ -176,7 +176,7 @@ function renderTimeline(events){
   }).join("")+'</div>';
 }
 
-function paymentStatusLabel(o){const map={unpaid:"Payment not selected",payment_pending_verification:"UPI payment pending seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Pay seller on delivery",paid_cod:"Cash collection confirmed",payment_failed:"Payment failed",refund_or_reversal_review:"Payment issue needs review"};return map[o.payment_status]||"Payment status unavailable"}
+function paymentStatusLabel(o){if(!Object.prototype.hasOwnProperty.call(o,"payment_status"))return "Payment details are temporarily unavailable.";const map={unpaid:"Payment not selected",payment_pending_verification:"UPI payment pending seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Pay seller on delivery",paid_cod:"Cash collection confirmed",payment_failed:"Payment failed",refund_or_reversal_review:"Payment issue needs review"};return map[o.payment_status]||"Payment status unavailable"}
 function renderOrderCard(o,events){
   const provider=o.provider_profiles||{};
   const items=o.order_items||[];
@@ -194,7 +194,7 @@ function renderOrderCard(o,events){
     o.delivery_address_line,
     [o.delivery_area_name,o.delivery_city,o.delivery_pin_code].filter(Boolean).join(", ")
   ].filter(Boolean).join(", ");
-  const paymentMethod=o.payment_method==="direct_upi"?"Direct seller UPI":o.payment_method==="selection_pending"?"Choosing payment method":"Cash on Delivery";const paymentAction=o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>Payment · '+esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
+  const hasPaymentMethod=Object.prototype.hasOwnProperty.call(o,"payment_method");const paymentMethod=!hasPaymentMethod?"Details unavailable":o.payment_method==="direct_upi"?"Direct seller UPI":o.payment_method==="selection_pending"?"Choosing payment method":"Cash on Delivery";const paymentAction=hasPaymentMethod&&o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>'+(hasPaymentMethod?"Payment · ":"") +esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
     '<div class="order-card-head"><div><div class="order-provider">'+
       esc(provider.display_name||"Local milk provider")+
       '</div><div class="order-meta">Order '+esc(o.id)+" · "+esc(when(o.created_at))+
@@ -212,6 +212,20 @@ function renderOrderCard(o,events){
     tenx+
     cancel+
     '</article>';
+}
+
+async function fetchCustomerOrders(userId){
+  const withPayments="id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,payment_method,payment_status,payment_reference,payment_confirmed_at,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)";
+  const withoutPayments="id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)";
+  const read=select=>Doodhwala.supabase.from("orders").select(select).eq("customer_id",userId).order("created_at",{ascending:false}).limit(50);
+  let result=await read(withPayments);
+  const message=String(result.error?.message||result.error?.details||"");
+  const missingPaymentColumn=/(payment_method|payment_status|payment_reference|payment_confirmed_at)/i.test(message)&&/(does not exist|schema cache|could not find)/i.test(message);
+  if(result.error&&missingPaymentColumn){
+    result=await read(withoutPayments);
+    if(!result.error)result={...result,paymentSchemaFallback:true};
+  }
+  return result;
 }
 
 async function loadOrders(options={}){
@@ -233,12 +247,7 @@ async function loadOrders(options={}){
   if(!options.silent)$("ordersState").textContent="Loading your latest orders…";
   setupOrdersRealtime(user);
 
-  const result=await Doodhwala.supabase
-    .from("orders")
-    .select("id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,payment_method,payment_status,payment_reference,payment_confirmed_at,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)")
-    .eq("customer_id",user.id)
-    .order("created_at",{ascending:false})
-    .limit(50);
+  const result=await fetchCustomerOrders(user.id);
 
   if(result.error){
     $("ordersState").textContent=result.error.message;
@@ -260,8 +269,8 @@ async function loadOrders(options={}){
   });
 
   $("ordersState").textContent=orders.length
-    ? orders.length+" order"+(orders.length===1?"":"s")+" in your history"
-    : "No orders yet";
+    ? orders.length+" order"+(orders.length===1?"":"s")+" in your history"+(result.paymentSchemaFallback?" · payment details temporarily unavailable":"")
+    : (result.paymentSchemaFallback?"No orders yet · payment details temporarily unavailable":"No orders yet");
 
   if(!orders.length){
     $("ordersList").innerHTML='<div class="empty-orders"><b>No milk orders yet.</b><br>Choose a local provider and your first order will appear here.</div>';
