@@ -15,8 +15,8 @@ walk(root);
 
 function resolveSitePath(urlPath){
   const clean=urlPath.split(/[?#]/)[0];
-  if(clean==="/Doodhwala/"||clean==="/Dudh-Wallah") return "/index.html";
-  if(clean.startsWith("/Doodhwala/")) return clean.slice("/Dudh-Wallah".length);
+  if(clean==="/Doodhwala/"||clean==="/Doodhwala") return "/index.html";
+  if(clean.startsWith("/Doodhwala/")) return clean.slice("/Doodhwala".length);
   return clean;
 }
 
@@ -281,7 +281,7 @@ for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
   if(!html.includes('resilience.js?v=20261022.4')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
 }
-for(const [file,expected] of [["/checkout.html","return=%2FDudh-Wallah%2Fcheckout.html"],["/orders.html","return=%2FDudh-Wallah%2Forders.html"],["/plans.html","return=%2FDudh-Wallah%2Fplans.html"]]){
+for(const [file,expected] of [["/checkout.html","return=%2FDoodhwala%2Fcheckout.html"],["/orders.html","return=%2FDoodhwala%2Forders.html"],["/plans.html","return=%2FDoodhwala%2Fplans.html"]]){
   if(localFiles.has(file)){
     const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
     if(!html.includes(expected)) errors.push(file+" -> sign-in must return to its original page");
