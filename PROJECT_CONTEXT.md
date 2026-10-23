@@ -150,7 +150,7 @@ When the connection drops or a new person/assistant resumes:
 
 | Date | Update | Evidence / status |
 |---|---|---|
-| 2026-10-23 | Added shared premium interaction polish, Doodhwala Assist user-facing labels, accessible online/offline feedback, and PWA precache revision v82 in PR #31. | Static CI run `39902666809` passed, including JS syntax, site asset contracts, service-worker cache checks and experience-layer tests. Mobile/desktop browser testing remains pending; no live Supabase migration was applied. |
+| 2026-10-23 | Merged premium UI polish and connectivity feedback in PR #31; refreshed offline precache to cache revision v82. | Main commit `5ef002602443bd0e782bbe349862a26cb489c77f`; post-merge static validation run `39902752389` passed; GitHub Pages build/deploy workflow `39902752033` passed. Visual live-page/mobile testing remains pending because this environment could not retrieve the public page. Live Supabase payment migrations remain unapplied. |
 | 2026-10-23 | Created this team handoff and context document. | Commit [`7e3195b`](https://github.com/Mahin98250/Dudh-Wallah/commit/7e3195b75fb3761a56350c7718c2404adf83fb59); documentation only. |
 | 2026-10-23 | Inspected the current `index.html` entry page while checking the “Doodhwala 10x” request. | Current `index.html` uses “Doodhwala” branding and contains no “Doodhwala 10x” / “10x” text. No UI change was made based on this check; investigate other routes or the deployed build before removing anything blindly. |
 | Previously documented in README | Customer/provider workflows, Supabase foundation, order creation, and Doodhwala Pay foundation described. | Treat runtime and production status as unverified until tested; payment gateway is explicitly not ready for live money movement. |
@@ -159,8 +159,8 @@ Add newest entries at the top. Include commit/PR links and test outcomes wheneve
 
 ## 9. Current session checkpoint
 
-**Next task:** verify the merged GitHub Pages deployment, then browser-test the interaction polish and online/offline/reconnect behavior on mobile and desktop. Continue the daily customer/seller workflow audit for one high-value feature. Keep Doodhwala as the working brand until a final name is approved.
+**Next task:** visually browser-test the deployed home, provider, orders, and checkout pages; verify offline/reconnect behavior on mobile and desktop. Continue the daily customer/seller workflow audit for one high-value feature. Keep Doodhwala as the working brand until a final name is approved.
 
-**Current verification boundary:** the UI, connectivity banner and PWA asset precache have automated static-contract coverage, but visual browser/device testing and live UI verification remain pending until deployment. The banner reports connectivity only and does not queue offline orders. End-to-end order flow is not verified, and Doodhwala Pay cannot be claimed to collect money. Payment-related SQL migrations have not been applied to live Supabase.
+**Current verification boundary:** GitHub Actions static validation and the GitHub Pages build/deploy workflow both passed for main commit `5ef002602443bd0e782bbe349862a26cb489c77f`. The public page URL could not be retrieved from this session, so visual live-page and device testing remain pending. The banner reports browser connectivity only and does not queue offline orders. End-to-end order flow is not verified, and Doodhwala Pay cannot be claimed to collect money. Payment-related SQL migrations have not been applied to live Supabase.
 
 **Definition of done for the next session:** a small, reviewed change; checks recorded; no secrets committed; this document updated with actual commit/PR and test results.
