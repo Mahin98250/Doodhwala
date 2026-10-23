@@ -56,7 +56,7 @@ function createHarness(options = {}) {
   };
 
   const calls = { addressUpdates: [], addressInserts: [], rpc: [] };
-  let rpcAttempts = 0;
+  let createOrderAttempts = 0;
   const supabase = {
     auth: { async getUser() { return { data: { user: { id: "staging-customer-001", email: "test@example.invalid", user_metadata: {} } }, error: null }; } },
     from(table) {
@@ -93,8 +93,14 @@ function createHarness(options = {}) {
     },
     async rpc(name, args) {
       calls.rpc.push({ name, args: structuredClone(args) });
-      rpcAttempts += 1;
-      if (options.failFirstRpc && rpcAttempts === 1) throw new Error("simulated network interruption");
+      if (name === "customer_order_payment_controls_ready") {
+        return { data: { ready: options.paymentControlsReady !== false }, error: null };
+      }
+      if (name === "create_order" || name === "create_order_with_promo") {
+        createOrderAttempts += 1;
+        if (options.failFirstRpc && createOrderAttempts === 1) throw new Error("simulated network interruption");
+        return { data: "staging-order-001", error: null };
+      }
       if (name === "customer_check_provider_direct_upi") return { data: true, error: null };
       if (name === "customer_set_order_payment_method") return { data: { order_id: args.p_order_id, payment_method: args.p_method }, error: null };
       return { data: "staging-order-001", error: null };
@@ -141,6 +147,20 @@ async function settle() {
   await new Promise((resolve) => setImmediate(resolve));
 }
 
+async function testCheckoutFailsClosedWhenPaymentControlsMissing() {
+  const h = createHarness({ paymentControlsReady: false });
+  await settle();
+
+  await h.getElement("placeOrder").onclick();
+
+  assert.equal(h.calls.rpc.filter(call => call.name === "customer_order_payment_controls_ready").length, 1, "checkout must check backend payment controls first");
+  assert.equal(h.calls.rpc.filter(call => call.name === "create_order" || call.name === "create_order_with_promo").length, 0, "checkout must not create an order if payment controls are missing");
+  assert.equal(h.calls.rpc.filter(call => call.name === "customer_set_order_payment_method").length, 0, "payment choice must not be attempted without readiness");
+  assert.equal(h.storage.has("doodhwala-cart"), true, "cart must remain intact when the readiness gate fails");
+  assert.equal(h.getElement("success").classList.contains("hidden"), true, "missing payment controls must never show order success");
+  assert.match(h.getElement("checkoutState").textContent, /No order has been placed/, "checkout should clearly say that no order was created");
+}
+
 async function testAddressUpdateAndSuccessfulOrder() {
   const h = createHarness();
   await settle();
@@ -157,10 +177,12 @@ async function testAddressUpdateAndSuccessfulOrder() {
 
   await h.getElement("placeOrder").onclick();
   assert.equal(h.calls.rpc.filter(call => call.name === "create_order").length, 1, "one provider should produce one create-order RPC");
-  assert.equal(h.calls.rpc[0].name, "create_order");
-  assert.equal(h.calls.rpc[1].name, "customer_set_order_payment_method");
-  assert.equal(h.calls.rpc[1].args.p_method, "cod");
-  assert.equal(h.calls.rpc[0].args.p_address_id, "staging-address-001", "order should use the saved address ID");
+  assert.equal(h.calls.rpc[0].name, "customer_order_payment_controls_ready", "payment controls must be checked before an order is created");
+  assert.equal(h.calls.rpc[0].args, undefined, "readiness check should not need customer-supplied order data");
+  assert.equal(h.calls.rpc[1].name, "create_order");
+  assert.equal(h.calls.rpc[2].name, "customer_set_order_payment_method");
+  assert.equal(h.calls.rpc[2].args.p_method, "cod");
+  assert.equal(h.calls.rpc[1].args.p_address_id, "staging-address-001", "order should use the saved address ID");
   assert.equal(h.getElement("success").classList.contains("hidden"), false, "successful order should show the success state");
   assert.match(h.getElement("successText").textContent, /staging-order-001/);
   assert.equal(h.storage.has("doodhwala-cart"), false, "cart should clear after confirmed order creation");
@@ -177,16 +199,19 @@ async function testRetryKeepsIdempotencyKeyAndCart() {
   assert.equal(h.getElement("success").classList.contains("hidden"), true, "a failed request must not show order success");
 
   const storedKeys = JSON.parse(h.storage.get("doodhwala-checkout-idempotency-v1"));
-  const firstKey = h.calls.rpc[0].args.p_idempotency_key;
+  const orderCallsAfterFirstAttempt = h.calls.rpc.filter(call => call.name === "create_order");
+  const firstKey = orderCallsAfterFirstAttempt[0].args.p_idempotency_key;
   assert.equal(storedKeys["provider-1"].key, firstKey, "idempotency key should persist after an uncertain request");
 
   await h.getElement("placeOrder").onclick();
-  assert.equal(h.calls.rpc.filter(call => call.name === "create_order").length, 2, "retry should attempt the order again");
-  assert.equal(h.calls.rpc.filter(call => call.name === "create_order")[1].args.p_idempotency_key, firstKey, "retry must reuse the same idempotency key");
+  const orderCallsAfterRetry = h.calls.rpc.filter(call => call.name === "create_order");
+  assert.equal(orderCallsAfterRetry.length, 2, "retry should attempt the order again");
+  assert.equal(orderCallsAfterRetry[1].args.p_idempotency_key, firstKey, "retry must reuse the same idempotency key");
   assert.equal(h.getElement("success").classList.contains("hidden"), false, "second successful attempt should show order confirmation");
   assert.equal(h.storage.has("doodhwala-cart"), false, "cart should clear only after a confirmed successful attempt");
 }
 
+await testCheckoutFailsClosedWhenPaymentControlsMissing();
 await testAddressUpdateAndSuccessfulOrder();
 await testRetryKeepsIdempotencyKeyAndCart();
 console.log("Checkout flow simulation passed: address update, successful order, and idempotent network retry.");

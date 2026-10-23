@@ -21,6 +21,7 @@ begin
   from public.orders o
   join public.provider_payment_settings s on s.provider_id=o.provider_id and s.enabled=true
   join public.provider_profiles p on p.id=o.provider_id and p.is_active=true
+  join public.provider_verifications v on v.provider_id=p.id and v.status='approved'
   where o.id=p_order_id
     and o.customer_id=auth.uid()
     and o.payment_method='direct_upi'

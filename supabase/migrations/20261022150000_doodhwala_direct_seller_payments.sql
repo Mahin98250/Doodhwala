@@ -40,6 +40,14 @@ begin
   select id into v_provider_id from public.provider_profiles
     where owner_user_id = auth.uid() limit 1;
   if v_provider_id is null then raise exception 'provider_not_found'; end if;
+  if coalesce(p_enabled,false) and not exists (
+    select 1
+    from public.provider_profiles p
+    join public.provider_verifications v on v.provider_id=p.id
+    where p.id=v_provider_id and p.is_active=true and v.status='approved'
+  ) then
+    raise exception 'provider_not_approved_for_direct_upi';
+  end if;
 
   insert into public.provider_payment_settings(provider_id,upi_id,payee_name,enabled,updated_at)
   values(v_provider_id,trim(p_upi_id),trim(p_payee_name),coalesce(p_enabled,false),now())
@@ -64,6 +72,7 @@ as $$
   select exists (
     select 1 from public.provider_payment_settings s
     join public.provider_profiles p on p.id=s.provider_id
+    join public.provider_verifications v on v.provider_id=p.id and v.status='approved'
     where s.provider_id=p_provider_id and s.enabled=true and p.is_active=true
   );
 $$;

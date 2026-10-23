@@ -75,7 +75,11 @@ The checkout creates one order per provider when a cart contains products from m
 
 The create_order RPC validates the provider, address ownership and product availability, and reads the product price from the database rather than trusting the browser's displayed price.
 
-Payments are intentionally not connected yet.
+Direct seller UPI + Cash on Delivery are implemented as an MVP: seller-owned UPI instructions, order-scoped customer retrieval, UPI intent/QR checkout, and manual seller attestation. This does not verify bank settlement or provide an automated payment gateway. See [DIRECT_UPI_PAYMENT_FLOW.md](./DIRECT_UPI_PAYMENT_FLOW.md).
+
+### Payment control deployment status
+
+Do not assume the direct-UPI/payment-intent code in the repository has been installed in Supabase. The connected Doodhwala project audit on 2026-10-23 found no payment migrations from `20261022120000` onward, no direct UPI/payment ledger tables or RPCs, and no deployed `doodhwala-pay` Edge Function. Apply the payment migrations in order in an isolated staging project and verify the corrected foreign-key/schema contracts before production. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md). The readiness RPC now makes checkout fail closed when required payment controls are missing, but that guard itself must be deployed with the final payment-controls migration.
 
 ## 7. Provider verification
 
@@ -96,4 +100,4 @@ The verification table is designed so provider self-registration cannot grant it
 
 ## Current limitation
 
-The backend is live, but the production marketplace is intentionally gated by provider approval. There is not yet an admin approval UI, payments, recurring subscriptions, or live order-status notifications.
+The backend is provisioned, but production readiness must be re-verified. Provider approval gates public inventory. Direct seller UPI/COD source flows exist, but migration deployment and end-to-end payment behavior are not confirmed by this document. There is not yet an admin approval UI or verified automated bank/PSP payment confirmation. Recurring subscriptions and live order-status notifications require separate release verification.

@@ -58,6 +58,7 @@ begin
     select exists(
       select 1 from public.provider_payment_settings s
       join public.provider_profiles p on p.id=s.provider_id
+      join public.provider_verifications v on v.provider_id=p.id and v.status='approved'
       where s.provider_id=v_order.provider_id and s.enabled=true and p.is_active=true
     ) into v_ready;
     if not v_ready then raise exception 'seller_direct_upi_not_configured'; end if;
