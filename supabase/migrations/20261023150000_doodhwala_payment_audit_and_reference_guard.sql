@@ -33,6 +33,14 @@ create index if not exists order_payment_events_seller_recent_idx
 create index if not exists order_payment_events_customer_recent_idx
   on public.order_payment_events(customer_id, created_at desc);
 
+-- A single seller-side UPI reference must not be claimed for two orders.
+-- This is duplicate-reference protection, not proof that the reference is genuine.
+create unique index if not exists orders_direct_upi_reference_unique_idx
+  on public.orders(provider_id, payment_reference)
+  where payment_method = 'direct_upi'
+    and payment_status = 'paid_direct_to_seller'
+    and payment_reference is not null;
+
 alter table public.order_payment_events enable row level security;
 revoke all on public.order_payment_events from anon, authenticated;
 grant select on public.order_payment_events to authenticated;
@@ -178,12 +186,16 @@ begin
   end if;
 
   perform set_config('doodhwala.payment_rpc', 'on', true);
-  update public.orders
-  set payment_status = 'paid_direct_to_seller',
-      payment_reference = v_reference,
-      payment_confirmed_by = auth.uid(),
-      payment_confirmed_at = now()
-  where id = p_order_id;
+  begin
+    update public.orders
+    set payment_status = 'paid_direct_to_seller',
+        payment_reference = v_reference,
+        payment_confirmed_by = auth.uid(),
+        payment_confirmed_at = now()
+    where id = p_order_id;
+  exception when unique_violation then
+    raise exception 'payment_reference_already_used' using errcode = 'unique_violation';
+  end;
 
   return jsonb_build_object(
     'order_id', p_order_id,
