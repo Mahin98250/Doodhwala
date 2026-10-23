@@ -254,7 +254,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
 for(const file of htmlFiles){
   if(file==="/offline.html") continue; // Keep the offline recovery page independent of app bootstrapping.
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!htmlText.includes('/Doodhwala/resilience.js?v=20261022.4')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
+  if(!htmlText.includes('/Doodhwala/resilience.js?v=20261023.5')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swCheck=fs.readFileSync(path.join(root,"sw.js"),"utf8");
@@ -279,7 +279,7 @@ if(!productSw.includes('/Doodhwala/product.js?v=20261022.5')) errors.push("sw.js
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!html.includes('resilience.js?v=20261022.4')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
+  if(!html.includes('resilience.js?v=20261023.5')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
 }
 for(const [file,expected] of [["/checkout.html","return=%2FDoodhwala%2Fcheckout.html"],["/orders.html","return=%2FDoodhwala%2Forders.html"],["/plans.html","return=%2FDoodhwala%2Fplans.html"]]){
   if(localFiles.has(file)){
