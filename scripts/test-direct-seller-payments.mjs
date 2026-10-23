@@ -12,6 +12,9 @@ const checkoutHtml = read("checkout.html");
 const provider = read("provider.js");
 const providerHtml = read("provider.html");
 const orders = read("orders.js");
+const directUpiCheckout = read("direct-upi-checkout.js");
+const directUpiCss = read("direct-upi-checkout.css");
+const ordersHtml = read("orders.html");
 
 assert.match(payments, /create table if not exists public\.provider_payment_settings/i);
 assert.match(payments, /revoke all on public\.provider_payment_settings from anon, authenticated/i);
@@ -44,5 +47,14 @@ assert.ok(pendingOnly.includes("o.status not in ('rejected','cancelled')"), "can
 assert.match(orders, /customer_get_order_direct_upi/);
 assert.match(orders, /upi:\/\/pay\?/);
 assert.match(orders, /Returning here does not prove payment/);
+assert.match(orders, /DoodhwalaDirectUpi\\.open/, "order page must open the direct UPI checkout dialog");
+assert.match(directUpiCheckout, /QRCode\\.toCanvas/, "checkout should provide a QR for scanning from another device");
+assert.match(directUpiCheckout, /upi:\\/\\/pay\\?/, "checkout should construct a UPI intent URI");
+assert.match(directUpiCheckout, /never marks an order paid/i, "opening the dialog must not imply payment success");
+assert.match(directUpiCheckout, /Check the payee name and exact amount/, "customer must be warned to verify payee and amount");
+assert.match(directUpiCss, /prefers-reduced-motion:reduce/, "dialog should respect reduced-motion preference");
+assert.match(ordersHtml, /qrcode@1\\.5\\.4/, "QR library must load before the checkout helper");
+assert.match(ordersHtml, /direct-upi-checkout\\.js\\?v=20261023\\.1/);
+assert.match(ordersHtml, /direct-upi-checkout\\.css\\?v=20261023\\.1/);
 assert.doesNotMatch(checkout + provider + orders, /upi_pin|bank_password|card_cvv/i, "Doodhwala must never collect payment credentials");
 console.log("Direct seller payment contracts passed: seller-scoped UPI, customer-owned orders, explicit COD, manual confirmation, race protection, and guarded payment fields.");
