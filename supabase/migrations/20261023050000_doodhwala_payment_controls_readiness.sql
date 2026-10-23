@@ -47,6 +47,12 @@ begin
     )
     and exists (
       select 1
+      from pg_class c
+      where c.oid = to_regclass('public.orders')
+        and c.relrowsecurity
+    )
+    and exists (
+      select 1
       from pg_trigger t
       where t.tgrelid = to_regclass('public.orders')
         and t.tgname = 'orders_guard_payment_field_writes'
