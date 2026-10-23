@@ -39,17 +39,17 @@ assert.doesNotMatch(customer, /Doodhwala 10X|DOODHWALA 10X/, "old customer-facin
 assert.doesNotMatch(provider10x, /DOODHWALA 10X/, "old seller heading should be absent");
 
 const providerHtml = read("provider.html");
-const provider = read("provider.js");
+const providerRuntime = read("provider.js");
 const providerCss = read("provider.css");
 const serviceWorker = read("sw.js");
 assert.match(providerHtml, /id="readinessBadge"[^>]*role="status"/, "seller readiness must be announced accessibly");
 assert.doesNotMatch(providerHtml, /<span class="status-good">Ready<\/span>/, "seller dashboard must not show a hard-coded green Ready badge");
-assert.match(provider, /function updateDeliveryReadiness\(\)/, "seller readiness must be derived from current state");
-assert.match(provider, /provider\.verificationStatus!=="approved"/, "unapproved providers must not appear ready");
-assert.match(provider, /provider\.acceptingOrders===false/, "a paused seller store must not be marked ready");
-assert.match(provider, /!profileReady\|\|!locationReady\|\|!productReady/, "profile, location and active stock must be checked");
+assert.match(providerRuntime, /function updateDeliveryReadiness\(\)/, "seller readiness must be derived from current state");
+assert.match(providerRuntime, /provider\.verificationStatus!=="approved"/, "unapproved providers must not appear ready");
+assert.match(providerRuntime, /provider\.acceptingOrders===false/, "a paused seller store must not be marked ready");
+assert.match(providerRuntime, /!profileReady\|\|!locationReady\|\|!productReady/, "profile, location and active stock must be checked");
 for (const label of ["Connect account", "Review required", "Pending review", "Store paused", "Setup needed", "Ready for orders"]) {
-  assert.ok(provider.includes(label), "seller readiness must explain " + label);
+  assert.ok(providerRuntime.includes(label), "seller readiness must explain " + label);
 }
 assert.match(providerCss, /\.status-neutral/, "neutral readiness must be styled");
 assert.match(providerCss, /\.status-warning/, "pending/setup readiness must be styled");
