@@ -158,7 +158,7 @@
         recover.textContent = currentRoute().endsWith("/checkout.html") ? "Check my orders" : "Reload page";
         recover.style.cssText = "border:0;border-radius:10px;padding:9px 12px;background:#17603f;color:#fff;font-weight:700;cursor:pointer";
         recover.addEventListener("click", function () {
-          if (currentRoute().endsWith("/checkout.html")) w.location.href = "/Dudh-Wallah/orders.html";
+          if (currentRoute().endsWith("/checkout.html")) w.location.href = "/Doodhwala/orders.html";
           else w.location.reload();
         });
         const close = d.createElement("button");
