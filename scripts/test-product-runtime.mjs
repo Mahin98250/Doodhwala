@@ -14,9 +14,9 @@ assert.match(product, /function saveCart\(c\)\{try\{localStorage\.setItem/, "pro
 assert.match(product, /Product detail load failed/, "unexpected product RPC failures must be caught and presented as recoverable UI");
 assert.match(product, /const row=Array\.isArray\(data\)\?data\[0\]:data/, "product loader must handle array and object RPC responses");
 assert.doesNotMatch(product, /\$\("addToCart"\)\.disabled=false;/, "buying must remain disabled until a valid product is loaded");
-assert.ok(html.includes('/Dudh-Wallah/product.js?v=20261022.5'), "product page must cache-bust the guarded detail runtime");
+assert.ok(html.includes('/Doodhwala/product.js?v=20261022.5'), "product page must cache-bust the guarded detail runtime");
 assert.ok(sw.includes('const CACHE="doodhwala-v83"'), "product runtime release must invalidate the old PWA cache");
-assert.ok(sw.includes('/Dudh-Wallah/product.js?v=20261022.5'), "service worker must precache the guarded product runtime");
+assert.ok(sw.includes('/Doodhwala/product.js?v=20261022.5'), "service worker must precache the guarded product runtime");
 
 
 function createElement(id) {
@@ -52,7 +52,7 @@ function runProductPage(rpc) {
     removeItem(key) { saved.delete(key); }
   };
   const sandbox = {
-    window, document, localStorage, location: { search: "?provider=provider-a&product=product-a", href: "https://mahin98250.github.io/Dudh-Wallah/product.html?provider=provider-a&product=product-a" },
+    window, document, localStorage, location: { search: "?provider=provider-a&product=product-a", href: "https://mahin98250.github.io/Doodhwala/product.html?provider=provider-a&product=product-a" },
     URLSearchParams, URL, Event, Number, String, Math, JSON, Array, Object, Promise, console: { error() {}, warn() {} },
     setTimeout(fn) { fn(); return 1; }, clearTimeout() {}
   };
