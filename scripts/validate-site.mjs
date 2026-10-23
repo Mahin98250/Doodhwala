@@ -92,6 +92,7 @@ if(localFiles.has("/pwa-register.js")){
   if(!pwaRegisterText.includes('/Dudh-Wallah/sw.js')) errors.push("pwa-register.js -> project-scoped service worker path missing");
 }else errors.push("required runtime file missing /pwa-register.js");
 for(const file of htmlFiles){
+  if(file==="/offline.html") continue; // Standalone offline recovery screen intentionally has no app bootstrap.
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
   if(!html.includes("/Dudh-Wallah/pwa-register.js")) errors.push(file+" -> PWA registration script missing");
 }
@@ -133,7 +134,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes("/Dudh-Wallah/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Dudh-Wallah/provider.js?v=20261022.5")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Dudh-Wallah/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v82"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v83"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -173,7 +174,7 @@ const adminHtmlPath=path.join(root,"admin.html");
 if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Dudh-Wallah/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v82"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes('const CACHE="doodhwala-v83"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Dudh-Wallah/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
@@ -234,7 +235,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v82"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v83"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261023.2')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
@@ -251,6 +252,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
   if(!adminHtml.includes('admin.js?v=20261022.3')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
+  if(file==="/offline.html") continue; // Keep the offline recovery page independent of app bootstrapping.
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
   if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261022.4')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
