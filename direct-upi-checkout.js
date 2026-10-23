@@ -15,14 +15,10 @@
   }
 
   function buildUri(payment) {
-    const params = new URLSearchParams({
-      pa: payment.upi_id,
-      pn: payment.payee_name,
-      am: Number(payment.amount).toFixed(2),
-      cu: "INR",
-      tn: "Doodhwala order " + payment.order_id
-    });
-    return "upi://pay?" + params.toString();
+    return "upi://pay?pa=" + encodeURIComponent(payment.upi_id) +
+      "&pn=" + encodeURIComponent(payment.payee_name) +
+      "&am=" + encodeURIComponent(Number(payment.amount).toFixed(2)) +
+      "&cu=INR&tn=" + encodeURIComponent("Doodhwala order " + payment.order_id);
   }
 
   function button(label, className, onClick) {
