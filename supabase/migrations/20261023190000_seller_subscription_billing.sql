@@ -25,6 +25,7 @@ create table if not exists public.seller_subscriptions (
   expires_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  unique (id,provider_id),
   check ((status <> 'active') or (starts_at is not null and expires_at is not null and expires_at > starts_at))
 );
 create index if not exists seller_subscriptions_provider_status_idx
@@ -47,7 +48,9 @@ create table if not exists public.seller_subscription_payments (
   paid_at timestamptz,
   created_by uuid references auth.users(id) on delete set null default auth.uid(),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint seller_subscription_payment_owner_fk foreign key (subscription_id,provider_id)
+    references public.seller_subscriptions(id,provider_id) on delete restrict
 );
 create index if not exists seller_subscription_payments_provider_idx
   on public.seller_subscription_payments(provider_id,created_at desc);
