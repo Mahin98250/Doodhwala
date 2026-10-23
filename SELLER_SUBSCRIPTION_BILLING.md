@@ -38,7 +38,7 @@ Suggested states: `pending_payment`, `active`, `past_due`, `expired`, `cancelled
 - Store `starts_at`, `expires_at`, `plan_id`, agreed price snapshot and promotion entitlement.
 - Renewal creates a new payment attempt/ledger record; it must be idempotent.
 - Expiry removes paid/featured privileges but should not delete seller profile, products or historical orders. Define whether basic listing access continues or pauses before launch.
-- Featured placement must be driven by an active paid entitlement, not a client-side toggle.
+- Featured placement must be driven by an active paid entitlement, not a client-side toggle. The entitlement is stored in this first source slice but is not yet connected to discovery ranking.
 - Notify sellers before expiry and show payment history/receipts where available.
 - Admin views should support filtering by plan, status, expiry, online/offline method and reconciliation state.
 
@@ -49,4 +49,5 @@ Suggested states: `pending_payment`, `active`, `past_due`, `expired`, `cancelled
 - Do not mix seller subscription payments with customer order payments or the existing customer milk-delivery subscriptions.
 - This model does not make Doodhwala a payment gateway. Review Indian tax, invoicing, consumer-protection, privacy and any applicable legal requirements with a qualified professional.
 - Do not deploy a schema migration to production until it is tested against an isolated staging database and reviewed. The connected Supabase project previously showed that newer payment migrations were not deployed; re-audit before any launch.
+- Subscription expiry is recorded and displayed, but seller listing/order-access enforcement on expiry is not yet wired; define and test this policy before launch.
 - Do not advertise online payment as available until a real provider integration has been configured and end-to-end verified.
