@@ -53,6 +53,8 @@ The repository contains two distinct payment layers. **Direct seller UPI + COD M
 
 Do not claim automated gateway verification or independently verified payment success until a real provider/acquirer or supported bank/PSP integration, server-side secrets, verified signed webhooks, replay protection, reconciliation, failure handling, refunds, and required reviews/tests are implemented. For direct UPI, only a seller may attest after checking their own bank/UPI app; label this as seller-confirmed, not bank-verified. Never collect card numbers, CVV, UPI PINs, OTPs, or banking passwords. Never trust a client redirect alone as proof of payment.
 
+The connected Doodhwala Supabase project was audited read-only on 2026-10-23: payment migrations beginning `20261022120000` were not present in deployed migration history; `provider_payment_settings`, `payment_transactions`, `payment_provider_events`, the direct-UPI RPCs, and the `doodhwala-pay` deployed function were absent. The payment foundation's original `public.providers` foreign key also did not match the current schema and has been corrected in the branch. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md) before attempting payment migration deployment. These source changes do not certify live-money readiness.
+
 ### Release verification
 The repository README includes a P0 end-to-end checklist for customer checkout → provider order queue → provider status changes → customer tracking. Static builds do not prove real authentication, RLS, Realtime, permissions, location, or physical-device behavior. Use an authorized staging project and test accounts; do not create synthetic orders in production.
 
