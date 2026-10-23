@@ -4,8 +4,8 @@ import fs from "node:fs";
 const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const cssPages = ["checkout.html","index.html","orders.html","plans.html","product.html","provider.html","store.html"];
 const networkPages = ["admin.html","auth.html","checkout.html","index.html","legal.html","orders.html","plans.html","product.html","provider.html","store.html","support.html"];
-const cssTag = "/Dudh-Wallah/experience-layer.css?v=20261023.1";
-const networkTag = "/Dudh-Wallah/network-status.js?v=20261023.1";
+const cssTag = "/Doodhwala/experience-layer.css?v=20261023.1";
+const networkTag = "/Doodhwala/network-status.js?v=20261023.1";
 
 for (const path of cssPages) {
   const html = read(path);
@@ -55,8 +55,8 @@ assert.match(providerCss, /\.status-neutral/, "neutral readiness must be styled"
 assert.match(providerCss, /\.status-warning/, "pending/setup readiness must be styled");
 assert.match(providerCss, /\.status-danger/, "rejected verification must be styled distinctly");
 assert.ok(serviceWorker.includes('const CACHE="doodhwala-v86"'), "seller readiness changes must refresh installed PWAs");
-assert.ok(serviceWorker.includes("/Dudh-Wallah/provider.js?v=20261023.2"), "updated seller runtime must be precached");
-assert.ok(serviceWorker.includes("/Dudh-Wallah/provider.css?v=20261023.2"), "updated seller styles must be precached");
+assert.ok(serviceWorker.includes("/Doodhwala/provider.js?v=20261023.2"), "updated seller runtime must be precached");
+assert.ok(serviceWorker.includes("/Doodhwala/provider.css?v=20261023.2"), "updated seller styles must be precached");
 
 const workflow = read(".github/workflows/static-validation.yml");
 assert.ok(workflow.includes("support.js network-status.js; do"), "new shared JS must be included in the syntax-check file loop");
