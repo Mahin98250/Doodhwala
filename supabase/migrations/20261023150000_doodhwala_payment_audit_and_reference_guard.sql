@@ -10,6 +10,7 @@ create table if not exists public.order_payment_events (
   actor_user_id uuid references auth.users(id) on delete set null,
   actor_role text not null check (actor_role in ('customer','seller','system')),
   event_type text not null check (event_type in (
+    'payment_initialized',
     'payment_method_selected',
     'payment_status_changed',
     'direct_upi_seller_attested',
@@ -35,7 +36,7 @@ create index if not exists order_payment_events_customer_recent_idx
 alter table public.order_payment_events enable row level security;
 revoke all on public.order_payment_events from anon, authenticated;
 grant select on public.order_payment_events to authenticated;
-grant select, insert, update, delete on public.order_payment_events to service_role;
+grant select on public.order_payment_events to service_role;
 
 drop policy if exists "Order participants read payment audit" on public.order_payment_events;
 create policy "Order participants read payment audit"
@@ -78,7 +79,7 @@ begin
   v_amount_paise := greatest(0, round(coalesce(new.total, 0) * 100)::bigint);
 
   if tg_op = 'INSERT' then
-    v_event_type := 'payment_status_changed';
+    v_event_type := 'payment_initialized';
     v_previous_method := null;
     v_previous_status := null;
   else
