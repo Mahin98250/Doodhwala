@@ -32,11 +32,11 @@ assert.match(experience, /focus-visible/, "keyboard focus must remain visible");
 assert.match(experience, /prefers-reduced-motion:reduce/, "reduced-motion must be honored");
 
 const customer = read("customer-10x.js");
-const provider = read("provider-10x.js");
+const provider10x = read("provider-10x.js");
 assert.ok(customer.includes("Doodhwala Assist"), "customer utility should have the new user-facing name");
 assert.ok(customer.includes("DOODHWALA ASSIST"), "customer panel should show the new name");
 assert.doesNotMatch(customer, /Doodhwala 10X|DOODHWALA 10X/, "old customer-facing name should be absent");
-assert.doesNotMatch(provider, /DOODHWALA 10X/, "old seller heading should be absent");
+assert.doesNotMatch(provider10x, /DOODHWALA 10X/, "old seller heading should be absent");
 
 const providerHtml = read("provider.html");
 const provider = read("provider.js");
