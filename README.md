@@ -163,6 +163,12 @@ The journey passes only when the same order can be followed end-to-end by its re
 
 The payment foundation introduces a server-owned `payment_transactions` ledger and an authenticated `doodhwala-pay` Edge Function for idempotent payment-intent creation and customer-owned status lookup. Amounts are derived from the stored order total on the server and converted to integer paise.
 
+
+
+### Payment security and release status
+
+A read-only audit of the connected Doodhwala Supabase project found that the payment migrations and `doodhwala-pay` function are not deployed there yet. Direct seller UPI is not bank-verified, and the project is not approved for real-money/high-volume use. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md) for verified findings, hardening changes, and launch gates.
+
 **Important launch boundary:** the automated `doodhwala-pay` gateway foundation is not live and does not collect or move money (`gateway_ready: false`, `money_moved: false`). Direct seller UPI is a separate manual-confirmation flow: money is intended to go from the customer's UPI app to the seller's UPI address, but Doodhwala cannot independently verify bank settlement. Automated collection/verification remains disabled until a suitable acquiring/payment provider or official merchant/bank integration is configured with server-side secrets, verified signed webhooks, replay protection, reconciliation, failure/refund handling, and required reviews. Never collect card numbers, CVV, UPI PINs, or banking passwords in Doodhwala. Never mark an order paid from a browser redirect or client callback alone.
 
 Before enabling live collection:
