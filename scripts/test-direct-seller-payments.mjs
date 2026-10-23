@@ -54,6 +54,7 @@ assert.ok(pendingOnly.includes("join public.provider_verifications v on v.provid
 assert.match(checkout, /customer_order_payment_controls_ready/, "checkout must verify payment controls before creating the order");
 assert.match(readiness, /customer_order_payment_controls_ready/, "readiness RPC must be installed after payment guards");
 assert.ok(readiness.includes("orders_guard_payment_field_writes") && readiness.includes("orders_require_payment_choice_before_acceptance"), "checkout readiness must verify both payment safety triggers");
+assert.ok(readiness.includes("c.oid = to_regclass(\'public.orders\')") && readiness.includes("c.relrowsecurity"), "checkout readiness must require RLS on the order table");
 assert.match(orders, /customer_get_order_direct_upi/);
 assert.match(orders, /upi:\/\/pay\?/);
 assert.match(orders, /Returning here does not prove payment/);
