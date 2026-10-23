@@ -1,0 +1,73 @@
+/* Premium marketplace experience layer
+   Shared, progressive UI polish. Does not alter business logic or data behavior. */
+:root{
+  --motion-fast:150ms;
+  --motion-ui:220ms;
+  --motion-smooth:cubic-bezier(.2,.75,.25,1);
+}
+html{scroll-padding-top:88px}
+body{overscroll-behavior-y:contain}
+button,a,[role="button"],input,select,textarea{
+  transition-property:color,background-color,border-color,box-shadow,opacity,transform;
+  transition-duration:var(--motion-fast);
+  transition-timing-function:var(--motion-smooth);
+}
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible,
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid rgba(35,119,73,.32);
+  outline-offset:3px;
+}
+button:disabled,[role="button"][aria-disabled="true"]{cursor:not-allowed;opacity:.58}
+.primary,.secondary,.filter-button,.cart,.back-shop{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.primary{box-shadow:0 5px 13px rgba(23,96,63,.13)}
+.primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 9px 22px rgba(23,96,63,.2)}
+.secondary:hover:not(:disabled),.filter-button:hover:not(:disabled){transform:translateY(-1px);border-color:#bfd2c2}
+.primary:active:not(:disabled),.secondary:active:not(:disabled){transform:translateY(0) scale(.985)}
+.search,.location-top,.location,.location-hero-card,.quick button,.chips button,
+.provider,.compare-dock,.compare-panel,.modal,.location-modal,.cart-line,
+.order-card,.plan-card,.checkout-card,.provider-order,.dispatch-card,.trust-card{
+  transition:box-shadow var(--motion-ui) var(--motion-smooth),
+             border-color var(--motion-ui) var(--motion-smooth),
+             background-color var(--motion-ui) var(--motion-smooth),
+             transform var(--motion-ui) var(--motion-smooth);
+}
+.search:focus-within{box-shadow:0 0 0 4px rgba(35,119,73,.075),0 6px 18px rgba(23,55,34,.04)}
+.hero{isolation:isolate}
+.hero-art{transform:translateZ(0)}
+.hero-art .sun{animation:market-sun-breathe 7s ease-in-out infinite alternate}
+.hero-art .bottle{transform-origin:50% 85%;animation:market-bottle-float 5.5s ease-in-out infinite}
+.quick button{will-change:transform}
+.quick button:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(20,45,29,.075)}
+.quick button:active{transform:translateY(0) scale(.985)}
+.providers-grid{align-items:stretch}
+.provider{height:100%;box-shadow:0 3px 12px rgba(20,45,29,.035)}
+.provider:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgba(20,45,29,.105);border-color:#cbdccc}
+.provider .cover img{transition:transform 450ms var(--motion-smooth)}
+.provider:hover .cover img{transform:scale(1.025)}
+.provider-actions button,.provider-foot-actions button{touch-action:manipulation}
+.compare-dock{animation:market-dock-enter 220ms var(--motion-smooth) both}
+.compare-overlay:not([hidden]) .compare-panel{animation:market-panel-enter 220ms var(--motion-smooth) both}
+.location-modal-backdrop:not([hidden]) .location-modal{animation:market-panel-enter 220ms var(--motion-smooth) both}
+.toast,[role="status"].toast{box-shadow:0 12px 32px rgba(16,40,24,.18)}
+.site-legal-footer{line-height:1.5}
+.site-legal-footer a{padding:2px 0;text-underline-offset:3px}
+@keyframes market-bottle-float{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes market-sun-breathe{from{opacity:.82;scale:.98}to{opacity:1;scale:1.035}}
+@keyframes market-dock-enter{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}
+@keyframes market-panel-enter{from{opacity:.5;translate:0 8px;scale:.99}to{opacity:1;translate:0 0;scale:1}}
+@media(hover:none){
+  .provider:hover,.quick button:hover{transform:none;box-shadow:0 3px 12px rgba(20,45,29,.035)}
+  .provider:hover .cover img{transform:none}
+}
+@media(max-width:760px){
+  html{scroll-padding-top:76px}
+  .primary:hover:not(:disabled),.secondary:hover:not(:disabled){transform:none}
+  .provider{border-radius:17px}
+  .compare-dock{box-shadow:0 16px 44px rgba(22,55,34,.18)}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
+}
