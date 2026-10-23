@@ -54,4 +54,37 @@ begin
 end;
 $$;
 
-select 'PASS: bounded nearby-search PostgreSQL integration checks' as result;
+do $$
+declare
+  open_index text;
+  daily_index text;
+begin
+  select indexdef into open_index
+  from pg_indexes
+  where schemaname = 'public'
+    and indexname = 'orders_provider_open_capacity_idx';
+  if open_index is null then
+    raise exception 'open-order capacity index was not created';
+  end if;
+  if position('provider_id' in open_index) = 0
+     or position('placed' in open_index) = 0 then
+    raise exception 'open-order capacity index does not match the capacity query predicate: %', open_index;
+  end if;
+
+  select indexdef into daily_index
+  from pg_indexes
+  where schemaname = 'public'
+    and indexname = 'orders_provider_daily_litres_idx';
+  if daily_index is null then
+    raise exception 'daily litre-capacity index was not created';
+  end if;
+  if position('provider_id' in daily_index) = 0
+     or position('Asia/Kolkata' in daily_index) = 0
+     or position('rejected' in daily_index) = 0
+     or position('cancelled' in daily_index) = 0 then
+    raise exception 'daily litre-capacity index does not match the production query predicate: %', daily_index;
+  end if;
+end;
+$$;
+
+select 'PASS: bounded nearby-search and order-capacity PostgreSQL integration checks' as result;

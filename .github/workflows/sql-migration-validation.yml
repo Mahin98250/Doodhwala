@@ -43,5 +43,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/nearby-search-fixture.sql
       - name: Apply nearby-search migration in disposable PostgreSQL
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023120000_doodhwala_bounded_nearby_provider_search.sql
-      - name: Verify results and longitude-wrap edge cases
+      - name: Add targeted order-capacity indexes in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023130000_doodhwala_order_capacity_query_indexes.sql
+      - name: Verify discovery edge cases and capacity index definitions
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/nearby-search-assertions.sql

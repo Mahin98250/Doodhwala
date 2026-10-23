@@ -92,3 +92,12 @@ values
   ('10000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000001','Hidden Product','cow',60,true,false),
   ('10000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000001','Out Of Stock','cow',65,false,true),
   ('10000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000003','Island Milk','cow',75,true,true);
+
+-- Minimal synthetic order table required by the order-capacity index migration.
+-- No production/customer data is used.
+create table public.orders (
+  id uuid primary key,
+  provider_id uuid not null,
+  status text not null,
+  created_at timestamptz not null default now()
+);
