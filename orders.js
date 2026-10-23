@@ -81,7 +81,7 @@ async function rateOrder(id,stars,button){
   });
   if(error){
     button.disabled=false;
-    $("ordersState").textContent=error.message;
+    $("ordersState").textContent="Something went wrong. Please try again.";
     return;
   }
   await loadOrders();
@@ -241,7 +241,7 @@ async function loadOrders(options={}){
     .limit(50);
 
   if(result.error){
-    $("ordersState").textContent=result.error.message;
+    $("ordersState").textContent="We couldn’t load your orders. Please refresh and try again.";
     return;
   }
 
@@ -272,7 +272,7 @@ async function loadOrders(options={}){
     return renderOrderCard(o,eventsBy[o.id]||[]);
   }).join("");
 
-  $("ordersList").querySelectorAll("[data-pay-direct-upi]").forEach(function(button){button.addEventListener("click",async function(){button.disabled=true;button.textContent="Loading seller details…";try{const {data,error}=await Doodhwala.supabase.rpc("customer_get_order_direct_upi",{p_order_id:button.dataset.payDirectUpi});if(error||!data?.upi_id||!data?.payee_name)throw error||new Error("Seller UPI details are unavailable.");const amount=Number(data.amount);if(!Number.isFinite(amount)||amount<=0)throw new Error("Invalid order amount.");if(window.DoodhwalaDirectUpi&&typeof window.DoodhwalaDirectUpi.open==="function"){window.DoodhwalaDirectUpi.open({order_id:data.order_id,amount,upi_id:data.upi_id,payee_name:data.payee_name},button);}else{const uri="upi://pay?pa="+encodeURIComponent(data.upi_id)+"&pn="+encodeURIComponent(data.payee_name)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Doodhwala order "+data.order_id);alert("Pay only if the UPI app shows payee "+data.payee_name+" and amount ₹"+amount.toFixed(2)+". After paying, the seller must verify receipt in their bank/UPI app. Returning here does not prove payment.");window.location.href=uri;}}catch(err){$("ordersState").textContent=err?.message||"Could not open seller UPI details."}finally{button.disabled=false;button.textContent="Pay seller with UPI"}})});
+  $("ordersList").querySelectorAll("[data-pay-direct-upi]").forEach(function(button){button.addEventListener("click",async function(){button.disabled=true;button.textContent="Loading seller details…";try{const {data,error}=await Doodhwala.supabase.rpc("customer_get_order_direct_upi",{p_order_id:button.dataset.payDirectUpi});if(error||!data?.upi_id||!data?.payee_name)throw error||new Error("Seller UPI details are unavailable.");const amount=Number(data.amount);if(!Number.isFinite(amount)||amount<=0)throw new Error("Invalid order amount.");if(window.DoodhwalaDirectUpi&&typeof window.DoodhwalaDirectUpi.open==="function"){window.DoodhwalaDirectUpi.open({order_id:data.order_id,amount,upi_id:data.upi_id,payee_name:data.payee_name},button);}else{const uri="upi://pay?pa="+encodeURIComponent(data.upi_id)+"&pn="+encodeURIComponent(data.payee_name)+"&am="+encodeURIComponent(amount.toFixed(2))+"&cu=INR&tn="+encodeURIComponent("Doodhwala order "+data.order_id);alert("Pay only if the UPI app shows payee "+data.payee_name+" and amount ₹"+amount.toFixed(2)+". After paying, the seller must verify receipt in their bank/UPI app. Returning here does not prove payment.");window.location.href=uri;}}catch(err){$("ordersState").textContent="Could not open seller payment details. Please try again."}finally{button.disabled=false;button.textContent="Pay seller with UPI"}})});
   $("ordersList").querySelectorAll("[data-cancel-order]").forEach(function(button){
     button.addEventListener("click",function(){
       cancelOrder(button.dataset.cancelOrder,button);
