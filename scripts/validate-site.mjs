@@ -92,6 +92,7 @@ if(localFiles.has("/pwa-register.js")){
   if(!pwaRegisterText.includes('/Dudh-Wallah/sw.js')) errors.push("pwa-register.js -> project-scoped service worker path missing");
 }else errors.push("required runtime file missing /pwa-register.js");
 for(const file of htmlFiles){
+  if(file==="/offline.html") continue; // Standalone offline recovery screen intentionally has no app bootstrap.
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
   if(!html.includes("/Dudh-Wallah/pwa-register.js")) errors.push(file+" -> PWA registration script missing");
 }
@@ -251,6 +252,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
   if(!adminHtml.includes('admin.js?v=20261022.3')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
+  if(file==="/offline.html") continue; // Keep the offline recovery page independent of app bootstrapping.
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
   if(!htmlText.includes('/Dudh-Wallah/resilience.js?v=20261022.4')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
