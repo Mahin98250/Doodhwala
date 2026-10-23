@@ -80,4 +80,27 @@ begin
 end
 $$;
 
+
+do $
+begin
+  begin
+    insert into public.orders(
+      id, customer_id, provider_owner_id, provider_id, status, total,
+      payment_method, payment_status, payment_reference, payment_confirmed_by, payment_confirmed_at
+    ) values (
+      '50000000-0000-4000-8000-000000000005',
+      '10000000-0000-4000-8000-000000000001',
+      '20000000-0000-4000-8000-000000000002',
+      '40000000-0000-4000-8000-000000000004',
+      'placed', 68.00, 'direct_upi', 'paid_direct_to_seller',
+      'UTR123456', '20000000-0000-4000-8000-000000000002', now()
+    );
+    raise exception 'duplicate_upi_reference_was_not_blocked';
+  exception
+    when unique_violation then
+      null;
+  end;
+end
+$;
+
 select 'payment audit migration assertions passed' as result;
