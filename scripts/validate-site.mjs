@@ -230,12 +230,12 @@ if(localFiles.has("/orders.js")){
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Dudh-Wallah/orders.html">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
-  if(!checkoutHtml.includes('/Dudh-Wallah/checkout.js?v=20261022.5')) errors.push("checkout.html -> checkout runtime cache version stale");
+  if(!checkoutHtml.includes('/Dudh-Wallah/checkout.js?v=20261023.2')) errors.push("checkout.html -> checkout runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swP0.includes('const CACHE="doodhwala-v81"')) errors.push("sw.js -> P0 checkout cache revision missing");
-  if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261022.5')) errors.push("sw.js -> latest checkout runtime missing from precache");
+  if(!swP0.includes('/Dudh-Wallah/checkout.js?v=20261023.2')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
