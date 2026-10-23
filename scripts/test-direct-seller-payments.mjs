@@ -9,6 +9,7 @@ const raceGuard = read("supabase/migrations/20261022152000_doodhwala_payment_cho
 const paymentWriteGuard = read("supabase/migrations/20261022153000_doodhwala_guard_payment_field_writes.sql");
 const pendingOnly = read("supabase/migrations/20261022154000_doodhwala_direct_upi_pending_only.sql");
 const readiness = read("supabase/migrations/20261023050000_doodhwala_payment_controls_readiness.sql");
+const approvalGuard = read("supabase/migrations/20261023100000_doodhwala_recheck_seller_approval_for_upi.sql");
 const checkout = read("checkout.js");
 const checkoutHtml = read("checkout.html");
 const provider = read("provider.js");
@@ -35,6 +36,13 @@ assert.match(settingsRead, /where p\.owner_user_id=auth\.uid\(\)/i, "seller sett
 assert.match(raceGuard, /set default 'selection_pending'/i, "new orders must not race into seller acceptance before payment choice is saved");
 assert.match(raceGuard, /payment_method_selection_pending/);
 assert.match(raceGuard, /if v_order\.payment_method=p_method then/i, "payment-choice RPC must be idempotent for retry after a lost response");
+assert.match(approvalGuard, /if p_method is null or p_method not in \('direct_upi','cod'\)/i, "null or unsupported payment methods must be rejected, never coerced into COD");
+assert.ok(approvalGuard.includes("join public.provider_verifications v") && approvalGuard.includes("v.status = 'approved'"), "direct UPI selection must re-check that seller verification is still approved");
+assert.ok(approvalGuard.includes("p.is_active = true"), "direct UPI selection must reject inactive sellers");
+assert.ok(approvalGuard.includes("set_config('doodhwala.payment_rpc', 'on', true)"), "payment-choice RPC must carry the transaction-local write capability");
+assert.match(approvalGuard, /revoke execute on function public\.customer_set_order_payment_method\(uuid,text\) from public, anon/i, "payment choice RPC must not be callable by anon or PUBLIC");
+assert.match(approvalGuard, /grant execute on function public\.customer_set_order_payment_method\(uuid,text\) to authenticated/i, "payment choice RPC must remain available to authenticated customers");
+
 assert.ok(paymentWriteGuard.includes("payment_fields_require_authorized_rpc"), "direct order-table writes must not forge payment fields");
 assert.ok(paymentWriteGuard.includes("current_setting('doodhwala.payment_rpc', true)"), "payment field changes require the trusted transaction capability");
 assert.ok(paymentWriteGuard.includes("set_config('doodhwala.payment_rpc','on',true)"), "ownership-checked RPCs must set the transaction-local capability");
