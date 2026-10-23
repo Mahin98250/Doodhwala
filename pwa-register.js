@@ -4,8 +4,8 @@
   if (!window.navigator || !("serviceWorker" in window.navigator)) return;
 
   function registerServiceWorker() {
-    window.navigator.serviceWorker.register("/Dudh-Wallah/sw.js", {
-      scope: "/Dudh-Wallah/"
+    window.navigator.serviceWorker.register("/Doodhwala/sw.js", {
+      scope: "/Doodhwala/"
     }).catch(function (error) {
       const detail = error && (error.name || error.message)
         ? String(error.name || "Error") + (error.message ? ": " + String(error.message).slice(0, 180) : "")
@@ -21,7 +21,7 @@
             "resource_error",
             "warning",
             "PWA service worker registration failed: " + detail,
-            { resource: "/Dudh-Wallah/sw.js" }
+            { resource: "/Doodhwala/sw.js" }
           );
         }
       } catch (_) {}
