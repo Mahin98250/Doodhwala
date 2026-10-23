@@ -4,7 +4,7 @@ create table if not exists public.payment_transactions (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references public.orders(id) on delete restrict,
   customer_id uuid not null references auth.users(id) on delete restrict,
-  provider_id uuid references public.providers(id) on delete set null,
+  provider_id uuid references public.provider_profiles(id) on delete set null,
   amount_paise bigint not null check (amount_paise > 0),
   currency text not null default 'INR' check (currency = 'INR'),
   method text not null check (method in ('upi','card','netbanking','wallet','cod')),
