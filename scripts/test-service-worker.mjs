@@ -101,6 +101,6 @@ assert.ok(installWarnings.some(args => String(args[0]).includes("optional offlin
 assert.ok(source.includes('/Dudh-Wallah/product.js?v=20261022.5'), "the guarded product detail runtime must be explicitly precached");
 
 assert.ok(source.includes('/Dudh-Wallah/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v82"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v83"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Dudh-Wallah/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Dudh-Wallah/experience-layer.css?v=20261023.1'), "shared experience stylesheet must be precached");
