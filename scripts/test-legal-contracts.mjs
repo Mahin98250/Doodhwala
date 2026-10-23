@@ -16,14 +16,14 @@ assert.match(legal, /not enabled and that no payment is collected/i, "payment di
 assert.match(legal, /must be reviewed by a qualified Indian legal professional/i, "legal review must be required before launch");
 for (const file of pages) {
   const html = fs.readFileSync(new URL("../" + file, import.meta.url), "utf8");
-  assert.ok(html.includes("/Dudh-Wallah/legal.html#privacy"), file + " must link to privacy information");
-  assert.ok(html.includes("/Dudh-Wallah/legal.html#terms"), file + " must link to marketplace terms");
+  assert.ok(html.includes("/Doodhwala/legal.html#privacy"), file + " must link to privacy information");
+  assert.ok(html.includes("/Doodhwala/legal.html#terms"), file + " must link to marketplace terms");
   assert.ok(html.includes("Legal pages are drafts pending review"), file + " must clearly disclose draft status");
-  const stylesheetVersion = ["index.html","support.html"].includes(file) ? (file === "index.html" ? "styles.css?v=20261022.4" : "styles.css?v=20261022.4") : "styles.css?v=20261013.3";
+  const stylesheetVersion = ["index.html","support.html"].includes(file) ? (file === "index.html" ? "styles.css?v=20261023.5" : "styles.css?v=20261023.5") : "styles.css?v=20261013.3";
   assert.ok(html.includes(stylesheetVersion), file + " must use current shared legal-footer styles");
 }
 const sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 assert.ok(sw.includes('const CACHE="doodhwala-v83"'), "PWA cache revision must advance for discovery and legal content");
-assert.ok(sw.includes('"/Dudh-Wallah/legal.html"'), "legal center must be precached");
-assert.ok(sw.includes('"/Dudh-Wallah/styles.css?v=20261013.3"'), "current shared stylesheet must be precached");
+assert.ok(sw.includes('"/Doodhwala/legal.html"'), "legal center must be precached");
+assert.ok(sw.includes('"/Doodhwala/styles.css?v=20261013.3"'), "current shared stylesheet must be precached");
 console.log("Legal policy draft checks passed: draft warnings, all core policy sections, truthful missing-contact/refund disclosures, site navigation and PWA precache.");
