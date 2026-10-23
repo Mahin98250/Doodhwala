@@ -9,8 +9,8 @@ const counts = { products: 0, retryStatus: 0, createOrder: 0, reportBodies: [] }
 const location = {
   origin: "https://mahin98250.github.io",
   hostname: "mahin98250.github.io",
-  pathname: "/Dudh-Wallah/checkout.html",
-  href: "https://mahin98250.github.io/Dudh-Wallah/checkout.html"
+  pathname: "/Doodhwala/checkout.html",
+  href: "https://mahin98250.github.io/Doodhwala/checkout.html"
 };
 const localStorage = {
   getItem(key) { return stored.has(key) ? stored.get(key) : null; },

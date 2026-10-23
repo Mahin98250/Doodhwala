@@ -22,7 +22,7 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
 function dateText(v){if(!v)return "—";return new Date(v).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
 function dateTime(v){if(!v)return "—";return new Date(v).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
 function setDefaultDates(){const t=new Date(),to=t.toISOString().slice(0,10),f=new Date(t);f.setDate(t.getDate()-29);$("fromDate").value=f.toISOString().slice(0,10);$("toDate").value=to}
-function gateError(msg){$("adminGate").classList.add("error");$("adminGate").innerHTML='<img src="/Dudh-Wallah/assets/logo.svg" alt=""><span>DOODHWALA CONTROL</span><h1>'+esc(msg)+'</h1><p><a href="/Dudh-Wallah/auth.html?return=/Dudh-Wallah/admin.html">Sign in as owner</a> · <a href="/Dudh-Wallah/">Return to Doodhwala</a></p>'}
+function gateError(msg){$("adminGate").classList.add("error");$("adminGate").innerHTML='<img src="/Doodhwala/assets/mascot.png" alt=""><span>DOODHWALA CONTROL</span><h1>'+esc(msg)+'</h1><p><a href="/Doodhwala/auth.html?return=/Doodhwala/admin.html">Sign in as owner</a> · <a href="/Doodhwala/">Return to Doodhwala</a></p>'}
 async function adminRpc(name,args={}){const {data,error}=await Doodhwala.supabase.rpc(name,args);if(error)throw error;return data||[]}
 async function boot(){
  if(!Doodhwala.configured){gateError("Backend unavailable.");return}
@@ -31,7 +31,7 @@ async function boot(){
  const check=await Doodhwala.supabase.rpc("is_current_user_admin");
  if(check.error||check.data!==true){gateError("Owner access required. Add this owner's email to the private admin allowlist.");return}
  $("adminGate").classList.add("hidden");$("adminApp").classList.remove("hidden");setDefaultDates();setupAdminRealtime();
- $("adminSignout").onclick=async()=>{await Doodhwala.supabase.auth.signOut();location.href="/Dudh-Wallah/"};
+ $("adminSignout").onclick=async()=>{await Doodhwala.supabase.auth.signOut();location.href="/Doodhwala/"};
  await loadSection("overview");prefetchAdminData();
 }
 async function loadOverview(){

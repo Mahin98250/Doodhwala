@@ -2,7 +2,7 @@
 (function(){
   const api=window.Doodhwala?.supabase;
   if(!api)return;
-  const BASE="/Dudh-Wallah/";
+  const BASE="/Doodhwala/";
   const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
   const money=v=>"₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2});
   let realtimeConnected=false;
@@ -177,7 +177,7 @@
     const recent=snapshot.orders?.find(o=>o.status==="delivered")||snapshot.orders?.[0];
     const progress=active?renderOrderProgress(active.status):"";
     const section=document.createElement("section");section.className="d10x-desk";section.innerHTML=
-      '<div class="d10x-desk-inner"><div class="d10x-brand-row"><div class="d10x-brand"><img src="/Dudh-Wallah/assets/logo.svg" alt=""><div class="d10x-brand-copy"><small>YOUR PERSONAL DELIVERY DESK</small><b>Doodhwala <em>10X</em></b></div></div><span class="d10x-session-pill" id="d10xSessionPill"><i></i> ACCOUNT SYNCED</span></div>'+
+      '<div class="d10x-desk-inner"><div class="d10x-brand-row"><div class="d10x-brand"><img src="/Doodhwala/assets/mascot.png" alt=""><div class="d10x-brand-copy"><small>YOUR PERSONAL DELIVERY DESK</small><b>Doodhwala <em>10X</em></b></div></div><span class="d10x-session-pill" id="d10xSessionPill"><i></i> ACCOUNT SYNCED</span></div>'+
       '<div class="d10x-desk-head"><div><small>YOUR MILK DESK</small><h2>Everything important, one glance.</h2><p>Orders, recurring plans, saved sellers and alerts — all in one place.</p></div><button class="d10x-desk-link" id="d10xOpenOrders">Open order centre →</button></div>'+
       '<div class="d10x-stats"><div class="d10x-stat"><span>CURRENT ORDER</span><b id="d10xCurrentOrderCount">'+(active?"1":"0")+'</b><small id="d10xCurrentOrderStatus">'+esc(active?orderStatusLabel(active.status):"Nothing active")+'</small></div><div class="d10x-stat"><span>DELIVERY PLANS</span><b id="d10xPlansCount">'+snapshot.subs.length+'</b><small>Active or paused</small></div><div class="d10x-stat"><span>SAVED</span><b id="d10xSavedCount">'+snapshot.favs.filter(x=>x.provider_id).length+'</b><small>Providers & products</small></div><div class="d10x-stat"><span>ALERTS</span><b id="d10xAlertsCount">'+snapshot.unread+'</b><small>Unread notifications</small></div></div>'+
       '<div class="d10x-focus"><div class="d10x-focus-copy"><b id="d10xFocusTitle">'+(active?'<i class="d10x-live-dot"></i> Your delivery is in progress':"Ready for your next order")+'</b><span id="d10xFocusText">'+esc(activeText)+(recent?(" · Latest total "+money(recent.total)):"")+'</span></div><div class="d10x-focus-actions">'+

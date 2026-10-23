@@ -30,7 +30,7 @@ function setState(title,copy,link){const content=$("productContent");if(content)
 function cart(){try{return JSON.parse(localStorage.getItem("doodhwala-cart")||"{}")}catch(_){return{}}}
 function saveCart(c){try{localStorage.setItem("doodhwala-cart",JSON.stringify(c));window.dispatchEvent(new Event("doodhwala:cart-updated"));return true}catch(error){try{console.warn("Could not persist product cart",error)}catch(_){}return false}}
 function add(){
- if(!store||!product){setState("Product not ready","Reload the page or return to the live catalogue.",["/Dudh-Wallah/?view=providers","Explore providers →"]);return}
+ if(!store||!product){setState("Product not ready","Reload the page or return to the live catalogue.",["/Doodhwala/?view=providers","Explore providers →"]);return}
  const unitPrice=Number(product.price_per_litre);
  if(!Number.isFinite(unitPrice)||unitPrice<=0){toast("This product has no valid price yet and cannot be added");return}
  if(store.is_serviceable===false){toast("This seller cannot deliver to your selected location");return}
@@ -53,13 +53,13 @@ function render(){
  $("buyTotal").textContent=priceValid?money(unitPrice*qty):"Unavailable";
  $("quantity").textContent=String(qty);
  $("providerLink").textContent=store.provider_name||"Local seller";
- $("providerLink").href="/Dudh-Wallah/store.html?provider="+encodeURIComponent(store.provider_id);
- $("productBack").href="/Dudh-Wallah/store.html?provider="+encodeURIComponent(store.provider_id);
+ $("providerLink").href="/Doodhwala/store.html?provider="+encodeURIComponent(store.provider_id);
+ $("productBack").href="/Doodhwala/store.html?provider="+encodeURIComponent(store.provider_id);
  $("detailProvider").textContent=store.provider_name||"Local provider";
  $("detailType").textContent=product.milk_type||"Milk";
  $("detailWindow").textContent=store.delivery_from&&store.delivery_to?String(store.delivery_from).slice(0,5)+"–"+String(store.delivery_to).slice(0,5):"Local route";
  $("detailRadius").textContent=(store.service_radius_km||5)+" km";
- $("planLink").href="/Dudh-Wallah/plans.html?provider="+encodeURIComponent(store.provider_id)+"&product="+encodeURIComponent(product.id);
+ $("planLink").href="/Doodhwala/plans.html?provider="+encodeURIComponent(store.provider_id)+"&product="+encodeURIComponent(product.id);
  const addButton=$("addToCart");
  addButton.disabled=!priceValid||store.is_serviceable===false;
  addButton.textContent=!priceValid?"Price unavailable":store.is_serviceable===false?"Unavailable here":"Add to cart";
@@ -73,7 +73,7 @@ async function load(){
  $("addToCart").disabled=true;
  $("minus").disabled=true;
  $("plus").disabled=true;
- if(!providerId||!productId){setState("Milk not found","Choose a product from a local provider.",["/Dudh-Wallah/?view=providers","Explore providers →"]);return}
+ if(!providerId||!productId){setState("Milk not found","Choose a product from a local provider.",["/Doodhwala/?view=providers","Explore providers →"]);return}
  if(!window.Doodhwala?.configured){setState("Marketplace unavailable","Supabase is not configured. Check the connection or return to the catalogue.");return}
  const pos=readLocation();
  try{
@@ -81,17 +81,17 @@ async function load(){
    if(!client||typeof client.rpc!=="function"){setState("Marketplace unavailable","The marketplace client did not initialise. Reload this page to try again.");return}
    const {data,error}=await client.rpc("get_provider_storefront",{p_provider_id:providerId,p_latitude:pos?.latitude??null,p_longitude:pos?.longitude??null});
    const row=Array.isArray(data)?data[0]:data;
-   if(error||!row||typeof row!=="object"){setState("Product unavailable",error?.message||"This provider is not currently available.",["/Dudh-Wallah/?view=providers","Back to Explore →"]);return}
+   if(error||!row||typeof row!=="object"){setState("Product unavailable",error?.message||"This provider is not currently available.",["/Doodhwala/?view=providers","Back to Explore →"]);return}
    store=row;
    const products=Array.isArray(store.products)?store.products:[];
    product=products.find(p=>p&&String(p.id)===String(productId))||null;
-   if(!product){setState("Product not available","This milk is no longer active or in stock.",["/Dudh-Wallah/store.html?provider="+encodeURIComponent(providerId),"Back to provider →"]);return}
+   if(!product){setState("Product not available","This milk is no longer active or in stock.",["/Doodhwala/store.html?provider="+encodeURIComponent(providerId),"Back to provider →"]);return}
    $("minus").disabled=false;
    $("plus").disabled=false;
    render();
  }catch(error){
    console.error("Product detail load failed",error);
-   setState("Could not load this product","Check your connection and try again. No order or cart changes were made.",["/Dudh-Wallah/product.html?provider="+encodeURIComponent(providerId)+"&product="+encodeURIComponent(productId),"Try again →"]);
+   setState("Could not load this product","Check your connection and try again. No order or cart changes were made.",["/Doodhwala/product.html?provider="+encodeURIComponent(providerId)+"&product="+encodeURIComponent(productId),"Try again →"]);
  }
 }
 $("minus").onclick=()=>{if(!store||!product)return;qty=Math.max(1,qty-1);render()};

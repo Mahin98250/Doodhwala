@@ -24,8 +24,9 @@ assert.match(html, /aria-modal="true"/, "comparison dialog must declare modal se
 assert.match(html, /id="closeCompare"/, "comparison dialog must have a close control");
 assert.match(css, /\.compare-dock\[hidden\],\.compare-overlay\[hidden\]\{display:none!important\}/, "hidden comparison UI must not occupy layout");
 assert.match(css, /@media\(max-width:760px\)[\s\S]*?\.compare-overlay\{align-items:end/, "comparison dialog must adapt to mobile");
-assert.match(sw, /const CACHE="doodhwala-v83"/, "PWA cache revision must advance for the discovery UI");
+assert.match(sw, /const CACHE="doodhwala-v87"/, "PWA cache revision must advance for the discovery UI");
 assert.ok(sw.includes('/Doodhwala/styles.css?v=20261023.5'), "PWA must precache the current stylesheet");
+assert.ok(sw.includes('/Doodhwala/assets/mascot.png'), "PWA must precache the final mascot logo");
 assert.ok(sw.includes('/Doodhwala/app.js?v=20261022.4'), "PWA must precache the current runtime");
 assert.ok(html.includes('/Doodhwala/styles.css?v=20261023.5'), "homepage must request the current stylesheet");
 assert.ok(html.includes('/Doodhwala/app.js?v=20261022.4'), "homepage must request the current app version");
