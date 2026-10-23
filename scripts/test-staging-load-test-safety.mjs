@@ -24,6 +24,7 @@ assert.match(scenario, /\[30, 60, 120\]/);
 assert.match(scenario, /rest\/v1\/rpc\/find_nearby_providers_v2/);
 assert.doesNotMatch(scenario, /create_order|insert into|update public\.|delete from/i);
 assert.match(scenario, /http_req_failed:\s*\["rate<0\.01"\]/);
+assert.ok(scenario.includes('checks: ["rate>0.99"]'));
 assert.match(scenario, /p\(95\)<1500/);
 assert.match(docs, /not a 100,000-concurrent-query test/i);
 assert.match(docs, /Never test with customer data copied from production/i);
