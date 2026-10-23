@@ -1,5 +1,5 @@
 (() => {
-  const BASE="/Dudh-Wallah/";
+  const BASE="/Doodhwala/";
   const icons={
     home:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/><path d="M9 21h6"/></svg>',
     explore:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m14.7 9.3-1.8 3.6-3.6 1.8 1.8-3.6 3.6-1.8Z"/></svg>',
