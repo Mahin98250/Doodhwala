@@ -14,8 +14,8 @@
 .dw-upi-field{display:grid;gap:7px;margin-top:5px}
 .dw-upi-field label{font-size:12px;font-weight:800;color:#435248}
 .dw-upi-field>div{display:flex;gap:8px;min-width:0}
-.dw-upi-field input{min-width:0;flex:1;width:100%;border:1px solid #dce6de;border-radius:11px;padding:11px 12px;background:#f8faf8;color:#24372a;font:700 14px inherit}
-.dw-upi-copy,.dw-upi-secondary,.dw-upi-primary{min-height:44px;border-radius:12px;padding:11px 14px;font:800 13px inherit;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+.dw-upi-field input{min-width:0;flex:1;width:100%;border:1px solid #dce6de;border-radius:11px;padding:11px 12px;background:#f8faf8;color:#24372a;font:700 14px system-ui,sans-serif}
+.dw-upi-copy,.dw-upi-secondary,.dw-upi-primary{min-height:44px;border-radius:12px;padding:11px 14px;font:800 13px system-ui,sans-serif;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease}
 .dw-upi-copy,.dw-upi-secondary{background:#fff;border:1px solid #dce6de;color:#2b5037}
 .dw-upi-primary{background:#1b6841;border:1px solid #1b6841;color:#fff}
 .dw-upi-copy:hover,.dw-upi-secondary:hover{background:#f2f8f3;border-color:#b8d1be}
