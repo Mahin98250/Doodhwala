@@ -21,6 +21,8 @@ jobs:
         run: node scripts/test-service-worker.mjs
       - name: Test truthful provider delivery readiness
         run: node scripts/test-provider-readiness.mjs
+      - name: Test seller subscription billing contracts
+        run: node scripts/test-seller-billing-contracts.mjs
       - name: Test resilience recovery behavior
         run: node scripts/test-resilience.mjs
       - name: Test client error-report version contracts
