@@ -1,6 +1,6 @@
 # Seller subscription billing — product and release specification
 
-**Status: agreed product direction; implementation and payment collection are not yet live.**
+**Status: source implementation started in PR #34; not deployed or live.** The migration, seller billing view, owner plan controls, offline collection record flow, audit trail, and static contract test are present on the feature branch. The connected production database has not been changed. Online checkout is deliberately blocked until a real payment provider integration is selected, configured, and verified.
 
 ## Business model
 
@@ -21,7 +21,7 @@ The owner/admin must be able to change plan names, prices, duration, included fe
 - Keep it **pending** until a trusted payment-provider server event or a manual owner reconciliation confirms receipt. A browser redirect, screenshot, client callback, UPI app opening, or seller claim is not proof.
 - Only a verified successful payment activates/extends the seller's subscription and the featured entitlement.
 - Never collect UPI PINs, OTPs, card numbers, CVV or banking passwords.
-- Online collection is **not enabled by this document**. Choose and configure a suitable payment provider/acquirer first; credentials must be server-side, with signed webhook verification, replay protection, idempotency, reconciliation and failure/refund handling.
+- Online collection remains **disabled in the current implementation**. Choose and configure a suitable payment provider/acquirer first; credentials must be server-side, with signed webhook verification, replay protection, idempotency, reconciliation and failure/refund handling.
 
 ### 2. Offline payment collected by Doodhwala
 - Seller selects “Pay offline / request collection”.
