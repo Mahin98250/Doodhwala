@@ -62,3 +62,14 @@ The separate `doodhwala-pay` Edge Function currently reports `gateway_ready: fal
 - [ ] Only then enable real-money collection for a controlled rollout with monitored limits; increase volume progressively.
 
 **Boundary:** Source changes, passing static tests or a successful schema migration do not prove the system is secure at scale. No real-money transfer, bank settlement, authorised-PSP integration, or production penetration test was performed during this review.
+
+## Payment audit-trail hardening — source-only phase (2026-10-23)
+
+A new proposed migration, `20261023150000_doodhwala_payment_audit_and_reference_guard.sql`, adds an append-only payment event trail for order initialization, payment-choice changes, direct-UPI seller attestations, and cash collection confirmations. Rows are participant-readable under RLS; browser roles cannot insert, mutate, or delete audit entries. The database trigger records actor, prior/current payment method and status, amount in paise, reference, and event time.
+
+The provider UI now requires a bounded UPI transaction reference/UTR before the seller can record receipt. This makes reconciliation more useful, but a reference supplied by a seller is not independent evidence of settlement. The flow continues to explicitly report that Doodhwala has not bank-verified the payment.
+
+The migration and UI changes are in a feature branch and are **not applied to the live Supabase database**. A disposable PostgreSQL validation job and a static contract test have been added to CI. Before any rollout, review the effect of restrictive audit foreign keys on account/order deletion and define retention/export procedures for financial records; run the migration against staging and verify RLS, triggers, existing checkout flows, and recovery paths.
+
+This work strengthens the manual, zero-marketplace-gateway-fee flow. It does not create a regulated acquiring service, automatically verify bank settlement, charge cards, handle refunds, or make YOUPI PG suitable for production.
+
