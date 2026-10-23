@@ -45,7 +45,7 @@ const serviceWorker = read("sw.js");
 assert.match(providerHtml, /id="readinessBadge"[^>]*role="status"/, "seller readiness must be announced accessibly");
 assert.doesNotMatch(providerHtml, /<span class="status-good">Ready<\/span>/, "seller dashboard must not show a hard-coded green Ready badge");
 assert.match(provider, /function updateDeliveryReadiness\(\)/, "seller readiness must be derived from current state");
-assert.match(provider, /provider\.verificationStatus==="approved"/, "seller approval must be required for ready status");
+assert.match(provider, /provider\.verificationStatus!=="approved"/, "unapproved providers must not appear ready");
 assert.match(provider, /provider\.acceptingOrders===false/, "a paused seller store must not be marked ready");
 assert.match(provider, /!profileReady\|\|!locationReady\|\|!productReady/, "profile, location and active stock must be checked");
 for (const label of ["Connect account", "Review required", "Pending review", "Store paused", "Setup needed", "Ready for orders"]) {
