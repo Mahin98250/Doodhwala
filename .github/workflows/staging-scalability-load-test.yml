@@ -1,0 +1,85 @@
+name: Staging scalability load test
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type STAGING to confirm that the target is a dedicated staging project"
+        required: true
+        type: string
+      target_rate:
+        description: "Read-only nearby-search request rate"
+        required: true
+        type: choice
+        options:
+          - "1"
+          - "5"
+          - "10"
+          - "25"
+          - "50"
+        default: "5"
+      duration_seconds:
+        description: "Test duration in seconds"
+        required: true
+        type: choice
+        options:
+          - "30"
+          - "60"
+          - "120"
+        default: "30"
+
+permissions:
+  contents: read
+
+jobs:
+  load-test:
+    name: Read-only staging nearby-search load test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUN_CONFIRMATION: ${{ inputs.confirmation }}
+      TARGET_RPS: ${{ inputs.target_rate }}
+      DURATION_SECONDS: ${{ inputs.duration_seconds }}
+      STAGING_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
+      STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+      TEST_LATITUDE: ${{ vars.STAGING_TEST_LATITUDE }}
+      TEST_LONGITUDE: ${{ vars.STAGING_TEST_LONGITUDE }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate staging-only target and safe load bounds
+        run: |
+          set -euo pipefail
+          if [[ "$RUN_CONFIRMATION" != "STAGING" ]]; then
+            echo "Refusing to run: type STAGING to confirm the target."
+            exit 1
+          fi
+          case "$TARGET_RPS" in
+            1|5|10|25|50) ;;
+            *) echo "Unsupported target rate."; exit 1 ;;
+          esac
+          case "$DURATION_SECONDS" in
+            30|60|120) ;;
+            *) echo "Unsupported duration."; exit 1 ;;
+          esac
+          node --input-type=module <<'NODE'
+          const raw = process.env.STAGING_SUPABASE_URL || "";
+          const key = process.env.STAGING_SUPABASE_ANON_KEY || "";
+          if (!raw || !key) throw new Error("Configure STAGING_SUPABASE_URL (repository variable) and STAGING_SUPABASE_ANON_KEY (repository secret) first.");
+          const url = new URL(raw);
+          if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co")) {
+            throw new Error("Refusing to run: the staging target must be an HTTPS Supabase project URL.");
+          }
+          if (url.hostname === "hmiboyfcvtfawrwujslg.supabase.co" || url.hostname.includes("hmiboyfcvtfawrwujslg")) {
+            throw new Error("Refusing to run against Doodhwala's known production Supabase project.");
+          }
+          if (url.pathname !== "/" || url.search || url.hash) {
+            throw new Error("STAGING_SUPABASE_URL must be the project base URL without a path, query, or fragment.");
+          }
+          console.log("Staging target validation passed. Only the read-only nearby-provider RPC will be exercised.");
+          NODE
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: "0.54.0"
+      - name: Run bounded read-only load test
+        run: k6 run scripts/load-tests/nearby-provider-search.k6.js
