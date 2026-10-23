@@ -19,6 +19,8 @@ jobs:
           done
       - name: Syntax-check production readiness probe
         run: node --check scripts/production-readiness-probe.mjs
+      - name: Syntax-check live page smoke test
+        run: node --check scripts/live-page-smoke.mjs
       - name: Test service-worker offline route recovery
         run: node scripts/test-service-worker.mjs
       - name: Test resilience recovery behavior
