@@ -54,7 +54,7 @@ for (const label of ["Connect account", "Review required", "Pending review", "St
 assert.match(providerCss, /\.status-neutral/, "neutral readiness must be styled");
 assert.match(providerCss, /\.status-warning/, "pending/setup readiness must be styled");
 assert.match(providerCss, /\.status-danger/, "rejected verification must be styled distinctly");
-assert.ok(serviceWorker.includes('const CACHE="doodhwala-v84"'), "seller readiness changes must refresh installed PWAs");
+assert.ok(serviceWorker.includes('const CACHE="doodhwala-v86"'), "seller readiness changes must refresh installed PWAs");
 assert.ok(serviceWorker.includes("/Dudh-Wallah/provider.js?v=20261023.2"), "updated seller runtime must be precached");
 assert.ok(serviceWorker.includes("/Dudh-Wallah/provider.css?v=20261023.2"), "updated seller styles must be precached");
 
