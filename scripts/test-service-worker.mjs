@@ -7,6 +7,7 @@ const origin = "https://mahin98250.github.io";
 const cache = new Map([
   [origin + "/Dudh-Wallah/orders.html", "cached orders page"],
   [origin + "/Dudh-Wallah/index.html", "cached home page"],
+  [origin + "/Dudh-Wallah/offline.html", "offline recovery page"],
   [origin + "/Dudh-Wallah/legal.html", "cached legal draft"],
   [origin + "/Dudh-Wallah/styles.css", "cached stylesheet"],
   [origin + "/Dudh-Wallah/auth.js", "cached current auth script"]
@@ -15,7 +16,7 @@ const handlers = new Map();
 const cacheLookups = [];
 const installWarnings = [];
 let skipWaitingCalls = 0;
-const optionalFailure = "/Dudh-Wallah/provider.css?v=20261022.6";
+const optionalFailure = "/Dudh-Wallah/provider.css?v=20261023.2";
 const installCache = {
   async addAll(urls) {
     for (const asset of urls) await this.add(asset);
@@ -72,15 +73,19 @@ const queryAsset = await offlineResponse(origin + "/Dudh-Wallah/styles.css?v=999
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Dudh-Wallah/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v82"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v84"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Dudh-Wallah/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
-assert.ok(source.includes('/Dudh-Wallah/provider.js?v=20261022.5'), "the current seller authorization script must be explicitly precached");
-assert.ok(source.includes('/Dudh-Wallah/provider.css?v=20261022.6'), "the current seller mobile navigation styles must be explicitly precached");
+assert.ok(source.includes('/Dudh-Wallah/provider.js?v=20261023.2'), "the current seller authorization script must be explicitly precached");
+assert.ok(source.includes('/Dudh-Wallah/provider.css?v=20261023.2'), "the current seller mobile navigation styles must be explicitly precached");
 assert.ok(source.includes('/Dudh-Wallah/styles.css?v=20261022.4'), "the current discovery styles must be explicitly precached");
 assert.ok(source.includes('/Dudh-Wallah/app.js?v=20261022.4'), "the current discovery runtime must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Dudh-Wallah/not-cached.html");
-assert.equal(await unknownRoute.text(), "cached home page", "unknown offline navigation should fall back to the cached home page");
+assert.equal(await unknownRoute.text(), "offline recovery page", "unknown offline navigation should show the honest offline recovery page");
+assert.ok(source.includes('"/Dudh-Wallah/offline.html"'), "offline recovery page must be included in the PWA precache");
+const offlinePage = fs.readFileSync(new URL("../offline.html", import.meta.url), "utf8");
+assert.match(offlinePage, /Orders, sign-in, live order updates and payments need an internet connection/i, "offline page must clearly state online-only actions");
+assert.match(offlinePage, /id="retry"/, "offline page must provide a retry action");
 
 console.log("Service-worker offline route recovery passed: query routes, versioned assets, and final navigation fallback.");
 
@@ -96,6 +101,6 @@ assert.ok(installWarnings.some(args => String(args[0]).includes("optional offlin
 assert.ok(source.includes('/Dudh-Wallah/product.js?v=20261022.5'), "the guarded product detail runtime must be explicitly precached");
 
 assert.ok(source.includes('/Dudh-Wallah/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v82"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v84"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Dudh-Wallah/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Dudh-Wallah/experience-layer.css?v=20261023.1'), "shared experience stylesheet must be precached");
