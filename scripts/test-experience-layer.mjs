@@ -38,6 +38,26 @@ assert.ok(customer.includes("DOODHWALA ASSIST"), "customer panel should show the
 assert.doesNotMatch(customer, /Doodhwala 10X|DOODHWALA 10X/, "old customer-facing name should be absent");
 assert.doesNotMatch(provider, /DOODHWALA 10X/, "old seller heading should be absent");
 
+const providerHtml = read("provider.html");
+const provider = read("provider.js");
+const providerCss = read("provider.css");
+const serviceWorker = read("sw.js");
+assert.match(providerHtml, /id="readinessBadge"[^>]*role="status"/, "seller readiness must be announced accessibly");
+assert.doesNotMatch(providerHtml, /<span class="status-good">Ready<\/span>/, "seller dashboard must not show a hard-coded green Ready badge");
+assert.match(provider, /function updateDeliveryReadiness\(\)/, "seller readiness must be derived from current state");
+assert.match(provider, /provider\.verificationStatus==="approved"/, "seller approval must be required for ready status");
+assert.match(provider, /provider\.acceptingOrders===false/, "a paused seller store must not be marked ready");
+assert.match(provider, /!profileReady\|\|!locationReady\|\|!productReady/, "profile, location and active stock must be checked");
+for (const label of ["Connect account", "Review required", "Pending review", "Store paused", "Setup needed", "Ready for orders"]) {
+  assert.ok(provider.includes(label), "seller readiness must explain " + label);
+}
+assert.match(providerCss, /\.status-neutral/, "neutral readiness must be styled");
+assert.match(providerCss, /\.status-warning/, "pending/setup readiness must be styled");
+assert.match(providerCss, /\.status-danger/, "rejected verification must be styled distinctly");
+assert.ok(serviceWorker.includes('const CACHE="doodhwala-v84"'), "seller readiness changes must refresh installed PWAs");
+assert.ok(serviceWorker.includes("/Dudh-Wallah/provider.js?v=20261023.2"), "updated seller runtime must be precached");
+assert.ok(serviceWorker.includes("/Dudh-Wallah/provider.css?v=20261023.2"), "updated seller styles must be precached");
+
 const workflow = read(".github/workflows/static-validation.yml");
 assert.ok(workflow.includes("support.js network-status.js; do"), "new shared JS must be included in the syntax-check file loop");
 assert.ok(workflow.includes('node --check "$file"'), "syntax-check loop must execute node --check for every listed file");
