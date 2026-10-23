@@ -33,5 +33,5 @@ assert.ok(providerJs.includes('data-request-billing')&&providerJs.includes('offl
 assert.ok(providerCss.includes("seller-billing-plans")&&providerCss.includes("repeat(8,minmax(0,1fr))"),"billing cards and all eight mobile destinations must be styled");
 assert.ok(adminHtml.includes('data-section="seller-billing"'),"owner navigation must include separate seller billing section");
 assert.ok(adminJs.includes('admin_list_seller_subscription_billing')&&adminJs.includes('admin_record_offline_seller_subscription_payment')&&adminJs.includes('admin_upsert_seller_subscription_plan'),"owner UI must support payment review, offline collection and plan updates");
-assert.ok(sw.includes('const CACHE="doodhwala-v85"')&&sw.includes("provider.js?v=20261023.3")&&sw.includes("provider.css?v=20261023.3")&&sw.includes("admin.js?v=20261023.1"),"PWA must precache the seller billing UI assets");
+assert.ok(sw.includes('const CACHE="doodhwala-v86"')&&sw.includes("provider.js?v=20261023.3")&&sw.includes("provider.css?v=20261023.3")&&sw.includes("admin.js?v=20261023.2"),"PWA must precache the seller billing UI assets");
 console.log("Seller subscription billing contracts passed.");
