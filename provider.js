@@ -102,6 +102,7 @@ function renderStoreStatus(){
  b.classList.toggle("paused",!live);
  b.setAttribute("aria-pressed",String(live));
  b.title=live?"Pause new customer orders":"Resume new customer orders";
+ updateDeliveryReadiness();
 }
 async function toggleStoreStatus(){
  if(!window.Doodhwala?.configured||!provider.backendProviderId){toast("Sign in to control live order intake.");return}
@@ -139,7 +140,7 @@ $("saveProviderUpi")?.addEventListener("click",async function(){const button=$("
 function updateDeliveryReadiness(){
  const badge=$("readinessBadge");if(!badge)return;
  const profileReady=Boolean(provider.providerName&&provider.ownerName&&/^\\d{10}$/.test(String(provider.phone||"").replace(/\\D/g,""))&&provider.area&&provider.city&&/^\\d{6}$/.test(String(provider.pin||"")));
- const locationReady=Number.isFinite(Number(provider.latitude))&&Number.isFinite(Number(provider.longitude))&&provider.latitude!==""&&provider.longitude!=="";
+ const locationReady=provider.latitude!==null&&provider.latitude!==undefined&&provider.longitude!==null&&provider.longitude!==undefined&&String(provider.latitude).trim()!==""&&String(provider.longitude).trim()!==""&&Number.isFinite(Number(provider.latitude))&&Number.isFinite(Number(provider.longitude))&&Number(provider.latitude)>=-90&&Number(provider.latitude)<=90&&Number(provider.longitude)>=-180&&Number(provider.longitude)<=180;
  const productReady=Array.isArray(provider.products)&&provider.products.some(function(p){return p.stock&&p.isActive!==false});
  let label="Setup needed",kind="status-warning";
  if(!provider.backendProviderId){label="Connect account";kind="status-neutral";}
