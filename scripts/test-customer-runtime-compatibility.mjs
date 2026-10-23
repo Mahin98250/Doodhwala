@@ -30,19 +30,19 @@ assert.match(orders, /hasPaymentMethod&&o\.payment_method===\"direct_upi\"/,
 assert.match(orders, /hasOwnProperty\.call\(o,\"payment_method\"\)/,
   "missing payment method must not be misrepresented as Cash on Delivery");
 
-assert.ok(plansHtml.includes("/Dudh-Wallah/plans.js?v=20261023.2"), "plans HTML must bust cache for fixed runtime");
-assert.ok(ordersHtml.includes("/Dudh-Wallah/orders.js?v=20261023.2"), "orders HTML must bust cache for schema fallback");
-assert.ok(adminHtml.includes("/Dudh-Wallah/admin.css?v=20261023.2"), "admin HTML must load the latest admin styles");
-assert.ok(adminHtml.includes("/Dudh-Wallah/admin.js?v=20261023.2"), "admin HTML must load the latest admin runtime");
+assert.ok(plansHtml.includes("/Doodhwala/plans.js?v=20261023.2"), "plans HTML must bust cache for fixed runtime");
+assert.ok(ordersHtml.includes("/Doodhwala/orders.js?v=20261023.2"), "orders HTML must bust cache for schema fallback");
+assert.ok(adminHtml.includes("/Doodhwala/admin.css?v=20261023.2"), "admin HTML must load the latest admin styles");
+assert.ok(adminHtml.includes("/Doodhwala/admin.js?v=20261023.2"), "admin HTML must load the latest admin runtime");
 assert.ok(adminCss.includes(".admin-mobile-nav{display:flex;position:fixed"), "mobile admin navigation should be fixed and accessible");
 assert.ok(adminCss.includes('button[data-section="seller-billing"]::before'), "seller billing should have its own navigation cue");
 
 assert.ok(sw.includes('const CACHE="doodhwala-v86"'), "PWA cache should advance after customer runtime fixes");
 for (const asset of [
-  "/Dudh-Wallah/plans.js?v=20261023.2",
-  "/Dudh-Wallah/orders.js?v=20261023.2",
-  "/Dudh-Wallah/admin.css?v=20261023.2",
-  "/Dudh-Wallah/admin.js?v=20261023.2"
+  "/Doodhwala/plans.js?v=20261023.2",
+  "/Doodhwala/orders.js?v=20261023.2",
+  "/Doodhwala/admin.css?v=20261023.2",
+  "/Doodhwala/admin.js?v=20261023.2"
 ]) assert.ok(sw.includes(asset), "PWA cache should include " + asset);
 
 console.log("Customer runtime compatibility contracts passed.");
