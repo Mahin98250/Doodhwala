@@ -94,7 +94,7 @@ async function createPlan(e){
 }
 async function loadPlans(){
  const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,start_date,end_date,days_of_week,cutoff_minutes,customer_note,paused_until,provider_id,product_id,address_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type),addresses(label,address_line,area_name,city,pin_code)").eq("customer_id",user.id).order("created_at",{ascending:false});
- if(r.error){$("plansList").innerHTML='<div class="empty-plans">'+esc(r.error.message)+'</div>';return}
+ if(r.error){console.warn("Daily plans query failed",r.error);$("plansList").innerHTML='<div class="empty-plans">We couldn’t load your plans. Please refresh and try again.</div>';return}
  const plans=r.data||[];if(!plans.length){$("plansList").innerHTML='<div class="empty-plans">No recurring plans yet.<br>Choose a local provider and tap <b>Plan</b> on their milk.</div>';return}
  const ids=plans.map(p=>p.id);const d=ids.length?await sup.from("subscription_deliveries").select("id,subscription_id,scheduled_for,delivery_date,quantity_litres,unit_price,status,order_id").in("subscription_id",ids).order("scheduled_for",{ascending:true}):{data:[]};const by={};(d.data||[]).forEach(x=>(by[x.subscription_id]??=[]).push(x));
  $("plansList").innerHTML=plans.map((p,idx)=>planCard(p,by[p.id]||[],idx)).join("");
