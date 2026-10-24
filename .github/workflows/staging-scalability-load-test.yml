@@ -100,7 +100,7 @@ jobs:
             mutation_mode: "read_only",
             created_at_utc: new Date().toISOString()
           };
-          await (await import("node:fs/promises")).writeFile(`${resultsDir}/metadata.json`, JSON.stringify(metadata, null, 2) + "\\n");
+          await (await import("node:fs/promises")).writeFile(`${resultsDir}/metadata.json`, JSON.stringify(metadata, null, 2));
           console.log("Staging target validation passed. Project ref matches its URL. Only the read-only nearby-provider RPC will be exercised.");
           NODE
       - name: Install k6
