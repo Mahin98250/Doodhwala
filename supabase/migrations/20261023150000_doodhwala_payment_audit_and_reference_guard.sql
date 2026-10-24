@@ -126,7 +126,7 @@ $$;
 revoke execute on function public.doodhwala_log_order_payment_event() from public, anon, authenticated;
 drop trigger if exists orders_log_payment_audit_event on public.orders;
 create trigger orders_log_payment_audit_event
-after insert or update of payment_method, payment_status, payment_reference, payment_confirmed_by, payment_confirmed_at
+after insert or update
 on public.orders
 for each row execute function public.doodhwala_log_order_payment_event();
 
