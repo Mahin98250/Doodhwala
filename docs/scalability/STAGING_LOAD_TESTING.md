@@ -19,11 +19,12 @@ Doodhwala now has a read-only k6 scenario for the public `find_nearby_providers_
 
 1. Create a **separate Supabase project** for staging; do not point these settings at production.
 2. Apply the repository migrations to staging in the intended order and verify the staging schema. Seed only synthetic providers and products.
-3. In GitHub repository settings, add the repository variable `STAGING_SUPABASE_URL` with the staging project base URL, e.g. `https://your-staging-ref.supabase.co`.
-4. Add repository secret `STAGING_SUPABASE_ANON_KEY` containing the staging project's public anon key. Never use the service-role key.
-5. Optional repository variables `STAGING_TEST_LATITUDE` and `STAGING_TEST_LONGITUDE` set the test location. Defaults are Ahmedabad coordinates and can be overridden with a synthetic staging area.
+3. In GitHub repository settings, add the repository variable `STAGING_PROJECT_REF` with the exact 20-character staging project ref.
+4. Add repository variable `STAGING_SUPABASE_URL` with the matching staging project base URL, e.g. `https://your-staging-ref.supabase.co`. The workflow rejects a ref/URL mismatch and the known production ref.
+5. Add repository secret `STAGING_SUPABASE_ANON_KEY` containing the staging project's public anon key. Never use the service-role key.
+6. Optional repository variables `STAGING_TEST_LATITUDE` and `STAGING_TEST_LONGITUDE` set the test location. Defaults are Ahmedabad coordinates and can be overridden with a synthetic staging area.
 
-The workflow will fail safely if the required staging URL or anon key is missing. The current repo does not assume that a staging project has already been configured.
+The workflow will fail safely if the project ref, URL or anon key is missing, if the ref and URL do not match, or if the production project is selected. The current repo does not assume that a staging project has already been configured. Each run attempts to save a metadata file and k6 summary as a non-sensitive Actions artifact (14-day retention); the report contains target rate, duration, commit SHA, and metrics, not credentials or customer data.
 
 ## Run a first baseline
 
@@ -46,3 +47,8 @@ It tests one read-only discovery path. It does not validate checkout writes, row
 3. Add separate read and write workloads only with idempotent synthetic test data and cleanup.
 4. Increase the rate gradually; stop when error rates, latency, database saturation, or dropped iterations exceed the agreed guardrails.
 5. Use a dedicated/distributed load generator for higher rates. Do not jump from a small GitHub runner to a 100,000-request burst without a capacity plan.
+
+
+## Preserved run report
+
+After a run reaches target validation, the workflow writes a metadata record containing the commit SHA, staging project ref, rate, duration, read-only scenario name and UTC timestamp. k6 exports a JSON summary. Reports are saved as a non-sensitive Actions artifact with 14-day retention. The report must never include the anon key, service-role key, access tokens, customer data or provider contact details. Save the artifact/run URL with any baseline notes so results can be tied to the exact commit and scenario.

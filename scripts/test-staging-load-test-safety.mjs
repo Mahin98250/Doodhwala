@@ -12,11 +12,17 @@ assert.doesNotMatch(workflow, /^\s*(?:push|pull_request|schedule):/m);
 // Require explicit staging confirmation and reject the known production project.
 assert.match(workflow, /RUN_CONFIRMATION/);
 assert.match(workflow, /"STAGING"/);
+assert.match(workflow, /STAGING_PROJECT_REF/);
 assert.match(workflow, /STAGING_SUPABASE_URL/);
 assert.match(workflow, /STAGING_SUPABASE_ANON_KEY/);
 assert.match(workflow, /hmiboyfcvtfawrwujslg/);
 assert.match(workflow, /https:/);
 assert.match(workflow, /endsWith\("\.supabase\.co"\)/);
+
+assert.ok(workflow.includes("url.hostname !== `${projectRef}.supabase.co`"));
+assert.ok(workflow.includes("k6-summary.json"));
+assert.ok(workflow.includes("actions/upload-artifact@v4"));
+assert.match(workflow, /retention-days: 14/);
 
 // Bound the initial load and keep the workload read-only at the RPC/business level.
 assert.match(scenario, /\[1, 5, 10, 25, 50\]/);
@@ -28,5 +34,7 @@ assert.ok(scenario.includes('checks: ["rate>0.99"]'));
 assert.match(scenario, /p\(95\)<1500/);
 assert.match(docs, /not a 100,000-concurrent-query test/i);
 assert.match(docs, /Never test with customer data copied from production/i);
+assert.match(docs, /STAGING_PROJECT_REF/);
+assert.match(docs, /reports are saved as a non-sensitive Actions artifact/i);
 
 console.log("PASS: staging load test is manual-only, production-blocked, read-only, and bounded.");
