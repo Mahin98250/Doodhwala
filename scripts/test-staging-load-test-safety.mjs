@@ -19,6 +19,11 @@ assert.match(workflow, /hmiboyfcvtfawrwujslg/);
 assert.match(workflow, /https:/);
 assert.match(workflow, /endsWith\("\.supabase\.co"\)/);
 
+assert.ok(workflow.includes("url.hostname !== `${projectRef}.supabase.co`"));
+assert.ok(workflow.includes("k6-summary.json"));
+assert.ok(workflow.includes("actions/upload-artifact@v4"));
+assert.match(workflow, /retention-days: 14/);
+
 // Bound the initial load and keep the workload read-only at the RPC/business level.
 assert.match(scenario, /\[1, 5, 10, 25, 50\]/);
 assert.match(scenario, /\[30, 60, 120\]/);
