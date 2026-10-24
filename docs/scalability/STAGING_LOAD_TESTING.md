@@ -47,3 +47,8 @@ It tests one read-only discovery path. It does not validate checkout writes, row
 3. Add separate read and write workloads only with idempotent synthetic test data and cleanup.
 4. Increase the rate gradually; stop when error rates, latency, database saturation, or dropped iterations exceed the agreed guardrails.
 5. Use a dedicated/distributed load generator for higher rates. Do not jump from a small GitHub runner to a 100,000-request burst without a capacity plan.
+
+
+## Preserved run report
+
+After a run reaches target validation, the workflow writes a metadata record containing the commit SHA, staging project ref, rate, duration, read-only scenario name and UTC timestamp. k6 exports a JSON summary, and the workflow uploads both files as a non-sensitive Actions artifact with 14-day retention. The report must never include the anon key, service-role key, access tokens, customer data or provider contact details. Save the artifact/run URL with any baseline notes so results can be tied to the exact commit and scenario.
