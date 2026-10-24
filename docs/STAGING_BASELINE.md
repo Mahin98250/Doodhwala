@@ -13,11 +13,16 @@
 
 ## Provision staging first
 
+### Current blocker — no staging environment exists yet
+
+The attempt to create `Doodhwala Staging` was rejected because the organization/user already reached the free-project limit. No new project was created. A development branch was quoted at a nonzero hourly cost and was not created because the budget rule is **no additional charges without approval**. Until a free slot or separately approved budget is available, continue with repository tests and disposable PostgreSQL CI only; do not point staging variables at production and do not claim a measured staging baseline.
+
 Use a separate Supabase project in the same organization as Doodhwala, preferably in `ap-south-1` to match the production region and reduce regional differences in test results. Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging.
 
 Before creating a project, confirm the organization and inspect the quoted cost. Do not accept a nonzero project/compute charge without explicit approval. Use separate staging URL and publishable key; never copy a service-role key into browser code or repository files.
 
 Suggested GitHub Actions secrets/environment variables for a staging-only load workflow:
+- `STAGING_PROJECT_REF` (exact 20-character ref; must not equal the production project ref)
 - `STAGING_SUPABASE_URL`
 - `STAGING_SUPABASE_ANON_KEY`
 - `STAGING_PROJECT_REF` (must not equal the production project ref)
@@ -43,7 +48,7 @@ Run `scripts/staging-schema-audit.sql` only after connecting your SQL client to 
 
 - [ ] Organization and project cost confirmed.
 - [ ] Separate staging project created and healthy.
-- [ ] Staging URL/key saved as GitHub Environment secrets (not committed).
+- [ ] Staging project ref and URL saved as GitHub repository variables, anon key saved as a repository secret (not committed).
 - [ ] Repository migration history reconciled against staging.
 - [ ] RLS, function grants, payment gates and order-capacity constraints reviewed.
 - [ ] Synthetic end-to-end order journey passes.
