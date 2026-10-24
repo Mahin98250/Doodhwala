@@ -47,3 +47,40 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023130000_doodhwala_order_capacity_query_indexes.sql
       - name: Verify discovery edge cases and capacity index definitions
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/nearby-search-assertions.sql
+
+  payment-audit-migration:
+    name: Validate payment audit SQL on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_payment_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_payment_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_payment_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create isolated synthetic payment schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/payment-audit-fixture.sql
+      - name: Apply payment audit migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023150000_doodhwala_payment_audit_and_reference_guard.sql
+      - name: Verify immutable audit, seller attribution and reference validation
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/payment-audit-assertions.sql
+
