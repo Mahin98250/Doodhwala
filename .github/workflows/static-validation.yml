@@ -45,6 +45,8 @@ jobs:
         run: node scripts/test-order-capacity-query-indexes.mjs
       - name: Test staging load-test safety guards
         run: node scripts/test-staging-load-test-safety.mjs
+      - name: Test staging baseline and read-only audit contracts
+        run: node scripts/test-staging-baseline.mjs
       - name: Test product-detail null and price recovery
         run: node scripts/test-product-runtime.mjs
       - name: Test PWA registration diagnostics
