@@ -40,6 +40,7 @@ jobs:
       RUN_CONFIRMATION: ${{ inputs.confirmation }}
       TARGET_RPS: ${{ inputs.target_rate }}
       DURATION_SECONDS: ${{ inputs.duration_seconds }}
+      STAGING_PROJECT_REF: ${{ vars.STAGING_PROJECT_REF }}
       STAGING_SUPABASE_URL: ${{ vars.STAGING_SUPABASE_URL }}
       STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
       TEST_LATITUDE: ${{ vars.STAGING_TEST_LATITUDE }}
@@ -64,22 +65,55 @@ jobs:
           node --input-type=module <<'NODE'
           const raw = process.env.STAGING_SUPABASE_URL || "";
           const key = process.env.STAGING_SUPABASE_ANON_KEY || "";
-          if (!raw || !key) throw new Error("Configure STAGING_SUPABASE_URL (repository variable) and STAGING_SUPABASE_ANON_KEY (repository secret) first.");
+          const projectRef = process.env.STAGING_PROJECT_REF || "";
+          const productionRef = "hmiboyfcvtfawrwujslg";
+          if (!raw || !key || !projectRef) {
+            throw new Error("Configure STAGING_PROJECT_REF and STAGING_SUPABASE_URL as repository variables and STAGING_SUPABASE_ANON_KEY as a repository secret.");
+          }
+          if (!/^[a-z0-9]{20}$/.test(projectRef)) {
+            throw new Error("STAGING_PROJECT_REF must be the 20-character Supabase project ref.");
+          }
+          if (projectRef === productionRef) {
+            throw new Error("Refusing to run against Doodhwala's known production project ref.");
+          }
           const url = new URL(raw);
           if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co")) {
             throw new Error("Refusing to run: the staging target must be an HTTPS Supabase project URL.");
           }
-          if (url.hostname === "hmiboyfcvtfawrwujslg.supabase.co" || url.hostname.includes("hmiboyfcvtfawrwujslg")) {
+          if (url.hostname !== `${projectRef}.supabase.co`) {
+            throw new Error("STAGING_PROJECT_REF does not match STAGING_SUPABASE_URL; refusing ambiguous targets.");
+          }
+          if (url.hostname.includes(productionRef)) {
             throw new Error("Refusing to run against Doodhwala's known production Supabase project.");
           }
           if (url.pathname !== "/" || url.search || url.hash) {
             throw new Error("STAGING_SUPABASE_URL must be the project base URL without a path, query, or fragment.");
           }
-          console.log("Staging target validation passed. Only the read-only nearby-provider RPC will be exercised.");
+          const resultsDir = "test-results";
+          await (await import("node:fs/promises")).mkdir(resultsDir, { recursive: true });
+          const metadata = {
+            commit_sha: process.env.GITHUB_SHA || "",
+            project_ref: projectRef,
+            target_rps: Number(process.env.TARGET_RPS),
+            duration_seconds: Number(process.env.DURATION_SECONDS),
+            scenario: "nearby_provider_search",
+            mutation_mode: "read_only",
+            created_at_utc: new Date().toISOString()
+          };
+          await (await import("node:fs/promises")).writeFile(`${resultsDir}/metadata.json`, JSON.stringify(metadata, null, 2) + "\\n");
+          console.log("Staging target validation passed. Project ref matches its URL. Only the read-only nearby-provider RPC will be exercised.");
           NODE
       - name: Install k6
         uses: grafana/setup-k6-action@v1
         with:
           k6-version: "0.54.0"
       - name: Run bounded read-only load test
-        run: k6 run scripts/load-tests/nearby-provider-search.k6.js
+        run: k6 run --summary-export=test-results/k6-summary.json scripts/load-tests/nearby-provider-search.k6.js
+      - name: Upload non-sensitive load-test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-nearby-search-${{ github.run_id }}
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: ignore
