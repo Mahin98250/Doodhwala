@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import path from "node:path";
 
 const readJson = file => JSON.parse(fs.readFileSync(file, "utf8"));
 const historyPath = "supabase/audit/production-migration-history-2026-10-24.json";
