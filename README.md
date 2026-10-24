@@ -221,6 +221,8 @@ flowchart TD
 ### Phase-by-phase execution plan
 
 #### Phase 1 — staging and baseline
+Read the executable checklist in [`docs/STAGING_BASELINE.md`](./docs/STAGING_BASELINE.md) and the read-only SQL diagnostics in [`scripts/staging-schema-audit.sql`](./scripts/staging-schema-audit.sql). The staging project must be separate from production; do not run synthetic writes or load tests against the production project.
+
 - Create a dedicated staging Supabase project with separate credentials and synthetic test accounts/data.
 - Reconcile repository migration ordering with the target database's migration history; apply and validate changes in staging first.
 - Record the tested Git commit, hosting configuration, required environment variables, DB compute/connection settings and rollback procedure.
