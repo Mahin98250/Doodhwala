@@ -12,6 +12,7 @@ assert.doesNotMatch(workflow, /^\s*(?:push|pull_request|schedule):/m);
 // Require explicit staging confirmation and reject the known production project.
 assert.match(workflow, /RUN_CONFIRMATION/);
 assert.match(workflow, /"STAGING"/);
+assert.match(workflow, /STAGING_PROJECT_REF/);
 assert.match(workflow, /STAGING_SUPABASE_URL/);
 assert.match(workflow, /STAGING_SUPABASE_ANON_KEY/);
 assert.match(workflow, /hmiboyfcvtfawrwujslg/);
@@ -28,5 +29,7 @@ assert.ok(scenario.includes('checks: ["rate>0.99"]'));
 assert.match(scenario, /p\(95\)<1500/);
 assert.match(docs, /not a 100,000-concurrent-query test/i);
 assert.match(docs, /Never test with customer data copied from production/i);
+assert.match(docs, /STAGING_PROJECT_REF/);
+assert.match(docs, /reports are saved as a non-sensitive Actions artifact/i);
 
 console.log("PASS: staging load test is manual-only, production-blocked, read-only, and bounded.");
