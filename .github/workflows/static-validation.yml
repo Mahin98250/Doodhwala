@@ -49,6 +49,8 @@ jobs:
         run: node scripts/test-staging-baseline.mjs
       - name: Report production migration-history drift (static snapshot)
         run: node scripts/test-production-migration-manifest.mjs
+      - name: Validate focused production schema inventory snapshot
+        run: node scripts/test-production-schema-inventory.mjs
       - name: Test product-detail null and price recovery
         run: node scripts/test-product-runtime.mjs
       - name: Test PWA registration diagnostics
