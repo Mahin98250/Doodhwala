@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -56,7 +57,7 @@ export default function SupportWorkspace() {
     finally { setBusy(false); }
   }
 
-  if (!signedIn) return <WorkspaceFrame title="Customer support" description="Send a request about an order or your Doodhwala account."><section className="workspace-card workspace-empty"><h2>Sign in to contact support</h2><p>Ticket history is private to your account.</p><a className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fsupport">Sign in</a></section>{notice && <p className="workspace-notice error">{notice.text}</p>}</WorkspaceFrame>;
+  if (!signedIn) return <WorkspaceFrame title="Customer support" description="Send a request about an order or your Doodhwala account."><section className="workspace-card workspace-empty"><h2>Sign in to contact support</h2><p>Ticket history is private to your account.</p><Link className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fsupport">Sign in</Link></section>{notice && <p className="workspace-notice error">{notice.text}</p>}</WorkspaceFrame>;
 
   return (
     <WorkspaceFrame title="How can we help?" description="Send a support request and keep your ticket history in one place.">
