@@ -111,9 +111,10 @@ async function loadContext(){
   try{setupPlansRealtime(user);}
   catch(err){console.warn("Milk plan live updates could not start",err);}
 
-  if(addressProblem&&plansLoad.status==="fulfilled"){
+  const plansAvailable=plansLoad.status==="fulfilled"&&plansLoad.value!==false;
+  if(addressProblem&&plansAvailable){
    $("plansState").textContent="Your plans are available, but saved addresses couldn’t be loaded. Tap Refresh to retry.";
-  }else if(plansLoad.status==="fulfilled"){
+  }else if(plansAvailable){
    $("plansState").textContent="Your recurring deliveries, in one place.";
   }
  }catch(err){
@@ -151,12 +152,13 @@ async function createPlan(e){
 }
 async function loadPlans(){
  const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,start_date,end_date,days_of_week,cutoff_minutes,customer_note,paused_until,provider_id,product_id,address_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type),addresses(label,address_line,area_name,city,pin_code)").eq("customer_id",user.id).order("created_at",{ascending:false});
- if(r.error){console.warn("Daily plans query failed",r.error);$("plansList").innerHTML='<div class="empty-plans">We couldn’t load your plans. Please refresh and try again.</div>';return}
- const plans=r.data||[];if(!plans.length){$("plansList").innerHTML='<div class="empty-plans">No recurring plans yet.<br>Choose a local provider and tap <b>Plan</b> on their milk.</div>';return}
+ if(r.error){console.warn("Daily plans query failed",r.error);$("plansList").innerHTML='<div class="empty-plans"><b>We couldn’t load your plans.</b><br>Check your connection and tap Refresh to try again.</div>';$("plansState").textContent="We couldn’t load your milk plans. Please refresh to retry.";return false}
+ const plans=r.data||[];if(!plans.length){$("plansList").innerHTML='<div class="empty-plans"><b>No recurring plans yet.</b><br>Choose a local provider and tap Plan on their milk.</div>';return true}
  const ids=plans.map(p=>p.id);const d=ids.length?await sup.from("subscription_deliveries").select("id,subscription_id,scheduled_for,delivery_date,quantity_litres,unit_price,status,order_id").in("subscription_id",ids).order("scheduled_for",{ascending:true}):{data:[]};const by={};(d.data||[]).forEach(x=>(by[x.subscription_id]??=[]).push(x));
  $("plansList").innerHTML=plans.map((p,idx)=>planCard(p,by[p.id]||[],idx)).join("");
  document.querySelectorAll("[data-plan-action]").forEach(b=>b.onclick=()=>planAction(b.dataset.planAction,b.dataset.id));
  document.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>skipDelivery(b.dataset.skip));
+ return true;
 }
 function planCard(p,deliveries,idx){
  const upcoming=deliveries.find(d=>d.status==="scheduled"||d.status==="materialized"),days=(p.days_of_week||[]).map(d=>dayNames[d-1]).join(" · "),count=deliveries.length,estimate=count*Number(p.quantity_litres)*Number(p.price_per_litre);
