@@ -17,6 +17,9 @@ assert.match(docs, /STAGING_PROJECT_REF/i);
 assert.match(docs, /must not equal the production project ref/i);
 assert.match(docs, /Do not accept a nonzero project\/compute charge without explicit approval/i);
 assert.match(docs, /No capacity claim/i);
+assert.match(docs, /reached its limit of two active free projects/i);
+assert.match(docs, /Phase 1 remains \\*\\*blocked for full staging acceptance\\*\\*/i);
+assert.match(docs, /Do not delete, pause, or repurpose either existing project/i);
 assert.match(readme, /docs\/STAGING_BASELINE\.md/);
 assert.match(readme, /scripts\/staging-schema-audit\.sql/);
 
