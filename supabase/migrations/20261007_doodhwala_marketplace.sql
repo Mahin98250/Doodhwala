@@ -64,6 +64,37 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
 
+-- Customer notification inbox must exist before order-rating and order-event
+-- migrations reference it. This table stores customer-visible events only.
+create table if not exists public.customer_notifications (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references public.profiles(id) on delete cascade,
+  type text not null,
+  title text not null,
+  body text not null,
+  entity_type text,
+  entity_id uuid,
+  is_read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_customer_notifications_customer_created
+  on public.customer_notifications(customer_id, created_at desc);
+
+alter table public.customer_notifications enable row level security;
+grant select, insert, update, delete on public.customer_notifications to authenticated;
+
+drop policy if exists customer_notifications_select_own on public.customer_notifications;
+create policy customer_notifications_select_own
+  on public.customer_notifications for select to authenticated
+  using ((select auth.uid()) = customer_id);
+
+drop policy if exists customer_notifications_update_own on public.customer_notifications;
+create policy customer_notifications_update_own
+  on public.customer_notifications for update to authenticated
+  using ((select auth.uid()) = customer_id)
+  with check ((select auth.uid()) = customer_id);
+
 create table if not exists public.provider_profiles (
   id uuid primary key default gen_random_uuid(),
   owner_user_id uuid not null unique references public.profiles(id) on delete cascade,
