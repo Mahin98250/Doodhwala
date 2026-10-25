@@ -45,6 +45,27 @@ Migration `20261025180000_delivery_tracking_owner_read_policy.sql` was applied t
 
 This change was applied to staging only. It is not evidence that production has this policy or that the Vercel preview is connected to staging.
 
+## Payment controls staged (2026-10-25)
+
+The eight existing payment migrations were applied sequentially to staging project `jbcekiaiyxcatueixeqh` after inspecting the source SQL and confirming the expected payment objects were absent. Recorded staging migration names are:
+
+1. `doodhwala_pay_foundation`
+2. `doodhwala_direct_seller_payments`
+3. `doodhwala_direct_upi_settings_read`
+4. `doodhwala_payment_choice_race_guard`
+5. `doodhwala_guard_payment_field_writes`
+6. `doodhwala_direct_upi_pending_only`
+7. `doodhwala_payment_controls_readiness`
+8. `doodhwala_recheck_seller_approval_for_upi`
+
+Post-apply catalog checks confirmed the payment RPCs exist; authenticated execution is granted and `anon` execution is denied for the inspected customer/seller RPCs. The payment fields now exist on `public.orders`, and both the payment-field write guard and payment-choice-before-acceptance trigger are enabled. `public.payment_transactions` and `public.provider_payment_settings` have RLS enabled and table grants only to `service_role`; browser access is through owner-scoped RPCs.
+
+A schema-readiness probe returned `{"ready":true}` when run in a rolled-back transaction with a synthetic non-null JWT subject. This verifies only that the readiness function sees the expected tables, functions, RLS and triggers; it does not test a real customer session, order creation, seller UPI setup, or payment settlement.
+
+The refreshed Security Advisor reports four RLS-enabled/no-policy informational findings (`private.admin_allowlist`, `public.client_error_reports`, `public.payment_transactions`, `public.provider_payment_settings`). The last two are intentionally service-role-only. It also reports eight authenticated-executable `SECURITY DEFINER` RPCs. These are intended API entry points with ownership/eligibility checks in their SQL, but must still be exercised with separate customer, seller and non-admin accounts before acceptance. Do not dismiss the warnings wholesale or broaden table grants to clear them.
+
+**Still blocked:** live authenticated customer → COD order → seller status progression → delivery tracking tests, direct-UPI configuration/confirmation tests, and independent proof that the Vercel preview is wired only to staging. Production remains untouched.
+
 ## Production migration snapshot and repository drift
 
 ### Focused live-schema check
