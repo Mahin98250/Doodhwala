@@ -8,8 +8,8 @@ const runtimes = [
   { path: "product.js", label: "product detail", loading: 'showLoading("Loading this milk…")' },
   { path: "checkout.js", label: "checkout", loading: 'showLoading("Preparing your checkout…")' }
 ];
-const transitionCss = "/Doodhwala/milk-transition.css?v=20261025.3";
-const transitionJs = "/Doodhwala/milk-transition.js?v=20261025.3";
+const transitionCss = "/Doodhwala/milk-transition.css?v=20261025.4";
+const transitionJs = "/Doodhwala/milk-transition.js?v=20261025.4";
 const sw = read("sw.js");
 
 for (const page of pages) {
@@ -38,4 +38,12 @@ for (const asset of [
   "/Doodhwala/checkout.js?v=20261025.3"
 ]) assert.ok(sw.includes(asset), "PWA precache must reference " + asset);
 
-console.log("PASS: milk-themed loading coverage across provider storefront, product details, and checkout.");
+const motionCss = read("milk-transition.css");
+const motionJs = read("milk-transition.js");
+assert.match(motionJs, /dw-milk-stream-core/, "The transition must render a continuous milk stream.");
+assert.match(motionJs, /dw-milk-source/, "The source container must tilt while pouring.");
+assert.match(motionCss, /@keyframes dw-milk-tip/, "The source bottle must animate its pouring angle.");
+assert.match(motionCss, /@keyframes dw-milk-fill-target/, "The receiving bottle must visibly fill.");
+assert.match(motionCss, /prefers-reduced-motion/, "The liquid animation must respect reduced-motion settings.");
+
+console.log("PASS: realistic milk-pour animation and loading coverage across provider storefront, product details, and checkout.");
