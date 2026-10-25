@@ -185,3 +185,21 @@
 
 .workspace-order-quick-action{min-height:42px;white-space:nowrap;}
 @media(max-width:600px){.workspace-order-quick-action{width:100%;min-height:46px;}}
+
+
+/* Guided seller onboarding: fewer fields per step, clearer progress */
+.seller-onboarding-progress{display:flex;align-items:center;gap:10px;padding:16px;margin:18px 0 24px;background:#f6faf4;border:1px solid #e2ebdf;border-radius:16px;}
+.seller-onboarding-step{display:flex;align-items:center;gap:9px;min-width:0;}
+.seller-onboarding-step>span{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:#e8eee5;color:#6d7c6e;font-size:12px;font-weight:900;}
+.seller-onboarding-step>span.current,.seller-onboarding-step>span.complete{background:var(--ws-green);color:#fff;}
+.seller-onboarding-step strong,.seller-onboarding-step small{display:block;}
+.seller-onboarding-step strong{font-size:11px;color:var(--ws-ink);}
+.seller-onboarding-step small{font-size:9px;color:var(--ws-muted);margin-top:3px;line-height:1.4;}
+.seller-onboarding-line{height:1px;flex:1;min-width:12px;background:#dce6d9;}
+.seller-onboarding-line.complete{background:var(--ws-green);}
+.seller-onboarding-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.seller-onboarding-hint{margin:0 0 6px;}
+.seller-onboarding-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:16px;border-top:1px solid var(--ws-line);}
+.seller-onboarding-actions>span{font-size:11px;color:var(--ws-muted);}
+.seller-onboarding-actions .workspace-button{min-height:46px;}
+@media(max-width:600px){.seller-onboarding-progress{padding:12px 10px;gap:7px;}.seller-onboarding-step{gap:6px;}.seller-onboarding-step>span{flex-basis:27px;width:27px;height:27px;}.seller-onboarding-step strong{font-size:10px;}.seller-onboarding-step small{font-size:8px;}.seller-onboarding-fields{grid-template-columns:1fr;gap:0;}.seller-onboarding-actions{display:grid;grid-template-columns:1fr;}.seller-onboarding-actions .workspace-button{width:100%;min-height:48px;}}
