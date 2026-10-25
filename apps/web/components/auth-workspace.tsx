@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -303,7 +304,7 @@ export default function AuthWorkspace({ initialMode = "signin" }: { initialMode?
             <p className="workspace-eyebrow">SAFE BY DESIGN</p>
             <h2>Your account stays yours.</h2>
             <p>Sessions use Supabase Auth. Order, address and role access remain governed by backend permissions and row-level security.</p>
-            <a href="/legal#privacy">Read privacy information</a>
+            <Link href="/legal#privacy">Read privacy information</Link>
           </aside>
         </div>
       )}
