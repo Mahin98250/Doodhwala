@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test lib/providers/*.test.ts"
+    "test": "node --experimental-strip-types --test lib/providers/*.test.ts lib/supabase/*.test.ts",
+    "smoke": "node scripts/smoke-routes.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
