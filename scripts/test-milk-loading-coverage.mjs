@@ -42,6 +42,8 @@ const motionCss = read("milk-transition.css");
 const motionJs = read("milk-transition.js");
 assert.match(motionJs, /dw-milk-stream-core/, "The transition must render a continuous milk stream.");
 assert.match(motionJs, /dw-milk-source/, "The source container must tilt while pouring.");
+assert.match(motionCss, /\.dw-milk-source\{left:4px;bottom:15px/, "The pouring bottle must sit higher than the receiving bottle.");
+assert.match(motionJs, /M82 30 C116 29 161 40 208 39/, "The stream must arc from the raised source into the receiving bottle.");
 assert.match(motionCss, /@keyframes dw-milk-tip/, "The source bottle must animate its pouring angle.");
 assert.match(motionCss, /@keyframes dw-milk-fill-target/, "The receiving bottle must visibly fill.");
 assert.match(motionCss, /prefers-reduced-motion/, "The liquid animation must respect reduced-motion settings.");
