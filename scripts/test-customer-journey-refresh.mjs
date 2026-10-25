@@ -6,7 +6,8 @@ const css = read("customer-journey-refresh.css");
 const pages = ["store.html", "product.html", "plans.html", "orders.html", "checkout.html"];
 for (const page of pages) {
   const html = read(page);
-  assert.match(html, /customer-journey-refresh\.css\?v=20261025\.1/, page + " must load the cache-busted customer journey refresh");
+  const version = page === "plans.html" || page === "orders.html" ? "20261025.3" : "20261025.1";
+  assert.ok(html.includes("customer-journey-refresh.css?v=" + version), page + " must load the cache-busted customer journey refresh");
 }
 for (const selector of [".market-page", ".plans-page", ".orders-page", ".checkout-page", ".product-card", ".store-identity", ".order-card", ".checkout-card"]) {
   assert.ok(css.includes(selector), "expected scoped styling for " + selector);
