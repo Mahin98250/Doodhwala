@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -137,7 +138,7 @@ export default function OrdersWorkspace({ orderId }: { orderId?: string }) {
 
   if (!signedIn) return (
     <WorkspaceFrame title={orderId ? "Order details" : "Your orders"} description="Sign in to see order status, delivery updates and payment instructions.">
-      <section className="workspace-card workspace-empty"><h2>Your order history is private</h2><p>Sign in to continue.</p><a className="workspace-button workspace-button-primary" href={"/auth/sign-in?return=" + encodeURIComponent(orderId ? "/orders/" + orderId : "/orders")}>Sign in</a></section>
+      <section className="workspace-card workspace-empty"><h2>Your order history is private</h2><p>Sign in to continue.</p><Link className="workspace-button workspace-button-primary" href={"/auth/sign-in?return=" + encodeURIComponent(orderId ? "/orders/" + orderId : "/orders")}>Sign in</Link></section>
       {notice && <p className="workspace-notice error">{notice.text}</p>}
     </WorkspaceFrame>
   );
@@ -145,9 +146,9 @@ export default function OrdersWorkspace({ orderId }: { orderId?: string }) {
   return (
     <WorkspaceFrame title={orderId ? "Order details" : "Your orders"} description="Follow each seller order and review delivery and payment status.">
       {notice && <p className={"workspace-notice " + notice.kind} role={notice.kind === "error" ? "alert" : "status"}>{notice.text}</p>}
-      {paymentLink && <section className="workspace-card workspace-payment-link"><p className="workspace-eyebrow">DIRECT SELLER UPI</p><h2>Pay {paymentLink.payee}</h2><p>Verify payee and amount inside your UPI app before authorizing.</p><a className="workspace-button workspace-button-primary" href={paymentLink.url}>Open UPI app</a><button className="workspace-button workspace-button-secondary" onClick={() => setPaymentLink(null)}>Close payment instructions</button></section>}
+      {paymentLink && <section className="workspace-card workspace-payment-link"><p className="workspace-eyebrow">DIRECT SELLER UPI</p><h2>Pay {paymentLink.payee}</h2><p>Verify payee and amount inside your UPI app before authorizing.</p><Link className="workspace-button workspace-button-primary" href={paymentLink.url}>Open UPI app</Link><button className="workspace-button workspace-button-secondary" onClick={() => setPaymentLink(null)}>Close payment instructions</button></section>}
       <div className="workspace-section-head"><div><p className="workspace-eyebrow">ORDER HISTORY</p><h2>{orders.length} order{orders.length === 1 ? "" : "s"}</h2></div><button className="workspace-button workspace-button-secondary workspace-small-button" onClick={() => void load()}>Refresh</button></div>
-      {!orders.length ? <section className="workspace-card workspace-empty"><h2>No orders found</h2><p>Your completed and active orders will appear here.</p><a href="/providers" className="workspace-button workspace-button-primary">Find local milk</a></section> : <div className="workspace-order-list">
+      {!orders.length ? <section className="workspace-card workspace-empty"><h2>No orders found</h2><p>Your completed and active orders will appear here.</p><Link href="/providers" className="workspace-button workspace-button-primary">Find local milk</Link></section> : <div className="workspace-order-list">
         {orders.map((order) => {
           const supplier = order.provider_profiles ?? {};
           const history = events.filter((event) => event.order_id === order.id);
@@ -163,7 +164,7 @@ export default function OrdersWorkspace({ orderId }: { orderId?: string }) {
             {order.customer_note && <p className="workspace-muted">Note: {order.customer_note}</p>}
             {history.length > 0 && <details className="workspace-timeline"><summary>Delivery timeline ({history.length})</summary><ol>{history.map((event, index) => <li key={event.created_at + ":" + index}><strong>{event.to_status || "Updated"}</strong><span>{event.reason || event.from_status || "Order status updated"}</span><time>{event.created_at ? new Date(event.created_at).toLocaleString("en-IN") : ""}</time></li>)}</ol></details>}
             <div className="workspace-row-actions">
-              <a href={"/orders/" + encodeURIComponent(order.id)} className="workspace-inline-link">Details</a>
+              <Link href={"/orders/" + encodeURIComponent(order.id)} className="workspace-inline-link">Details</Link>
               <button className="workspace-text-button" onClick={() => reorder(order)}>Reorder</button>
               {canPay && <button className="workspace-text-button" disabled={busyId === order.id} onClick={() => void getDirectUpi(order.id)}>{busyId === order.id ? "Checking…" : "Pay with UPI"}</button>}
               {canCancel && <button className="workspace-text-button danger" disabled={busyId === order.id} onClick={() => void cancelOrder(order.id)}>{busyId === order.id ? "Working…" : "Cancel order"}</button>}
