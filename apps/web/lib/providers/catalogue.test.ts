@@ -104,3 +104,24 @@ test("milk labels stay human readable", () => {
   assert.equal(milkTypeLabel("a2"), "A2 milk");
   assert.equal(milkTypeLabel("other"), "Local milk");
 });
+
+test("does not show a seller under a milk filter when its published products do not match", () => {
+  const seller = provider("primary-cow", {
+    milkType: "cow",
+    products: [product("only-buffalo", "buffalo", 75)],
+  });
+
+  assert.deepEqual(filterAndSortProviders([seller], "", "cow", "closest"), []);
+  assert.deepEqual(filterAndSortProviders([seller], "buffalo", "cow", "closest"), []);
+  assert.deepEqual(filterAndSortProviders([seller], "buffalo", "all", "closest").map((x) => x.id), ["primary-cow"]);
+});
+
+test("search respects the currently visible milk type", () => {
+  const seller = provider("mixed", {
+    milkType: "mixed",
+    products: [product("cow", "cow", 60), product("buffalo", "buffalo", 80)],
+  });
+
+  assert.deepEqual(filterAndSortProviders([seller], "buffalo", "cow", "closest"), []);
+  assert.deepEqual(filterAndSortProviders([seller], "buffalo", "buffalo", "closest").map((x) => x.id), ["mixed"]);
+});
