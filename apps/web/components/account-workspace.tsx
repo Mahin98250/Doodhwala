@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -167,7 +168,7 @@ export default function AccountWorkspace() {
 
   if (!signedIn) return (
     <WorkspaceFrame title="Your account" description="Sign in to manage your profile, delivery addresses and private orders.">
-      <section className="workspace-card workspace-empty"><h2>Sign in to continue</h2><p>Keep your addresses, orders and local milk routines in one place.</p><a className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Faccount">Sign in / Create account</a></section>
+      <section className="workspace-card workspace-empty"><h2>Sign in to continue</h2><p>Keep your addresses, orders and local milk routines in one place.</p><Link className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Faccount">Sign in / Create account</Link></section>
       {notice && <p className="workspace-notice error">{notice.text}</p>}
     </WorkspaceFrame>
   );
@@ -178,7 +179,7 @@ export default function AccountWorkspace() {
       <div className="workspace-metric-grid">
         <article className="workspace-metric"><small>EMAIL</small><strong>{email || "Phone sign-in account"}</strong><span>Verified through Supabase Auth as configured.</span></article>
         <article className="workspace-metric"><small>DELIVERY ADDRESSES</small><strong>{addresses.length}</strong><span>Your addresses are private to your account.</span></article>
-        <article className="workspace-metric"><small>CART ITEMS</small><strong>{cartCount}</strong><a href="/cart">Review cart →</a></article>
+        <article className="workspace-metric"><small>CART ITEMS</small><strong>{cartCount}</strong><Link href="/cart">Review cart →</Link></article>
       </div>
       <div className="workspace-grid-two workspace-account-grid">
         <section className="workspace-card">
@@ -203,21 +204,21 @@ export default function AccountWorkspace() {
         </section>
       </div>
       <section className="workspace-card">
-        <div className="workspace-section-head"><div><p className="workspace-eyebrow">SAVED ITEMS</p><h2>Products you’ve saved</h2></div><a className="workspace-inline-link" href="/providers">Find more milk →</a></div>
+        <div className="workspace-section-head"><div><p className="workspace-eyebrow">SAVED ITEMS</p><h2>Products you’ve saved</h2></div><Link className="workspace-inline-link" href="/providers">Find more milk →</Link></div>
         {!saved.length ? <div className="workspace-empty-inline"><strong>No saved products yet.</strong><p>Save an item from its product page and it will appear here on this device.</p></div> : <div className="workspace-list">
           {saved.map((item) => <article className="workspace-list-row" key={item.id + ":" + item.providerId}>
             <div className="workspace-item-icon">✳</div><div className="workspace-list-main"><strong>{item.name}</strong><span>{item.providerName}</span><small>Saved locally on this device</small></div>
-            <div className="workspace-row-actions"><a href={"/products/" + encodeURIComponent(item.id) + "?provider=" + encodeURIComponent(item.providerId)}>View item</a><button className="workspace-text-button" onClick={() => removeSaved(item.id)}>Remove</button></div>
+            <div className="workspace-row-actions"><Link href={"/products/" + encodeURIComponent(item.id) + "?provider=" + encodeURIComponent(item.providerId)}>View item</Link><button className="workspace-text-button" onClick={() => removeSaved(item.id)}>Remove</button></div>
           </article>)}
         </div>}
       </section>
       <section className="workspace-card">
-        <div className="workspace-section-head"><div><p className="workspace-eyebrow">SAVED SELLERS</p><h2>Favourite local providers</h2></div><a className="workspace-inline-link" href="/providers">Discover sellers →</a></div>
+        <div className="workspace-section-head"><div><p className="workspace-eyebrow">SAVED SELLERS</p><h2>Favourite local providers</h2></div><Link className="workspace-inline-link" href="/providers">Discover sellers →</Link></div>
         {!savedProviders.length ? <div className="workspace-empty-inline"><strong>No saved sellers yet.</strong><p>Provider favourites from the existing Doodhwala browser storage appear here on this device.</p></div> : <div className="workspace-list">
           {savedProviders.map((providerId) => <article className="workspace-list-row" key={providerId}>
             <div className="workspace-item-icon">♥</div>
             <div className="workspace-list-main"><strong>Saved local seller</strong><span>Provider reference: {providerId}</span><small>Saved on this device</small></div>
-            <div className="workspace-row-actions"><a href={"/stores/" + encodeURIComponent(providerId)}>Open seller</a><button className="workspace-text-button danger" onClick={() => {
+            <div className="workspace-row-actions"><Link href={"/stores/" + encodeURIComponent(providerId)}>Open seller</Link><button className="workspace-text-button danger" onClick={() => {
               const next = savedProviders.filter((id) => id !== providerId);
               setSavedProviders(next);
               try { window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(next)); } catch {}
