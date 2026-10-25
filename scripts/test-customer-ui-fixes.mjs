@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
+const app = read("app.js");
 const plans = read("plans.js");
 const orders = read("orders.js");
 const home = read("index.html");
@@ -34,13 +35,17 @@ for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ord
   assert.match(html, /milk-transition\.js\?v=20261025\.3/, name + " page must load the transition runtime.");
 }
 assert.match(nav, /function go\(url\).*DoodhwalaMilkTransition/, "Bottom navigation must use the milk transition helper.");
+assert.match(app, /showLoading\("Finding fresh milk nearby…?"\)/, "Home provider data loading should display the milk animation.");
+assert.match(app, /milkTransition\?\.hideLoading\(\)/, "Home provider data loading must always clear the loader.");
+assert.ok(home.indexOf("milk-transition.js?v=20261025.3") < home.indexOf("app.js?v=20261025.4"), "Milk transition runtime must be available before the home app requests data.");
+assert.match(worker, /doodhwala-v92/, "PWA cache must change when the home runtime changes.");
 assert.match(transitionJs, /showLoading/);
 assert.match(transitionJs, /navigate\(url\)/);
 assert.match(transitionCss, /@keyframes dw-milk-drop/);
 assert.match(transitionCss, /prefers-reduced-motion/);
 assert.match(mobileCss, /grid-template-areas/);
 assert.match(mobileCss, /@media\(max-width:390px\)/);
-assert.match(worker, /doodhwala-v91/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
+assert.match(worker, /doodhwala-v92/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
 assert.match(worker, /customer-ui-polish\.css\?v=20261025\.3/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
 assert.match(worker, /milk-transition\.js\?v=20261025\.3/);
