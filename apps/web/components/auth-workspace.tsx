@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import WorkspaceFrame from "@/components/workspace-frame";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
-import { safeReturnPath } from "@/lib/auth/redirect";
+import { getSafeReturnPath } from "@/lib/auth/redirect";
 
 type AuthMode = "signin" | "signup" | "reset";
 type Notice = { kind: "error" | "success" | "info"; text: string } | null;
