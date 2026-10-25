@@ -1,0 +1,29 @@
+.dw-milk-transition[hidden],.dw-milk-loading[hidden]{display:none!important}
+.dw-milk-transition{position:fixed;inset:0;z-index:2147483200;display:grid;place-items:center;padding:22px;background:rgba(246,249,243,.94);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);opacity:0;transition:opacity .18s ease;pointer-events:auto;font-family:inherit;color:#183e2b}
+.dw-milk-transition.is-visible{opacity:1}
+.dw-milk-transition-card{width:min(310px,100%);padding:24px 22px 20px;border:1px solid rgba(255,255,255,.9);border-radius:26px;background:rgba(255,255,255,.9);box-shadow:0 24px 70px rgba(20,58,35,.16),inset 0 1px 0 #fff;text-align:center}
+.dw-milk-brand-mark{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 8px;border-radius:12px;background:#164d32;color:#fff;font-size:18px;font-weight:900}
+.dw-milk-content{display:grid;justify-items:center}
+.dw-milk-scene{position:relative;width:190px;height:92px;margin:2px auto 10px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 2px}
+.dw-milk-bottle{position:relative;z-index:2;display:block;width:47px;height:65px;filter:drop-shadow(0 6px 5px rgba(25,67,40,.12));transform-origin:50% 80%}
+.dw-milk-bottle svg{width:100%;height:100%;overflow:visible}
+.dw-milk-source{animation:dw-milk-tip 1.35s ease-in-out infinite}
+.dw-milk-target{animation:dw-milk-receive 1.35s ease-in-out infinite}
+.dw-milk-pour{position:absolute;left:71px;right:70px;top:27px;height:27px;z-index:1}
+.dw-milk-pour i{position:absolute;top:0;width:6px;height:9px;border-radius:70% 35% 65% 40%;background:#c5e6d0;opacity:0;transform:rotate(35deg);animation:dw-milk-drop 1.35s linear infinite}
+.dw-milk-pour i:nth-child(1){left:5px;animation-delay:0s}
+.dw-milk-pour i:nth-child(2){left:20px;animation-delay:.25s}
+.dw-milk-pour i:nth-child(3){left:34px;animation-delay:.5s}
+.dw-milk-title{display:block;color:#173e2a;font-size:13px;font-weight:850;letter-spacing:-.01em}
+.dw-milk-transition-card small{display:block;margin-top:7px;color:#718277;font-size:10px;line-height:1.5}
+.dw-milk-loading{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;z-index:2147483100;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.94);border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 8px 26px rgba(20,58,35,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transform:translateX(-50%);color:#1e5135;pointer-events:none}
+.dw-milk-loading-scene{width:57px;height:38px;overflow:hidden;flex:0 0 auto}
+.dw-milk-loading-scene .dw-milk-scene{width:90px;height:38px;margin:0;padding:0 7px;transform:scale(.54);transform-origin:left top}
+.dw-milk-loading-scene .dw-milk-bottle{width:47px;height:65px}
+.dw-milk-loading-scene .dw-milk-pour{top:27px}
+.dw-milk-loading .dw-milk-title{font-size:11px;white-space:nowrap}
+@keyframes dw-milk-tip{0%,18%,100%{transform:rotate(0)}38%,66%{transform:rotate(-18deg) translateY(-2px)}}
+@keyframes dw-milk-receive{0%,35%,100%{transform:translateY(0)}50%,78%{transform:translateY(-2px)}}
+@keyframes dw-milk-drop{0%{opacity:0;transform:translate(0,-4px) rotate(35deg) scale(.65)}22%{opacity:1}72%{opacity:1;transform:translate(7px,19px) rotate(35deg) scale(1)}100%{opacity:0;transform:translate(10px,27px) rotate(35deg) scale(.65)}}
+@media(max-width:420px){.dw-milk-transition-card{width:min(275px,100%);padding:19px}.dw-milk-loading{padding-right:10px}.dw-milk-loading .dw-milk-title{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.dw-milk-transition,.dw-milk-source,.dw-milk-target,.dw-milk-pour i{animation:none!important;transition:none!important}.dw-milk-pour i{display:none}}
