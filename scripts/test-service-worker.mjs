@@ -73,7 +73,7 @@ const queryAsset = await offlineResponse(origin + "/Doodhwala/styles.css?v=999",
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Doodhwala/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v92"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v93"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.js?v=20261025.3'), "the current seller authorization script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261022.6'), "the current seller mobile navigation styles must be explicitly precached");
@@ -101,15 +101,15 @@ assert.ok(installWarnings.some(args => String(args[0]).includes("optional offlin
 assert.ok(source.includes('/Doodhwala/product.js?v=20261025.6'), "the guarded product detail runtime must be explicitly precached");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v92"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v93"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "final mascot must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/experience-layer.css?v=20261023.5'), "shared experience stylesheet must be precached");
-assert.ok(source.includes('/Doodhwala/customer-ui-polish.css?v=20261025.1'), "customer mobile header polish must be precached");
-assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261025.1'), "milk transition animation styles must be precached");
-assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261025.1'), "milk transition runtime must be precached");
+assert.ok(source.includes('/Doodhwala/customer-ui-polish.css?v=20261025.2'), "customer mobile header polish must be precached");
+assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261025.2'), "milk transition animation styles must be precached");
+assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261025.2'), "milk transition runtime must be precached");
 assert.ok(source.includes('/Doodhwala/orders.js?v=20261025.2'), "order-history compatibility fix must be precached");
-assert.ok(source.includes('/Doodhwala/plans.js?v=20261025.2'), "subscription recovery fix must be precached");
+assert.ok(source.includes('/Doodhwala/plans.js?v=20261025.3'), "subscription recovery fix must be precached");
 assert.ok(source.includes('/Doodhwala/resilience.js?v=20261025.1'), "updated global recovery notice must be precached");
 assert.ok(source.includes('/Doodhwala/checkout.js?v=20261025.3'), "checkout loading recovery runtime must be precached");
 assert.ok(source.includes('/Doodhwala/store.js?v=20261025.2'), "store loading recovery runtime must be precached");
