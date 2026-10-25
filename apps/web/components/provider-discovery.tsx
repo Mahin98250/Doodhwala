@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -129,11 +130,11 @@ export default function ProviderDiscovery() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <a className={styles.brand} href="/" aria-label="Doodhwala home">
+        <Link className={styles.brand} href="/" aria-label="Doodhwala home">
           <span className={styles.brandMark} aria-hidden="true">D</span>
           <span><strong>Doodhwala</strong><small>Local milk, nearby.</small></span>
-        </a>
-        <a className={styles.backLink} href="/">← Home</a>
+        </Link>
+        <Link className={styles.backLink} href="/">← Home</Link>
       </header>
 
       <section className={styles.intro} aria-labelledby="providers-title">
@@ -247,7 +248,7 @@ export default function ProviderDiscovery() {
                     )) : <p className={styles.noProducts}>{milkFilter === "all" ? "No active products listed." : "No products listed for this milk type."}</p>}
                     {displayedProducts.length > 3 && <small className={styles.moreProducts}>+ {displayedProducts.length - 3} more products</small>}
                   </div>
-                  <div className={styles.cardActions}><a className={styles.storeLink} href={"/stores/" + encodeURIComponent(provider.id)}>View seller and products <span aria-hidden="true">→</span></a></div><p className={styles.cardFoot}>Read-only catalogue · Ordering will be connected after store and checkout parity testing.</p>
+                  <div className={styles.cardActions}><Link className={styles.storeLink} href={"/stores/" + encodeURIComponent(provider.id)}>View seller and products <span aria-hidden="true">→</span></Link></div><p className={styles.cardFoot}>Read-only catalogue · Ordering will be connected after store and checkout parity testing.</p>
                 </article>
               );
             })}
@@ -256,7 +257,7 @@ export default function ProviderDiscovery() {
       </section>
 
       <footer className={styles.footer}>
-        <a className={styles.brand} href="/"><span className={styles.brandMark} aria-hidden="true">D</span><span><strong>Doodhwala</strong><small>Built around local sellers.</small></span></a>
+        <Link className={styles.brand} href="/"><span className={styles.brandMark} aria-hidden="true">D</span><span><strong>Doodhwala</strong><small>Built around local sellers.</small></span></Link>
         <span>© {new Date().getFullYear()} Doodhwala</span>
       </footer>
     </main>
