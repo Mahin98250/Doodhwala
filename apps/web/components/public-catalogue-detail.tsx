@@ -32,6 +32,7 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
   const [message, setMessage] = useState("");
   const [locationLabel, setLocationLabel] = useState("Location not shared");
   const requestId = useRef(0);
+  const locationAttempt = useRef(0);
 
   const load = useCallback(async (coordinates: Coordinates | null) => {
     const currentRequest = ++requestId.current;
@@ -82,7 +83,7 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
 
   useEffect(() => {
     void load(null);
-    return () => { requestId.current += 1; };
+    return () => { requestId.current += 1; locationAttempt.current += 1; };
   }, [load]);
 
   const product = useMemo(
@@ -95,18 +96,24 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
       setMessage("This browser does not provide location access. You can still browse this catalogue without it.");
       return;
     }
+    const attempt = ++locationAttempt.current;
     setMessage("Requesting location permission…");
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (attempt !== locationAttempt.current) return;
         setLocationLabel("Used for this delivery check");
         void load({ latitude: position.coords.latitude, longitude: position.coords.longitude });
       },
-      () => setMessage("Location wasn’t shared. You can still browse; your choice is respected."),
+      () => {
+        if (attempt !== locationAttempt.current) return;
+        setMessage("Location wasn’t shared. You can still browse; your choice is respected.");
+      },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
     );
   };
 
   const clearLocation = () => {
+    locationAttempt.current += 1;
     setLocationLabel("Location not shared");
     void load(null);
   };
