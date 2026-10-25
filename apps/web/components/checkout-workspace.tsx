@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -253,7 +254,7 @@ export default function CheckoutWorkspace() {
   const total = Math.max(0, subtotal - (promo?.discount ?? 0));
   if (!signedIn) return (
     <WorkspaceFrame title="Secure checkout" description="Sign in to connect your order to your private delivery address.">
-      <section className="workspace-card workspace-empty"><h2>Your order is saved in this browser</h2><p>Sign in to select a delivery address and finish checkout.</p><a className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fcheckout">Sign in to continue</a><a className="workspace-inline-link" href="/cart">← Back to cart</a></section>
+      <section className="workspace-card workspace-empty"><h2>Your order is saved in this browser</h2><p>Sign in to select a delivery address and finish checkout.</p><Link className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fcheckout">Sign in to continue</Link><Link className="workspace-inline-link" href="/cart">← Back to cart</Link></section>
       {notice && <p className="workspace-notice error">{notice.text}</p>}
     </WorkspaceFrame>
   );
@@ -261,7 +262,7 @@ export default function CheckoutWorkspace() {
   return (
     <WorkspaceFrame title="Secure checkout" eyebrow="CHECKOUT" description="Your order is grouped by seller. Final prices and eligibility are checked by the backend at order creation.">
       {notice && <p className={"workspace-notice " + notice.kind} role={notice.kind === "error" ? "alert" : "status"}>{notice.text}</p>}
-      {orderIds.length > 0 && <section className="workspace-card"><p className="workspace-eyebrow">ORDER CREATED</p><h2>Order reference{orderIds.length > 1 ? "s" : ""}</h2><div className="workspace-list">{orderIds.map((id) => <div className="workspace-list-row" key={id}><div className="workspace-list-main"><strong>{id}</strong><span>Keep this reference for tracking and payment follow-up.</span></div><a href={"/orders/" + encodeURIComponent(id)}>View order →</a></div>)}</div><a className="workspace-button workspace-button-secondary" href="/orders">Open all orders</a></section>}
+      {orderIds.length > 0 && <section className="workspace-card"><p className="workspace-eyebrow">ORDER CREATED</p><h2>Order reference{orderIds.length > 1 ? "s" : ""}</h2><div className="workspace-list">{orderIds.map((id) => <div className="workspace-list-row" key={id}><div className="workspace-list-main"><strong>{id}</strong><span>Keep this reference for tracking and payment follow-up.</span></div><Link href={"/orders/" + encodeURIComponent(id)}>View order →</Link></div>)}</div><Link className="workspace-button workspace-button-secondary" href="/orders">Open all orders</Link></section>}
       <div className="workspace-checkout-grid">
         <div className="workspace-column">
           <section className="workspace-card">
@@ -293,7 +294,7 @@ export default function CheckoutWorkspace() {
         </div>
         <aside className="workspace-card workspace-order-summary">
           <p className="workspace-eyebrow">YOUR ORDER</p><h2>{entries.length} item{entries.length === 1 ? "" : "s"}</h2>
-          {!entries.length ? <div className="workspace-empty-inline"><p>Your cart is empty.</p><a href="/providers">Explore local milk →</a></div> : entries.map((item) => <div className="workspace-summary-item" key={item.providerId + ":" + item.productId}><span><strong>{item.milk}</strong><small>{item.provider} · {item.qty} L</small></span><b>{money.format(item.unitPrice * item.qty)}</b></div>)}
+          {!entries.length ? <div className="workspace-empty-inline"><p>Your cart is empty.</p><Link href="/providers">Explore local milk →</Link></div> : entries.map((item) => <div className="workspace-summary-item" key={item.providerId + ":" + item.productId}><span><strong>{item.milk}</strong><small>{item.provider} · {item.qty} L</small></span><b>{money.format(item.unitPrice * item.qty)}</b></div>)}
           <div className="workspace-summary-line"><span>Indicative subtotal</span><strong>{money.format(subtotal)}</strong></div>
           <div className="workspace-summary-line"><span>Promo preview</span><strong>−{money.format(promo?.discount ?? 0)}</strong></div>
           <div className="workspace-summary-line workspace-summary-total"><span>Estimated total</span><strong>{money.format(total)}</strong></div>
