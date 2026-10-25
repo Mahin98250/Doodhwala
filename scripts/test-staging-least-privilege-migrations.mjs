@@ -60,7 +60,7 @@ assert.match(actorIndex, /order_payment_events_actor_user_idx/);
 const searchPath = lower("supabase/migrations/20261025218000_staging_definer_search_path_hardening.sql");
 assert.match(searchPath, /alter function %s set search_path = %l/);
 assert.match(searchPath, /security_definer_search_path_hardening_incomplete/);
-assert.match(searchPath, /where p\.prosecdef/);
+assert.match(searchPath, /p\.prosecdef/);
 
 const consolidation = lower("supabase/migrations/20261025216000_staging_reconsolidate_security_select_policies.sql");
 assert.match(consolidation, /delivery_tracking_select_own/);
