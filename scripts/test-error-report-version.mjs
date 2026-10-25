@@ -4,7 +4,7 @@ import fs from "node:fs";
 const edge = fs.readFileSync(new URL("../supabase/functions/client-error-report/index.ts", import.meta.url), "utf8");
 const client = fs.readFileSync(new URL("../resilience.js", import.meta.url), "utf8");
 
-assert.match(client, /const APP_VERSION = "20261022\.4"/, "client reporter must advertise the current app version");
+assert.match(client, /const APP_VERSION = "20261025\\.3"/, "client reporter must advertise the current app version");
 assert.match(client, /app_version: APP_VERSION/, "each error report payload must include the app version");
 assert.match(edge, /const LEGACY_APP_VERSION = "20261011\.1"/, "server must keep a fallback for older deployed clients");
 assert.match(edge, /const APP_VERSION_PATTERN = \/\^\\d\{8\}\\\.\\d\{1,3\}\$\//, "server must validate the version format before storing it");
