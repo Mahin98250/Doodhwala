@@ -29,4 +29,37 @@ assert.ok(sql.includes("milk_products.stock") && sql.includes("milk_products.is_
 assert.ok(sql.includes("pp.is_active"), "public product visibility must continue respecting provider active status");
 assert.ok(sql.includes("drop policy if exists profiles_select_own on public.profiles"),
   "profiles policy must be recreated with the same owner boundary");
+
+const followupPath = "supabase/migrations/20261025200000_doodhwala_consolidate_admin_select_policies_followup.sql";
+const followup = fs.readFileSync(new URL("../" + followupPath, import.meta.url), "utf8").toLowerCase();
+for (const table of ["orders", "milk_subscriptions", "provider_profiles", "provider_verifications", "subscription_deliveries"]) {
+  assert.ok(followup.includes("drop policy if exists admin_realtime_select on public." + table),
+    table + " must remove the duplicate standalone admin SELECT policy");
+}
+for (const policy of [
+  "orders_customer_or_provider_select",
+  "milk_subscriptions_owner_or_admin_select",
+  "provider_profiles_select_anon",
+  "provider_profiles_select_authenticated",
+  "provider_verifications_select_anon",
+  "provider_verifications_select_authenticated",
+  "subscription_deliveries_owner_or_admin_select"
+]) {
+  assert.ok(followup.includes("create policy " + policy), "missing consolidated policy: " + policy);
+}
+assert.ok(followup.includes("or (select private.is_current_user_admin())"),
+  "authenticated owners/customer policies must preserve allowlisted-admin access");
+assert.ok(followup.includes("provider_owner_id = (select auth.uid())"),
+  "orders must remain restricted to the assigned seller owner");
+assert.ok(followup.includes("ms.customer_id = (select auth.uid())"),
+  "subscription deliveries must remain customer-scoped");
+const anonProviderPolicies = [
+  followup.split("create policy provider_profiles_select_anon")[1]?.split("create policy provider_profiles_select_authenticated")[0],
+  followup.split("create policy provider_verifications_select_anon")[1]?.split("create policy provider_verifications_select_authenticated")[0]
+];
+for (const policy of anonProviderPolicies) {
+  assert.ok(policy, "separate anonymous public-read policy must exist");
+  assert.ok(!policy.includes("private.is_current_user_admin"), "anonymous policies must never invoke the admin helper");
+}
+
 console.log("RLS policy consolidation contracts passed: public catalogue boundaries and authenticated owner/admin access are preserved.");
