@@ -71,3 +71,78 @@ button:disabled,[role="button"][aria-disabled="true"]{cursor:not-allowed;opacity
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
 }
+
+
+/* 2026 Q4 marketplace art direction: grounded, editorial, less template-like.
+   Keep the original green identity; use paper-like surfaces, restrained borders,
+   clear hierarchy, and small utilitarian details instead of decorative gradients. */
+:root{
+  --market-paper:#f7f7f1;
+  --market-ink:#1d2b22;
+  --market-muted:#6b766d;
+  --market-line:#dfe5dc;
+  --market-green:#205b3c;
+  --market-radius:18px;
+}
+body{color:var(--market-ink);background:var(--market-paper);font-feature-settings:"ss01" on,"cv11" on}
+.app>main{min-width:0}
+.sidebar{background:#fbfcf8;border-right:1px solid var(--market-line)}
+.brand{padding-bottom:24px;border-bottom:1px solid var(--market-line)}
+.brand img,.mobile-logo img{object-fit:contain}
+.sidebar nav{gap:5px}
+.sidebar nav button{border-radius:10px;font-weight:600;letter-spacing:-.01em}
+.sidebar nav button.active{background:#e8f0e7;color:#214f35;box-shadow:inset 3px 0 0 #34744d}
+main>header{background:rgba(247,247,241,.96);border-bottom:1px solid var(--market-line);backdrop-filter:blur(12px)}
+.search{border-radius:12px;background:#fff;border-color:#dce3da;box-shadow:none}
+.search input{font-size:14px}
+.location-top,.location{border-radius:12px;box-shadow:none}
+.hero{border-radius:24px;background:#e9efe3;overflow:hidden;box-shadow:none}
+.hero>div:first-child{max-width:620px}
+.hero .eyebrow,.section .eyebrow{font-size:10px;letter-spacing:.14em;font-weight:800}
+.hero h1{max-width:620px;letter-spacing:-.055em;line-height:1.02;font-size:clamp(38px,4.3vw,60px)}
+.hero h1 em{color:#3c7450;font-style:normal}
+.hero p{max-width:470px;line-height:1.7;color:#536357}
+.hero-art{border-radius:20px;overflow:hidden}
+.hero-art .sun{box-shadow:none}
+.actions{gap:10px}
+.primary,.secondary,.filter-button{border-radius:11px;font-weight:700;letter-spacing:-.01em}
+.primary{background:#205b3c;box-shadow:none}
+.primary:hover:not(:disabled){box-shadow:0 5px 12px rgba(24,68,42,.12)}
+.secondary{background:rgba(255,255,255,.7)}
+.section{margin-top:36px}
+.section-head{align-items:end;margin-bottom:17px}
+.section-head h2,.story h2{letter-spacing:-.04em;line-height:1.12}
+.quick{gap:12px}
+.quick button{border:1px solid #e1e5dc;border-radius:16px;background:#fff;box-shadow:none;min-height:104px}
+.quick button .quick-icon{background:#f0f3eb;border-radius:11px}
+.quick button b{letter-spacing:-.02em}
+.quick button small{color:#748076}
+.chips button{border-radius:999px;box-shadow:none}
+.chips button.active{background:#205b3c;color:#fff;border-color:#205b3c}
+.discover-toolbar{border-top:1px solid var(--market-line);padding-top:14px}
+.provider{border:1px solid #e0e5dc;border-radius:17px;background:#fff;box-shadow:none;overflow:hidden}
+.provider:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(29,43,34,.07);border-color:#c8d5c7}
+.provider .cover{background:#edf1e8}
+.provider .provider-name,.provider h3{letter-spacing:-.025em}
+.provider .price,.provider .provider-price{font-variant-numeric:tabular-nums}
+.provider .provider-foot,.provider .provider-meta{border-color:#edf0e9}
+.location-hero-card{border:1px solid rgba(37,82,52,.15);border-radius:13px;background:rgba(255,255,255,.72);box-shadow:none}
+.story{border-top:1px solid var(--market-line);padding-top:30px}
+.story .stats>div{border:1px solid var(--market-line);border-radius:14px;background:#fff}
+.site-legal-footer{border-top:1px solid var(--market-line);color:#6e796f}
+.drawer{border-radius:22px 0 0 22px;box-shadow:-12px 0 42px rgba(24,40,27,.12)}
+.drawer-head{border-bottom:1px solid var(--market-line)}
+.empty{color:var(--market-muted)}
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:rgba(32,91,60,.5)}
+@media(max-width:760px){
+  .hero{border-radius:19px}
+  .hero h1{font-size:clamp(34px,9vw,46px);letter-spacing:-.045em}
+  .section{margin-top:29px}
+  .quick{gap:8px}
+  .quick button{min-height:94px;border-radius:13px}
+  .provider{border-radius:15px}
+  .drawer{border-radius:20px 20px 0 0}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-art .sun,.hero-art .bottle{animation:none!important}
+}
