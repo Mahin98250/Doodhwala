@@ -1,4 +1,4 @@
-import type { MilkType, PublicProvider, ProviderProduct } from "./normalize";
+import type { MilkType, PublicProvider, ProviderProduct } from "./normalize.ts";
 
 export type MilkFilter = "all" | "cow" | "buffalo" | "a2";
 export type SortMode = "closest" | "rating" | "price";
