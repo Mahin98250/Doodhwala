@@ -1,5 +1,5 @@
-import Link from "next/link";
 "use client";
+import Link from "next/link";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./public-catalogue-detail.module.css";
