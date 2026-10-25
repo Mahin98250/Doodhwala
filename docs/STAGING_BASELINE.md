@@ -72,7 +72,7 @@ The source migration `20261012090500_doodhwala_consolidate_admin_select_policies
 
 Post-apply catalog checks confirmed the intended policy definitions are present. `provider_profiles` and `provider_verifications` now have separate anon and authenticated SELECT policies; the anonymous policies do not invoke `private.is_current_user_admin()`. Customer/provider ownership and approved-public catalogue visibility predicates were preserved. The performance advisor no longer reports the earlier eight `multiple_permissive_policies` warnings.
 
-The performance advisor also no longer reports unindexed foreign keys after the two payment FK indexes were added. It still reports 41 unused indexes on staging; without representative traffic, these are not safe candidates for deletion. Keep them until a measured workload and query plans justify a change.
+The performance advisor also no longer reports unindexed foreign keys after the two payment FK indexes were added. It currently lists 34 unused indexes in the latest advisor run; this count can change as smoke-test queries run and statistics change. Without representative production-like traffic and query plans, these are not safe candidates for deletion. No unused indexes were dropped.
 
 ## Order/RPC smoke tests and lifecycle dependency repairs (2026-10-25)
 
@@ -102,7 +102,7 @@ After applying these fixes, the entire transactional smoke test passed, includin
 
 **Test scope:** this is a real PostgreSQL/RPC smoke test under the `authenticated` database role with synthetic JWT subject claims, within a rollback-only transaction. It proves core database/RPC logic and RLS behavior in staging; it is **not** a browser/UI test or a real Supabase Auth login session, and does not verify OAuth, phone OTP delivery, Vercel environment isolation, Realtime transport, or money settlement. Those remain release gates.
 
-The test discoveries are now guarded by the static CI script `scripts/test-staging-order-security-dependencies.mjs`. CI result for its newest workflow commit must be checked before treating the release gate as green.
+The missing-function and cancellation-grant discoveries are guarded by the static CI script `scripts/test-staging-order-security-dependencies.mjs`. Static validation run #1123 and Next.js app validation run #129 both passed for commit `cf03de3095d544c3852f805fd520baa8af420538`; check the current branch head's own CI status before any merge.
 
 ## Production migration snapshot and repository drift
 
