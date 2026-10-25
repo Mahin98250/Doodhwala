@@ -1,5 +1,5 @@
-import Link from "next/link";
 "use client";
+import Link from "next/link";
 
 import { useCallback, useEffect, useState } from "react";
 import WorkspaceFrame from "@/components/workspace-frame";
