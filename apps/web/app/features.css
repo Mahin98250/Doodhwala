@@ -182,3 +182,6 @@
 .seller-stock-toggle.out-stock{background:#e9f5e8;border-color:#cfe3cd;}
 .seller-stock-toggle:disabled{opacity:.55;cursor:not-allowed;}
 @media(max-width:600px){.seller-today-stats{gap:7px;margin:18px 0;}.seller-today-stats>div{padding:12px 9px;border-radius:12px;}.seller-today-stats span{font-size:10px;}.seller-today-actions{display:grid;grid-template-columns:1fr;}.seller-today-actions .workspace-button{width:100%;min-height:48px;}.seller-today-head{align-items:flex-start;}.seller-stock-row{align-items:center;}.seller-stock-toggle{min-height:44px;padding:10px;}}
+
+.workspace-order-quick-action{min-height:42px;white-space:nowrap;}
+@media(max-width:600px){.workspace-order-quick-action{width:100%;min-height:46px;}}
