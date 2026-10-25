@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const app = read("app.js");
@@ -54,5 +55,42 @@ assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must c
 assert.match(worker, /milk-transition\.js\?v=20261025\.3/);
 assert.match(resilience, /aboveCustomerNav/);
 assert.match(resilience, /APP_VERSION = "20261025\.3"/);
+
+
+/* Execute the actual Plans loader with a tiny Supabase mock. This catches the
+   historical sup.from is not a function bug rather than only checking source text. */
+const helperMatch = plans.match(/const sup=\(\)=>window\.Doodhwala\?\.supabase;/);
+assert.ok(helperMatch, "Plans Supabase accessor must be available for the runtime smoke test.");
+const loadStart = plans.indexOf("async function loadPlans(){");
+const loadEnd = plans.indexOf("\\nfunction planCard(", loadStart);
+assert.ok(loadStart >= 0 && loadEnd > loadStart, "Could not isolate the Plans list loader for the runtime smoke test.");
+const loadPlansSource = plans.slice(loadStart, loadEnd);
+const queriedTables = [];
+const mockQuery = {
+  select() { return this; },
+  eq() { return this; },
+  order() { return Promise.resolve({ data: [], error: null }); }
+};
+const mockSupabase = {
+  from(table) { queriedTables.push(table); return mockQuery; }
+};
+const mockElements = new Map();
+const planRuntimeResult = await runInNewContext(
+  "(async()=>{" + helperMatch[0] + "\\n" + loadPlansSource + "\\nreturn await loadPlans();})()",
+  {
+    window: { Doodhwala: { supabase: mockSupabase } },
+    user: { id: "customer-runtime-smoke" },
+    sup: undefined,
+    $: (id) => {
+      if (!mockElements.has(id)) mockElements.set(id, { innerHTML: "", textContent: "", classList: { add() {}, remove() {}, contains() { return false; } } });
+      return mockElements.get(id);
+    },
+    document: { querySelectorAll() { return []; } },
+    console: { warn() {}, error() {}, info() {} }
+  }
+);
+assert.equal(planRuntimeResult, true, "Plans loader should complete with a valid Supabase client and empty plan history.");
+assert.deepEqual(queriedTables, ["milk_subscriptions"], "Plans loader must call from() on the returned client, not on the accessor function.");
+assert.match(mockElements.get("plansList").innerHTML, /No recurring plans yet/, "Empty plan history should render a usable empty state.");
 
 console.log("PASS: customer mobile layout, Plans Supabase calls, Orders schema compatibility, milk transitions, PWA cache, and recovery-notice contracts.");
