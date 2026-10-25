@@ -32,15 +32,15 @@ assert.match(orders, /Payment method not recorded/, "Older production orders mus
 
 for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ordersHtml]]) {
   assert.match(html, /customer-ui-polish\.css\?v=20261025\.3/, name + " page must load the responsive UI fixes.");
-  assert.match(html, /milk-transition\.css\?v=20261025\.3/, name + " page must load the milk animation styles.");
-  assert.match(html, /milk-transition\.js\?v=20261025\.3/, name + " page must load the transition runtime.");
+  assert.match(html, /milk-transition\.css\?v=20261025\.4/, name + " page must load the milk animation styles.");
+  assert.match(html, /milk-transition\.js\?v=20261025\.4/, name + " page must load the transition runtime.");
 }
 assert.match(nav, /function go\(url\).*DoodhwalaMilkTransition/, "Bottom navigation must use the milk transition helper.");
 assert.match(app, /showLoading\("Finding fresh milk nearby…?"\)/, "Home provider data loading should display the milk animation.");
 assert.match(app, /milkTransition\?\.hideLoading\(\)/, "Home provider data loading must always clear the loader.");
 assert.match(app, /destination==="plans"\|\|destination==="orders"/, "Desktop sidebar must navigate to Plans and Orders.");
 assert.match(app, /DoodhwalaMilkTransition\.navigate\(url\)/, "Desktop customer navigation must use the milk transition.");
-assert.ok(home.indexOf("milk-transition.js?v=20261025.3") < home.indexOf("app.js?v=20261025.5"), "Milk transition runtime must be available before the home app requests data.");
+assert.ok(home.indexOf("milk-transition.js?v=20261025.4") < home.indexOf("app.js?v=20261025.5"), "Milk transition runtime must be available before the home app requests data.");
 assert.match(ordersHtml, /customer-10x\.js\?v=20261023\.4" data-doodhwala-10x="1"/, "Orders page must use one current customer 10X runtime without injecting a duplicate.");
 assert.match(worker, /doodhwala-v93/, "PWA cache must change when the home runtime changes.");
 assert.match(transitionJs, /showLoading/);
@@ -50,13 +50,16 @@ assert.doesNotMatch(showLoadingBlock, /if\(overlay&&overlay\.classList\.contains
 
 assert.match(transitionJs, /navigate\(url\)/);
 assert.match(transitionCss, /@keyframes dw-milk-drop/);
+assert.match(transitionJs, /dw-milk-stream-core/, "Page transitions must render a continuous stream of milk.");
+assert.match(transitionJs, /dw-milk-scene--transition/, "Page transitions must use the dedicated faster pour scene.");
+assert.match(transitionCss, /@keyframes dw-milk-fill-target/, "Receiving bottle liquid level must rise during the pour.");
 assert.match(transitionCss, /prefers-reduced-motion/);
 assert.match(mobileCss, /grid-template-areas/);
 assert.match(mobileCss, /@media\(max-width:390px\)/);
 assert.match(worker, /doodhwala-v93/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
 assert.match(worker, /customer-ui-polish\.css\?v=20261025\.3/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
-assert.match(worker, /milk-transition\.js\?v=20261025\.3/);
+assert.match(worker, /milk-transition\.js\?v=20261025\.4/);
 assert.match(resilience, /aboveCustomerNav/);
 assert.ok(resilience.includes('^\\/$'), "Root-hosted Home page errors must place recovery notices above the bottom navigation.");
 assert.match(resilience, /APP_VERSION = "20261025\.3"/);

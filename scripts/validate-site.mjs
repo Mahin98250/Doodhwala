@@ -283,10 +283,10 @@ if(!storeHtml.includes('/Doodhwala/store.js?v=20261025.4')) errors.push("store.h
 if(!productSw.includes('/Doodhwala/store.js?v=20261025.4')) errors.push("sw.js -> provider storefront runtime missing from offline precache");
 for(const file of ["/store.html","/product.html","/checkout.html"]){
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!html.includes('/Doodhwala/milk-transition.css?v=20261025.3')) errors.push(file+" -> milk transition stylesheet missing");
-  if(!html.includes('/Doodhwala/milk-transition.js?v=20261025.3')) errors.push(file+" -> milk transition runtime missing");
+  if(!html.includes('/Doodhwala/milk-transition.css?v=20261025.4')) errors.push(file+" -> milk transition stylesheet missing");
+  if(!html.includes('/Doodhwala/milk-transition.js?v=20261025.4')) errors.push(file+" -> milk transition runtime missing");
 }
-if(!productSw.includes('/Doodhwala/milk-transition.css?v=20261025.3')||!productSw.includes('/Doodhwala/milk-transition.js?v=20261025.3')) errors.push("sw.js -> milk transition assets missing from PWA precache");
+if(!productSw.includes('/Doodhwala/milk-transition.css?v=20261025.4')||!productSw.includes('/Doodhwala/milk-transition.js?v=20261025.4')) errors.push("sw.js -> milk transition assets missing from PWA precache");
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
