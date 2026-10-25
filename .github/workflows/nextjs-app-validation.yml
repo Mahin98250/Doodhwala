@@ -34,6 +34,17 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Export generated lockfile for repository pinning
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            echo LOCKFILE_BASE64_BEGIN
+            base64 -w0 package-lock.json | fold -w 900 | sed "s/^/LOCKCHUNK:/"
+            echo LOCKFILE_BASE64_END
+          else
+            echo "package-lock.json was not generated" >&2
+            exit 1
+          fi
       - name: Unit tests
         run: npm test
       - name: Type-check
