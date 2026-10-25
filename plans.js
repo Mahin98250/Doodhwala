@@ -48,26 +48,83 @@ function setupPlansRealtime(user){
  });
 }
 async function loadContext(){
+ window.DoodhwalaMilkTransition?.showLoading("Loading your milk plans…");
  try{
-  if(!window.Doodhwala?.configured||!window.Doodhwala.supabase){$("plansState").textContent="Daily plans are temporarily unavailable. Please try again shortly.";return}
+  if(!window.Doodhwala?.configured||!window.Doodhwala.supabase){
+   $("plansState").textContent="Daily plans are temporarily unavailable. Please try again shortly.";
+   return;
+  }
   $("plansState").textContent="Connecting to Doodhwala…";
-  const client=sup();if(!client?.auth?.getSession){$("plansState").textContent="Daily plans are temporarily unavailable. Please try again shortly.";return}const session=await Promise.race([client.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Authentication request timed out")),10000))]);
+  const client=sup();
+  if(!client?.auth?.getSession){
+   $("plansState").textContent="Daily plans are temporarily unavailable. Please try again shortly.";
+   return;
+  }
+  const session=await Promise.race([
+   client.auth.getSession(),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error("Authentication request timed out")),10000))
+  ]);
   user=session.data?.session?.user||null;
   if(!user){
-   $("plansGate").classList.remove("hidden");$("plansState").textContent="Sign in to manage recurring milk deliveries.";return;
+   $("plansGate").classList.remove("hidden");
+   $("plansState").textContent="Sign in to manage recurring milk deliveries.";
+   return;
   }
-  $("plansState").textContent="Your recurring deliveries, in one place.";
+
+  $("plansGate").classList.add("hidden");
   $("myPlans").classList.remove("hidden");
-  const [plansResult,addr]=await Promise.all([
+  $("plansState").textContent="Loading your recurring deliveries…";
+  let addressProblem=false;
+  const [plansLoad,addressesLoad]=await Promise.allSettled([
    loadPlans(),
-   sup.from("addresses").select("id,label,recipient_name,address_line,area_name,city,pin_code").eq("user_id",user.id).order("is_default",{ascending:false})
+   client.from("addresses")
+    .select("id,label,recipient_name,address_line,area_name,city,pin_code")
+    .eq("user_id",user.id)
+    .order("is_default",{ascending:false})
   ]);
-  if(addr.error)throw addr.error;
-  addresses=addr.data||[];renderAddresses();
-  if(providerId&&productId)await loadProductContext();
-  else{$("createPlan").classList.remove("hidden");$("planProductTitle").textContent="Choose a milk product first";$("planProviderMeta").textContent="Open a provider from the shop and tap Plan to preselect it."}
-  setupPlansRealtime(user);
- }catch(err){console.error("Daily plans failed to load",err);$("plansState").textContent="We couldn’t load your daily plans. Please refresh and try again.";$("plansGate").classList.add("hidden");}
+
+  if(plansLoad.status==="rejected"){
+   console.error("Milk plan list request failed",plansLoad.reason);
+   $("plansList").innerHTML='<div class="empty-plans"><b>Your plans are temporarily unavailable.</b><br>Check your connection and tap Refresh to try again.</div>';
+   $("plansState").textContent="We couldn’t load your milk plans. Please refresh to retry.";
+  }
+
+  if(addressesLoad.status==="fulfilled"&&!addressesLoad.value.error){
+   addresses=addressesLoad.value.data||[];
+   renderAddresses();
+  }else{
+   addressProblem=true;
+   addresses=[];
+   renderAddresses();
+   console.warn("Saved delivery addresses could not be loaded",addressesLoad.status==="rejected"?addressesLoad.reason:addressesLoad.value?.error);
+   $("planError").textContent="Saved addresses couldn’t be loaded. Existing plans can still be viewed; refresh to retry before creating or editing a plan.";
+  }
+
+  if(providerId&&productId){
+   try{await loadProductContext();}
+   catch(err){console.warn("Selected milk product could not be loaded",err);$("plansState").textContent="This milk option is temporarily unavailable. Please return to the shop and try again.";}
+  }else{
+   $("createPlan").classList.remove("hidden");
+   $("planProductTitle").textContent="Choose a milk product first";
+   $("planProviderMeta").textContent="Open a provider from the shop and tap Plan to preselect it.";
+  }
+  try{setupPlansRealtime(user);}
+  catch(err){console.warn("Milk plan live updates could not start",err);}
+
+  if(addressProblem&&plansLoad.status==="fulfilled"){
+   $("plansState").textContent="Your plans are available, but saved addresses couldn’t be loaded. Tap Refresh to retry.";
+  }else if(plansLoad.status==="fulfilled"){
+   $("plansState").textContent="Your recurring deliveries, in one place.";
+  }
+ }catch(err){
+  console.error("Daily plans failed to load",err);
+  $("plansState").textContent="We couldn’t load your milk plans right now. Check your connection and tap Refresh to retry.";
+  $("plansGate").classList.add("hidden");
+  $("myPlans").classList.remove("hidden");
+  $("plansList").innerHTML='<div class="empty-plans"><b>We couldn’t reach your milk plans.</b><br>Your account is unchanged. Reconnect and tap Refresh to try again.</div>';
+ }finally{
+  window.DoodhwalaMilkTransition?.hideLoading();
+ }
 }
 async function loadProductContext(){
  const r=await sup.from("milk_products").select("id,name,milk_type,price_per_litre,unit_label,stock,daily_available,is_active,provider_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to,is_active)").eq("id",productId).eq("provider_id",providerId).maybeSingle();
