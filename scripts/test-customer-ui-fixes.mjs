@@ -62,7 +62,7 @@ assert.match(resilience, /APP_VERSION = "20261025\.3"/);
 const helperMatch = plans.match(/const sup=\(\)=>window\.Doodhwala\?\.supabase;/);
 assert.ok(helperMatch, "Plans Supabase accessor must be available for the runtime smoke test.");
 const loadStart = plans.indexOf("async function loadPlans(){");
-const loadEnd = plans.indexOf("\\nfunction planCard(", loadStart);
+const loadEnd = plans.indexOf("\nfunction planCard(", loadStart);
 assert.ok(loadStart >= 0 && loadEnd > loadStart, "Could not isolate the Plans list loader for the runtime smoke test.");
 const loadPlansSource = plans.slice(loadStart, loadEnd);
 const queriedTables = [];
@@ -76,7 +76,7 @@ const mockSupabase = {
 };
 const mockElements = new Map();
 const planRuntimeResult = await runInNewContext(
-  "(async()=>{" + helperMatch[0] + "\\n" + loadPlansSource + "\\nreturn await loadPlans();})()",
+  "(async()=>{" + helperMatch[0] + "\n" + loadPlansSource + "\nreturn await loadPlans();})()",
   {
     window: { Doodhwala: { supabase: mockSupabase } },
     user: { id: "customer-runtime-smoke" },
