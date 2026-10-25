@@ -40,3 +40,5 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+      - name: Production route smoke checks
+        run: npm run smoke
