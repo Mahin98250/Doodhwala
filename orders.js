@@ -194,7 +194,7 @@ function renderOrderCard(o,events){
     o.delivery_address_line,
     [o.delivery_area_name,o.delivery_city,o.delivery_pin_code].filter(Boolean).join(", ")
   ].filter(Boolean).join(", ");
-  const paymentMethod=o.payment_method==="direct_upi"?"Direct seller UPI":o.payment_method==="selection_pending"?"Choosing payment method":"Cash on Delivery";const paymentAction=o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>Payment · '+esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
+  const paymentMethod=o.payment_method==="direct_upi"?"Direct seller UPI":o.payment_method==="selection_pending"?"Choosing payment method":o.payment_method==="cash_on_delivery"?"Cash on Delivery":"Payment method not recorded";const paymentAction=o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>Payment · '+esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
     '<div class="order-card-head"><div><div class="order-provider">'+
       esc(provider.display_name||"Local milk provider")+
       '</div><div class="order-meta">Order '+esc(o.id)+" · "+esc(when(o.created_at))+
@@ -215,6 +215,9 @@ function renderOrderCard(o,events){
 }
 
 async function loadOrders(options={}){
+  const shouldAnimate=!options.silent;
+  if(shouldAnimate)window.DoodhwalaMilkTransition?.showLoading("Loading your orders…");
+  try{
   if(!window.Doodhwala?.configured){
     $("ordersState").textContent="Supabase is not configured.";
     return;
@@ -235,17 +238,35 @@ async function loadOrders(options={}){
 
   const result=await Doodhwala.supabase
     .from("orders")
-    .select("id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,payment_method,payment_status,payment_reference,payment_confirmed_at,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)")
+    .select("id,status,subtotal,delivery_fee,total,customer_note,created_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,provider_id,provider_profiles(display_name,area_name,city),order_items(product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)")
     .eq("customer_id",user.id)
     .order("created_at",{ascending:false})
     .limit(50);
 
   if(result.error){
-    $("ordersState").textContent="We couldn’t load your orders. Please refresh and try again.";
+    console.warn("Orders query failed",result.error);
+    $("ordersState").textContent="We couldn’t load your orders. Check your connection and try again.";
     return;
   }
 
   const orders=result.data||[];
+  // Payment columns were introduced after the original production schema.
+  // Read them separately so an older database can still show order history.
+  if(orders.length){
+    try{
+      const paymentResult=await Doodhwala.supabase.from("orders")
+        .select("id,payment_method,payment_status,payment_reference,payment_confirmed_at")
+        .in("id",orders.map(o=>o.id));
+      if(!paymentResult.error){
+        const paymentById=new Map((paymentResult.data||[]).map(row=>[row.id,row]));
+        orders.forEach(order=>Object.assign(order,paymentById.get(order.id)||{}));
+      }else{
+        console.info("Optional payment metadata is not available in this database environment.",paymentResult.error.message);
+      }
+    }catch(paymentError){
+      console.info("Optional payment metadata is not available; continuing with order history.",paymentError);
+    }
+  }
   const eventResult=orders.length
     ? await Doodhwala.supabase
         .from("order_status_events")
@@ -304,7 +325,7 @@ async function loadOrders(options={}){
       try{
         const litres=await window.Doodhwala10X.reorder(button.dataset["10xReorder"]);
         window.Doodhwala10X.toast(litres+" L added to cart");
-        setTimeout(function(){location.href="/Doodhwala/";},250);
+        setTimeout(function(){if(window.DoodhwalaMilkTransition)window.DoodhwalaMilkTransition.navigate("/Doodhwala/");else location.href="/Doodhwala/";},250);
       }catch(e){
         window.Doodhwala10X?.toast(e.message||"Reorder unavailable");
       }finally{
@@ -312,6 +333,13 @@ async function loadOrders(options={}){
       }
     });
   });
+  }catch(err){
+    console.warn("Orders load failed",err);
+    $("ordersState").textContent="We couldn’t load your orders yet. Check your connection and tap Refresh to retry.";
+    if(!$("ordersList").classList.contains("hidden"))$("ordersList").innerHTML='<div class="empty-orders"><b>Your orders are temporarily unavailable.</b><br>We’ll keep your account data safe. Please retry when your connection is back.</div>';
+  }finally{
+    if(shouldAnimate)window.DoodhwalaMilkTransition?.hideLoading();
+  }
 }
 
 document.addEventListener("visibilitychange",function(){

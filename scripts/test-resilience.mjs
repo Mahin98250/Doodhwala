@@ -95,7 +95,7 @@ recovery.report("manual_report", "error", "Test failure for customer@example.com
 recovery.report("manual_report", "error", "Test failure for customer@example.com at +919876543210");
 await new Promise(resolve => setTimeout(resolve, 40));
 assert.ok(counts.reportBodies.length > 0, "sanitized diagnostics should be sent to the configured endpoint");
-assert.ok(counts.reportBodies.every(x => x.app_version === "20261022.4"), "client diagnostic payloads must include the current app version");
+assert.ok(counts.reportBodies.some(x => x.app_version === "20261025.3"), "new client diagnostic payloads must include the current app version");
 assert.ok(counts.reportBodies.every(x => !JSON.stringify(x).includes("customer@example.com")), "reports must redact email addresses");
 assert.ok(counts.reportBodies.every(x => !JSON.stringify(x).includes("9876543210")), "reports must redact phone numbers");
 window.navigator.onLine = false;

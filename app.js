@@ -222,6 +222,12 @@ function clearComparison(closeDialog=false){
  comparedProviderIds=[];render();if(closeDialog)closeCompareDialog();toast("Comparison cleared");
 }
 function navigateHomeView(destination){
+ if(destination==="plans"||destination==="orders"){
+  const url="/Doodhwala/"+(destination==="plans"?"plans.html":"orders.html");
+  if(window.DoodhwalaMilkTransition&&typeof window.DoodhwalaMilkTransition.navigate==="function")window.DoodhwalaMilkTransition.navigate(url);
+  else window.location.href=url;
+  return;
+ }
  if(destination==="providers"){browseMode="all";activeFilter=activeFilter||"all";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="saved"){browseMode="saved";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="home"){browseMode="all";render();window.scrollTo({top:0,behavior:"smooth"})}
@@ -263,6 +269,9 @@ $("checkout")?.addEventListener("click",()=>{if(!entries().length){toast("Your c
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>navigateHomeView(b.dataset.go)));
 
 async function loadRemoteProviders(lat=null,lng=null){
+ const milkTransition=window.DoodhwalaMilkTransition;
+ milkTransition?.showLoading("Finding fresh milk nearby…");
+ try{
  if(!window.Doodhwala?.configured){dataState="error";render();return}
  dataState="loading";render();
  const {data,error}=await Doodhwala.supabase.rpc("find_nearby_providers_v2",{p_latitude:lat,p_longitude:lng,p_max_km:20});
@@ -281,6 +290,9 @@ async function loadRemoteProviders(lat=null,lng=null){
    }
  });
  window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
+ }finally{
+  milkTransition?.hideLoading();
+ }
 }
 async function loadRemoteProvidersFromSaved(){
  const pos=readLocation();

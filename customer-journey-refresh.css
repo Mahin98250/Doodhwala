@@ -133,3 +133,14 @@
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+
+/* Mobile polish for standalone plans and orders pages. */
+.plans-main,.orders-main,.checkout-main{width:min(100% - 32px,1080px);margin-inline:auto}
+.plans-heading,.orders-heading{gap:16px;align-items:flex-start}
+.plans-heading h1,.orders-heading h1{max-width:780px;text-wrap:balance}
+.plans-heading p,.orders-heading p{line-height:1.55;overflow-wrap:anywhere}
+.empty-plans,.empty-orders{border:1px solid #e1e9de;border-radius:18px;background:rgba(255,255,255,.88);padding:20px;color:#607066;line-height:1.65}
+.empty-plans b,.empty-orders b{display:inline-block;color:#1b3927;margin-bottom:4px}
+@media(max-width:760px){.plans-top,.orders-top,.checkout-top{min-height:72px;padding:12px 16px;gap:12px}.plans-brand,.orders-brand,.checkout-brand{min-width:0}.plans-brand b,.orders-brand b,.checkout-brand b{font-size:15px}.back-shop{font-size:12px;white-space:nowrap}.plans-main,.orders-main,.checkout-main{width:auto;margin:0;padding:24px 16px 34px}.plans-heading,.orders-heading{display:flex;flex-direction:column;gap:12px}.plans-heading h1,.orders-heading h1{font-size:clamp(32px,8.8vw,44px);line-height:1.04;letter-spacing:-.055em}.plans-heading p,.orders-heading p{font-size:14px}.plans-heading #refreshPlans,.orders-heading #refreshOrders{width:100%;min-height:44px}.plans-card,.subscription-card,.orders-card,.order-card,.checkout-card{border-radius:17px}.site-legal-footer{padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px))}body.plans-page,body.orders-page,body.checkout-page{overflow-x:hidden}}
+@media(prefers-reduced-motion:reduce){.plans-card,.subscription-card,.orders-card,.order-card{scroll-behavior:auto}}
