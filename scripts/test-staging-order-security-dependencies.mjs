@@ -6,6 +6,7 @@ const eta = read("supabase/migrations/20261025210000_doodhwala_restore_delivery_
 const cancelGrant = read("supabase/migrations/20261025211000_grant_customer_cancel_order_implementation.sql").toLowerCase();
 const cancelImpl = read("supabase/migrations/20261007183000_doodhwala_secure_rpc_wrappers.sql").toLowerCase();
 const lifecycle = read("supabase/migrations/20261008030000_provider_order_lifecycle_hardening.sql").toLowerCase();
+const migrationReconciliation = read("docs/STAGING_MIGRATION_RECONCILIATION.md").toLowerCase();
 
 assert.ok(eta.includes("create or replace function private.calculate_order_eta(p_order_id uuid)"),
   "the ETA calculation referenced by delivery lifecycle must have a repository definition");
@@ -34,5 +35,32 @@ assert.ok(cancelGrant.includes("grant execute on function private.customer_cance
   "the invoker wrapper needs authenticated EXECUTE on its private implementation");
 assert.ok(!cancelGrant.includes("to anon") && !cancelGrant.includes("to public"),
   "anonymous and PUBLIC access to the cancellation implementation must not be granted");
+
+
+assert.ok(migrationReconciliation.includes("do not run `supabase db push`"),
+  "staging migration history must be reconciled before db push");
+assert.ok(migrationReconciliation.includes("do not edit `supabase_migrations.schema_migrations` directly"),
+  "migration history must use the supported repair workflow, not direct metadata edits");
+for (const filename of [
+  "20261025170000_staging_security_hardening.sql",
+  "20261025171000_remove_legacy_create_order_overload.sql",
+  "20261025180000_delivery_tracking_owner_read_policy.sql",
+  "20261022120000_doodhwala_pay_foundation.sql",
+  "20261022150000_doodhwala_direct_seller_payments.sql",
+  "20261022151000_doodhwala_direct_upi_settings_read.sql",
+  "20261022152000_doodhwala_payment_choice_race_guard.sql",
+  "20261022153000_doodhwala_guard_payment_field_writes.sql",
+  "20261022154000_doodhwala_direct_upi_pending_only.sql",
+  "20261023050000_doodhwala_payment_controls_readiness.sql",
+  "20261023100000_doodhwala_recheck_seller_approval_for_upi.sql",
+  "20261025190000_doodhwala_payment_fk_indexes.sql",
+  "20261012090500_doodhwala_consolidate_admin_select_policies.sql",
+  "20261025200000_doodhwala_consolidate_admin_select_policies_followup.sql",
+  "20261025210000_doodhwala_restore_delivery_promise_functions.sql",
+  "20261025211000_grant_customer_cancel_order_implementation.sql"
+]) {
+  assert.ok(migrationReconciliation.includes(filename.toLowerCase()),
+    "staging migration ledger must retain a mapping for " + filename);
+}
 
 console.log("Staging order-security dependency contracts passed: ETA helpers are private, delivery promises are wired, and customer cancellation has the required authenticated implementation grant.");
