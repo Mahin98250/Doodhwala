@@ -76,3 +76,8 @@ body.plans-page,body.orders-page{min-height:100vh;min-height:100svh;display:flex
 @media(prefers-reduced-motion:reduce){
   .story .stats>div{scroll-behavior:auto}
 }
+
+
+/* Keep the small milk-transfer loader out of the way of the customer header. */
+.home-page .dw-milk-loading{top:calc(72px + env(safe-area-inset-top,0px));left:auto;right:12px;transform:none}
+@media(max-width:760px){.home-page .dw-milk-loading{top:calc(154px + env(safe-area-inset-top,0px));left:12px;right:12px;max-width:max-content}}
