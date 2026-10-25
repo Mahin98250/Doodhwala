@@ -1,4 +1,4 @@
-"import { StatusBar } from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
