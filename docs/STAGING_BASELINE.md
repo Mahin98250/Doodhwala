@@ -89,6 +89,7 @@ The smoke test returned `PASS` for these database/RPC scenarios:
 - Direct UPI failed closed while the approved synthetic seller had no enabled UPI settings.
 - Customer cancellation from an eligible `placed` order passed.
 - A different authenticated customer could not set the original customer's payment method (`order_not_found`).
+- An additional rollback-only admin authorization test passed: a normal authenticated synthetic user was denied by `public.admin_list_orders(1)` with `owner_access_required`, while a synthetic email temporarily inserted into `private.admin_allowlist` was recognized and could call the admin wrapper. The synthetic allowlist row and both synthetic Auth users were rolled back.
 - The customer and provider owner could read the order's tracking event; an unrelated authenticated user could not.
 
 Two missing staging dependencies were repaired after the smoke test exposed them:
