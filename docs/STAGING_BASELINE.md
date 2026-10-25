@@ -33,6 +33,18 @@ Suggested GitHub Actions secrets/environment variables for a staging-only load w
 
 Do not add real secret values to this repository, README, logs or pull requests. Set them in GitHub Actions Environment secrets after staging is provisioned. Restrict the environment to maintainers and require an explicit staging confirmation input for any load test.
 
+## Staging-only delivery-tracking policy (2026-10-25)
+
+Migration `20261025180000_delivery_tracking_owner_read_policy.sql` was applied to staging project `jbcekiaiyxcatueixeqh` and verified from PostgreSQL catalogs.
+
+- Authenticated SELECT is allowed only when the tracking event's `order_id` and `provider_id` match an order where the user is the customer (`customer_id = auth.uid()`) or the seller account owner (`provider_owner_id = auth.uid()`).
+- Browser-role writes remain revoked; tracking-event creation must use the trusted server/service-role path.
+- The staging Security Advisor no longer reports `public.delivery_tracking_events` as RLS-enabled-without-policy. Two intentional deny-by-default findings remain: `private.admin_allowlist` and `public.client_error_reports`.
+- CI now includes `scripts/test-delivery-tracking-policy.mjs` to guard the policy's source contract.
+- This verifies migration application and policy metadata only. Authenticated customer/provider isolation still needs staging-account E2E tests; it is not yet an acceptance-pass.
+
+This change was applied to staging only. It is not evidence that production has this policy or that the Vercel preview is connected to staging.
+
 ## Production migration snapshot and repository drift
 
 ### Focused live-schema check
