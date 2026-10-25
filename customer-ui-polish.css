@@ -1,0 +1,76 @@
+/* Doodhwala customer UI corrections: mobile header hierarchy, contrast, and compact loading/error states. */
+.story .stats > div{
+  color:#173b28!important;
+  background:rgba(255,255,255,.82)!important;
+  border:1px solid rgba(255,255,255,.74)!important;
+  box-shadow:0 5px 14px rgba(12,48,27,.10)!important;
+}
+.story .stats > div b{color:#153b28!important;line-height:1.05}
+.story .stats > div small{display:block;color:#476652!important;line-height:1.35;margin-top:7px}
+.site-legal-footer{line-height:1.55}
+.site-legal-footer nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 22px}
+.site-legal-footer small{display:block;max-width:760px;margin:12px auto 0;line-height:1.6;text-align:center}
+.plans-main,.orders-main{width:min(100%,1080px);margin-inline:auto;flex:1}
+body.plans-page,body.orders-page{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
+#plansState,#ordersState{min-height:25px;margin:0;color:#65756a;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.plans-heading,#plansHeading,.orders-heading{align-items:flex-start}
+.empty-plans,.empty-orders{
+  min-width:0;
+  padding:22px!important;
+  border:1px solid #dfe9dc!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,#fff,#f8fbf6)!important;
+  color:#5d6f62!important;
+  box-shadow:0 8px 24px rgba(23,60,36,.045);
+  font-size:13px!important;
+  line-height:1.7!important;
+}
+.empty-plans b,.empty-orders b{display:inline-block;margin-bottom:4px;color:#1b3f2b;font-size:14px}
+@media(max-width:760px){
+  .app main>header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-areas:
+      "brand location location"
+      "help auth bag"
+      "search search search";
+    align-items:center;
+    gap:8px;
+    height:auto!important;min-height:0!important;
+    padding:10px 12px!important;
+  }
+  .app main>header .mobile-logo{grid-area:brand;min-width:0;margin:0;gap:8px}
+  .app main>header .mobile-logo img{width:34px;height:34px;flex:0 0 auto}
+  .app main>header .mobile-logo b{font-size:14px;white-space:nowrap}
+  .app main>header .location-top{grid-area:location;justify-self:end;width:clamp(132px,42vw,180px);max-width:none;min-width:0;min-height:40px;margin:0;padding:7px 9px}
+  .app main>header .location-top-copy b{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .app main>header .location-top-copy small{font-size:7px}
+  .app main>header .auth-link:not(#authLink){grid-area:help;justify-self:start;white-space:nowrap;font-size:11px;padding:5px 0}
+  .app main>header #authLink{grid-area:auth;justify-self:end;white-space:nowrap;font-size:11px;padding:6px 4px}
+  .app main>header .cart{grid-area:bag;justify-self:end;min-height:38px;padding:8px 12px;font-size:11px;white-space:nowrap}
+  .app main>header .search{grid-area:search;order:initial;flex:initial;width:100%;max-width:none;min-height:44px;height:44px;margin:0;border-radius:14px}
+  .app main>header .search input{font-size:16px}
+  .hero{scroll-margin-top:180px}
+  .story .stats{gap:8px!important}
+  .story .stats>div{min-width:0;padding:12px 9px!important;border-radius:14px!important}
+  .story .stats b{font-size:clamp(17px,5vw,22px)!important}
+  .story .stats small{font-size:9px!important}
+  .site-legal-footer{padding:20px 14px 28px!important;gap:15px}
+  .site-legal-footer nav{gap:10px 18px}
+  .plans-main,.orders-main{padding-top:26px!important;padding-inline:16px!important}
+  .plans-heading h1,.orders-heading h1{font-size:clamp(31px,8.7vw,40px)!important;line-height:1.04}
+  .plans-heading,.orders-heading{gap:12px;margin-bottom:20px}
+  #refreshPlans,#refreshOrders{min-height:40px;white-space:nowrap}
+  .empty-plans,.empty-orders{padding:18px!important}
+}
+@media(max-width:390px){
+  .app main>header{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand location" "help auth" "search search" "bag bag"}
+  .app main>header .location-top{width:136px}
+  .app main>header .cart{grid-area:bag;justify-self:end}
+  .app main>header .search{margin-top:1px}
+  .story .stats>div{padding:10px 7px!important}
+  .story .stats small{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .story .stats>div{scroll-behavior:auto}
+}
