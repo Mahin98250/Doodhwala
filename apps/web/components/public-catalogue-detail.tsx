@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -180,11 +181,11 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <a className={styles.brand} href="/" aria-label="Doodhwala home">
+        <Link className={styles.brand} href="/" aria-label="Doodhwala home">
           <span className={styles.brandMark} aria-hidden="true">D</span>
           <span><strong>Doodhwala</strong><small>Local milk, nearby.</small></span>
-        </a>
-        <a className={styles.backLink} href="/providers">← Browse providers</a>
+        </Link>
+        <Link className={styles.backLink} href="/providers">← Browse providers</Link>
       </header>
 
       {(status !== "ready" || !provider) && (
@@ -193,7 +194,7 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
           <h1>{stateTitle}</h1>
           <p>{status === "loading" ? "Connecting to the existing Doodhwala seller catalogue." : message}</p>
           {(status === "error" || status === "not-configured") && <button type="button" className={styles.primaryButton} onClick={() => void load(null)}>Try again</button>}
-          {status === "not-found" && <a className={styles.primaryButton} href="/providers">Back to providers</a>}
+          {status === "not-found" && <Link className={styles.primaryButton} href="/providers">Back to providers</Link>}
         </section>
       )}
 
@@ -240,11 +241,11 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
                       <p>{item.milkType === "other" ? "Milk product" : item.milkType.toUpperCase() + " milk"} · {item.unitLabel}</p>
                       <strong className={styles.productPrice}>{item.pricePerLitre === null ? "Price not listed" : `${money.format(item.pricePerLitre)} / L`}</strong>
                       <span className={styles.daily}>{item.dailyAvailable ? "Daily plan availability listed" : "Availability varies"}</span>
-                      <a className={styles.productLink} href={`/products/${encodeURIComponent(item.id)}?provider=${encodeURIComponent(provider.id)}`}>View product details <span aria-hidden="true">→</span></a>
+                      <Link className={styles.productLink} href={`/products/${encodeURIComponent(item.id)}?provider=${encodeURIComponent(provider.id)}`}>View product details <span aria-hidden="true">→</span></Link>
                       <div className={styles.detailActions}>
                         <button type="button" className={styles.primaryButton} onClick={() => addToCart(item)}>Add 1 L to cart</button>
                         <button type="button" className={styles.textButton} onClick={() => saveItem(item)}>♡ Save</button>
-                        {item.dailyAvailable && <a className={styles.textButton} href={`/subscriptions?provider=${encodeURIComponent(provider.id)}&product=${encodeURIComponent(item.id)}`}>Daily plan</a>}
+                        {item.dailyAvailable && <Link className={styles.textButton} href={`/subscriptions?provider=${encodeURIComponent(provider.id)}&product=${encodeURIComponent(item.id)}`}>Daily plan</Link>}
                       </div>
                     </div>
                   </article>
@@ -260,7 +261,7 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
         <section className={styles.statePanel} role="status">
           <h1>Milk item not available</h1>
           <p>This product is no longer active in the seller’s public catalogue.</p>
-          <a className={styles.primaryButton} href={`/stores/${encodeURIComponent(provider.id)}`}>Back to seller</a>
+          <Link className={styles.primaryButton} href={`/stores/${encodeURIComponent(provider.id)}`}>Back to seller</Link>
         </section>
       )}
 
@@ -283,19 +284,19 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
               <div className={styles.detailActions}>
                 <button type="button" className={styles.primaryButton} onClick={() => addToCart(product)}>Add 1 L to cart</button>
                 <button type="button" className={styles.textButton} onClick={() => saveItem(product)}>♡ Save item</button>
-                {product.dailyAvailable && <a className={styles.textButton} href={`/subscriptions?provider=${encodeURIComponent(provider.id)}&product=${encodeURIComponent(product.id)}`}>Start a milk plan</a>}
-                <a className={styles.textButton} href={`/stores/${encodeURIComponent(provider.id)}`}>View seller catalogue</a>
-                <a className={styles.textButton} href="/providers">Browse other sellers</a>
+                {product.dailyAvailable && <Link className={styles.textButton} href={`/subscriptions?provider=${encodeURIComponent(provider.id)}&product=${encodeURIComponent(product.id)}`}>Start a milk plan</Link>}
+                <Link className={styles.textButton} href={`/stores/${encodeURIComponent(provider.id)}`}>View seller catalogue</Link>
+                <Link className={styles.textButton} href="/providers">Browse other sellers</Link>
               </div>
             </div>
           </div>
         </section>
       )}
 
-      {actionMessage && <p className={styles.notice} role="status" aria-live="polite">{actionMessage} <a href="/cart">Open cart →</a></p>}
+      {actionMessage && <p className={styles.notice} role="status" aria-live="polite">{actionMessage} <Link href="/cart">Open cart →</Link></p>}
 
       <footer className={styles.footer}>
-        <a className={styles.brand} href="/"><span className={styles.brandMark} aria-hidden="true">D</span><span><strong>Doodhwala</strong><small>Built around local sellers.</small></span></a>
+        <Link className={styles.brand} href="/"><span className={styles.brandMark} aria-hidden="true">D</span><span><strong>Doodhwala</strong><small>Built around local sellers.</small></span></Link>
         <span>© {new Date().getFullYear()} Doodhwala</span>
       </footer>
     </main>
