@@ -2,7 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
 type MilkType = "cow" | "buffalo" | "a2" | "mixed" | "other";
@@ -41,12 +41,39 @@ export default function App() {
   const [authPassword, setAuthPassword] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
+  const [recoveryMode, setRecoveryMode] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
-    void supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession));
-    return () => listener.subscription.unsubscribe();
+    let mounted = true;
+    void supabase.auth.getSession().then(({ data }) => { if (mounted) setSession(data.session); });
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!mounted) return;
+      setSession(nextSession);
+      if (event === "PASSWORD_RECOVERY") { setRecoveryMode(true); setAuthMode(null); setAuthMessage("Choose a new password to finish account recovery."); }
+      if (event === "SIGNED_OUT") setRecoveryMode(false);
+    });
+    const handleRecoveryUrl = async (incomingUrl: string | null) => {
+      if (!incomingUrl || !incomingUrl.startsWith("doodhwala://")) return;
+      try {
+        const parsed = new URL(incomingUrl);
+        if (!parsed.pathname.endsWith("/reset-password") && parsed.host !== "auth") return;
+        const hash = new URLSearchParams(parsed.hash.replace(/^#/, ""));
+        const query = parsed.searchParams;
+        const accessToken = hash.get("access_token") ?? query.get("access_token");
+        const refreshToken = hash.get("refresh_token") ?? query.get("refresh_token");
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (error) throw error;
+          if (mounted) { setRecoveryMode(true); setAuthMode(null); setAuthMessage("Choose a new password to finish account recovery."); }
+        } else if (mounted) setAuthMessage("This recovery link is incomplete or expired. Request a new password reset email.");
+      } catch {
+        if (mounted) setAuthMessage("Could not open the recovery link. Request a new password reset email.");
+      }
+    };
+    void Linking.getInitialURL().then(handleRecoveryUrl);
+    const urlListener = Linking.addEventListener("url", ({ url }) => { void handleRecoveryUrl(url); });
+    return () => { mounted = false; listener.subscription.unsubscribe(); urlListener.remove(); };
   }, []);
 
   const submitAuth = async () => {
@@ -69,6 +96,33 @@ export default function App() {
       setAuthMode(null);
     } catch (error) {
       setAuthMessage(error instanceof Error ? error.message.slice(0, 180) : "Authentication failed. Please try again.");
+    } finally { setAuthBusy(false); }
+  };
+
+  const requestPasswordReset = async () => {
+    if (!supabase) { setAuthMessage("Connect the staging Supabase configuration first."); return; }
+    const email = authEmail.trim().toLowerCase();
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { setAuthMessage("Enter your account email address first."); return; }
+    setAuthBusy(true); setAuthMessage("");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: "doodhwala://auth/reset-password" });
+      if (error) throw error;
+      setAuthMessage("If password recovery is enabled, a reset link will arrive by email. Open it on this device to choose a new password.");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message.slice(0, 180) : "Could not request a reset email. Please try again.");
+    } finally { setAuthBusy(false); }
+  };
+
+  const updateRecoveredPassword = async () => {
+    if (!supabase) return;
+    if (authPassword.length < 8) { setAuthMessage("Use a new password with at least 8 characters."); return; }
+    setAuthBusy(true); setAuthMessage("");
+    try {
+      const { error } = await supabase.auth.updateUser({ password: authPassword });
+      if (error) throw error;
+      setAuthPassword(""); setRecoveryMode(false); setAuthMessage("Password updated. Your account is ready to use.");
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message.slice(0, 180) : "Could not update your password. Request a new recovery link.");
     } finally { setAuthBusy(false); }
   };
 
@@ -115,12 +169,18 @@ export default function App() {
     <ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
       <View style={s.topbar}><View style={s.logo}><Text style={s.logoText}>D</Text></View><View style={s.brand}><Text style={s.brandName}>Doodhwala</Text><Text style={s.tagline}>Local milk, nearby.</Text></View><View style={s.badge}><View style={s.dot}/><Text style={s.badgeText}>LOCAL FIRST</Text></View></View>
       <View style={s.authCard}>
-        {session ? <><View style={s.authHead}><View style={s.authCopy}><Text style={s.authTitle}>Your account</Text><Text style={s.authSub}>{session.user.email ?? "Signed-in account"}</Text></View><Pressable accessibilityRole="button" disabled={authBusy} onPress={() => void signOut()} style={s.authButton}><Text style={s.authButtonText}>{authBusy ? "Please wait…" : "Sign out"}</Text></Pressable></View><Text style={s.authHint}>Sign-in confirms identity only. Seller, admin and owner permissions must be verified by the backend.</Text></> : <>
+        {recoveryMode ? <>
+          <Text style={s.authTitle}>Choose a new password</Text>
+          <Text style={s.authSub}>Use a password you have not used before.</Text>
+          <TextInput accessibilityLabel="New password" autoCapitalize="none" autoComplete="new-password" secureTextEntry placeholder="New password (8+ characters)" placeholderTextColor="#879488" value={authPassword} onChangeText={setAuthPassword} style={[s.authInput,{marginTop:14}]}/>
+          <Pressable accessibilityRole="button" disabled={authBusy} onPress={() => void updateRecoveredPassword()} style={[s.authSubmit,authBusy && s.authDisabled]}><Text style={s.authSubmitText}>{authBusy ? "Updating…" : "Update password"}</Text></Pressable>
+        </> : session ? <><View style={s.authHead}><View style={s.authCopy}><Text style={s.authTitle}>Your account</Text><Text style={s.authSub}>{session.user.email ?? "Signed-in account"}</Text></View><Pressable accessibilityRole="button" disabled={authBusy} onPress={() => void signOut()} style={s.authButton}><Text style={s.authButtonText}>{authBusy ? "Please wait…" : "Sign out"}</Text></Pressable></View><Text style={s.authHint}>Sign-in confirms identity only. Seller, admin and owner permissions must be verified by the backend.</Text></> : <>
           <View style={s.authHead}><View style={s.authCopy}><Text style={s.authTitle}>Your Doodhwala account</Text><Text style={s.authSub}>Sign in to prepare for orders and saved details.</Text></View><Pressable accessibilityRole="button" onPress={() => { setAuthMode(authMode ? null : "sign-in"); setAuthMessage(""); }} style={s.authButton}><Text style={s.authButtonText}>{authMode ? "Close" : "Sign in"}</Text></Pressable></View>
           {authMode && <><View style={s.authModes}><Pressable accessibilityRole="button" onPress={() => { setAuthMode("sign-in"); setAuthMessage(""); }} style={[s.authMode, authMode === "sign-in" && s.authModeActive]}><Text style={[s.authModeText, authMode === "sign-in" && s.authModeTextActive]}>Sign in</Text></Pressable><Pressable accessibilityRole="button" onPress={() => { setAuthMode("sign-up"); setAuthMessage(""); }} style={[s.authMode, authMode === "sign-up" && s.authModeActive]}><Text style={[s.authModeText, authMode === "sign-up" && s.authModeTextActive]}>Create account</Text></Pressable></View>
           <TextInput accessibilityLabel="Email address" autoCapitalize="none" autoComplete="email" keyboardType="email-address" placeholder="Email address" placeholderTextColor="#879488" value={authEmail} onChangeText={setAuthEmail} style={s.authInput}/>
           <TextInput accessibilityLabel="Password" autoCapitalize="none" autoComplete={authMode === "sign-up" ? "new-password" : "current-password"} secureTextEntry placeholder="Password (8+ characters)" placeholderTextColor="#879488" value={authPassword} onChangeText={setAuthPassword} style={s.authInput}/>
           <Pressable accessibilityRole="button" disabled={authBusy} onPress={() => void submitAuth()} style={[s.authSubmit, authBusy && s.authDisabled]}><Text style={s.authSubmitText}>{authBusy ? "Please wait…" : authMode === "sign-up" ? "Create account" : "Sign in securely"}</Text></Pressable>
+          {authMode === "sign-in" && <Pressable accessibilityRole="button" disabled={authBusy} onPress={() => void requestPasswordReset()} style={s.resetButton}><Text style={s.resetText}>Forgot password?</Text></Pressable>}
           <Text style={s.authHint}>Uses Supabase Auth with the configured staging project. Email confirmation may be required by project settings.</Text></>}
         </>}
         {!!authMessage && <Text accessibilityRole="text" style={s.authMessage}>{authMessage}</Text>}
@@ -166,6 +226,6 @@ const s = StyleSheet.create({
   location:{flexDirection:"row",alignItems:"center",backgroundColor:"#edf5e8",borderRadius:17,padding:14,gap:10},locationCopy:{flex:1},locationTitle:{color:"#244a30",fontSize:13,fontWeight:"800"},locationSub:{color:"#6d806f",fontSize:11,marginTop:4},locationButton:{backgroundColor:"#fff",borderRadius:12,paddingHorizontal:12,paddingVertical:10},locationButtonText:{color:"#2f7548",fontSize:11,fontWeight:"800"},privacy:{color:"#829083",fontSize:10,lineHeight:15,marginTop:8},
   resultsHead:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",marginTop:26,marginBottom:12},resultsTitle:{color:"#183a29",fontSize:20,fontWeight:"800",letterSpacing:-.5},count:{color:"#718074",fontSize:12},state:{alignItems:"center",backgroundColor:"#fff",borderWidth:1,borderColor:"#e5ece1",borderRadius:18,padding:22,gap:10},stateTitle:{color:"#244a30",fontSize:15,fontWeight:"800",textAlign:"center"},stateText:{color:"#728174",fontSize:12,lineHeight:18,textAlign:"center"},retry:{backgroundColor:"#286d43",borderRadius:12,paddingHorizontal:18,paddingVertical:11,marginTop:4},retryText:{color:"#fff",fontSize:12,fontWeight:"800"},
   provider:{backgroundColor:"#fff",borderRadius:20,borderWidth:1,borderColor:"#e4ebe1",padding:16,marginBottom:12},providerHead:{flexDirection:"row",alignItems:"center",gap:10},avatar:{width:42,height:42,borderRadius:14,backgroundColor:"#eaf3e6",alignItems:"center",justifyContent:"center"},avatarText:{color:"#2f7548",fontSize:18,fontWeight:"900"},providerCopy:{flex:1},providerName:{color:"#244a30",fontSize:15,fontWeight:"800"},area:{color:"#7b887e",fontSize:11,marginTop:4},rating:{backgroundColor:"#fff4d9",borderRadius:10,paddingHorizontal:8,paddingVertical:6},ratingText:{color:"#7c5a17",fontSize:11,fontWeight:"800"},providerDescription:{color:"#6b796d",fontSize:12,lineHeight:18,marginTop:12},meta:{flexDirection:"row",flexWrap:"wrap",gap:8,marginTop:12},metaText:{color:"#3c6b49",backgroundColor:"#f0f6ed",borderRadius:9,paddingHorizontal:8,paddingVertical:6,fontSize:10,fontWeight:"700"},product:{flexDirection:"row",alignItems:"center",paddingVertical:10,gap:8,borderTopWidth:1,borderTopColor:"#edf1eb",marginTop:6},productDot:{width:7,height:7,borderRadius:4,backgroundColor:"#6aa56e"},productCopy:{flex:1},productName:{color:"#314d38",fontSize:12,fontWeight:"700"},productUnit:{color:"#899489",fontSize:10,marginTop:3},price:{color:"#285f3b",fontSize:11,fontWeight:"800",textAlign:"right"},noProducts:{color:"#899489",fontSize:11,marginTop:12},fromPrice:{color:"#2f7548",fontSize:11,fontWeight:"800",marginTop:10},
-  authCard:{backgroundColor:"#fff",borderRadius:18,borderWidth:1,borderColor:"#e4ebe1",padding:15,marginBottom:18},authHead:{flexDirection:"row",alignItems:"center",gap:12},authCopy:{flex:1},authTitle:{color:"#244a30",fontSize:14,fontWeight:"800"},authSub:{color:"#778578",fontSize:11,lineHeight:16,marginTop:4},authButton:{backgroundColor:"#edf5e8",borderRadius:12,paddingHorizontal:13,paddingVertical:10},authButtonText:{color:"#2f7548",fontSize:11,fontWeight:"800"},authModes:{flexDirection:"row",gap:8,marginTop:14,marginBottom:12},authMode:{flex:1,alignItems:"center",borderRadius:11,borderWidth:1,borderColor:"#dce6d9",paddingVertical:10},authModeActive:{backgroundColor:"#286d43",borderColor:"#286d43"},authModeText:{color:"#506b58",fontSize:11,fontWeight:"700"},authModeTextActive:{color:"#fff"},authInput:{backgroundColor:"#fbfcfa",borderWidth:1,borderColor:"#e2e9df",borderRadius:12,paddingHorizontal:13,paddingVertical:12,color:"#243f2e",fontSize:13,marginBottom:9},authSubmit:{backgroundColor:"#286d43",borderRadius:12,alignItems:"center",paddingVertical:13,marginTop:2},authDisabled:{opacity:.6},authSubmitText:{color:"#fff",fontSize:12,fontWeight:"800"},authHint:{color:"#829083",fontSize:10,lineHeight:15,marginTop:9},authMessage:{color:"#3c6b49",fontSize:11,lineHeight:16,marginTop:10},
+  authCard:{backgroundColor:"#fff",borderRadius:18,borderWidth:1,borderColor:"#e4ebe1",padding:15,marginBottom:18},authHead:{flexDirection:"row",alignItems:"center",gap:12},authCopy:{flex:1},authTitle:{color:"#244a30",fontSize:14,fontWeight:"800"},authSub:{color:"#778578",fontSize:11,lineHeight:16,marginTop:4},authButton:{backgroundColor:"#edf5e8",borderRadius:12,paddingHorizontal:13,paddingVertical:10},authButtonText:{color:"#2f7548",fontSize:11,fontWeight:"800"},authModes:{flexDirection:"row",gap:8,marginTop:14,marginBottom:12},authMode:{flex:1,alignItems:"center",borderRadius:11,borderWidth:1,borderColor:"#dce6d9",paddingVertical:10},authModeActive:{backgroundColor:"#286d43",borderColor:"#286d43"},authModeText:{color:"#506b58",fontSize:11,fontWeight:"700"},authModeTextActive:{color:"#fff"},authInput:{backgroundColor:"#fbfcfa",borderWidth:1,borderColor:"#e2e9df",borderRadius:12,paddingHorizontal:13,paddingVertical:12,color:"#243f2e",fontSize:13,marginBottom:9},authSubmit:{backgroundColor:"#286d43",borderRadius:12,alignItems:"center",paddingVertical:13,marginTop:2},authDisabled:{opacity:.6},authSubmitText:{color:"#fff",fontSize:12,fontWeight:"800"},authHint:{color:"#829083",fontSize:10,lineHeight:15,marginTop:9},authMessage:{color:"#3c6b49",fontSize:11,lineHeight:16,marginTop:10},resetButton:{alignSelf:"flex-start",paddingVertical:10,paddingHorizontal:2},resetText:{color:"#2f7548",fontSize:11,fontWeight:"800"},
   notice:{marginTop:22,backgroundColor:"#f0f4ed",borderRadius:18,padding:16,borderWidth:1,borderColor:"#e0e9dc"},noticeTitle:{color:"#2d5839",fontSize:13,fontWeight:"800"},noticeText:{color:"#66766a",fontSize:12,lineHeight:18,marginTop:7},footer:{alignItems:"center",paddingTop:28,gap:7},footerBrand:{color:"#2e6943",fontSize:16,fontWeight:"900"},footerText:{color:"#7b887e",textAlign:"center",fontSize:11},footerMeta:{color:"#9aa49b",fontSize:10,marginTop:4}
 });
