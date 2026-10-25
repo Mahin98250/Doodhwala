@@ -19,6 +19,7 @@ Never put a service-role key, database password, or privileged secret in an `EXP
 - Normalized provider/product display, INR pricing, text search and cow/buffalo/A2 filters.
 - Location permission is requested only after the user taps the location action; clearing location re-runs discovery without coordinates.
 - Loading, empty, not-configured and recoverable-error states; no invented demo sellers.
+- Native email/password sign-in and account creation using Supabase Auth, with persisted SecureStore sessions, auth-state updates, sign-out, input checks, and email-confirmation messaging.
 - SecureStore-backed Supabase session storage adapter.
 - Android/iOS app identifiers, deep-link scheme, and platform-specific location disclosure.
 - CI type-checks and exports the JavaScript bundles for both Android and iOS.
@@ -26,7 +27,7 @@ Never put a service-role key, database password, or privileged secret in an `EXP
 ## Still required
 
 - Confirm staging environment, RPC grants/RLS, response shape and auth redirect/deep-link allowlist.
-- Implement sign-in and session lifecycle with physical-device testing.
+- Verify sign-in and session lifecycle against staging Auth settings and physical devices, including email confirmation, password reset, deep links, and account recovery.
 - Add customer cart/checkout/orders/subscriptions and seller workspace using the same backend rules. Do not guess RPC names or bypass backend price/stock/ownership checks.
 - Add notifications only after device tokens, consent, and server-side authorization are designed.
 - Configure EAS build profiles and signing credentials; run Android/iOS device tests before store submission.
