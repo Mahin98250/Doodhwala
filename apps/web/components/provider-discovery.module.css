@@ -96,3 +96,5 @@
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation: none; }
 }
+
+.inlineMessage { margin: 10px 4px 0; padding: 10px 12px; border: 1px solid #d8e7d8; border-radius: 11px; background: #f1f8f1; color: #41664a; font-size: 11px; line-height: 1.5; }
