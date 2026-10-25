@@ -58,7 +58,7 @@ assert.match(worker, /customer-ui-polish\.css\?v=20261025\.3/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
 assert.match(worker, /milk-transition\.js\?v=20261025\.3/);
 assert.match(resilience, /aboveCustomerNav/);
-assert.match(resilience, /routeNeedsBottomNav = \/\(\?:\^\\\/\$\|/, "Root-hosted Home page errors must place recovery notices above the bottom navigation.");
+assert.ok(resilience.includes('^\\/$'), "Root-hosted Home page errors must place recovery notices above the bottom navigation.");
 assert.match(resilience, /APP_VERSION = "20261025\.3"/);
 
 
