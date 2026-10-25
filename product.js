@@ -76,6 +76,8 @@ async function load(){
  if(!providerId||!productId){setState("Milk not found","Choose a product from a local provider.",["/Doodhwala/?view=providers","Explore providers →"]);return}
  if(!window.Doodhwala?.configured){setState("Marketplace unavailable","Supabase is not configured. Check the connection or return to the catalogue.");return}
  const pos=readLocation();
+ const milkTransition=window.DoodhwalaMilkTransition;
+ milkTransition?.showLoading("Loading this milk…");
  try{
    const client=sup();
    if(!client||typeof client.rpc!=="function"){setState("Marketplace unavailable","The marketplace client did not initialise. Reload this page to try again.");return}
@@ -92,6 +94,8 @@ async function load(){
  }catch(error){
    console.error("Product detail load failed",error);
    setState("Could not load this product","Check your connection and try again. No order or cart changes were made.",["/Doodhwala/product.html?provider="+encodeURIComponent(providerId)+"&product="+encodeURIComponent(productId),"Try again →"]);
+ }finally{
+   milkTransition?.hideLoading();
  }
 }
 $("minus").onclick=()=>{if(!store||!product)return;qty=Math.max(1,qty-1);render()};
