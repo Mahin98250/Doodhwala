@@ -4,8 +4,8 @@ This document describes the safe path from the current isolated Next.js migratio
 
 ## Shipped in the migration branch
 
-- Shared loading, error and not-found experiences so route transitions and failures are understandable.
-- Browser Supabase configuration validation and explicit rejection of insecure non-local URLs and credential/query-bearing URLs.
+- Existing route-level loading, error and not-found experiences provide feedback without placing a global streaming boundary in front of redirect aliases.
+- Browser Supabase configuration validation rejects insecure non-local HTTP URLs and URLs containing embedded credentials, query strings or fragments.
 - Responsive overflow, keyboard-focus, reduced-motion, touch and narrow-screen safeguards.
 - Existing order idempotency and backend-authoritative pricing/coverage checks remain the required checkout boundary.
 
