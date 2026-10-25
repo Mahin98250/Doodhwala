@@ -14,9 +14,9 @@ assert.match(product, /function saveCart\(c\)\{try\{localStorage\.setItem/, "pro
 assert.match(product, /Product detail load failed/, "unexpected product RPC failures must be caught and presented as recoverable UI");
 assert.match(product, /const row=Array\.isArray\(data\)\?data\[0\]:data/, "product loader must handle array and object RPC responses");
 assert.doesNotMatch(product, /\$\("addToCart"\)\.disabled=false;/, "buying must remain disabled until a valid product is loaded");
-assert.ok(html.includes('/Doodhwala/product.js?v=20261022.5'), "product page must cache-bust the guarded detail runtime");
-assert.ok(sw.includes('const CACHE="doodhwala-v91"'), "product runtime release must invalidate the old PWA cache");
-assert.ok(sw.includes('/Doodhwala/product.js?v=20261022.5'), "service worker must precache the guarded product runtime");
+assert.ok(html.includes('/Doodhwala/product.js?v=20261025.6'), "product page must cache-bust the guarded detail runtime");
+assert.ok(sw.includes('const CACHE="doodhwala-v92"'), "product runtime release must invalidate the old PWA cache");
+assert.ok(sw.includes('/Doodhwala/product.js?v=20261025.6'), "service worker must precache the guarded product runtime");
 
 
 function createElement(id) {
