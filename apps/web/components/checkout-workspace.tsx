@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import WorkspaceFrame from "@/components/workspace-frame";
 import { clearProviderCheckoutKey, cartEntries, cartSubtotal, groupCartByProvider, idempotencyKeyForProvider, readCart, writeCart, type Cart, type CartItem } from "@/lib/commerce/cart";
+import { PROMO_CHECKOUT_ENABLED, PROMO_CHECKOUT_UNAVAILABLE_MESSAGE } from "@/lib/commerce/promo";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 interface Address {
@@ -161,6 +162,11 @@ export default function CheckoutWorkspace() {
   }
 
   async function applyPromo() {
+    if (!PROMO_CHECKOUT_ENABLED) {
+      setPromo(null);
+      setNotice({ kind: "error", text: PROMO_CHECKOUT_UNAVAILABLE_MESSAGE });
+      return;
+    }
     setBusy(true);
     setNotice(null);
     setPromo(null);
@@ -283,10 +289,9 @@ export default function CheckoutWorkspace() {
             </form>
           </section>
           <section className="workspace-card">
-            <p className="workspace-eyebrow">PROMO CODE</p><h2>Have a discount?</h2>
-            <div className="workspace-inline-form"><input maxLength={40} value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} placeholder="Enter promo code" /><button className="workspace-button workspace-button-secondary" onClick={() => void applyPromo()} disabled={busy}>Apply</button></div>
-            {promo && <p className="workspace-notice success">{promo.label}: {money.format(promo.discount)} discount preview</p>}
-            <p className="workspace-muted">Only a single-seller cart can use a promo in this checkout flow. The server validates it again during order creation.</p>
+            <p className="workspace-eyebrow">PROMO CODE</p><h2>Offers coming soon</h2>
+            <div className="workspace-inline-form"><input maxLength={40} value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} placeholder="Promo codes temporarily unavailable" disabled={!PROMO_CHECKOUT_ENABLED || busy} /><button className="workspace-button workspace-button-secondary" onClick={() => void applyPromo()} disabled={!PROMO_CHECKOUT_ENABLED || busy}>Apply</button></div>
+            <p className="workspace-muted">Promo discounts are disabled until server-side validation, redemption limits, and final order totals are implemented and tested. Your order will use the displayed price without a promo discount.</p>
           </section>
           <section className="workspace-card">
             <p className="workspace-eyebrow">DELIVERY NOTE</p><h2>Anything the seller should know?</h2><textarea rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Gate instructions, delivery preference…" />
@@ -296,7 +301,7 @@ export default function CheckoutWorkspace() {
           <p className="workspace-eyebrow">YOUR ORDER</p><h2>{entries.length} item{entries.length === 1 ? "" : "s"}</h2>
           {!entries.length ? <div className="workspace-empty-inline"><p>Your cart is empty.</p><Link href="/providers">Explore local milk →</Link></div> : entries.map((item) => <div className="workspace-summary-item" key={item.providerId + ":" + item.productId}><span><strong>{item.milk}</strong><small>{item.provider} · {item.qty} L</small></span><b>{money.format(item.unitPrice * item.qty)}</b></div>)}
           <div className="workspace-summary-line"><span>Indicative subtotal</span><strong>{money.format(subtotal)}</strong></div>
-          <div className="workspace-summary-line"><span>Promo preview</span><strong>−{money.format(promo?.discount ?? 0)}</strong></div>
+          <div className="workspace-summary-line"><span>Promo discount</span><strong>{PROMO_CHECKOUT_ENABLED ? `−${money.format(promo?.discount ?? 0)}` : "Unavailable"}</strong></div>
           <div className="workspace-summary-line workspace-summary-total"><span>Estimated total</span><strong>{money.format(total)}</strong></div>
           <fieldset className="workspace-payment-options"><legend>Payment method</legend>
             <label><input type="radio" name="paymentMethod" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} /><span><strong>Cash on Delivery</strong><small>Pay your seller on delivery.</small></span></label>

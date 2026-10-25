@@ -1,6 +1,37 @@
 # Staging baseline and migration reconciliation
 
-**Status: staging project not yet provisioned or validated.** This document is the first execution gate for the scalability roadmap. Do not run synthetic checkout/load tests against production.
+**Status as of 2026-10-25: a separate staging project exists and is healthy, but complete environment isolation and end-to-end acceptance are still pending.** Staging project ref: `jbcekiaiyxcatueixeqh` (`Doodhwala Staging`), region `ap-northeast-2`, PostgreSQL 17.11.0.003. API URL: `https://jbcekiaiyxcatueixeqh.supabase.co`. Do not run synthetic checkout/load tests against production.
+
+## Current staging security and acceptance results (2026-10-25)
+
+The latest checks below apply only to staging project `jbcekiaiyxcatueixeqh`. Production project `hmiboyfcvtfawrwujslg` has not been modified.
+
+### Live database protections verified
+
+- Anonymous table writes are fully revoked: the catalog query reports **0 public tables / 0 anon DML grants**.
+- The legacy `public.find_nearby_providers(numeric,numeric,numeric)` RPC is no longer executable by anon/authenticated clients. The bounded `find_nearby_providers_v2` RPC remains available and returns only public marketplace fields, bounded to a maximum 25 km query candidate range.
+- Anonymous catalogue smoke passed under the actual `anon` database role for a synthetic active/approved provider. The provider's display name appeared in the catalogue, while direct SELECT of `owner_name` and `owner_user_id` failed with insufficient privilege. Authenticated owner UUID selection is also revoked.
+- New profile role-spoofing smoke passed: new profiles remain `customer`; a normal authenticated user cannot update `profiles.account_type` to `provider`; the owner-scoped provider profile upsert/get RPC still works. Direct provider table INSERT is denied.
+- All 61 current `SECURITY DEFINER` functions in `public` and `private` have an empty `search_path`; the catalog assertion reports **0** left with an empty path unset or non-empty.
+- Payment provider-event inbox is service-role-only and has a unique `(gateway_name, gateway_event_id)` constraint. The payment transaction state machine accepted `created → pending_provider → authorized → captured`, rejected `captured → failed`, and rejected a duplicate provider event ID in a rollback-only smoke test.
+- The payment audit/reference test passed: a direct-UPI reference could not be reused for a second order, the seller attestation was logged with actor and amount, audit rows were visible only to the order customer/provider owner, and audit-row mutation was rejected. The response explicitly sets `bank_settlement_verified_by_doodhwala=false`.
+
+### Post-hardening database/RPC smoke tests
+
+The full COD/order lifecycle passed again after the privilege and search-path repairs: server-authoritative ₹50 price despite a forged client price of ₹0.01, COD selection, seller transitions through delivered with ETA promise, COD paid confirmation only after delivery, customer cancellation, and cross-customer denial.
+
+Subscription smoke also passed after search-path hardening: plan creation, scheduled deliveries, server-set price, quantity/time edits, non-owner skip/cancel denial, skip, pause with upcoming deliveries skipped, resume, and cancel future deliveries. The scheduled-delivery materializer created exactly one server-priced order for a due subscription delivery; its second run created zero duplicates.
+
+Direct-UPI checkout→seller confirmation passed after search-path hardening. Earlier rollback-only tests additionally passed duplicate reference rejection, payment-audit visibility, and immutability. Synthetic profile, catalogue, order, subscription, provider-event and payment-audit fixtures were each used only inside `BEGIN ... ROLLBACK`; final read-only catalog checks confirmed **zero** synthetic Auth users, orders, providers, subscriptions, provider events and payment audit rows persisted.
+
+### Remaining security and release gates
+
+- Current Security Advisor: five informational RLS-enabled/no-policy findings remain on deny-by-default/service-role-only tables; eight authenticated-executable SECURITY DEFINER payment RPC warnings remain. These RPCs have owner/eligibility checks and have database-role smoke coverage, but still require real Supabase Auth/API session tests.
+- Performance Advisor no longer reports the duplicate permissive SELECT pairs or unindexed foreign keys. It currently lists 34 unused-index informational findings; no indexes have been dropped without representative workload evidence.
+- Staging source-vs-remote migration history still requires the reviewed reconciliation described in [STAGING_MIGRATION_RECONCILIATION.md](STAGING_MIGRATION_RECONCILIATION.md). Do not run `supabase db push`, reset, or promote anything until this is complete.
+- Preview environment binding to staging remains unverified because Vercel environment metadata access is denied. Manually verify the Preview Supabase URL/key before browser-based write tests.
+- `public.support_tickets` is absent. The repository's support-operations migration is explicitly deferred until a reviewed support-ticket table/RLS migration exists.
+- CI regression tests now cover the migration contracts above; each latest branch head must pass its own Static and Next.js workflows before any merge.
 
 ## Known current state (read-only audit, 2026-10-24)
 
@@ -14,21 +45,16 @@
 
 ## Current no-cost blocker (checked 2026-10-25)
 
-- The existing Supabase Free organization has reached its limit of two active free projects (Learner's Guide and Doodhwala). A new `Doodhwala Staging` project was not created.
-- A development branch quote returned `$0.01344/hour` (about `$9.81` for 30 days of continuous use at that quoted rate). It was not created because the user has not approved additional charges.
-- Do not delete, pause, or repurpose either existing project merely to free a slot. Do not upgrade the plan or create paid compute/branches without explicit approval.
-- Until a zero-cost isolated staging environment is available, continue with disposable PostgreSQL CI fixtures, static contracts, migration-manifest review, and local-only checks. These tests are useful but **do not replace** full Supabase Auth/RLS/Realtime/end-to-end testing or prove live capacity.
-- Phase 1 remains **blocked for full staging acceptance** until a separate test project is available. Production remains off-limits for synthetic load or test-order writes.
+- The separate `Doodhwala Staging` project was subsequently provisioned and is currently reported `ACTIVE_HEALTHY`; it is in `ap-northeast-2`, not the production region `ap-south-1`. Account billing/plan details still need to be reviewed in the Supabase dashboard; do not infer that all future use is free.
+- A previous development-branch quote returned `$0.01344/hour` (about `$9.81` for 30 days at that quoted rate). Do not create paid branches, upgrade plans, or accept additional charges without explicit approval.
+- Do not delete, pause, or repurpose the existing Learner's Guide or production Doodhwala projects. Production remains off-limits for synthetic load or test-order writes.
+- Full staging acceptance remains **blocked** until deployment environment binding is verified, migration/schema reconciliation is completed, and synthetic customer→seller order journeys pass. Disposable PostgreSQL CI and static contracts remain useful but do **not** replace live Supabase Auth/RLS/Realtime/E2E tests or prove capacity.
 
-## Provision staging first
+## Staging project and environment binding
 
-### Current blocker — no staging environment exists yet
+A separate project now exists: `Doodhwala Staging` (`jbcekiaiyxcatueixeqh`), reported `ACTIVE_HEALTHY`, region `ap-northeast-2`. It is separate from production project `hmiboyfcvtfawrwujslg` in `ap-south-1`; the region difference should be noted when interpreting latency/load results. Do not assume the Vercel preview is connected to staging until the project owner verifies the preview's environment variables in Vercel. The connected integration returned 403 for environment-variable metadata, so that binding is not independently verified here.
 
-The attempt to create `Doodhwala Staging` was rejected because the organization/user already reached the free-project limit. No new project was created. A development branch was quoted at a nonzero hourly cost and was not created because the budget rule is **no additional charges without approval**. Until a free slot or separately approved budget is available, continue with repository tests and disposable PostgreSQL CI only; do not point staging variables at production and do not claim a measured staging baseline.
-
-Use a separate Supabase project in the same organization as Doodhwala, preferably in `ap-south-1` to match the production region and reduce regional differences in test results. Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging.
-
-Before creating a project, confirm the organization and inspect the quoted cost. Do not accept a nonzero project/compute charge without explicit approval. Use separate staging URL and publishable key; never copy a service-role key into browser code or repository files.
+Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging. Confirm the project’s plan and billing in Supabase before scaling tests; do not upgrade plans, create paid branches, or accept additional charges without explicit approval. Use the staging URL and publishable/anon key only in browser/client environments; never put a service-role key in browser code or repository files.
 
 Suggested GitHub Actions secrets/environment variables for a staging-only load workflow:
 - `STAGING_PROJECT_REF` (exact 20-character ref; must not equal the production project ref)
@@ -37,6 +63,91 @@ Suggested GitHub Actions secrets/environment variables for a staging-only load w
 - `STAGING_PROJECT_REF` (must not equal the production project ref)
 
 Do not add real secret values to this repository, README, logs or pull requests. Set them in GitHub Actions Environment secrets after staging is provisioned. Restrict the environment to maintainers and require an explicit staging confirmation input for any load test.
+
+## Staging-only delivery-tracking policy (2026-10-25)
+
+Migration `20261025180000_delivery_tracking_owner_read_policy.sql` was applied to staging project `jbcekiaiyxcatueixeqh` and verified from PostgreSQL catalogs.
+
+- Authenticated SELECT is allowed only when the tracking event's `order_id` and `provider_id` match an order where the user is the customer (`customer_id = auth.uid()`) or the seller account owner (`provider_owner_id = auth.uid()`).
+- Browser-role writes remain revoked; tracking-event creation must use the trusted server/service-role path.
+- The staging Security Advisor no longer reports `public.delivery_tracking_events` as RLS-enabled-without-policy. Two intentional deny-by-default findings remain: `private.admin_allowlist` and `public.client_error_reports`.
+- CI now includes `scripts/test-delivery-tracking-policy.mjs` to guard the policy's source contract.
+- This verifies migration application and policy metadata only. Authenticated customer/provider isolation still needs staging-account E2E tests; it is not yet an acceptance-pass.
+
+This change was applied to staging only. It is not evidence that production has this policy or that the Vercel preview is connected to staging.
+
+## Payment controls staged (2026-10-25)
+
+The eight existing payment migrations were applied sequentially to staging project `jbcekiaiyxcatueixeqh` after inspecting the source SQL and confirming the expected payment objects were absent. Recorded staging migration names are:
+
+1. `doodhwala_pay_foundation`
+2. `doodhwala_direct_seller_payments`
+3. `doodhwala_direct_upi_settings_read`
+4. `doodhwala_payment_choice_race_guard`
+5. `doodhwala_guard_payment_field_writes`
+6. `doodhwala_direct_upi_pending_only`
+7. `doodhwala_payment_controls_readiness`
+8. `doodhwala_recheck_seller_approval_for_upi`
+
+Post-apply catalog checks confirmed the payment RPCs exist; authenticated execution is granted and `anon` execution is denied for the inspected customer/seller RPCs. The payment fields now exist on `public.orders`, and both the payment-field write guard and payment-choice-before-acceptance trigger are enabled. `public.payment_transactions` and `public.provider_payment_settings` have RLS enabled and table grants only to `service_role`; browser access is through owner-scoped RPCs.
+
+A schema-readiness probe returned `{"ready":true}` when run in a rolled-back transaction with a synthetic non-null JWT subject. This verifies only that the readiness function sees the expected tables, functions, RLS and triggers; it does not test a real customer session, order creation, seller UPI setup, or payment settlement.
+
+Migration `20261025190000_doodhwala_payment_fk_indexes.sql` was then applied to staging and added to this branch. It creates `orders_payment_confirmed_by_idx` and `payment_transactions_provider_id_idx` to cover the two payment-related foreign keys found by the performance advisor. No indexes were dropped; the larger unused-index list is not actionable without representative workload measurements.\n\nThe refreshed Security Advisor reports four RLS-enabled/no-policy informational findings (`private.admin_allowlist`, `public.client_error_reports`, `public.payment_transactions`, `public.provider_payment_settings`). The last two are intentionally service-role-only. It also reports eight authenticated-executable `SECURITY DEFINER` RPCs. These are intended API entry points with ownership/eligibility checks in their SQL, but must still be exercised with separate customer, seller and non-admin accounts before acceptance. Do not dismiss the warnings wholesale or broaden table grants to clear them.
+
+**Still blocked:** live authenticated customer → COD order → seller status progression → delivery tracking tests, direct-UPI configuration/confirmation tests, and independent proof that the Vercel preview is wired only to staging. Production remains untouched.
+
+## RLS SELECT-policy consolidation (2026-10-25)
+
+The source migration `20261012090500_doodhwala_consolidate_admin_select_policies.sql` was applied to staging, followed by `20261025200000_doodhwala_consolidate_admin_select_policies_followup.sql` for the remaining affected tables. The changes consolidate admin access with the existing owner/customer visibility rules on `profiles`, `milk_products`, `provider_service_areas`, `orders`, `milk_subscriptions`, `provider_profiles`, `provider_verifications`, and `subscription_deliveries`.
+
+Post-apply catalog checks confirmed the intended policy definitions are present. `provider_profiles` and `provider_verifications` now have separate anon and authenticated SELECT policies; the anonymous policies do not invoke `private.is_current_user_admin()`. Customer/provider ownership and approved-public catalogue visibility predicates were preserved. The performance advisor no longer reports the earlier eight `multiple_permissive_policies` warnings.
+
+The performance advisor also no longer reports unindexed foreign keys after the two payment FK indexes were added. It currently lists 34 unused indexes in the latest advisor run; this count can change as smoke-test queries run and statistics change. Without representative production-like traffic and query plans, these are not safe candidates for deletion. No unused indexes were dropped.
+
+## Order/RPC smoke tests and lifecycle dependency repairs (2026-10-25)
+
+The full staging SQL smoke test was run inside one transaction with synthetic Auth users, profiles, a customer-owned address, an approved synthetic seller, a service area, a synthetic milk product, and generated orders. The transaction ended with `ROLLBACK`; follow-up catalog counts confirmed that **zero** synthetic Auth/profile/provider/product/order/tracking fixture rows persisted.
+
+The smoke test returned `PASS` for these database/RPC scenarios:
+
+- `customer_order_payment_controls_ready()` reported schema readiness.
+- Real `public.create_order(...)` placed a synthetic COD order.
+- The request included a deliberately forged client unit price of ₹0.01; the saved order and item used the database's seller price of ₹50.00.
+- Repeating the same customer/idempotency key and request returned the same order ID and created exactly one order; changing the payload under the same key raised `idempotency_key_reuse_conflict`.
+- Customer COD selection and exact-choice retry succeeded.
+- Seller status flow `placed → accepted → preparing → ready → out_for_delivery → delivered` passed; COD collection confirmation succeeded only after delivery.
+- Direct UPI failed closed while the approved synthetic seller had no enabled UPI settings.
+- Customer cancellation from an eligible `placed` order passed.
+- A different authenticated customer could not set the original customer's payment method (`order_not_found`).
+- A second rollback-only direct-UPI happy-path test passed: an approved synthetic seller saved valid UPI details, malformed UPI input was rejected, the customer selected direct UPI, only that order's customer could retrieve payee/amount instructions, an unrelated user could not retrieve the instructions or confirm payment, and the seller could confirm the seller-owned pending order. After confirmation, pending UPI instructions were no longer returned. A follow-up catalog query confirmed zero synthetic Auth/profile/provider/payment-setting/product/order fixture rows persisted.
+- An additional rollback-only admin authorization test passed: a normal authenticated synthetic user was denied by `public.admin_list_orders(1)` with `owner_access_required`, while a synthetic email temporarily inserted into `private.admin_allowlist` was recognized and could call the admin wrapper. The synthetic allowlist row and both synthetic Auth users were rolled back.
+- The customer and provider owner could read the order's tracking event; an unrelated authenticated user could not.
+
+Two missing staging dependencies were repaired after the smoke test exposed them:
+
+1. `20261025210000_doodhwala_restore_delivery_promise_functions.sql` adds the private `calculate_order_eta(uuid)` and `set_order_delivery_promise(uuid)` helpers used by the existing provider status lifecycle migration. The helpers use a hardened empty search path and have browser-role EXECUTE revoked.
+2. `20261025211000_grant_customer_cancel_order_implementation.sql` grants the authenticated role EXECUTE on the customer-owned SECURITY DEFINER cancellation implementation because the public wrapper remains SECURITY INVOKER. The implementation still checks `auth.uid()`, `customer_id`, and eligible status.
+
+After applying these fixes, the entire transactional smoke test passed, including the acceptance ETA/promise path and cancellation. A later read-only query confirmed no synthetic fixture data persisted.
+
+**Test scope:** this is a real PostgreSQL/RPC smoke test under the `authenticated` database role with synthetic JWT subject claims, within a rollback-only transaction. It proves core database/RPC logic and RLS behavior in staging; it is **not** a browser/UI test or a real Supabase Auth login session, and does not verify OAuth, phone OTP delivery, Vercel environment isolation, Realtime transport, or money settlement. Those remain release gates.
+
+The missing-function and cancellation-grant discoveries are guarded by the static CI script `scripts/test-staging-order-security-dependencies.mjs`. Static validation run #1123 and Next.js app validation run #129 both passed for commit `cf03de3095d544c3852f805fd520baa8af420538`; check the current branch head's own CI status before any merge.
+
+## Subscription lifecycle smoke test (2026-10-25)
+
+A rollback-only transaction using synthetic customer/provider Auth identities **passed** the following subscription RPC journey on staging:
+
+- Create a one-week milk plan and generate seven scheduled delivery rows.
+- Verify the stored plan price comes from the active product's server price.
+- Update quantity and delivery time; future scheduled rows are updated accordingly.
+- Verify a different customer cannot edit, skip or cancel the plan.
+- Skip one delivery before cutoff; pause the plan through a future date and verify upcoming in-window deliveries become skipped.
+- Resume the plan; cancel it as the owner and verify future scheduled deliveries are cancelled.
+- A follow-up read-only catalog query found zero synthetic Auth/profile/address/provider/product/subscription/delivery rows persisted.
+
+This test uses the authenticated database role with synthetic JWT claims; it is not a browser/Auth-session test. It confirms core subscription RPC logic and database side effects only.
 
 ## Production migration snapshot and repository drift
 
@@ -81,9 +192,10 @@ Run `scripts/staging-schema-audit.sql` only after connecting your SQL client to 
 
 ## First acceptance gates
 
-- [ ] Organization and project cost confirmed.
-- [ ] Separate staging project created and healthy.
-- [ ] Staging project ref and URL saved as GitHub repository variables, anon key saved as a repository secret (not committed).
+- [x] Separate staging project exists and reports healthy (`jbcekiaiyxcatueixeqh`).
+- [ ] Organization/project billing and plan confirmed before load testing.
+- [ ] Vercel preview environment binding independently verified as staging-only.
+- [ ] Staging project ref and URL configured in the appropriate protected GitHub environment; publishable/anon key stored as a secret (never committed).
 - [ ] Repository migration history reconciled against staging.
 - [ ] RLS, function grants, payment gates and order-capacity constraints reviewed.
 - [ ] Synthetic end-to-end order journey passes.
