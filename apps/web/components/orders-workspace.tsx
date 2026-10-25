@@ -48,14 +48,30 @@ export default function OrdersWorkspace({ orderId }: { orderId?: string }) {
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) { setSignedIn(false); return; }
     setSignedIn(true);
-    let query = supabase.from("orders").select("id,status,subtotal,delivery_fee,total,customer_note,created_at,provider_id,payment_method,payment_status,payment_reference,provider_profiles(display_name,area_name,city),order_items(product_id,product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)").eq("customer_id", userData.user.id).order("created_at", { ascending: false }).limit(50);
+    let query = supabase.from("orders").select("id,status,subtotal,delivery_fee,total,customer_note,created_at,provider_id,provider_profiles(display_name,area_name,city),order_items(product_id,product_name_snapshot,quantity,unit_price,line_total),order_ratings(stars,comment)").eq("customer_id", userData.user.id).order("created_at", { ascending: false }).limit(50);
     if (orderId) query = query.eq("id", orderId) as typeof query;
     const result = await query;
     if (result.error) { setNotice({ kind: "error", text: "We couldn’t load your orders: " + result.error.message }); return; }
-    const rows = (result.data ?? []) as unknown as OrderRow[];
-    setOrders(rows);
+    let rows = (result.data ?? []) as unknown as OrderRow[];
     const ids = rows.map((order) => order.id);
-    if (!ids.length) { setEvents([]); return; }
+    if (!ids.length) { setOrders(rows); setEvents([]); return; }
+
+    // Older production schema doesn't yet expose payment columns. Keep core order history
+    // usable and treat payment metadata as an optional capability until the migration is promoted.
+    try {
+      const paymentResult = await supabase.from("orders")
+        .select("id,payment_method,payment_status,payment_reference")
+        .in("id", ids);
+      if (!paymentResult.error) {
+        const paymentById = new Map((paymentResult.data ?? []).map((row) => [String(row.id), row]));
+        rows = rows.map((order) => ({ ...order, ...(paymentById.get(order.id) ?? {}) }));
+      } else {
+        console.info("Optional order payment metadata is unavailable in this database environment.", paymentResult.error.message);
+      }
+    } catch (error) {
+      console.info("Optional order payment metadata failed to load; continuing with order history.", error);
+    }
+    setOrders(rows);
     const timeline = await supabase.from("order_status_events").select("order_id,from_status,to_status,reason,created_at").in("order_id", ids).order("created_at", { ascending: true });
     if (!timeline.error) setEvents((timeline.data ?? []) as TimelineEvent[]);
   }, [orderId]);
