@@ -64,8 +64,10 @@ body.plans-page,body.orders-page{min-height:100vh;min-height:100svh;display:flex
   .empty-plans,.empty-orders{padding:18px!important}
 }
 @media(max-width:390px){
-  .app main>header{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand location" "help auth" "search search" "bag bag"}
+  .app main>header{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand location" "auth bag" "search search"}
   .app main>header .location-top{width:136px}
+  .app main>header .auth-link:not(#authLink){display:none}
+  .app main>header #authLink{grid-area:auth;justify-self:start}
   .app main>header .cart{grid-area:bag;justify-self:end}
   .app main>header .search{margin-top:1px}
   .story .stats>div{padding:10px 7px!important}
