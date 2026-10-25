@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
@@ -155,7 +156,7 @@ export default function SubscriptionsWorkspace({ subscriptionId }: { subscriptio
     finally { setBusy(false); }
   }
 
-  if (!signedIn) return <WorkspaceFrame title={subscriptionId ? "Subscription details" : "Milk subscriptions"} description="Create, pause or skip recurring local milk deliveries."><section className="workspace-card workspace-empty"><h2>Sign in to manage milk plans</h2><a className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fsubscriptions">Sign in</a></section></WorkspaceFrame>;
+  if (!signedIn) return <WorkspaceFrame title={subscriptionId ? "Subscription details" : "Milk subscriptions"} description="Create, pause or skip recurring local milk deliveries."><section className="workspace-card workspace-empty"><h2>Sign in to manage milk plans</h2><Link className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fsubscriptions">Sign in</Link></section></WorkspaceFrame>;
 
   return (
     <WorkspaceFrame title={subscriptionId ? "Subscription details" : "Daily milk plans"} description="Set a schedule once, and manage pauses, skipped deliveries and changes from the same place.">
@@ -163,7 +164,7 @@ export default function SubscriptionsWorkspace({ subscriptionId }: { subscriptio
       {subscriptionId && <p className="workspace-muted">Viewing subscription {subscriptionId}. To protect account privacy, details below are loaded only from your own subscriptions.</p>}
       <section className="workspace-card">
         <p className="workspace-eyebrow">NEW SUBSCRIPTION</p><h2>Set your recurring delivery</h2>
-        {!addresses.length && <p className="workspace-notice info">Add a delivery address in <a href="/account">your account</a> before creating a plan.</p>}
+        {!addresses.length && <p className="workspace-notice info">Add a delivery address in <Link href="/account">your account</Link> before creating a plan.</p>}
         {!products.length && <p className="workspace-muted">No live products currently advertise daily availability. Try later or choose another product from the catalogue.</p>}
         <form className="workspace-form" onSubmit={createPlan}>
           <label>Milk product<select required value={productId} onChange={(e) => setProductId(e.target.value)}><option value="">Choose milk</option>{products.map((p) => <option value={p.id} key={p.id}>{p.name} · {p.provider_profiles?.display_name ?? "Local seller"} · {money.format(Number(p.price_per_litre))}/L</option>)}</select></label>
