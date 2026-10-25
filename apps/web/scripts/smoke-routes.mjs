@@ -29,6 +29,10 @@ async function waitForServer() {
 async function checkPage(path, expectedStatus, expectedText) {
   const response = await fetch(new URL(path, baseUrl), { redirect: "manual" });
   assert.equal(response.status, expectedStatus, `${path} should return HTTP ${expectedStatus}`);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff", `${path} should disable MIME sniffing`);
+  assert.equal(response.headers.get("x-frame-options"), "DENY", `${path} should prevent framing`);
+  assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin", `${path} should limit referrer data`);
+  assert.equal(response.headers.get("permissions-policy"), "camera=(), microphone=(), geolocation=(self)", `${path} should limit browser permissions while allowing same-origin location`);
   const body = await response.text();
   if (expectedText) assert.ok(body.includes(expectedText), `${path} should include expected page text: ${expectedText}`);
   console.log(`✓ ${expectedStatus} ${path}`);
