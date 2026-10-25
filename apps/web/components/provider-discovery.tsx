@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./provider-discovery.module.css";
 import { normalizeProviderRow, type MilkType, type PublicProvider } from "@/lib/providers/normalize";
+import { filterAndSortProviders, productsForMilkFilter, type MilkFilter, type SortMode } from "@/lib/providers/catalogue";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 type DiscoveryStatus = "loading" | "ready" | "error" | "not-configured";
-type MilkFilter = "all" | "cow" | "buffalo" | "a2";
-type SortMode = "closest" | "rating" | "price";
 
 interface Coordinates {
   latitude: number;
@@ -20,22 +19,10 @@ const money = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 2,
 });
 
-function minPrice(provider: PublicProvider): number | null {
-  const prices = provider.products
-    .map((product) => product.pricePerLitre)
-    .filter((price): price is number => price !== null);
-  return prices.length ? Math.min(...prices) : null;
-}
-
 function formatDistance(distance: number | null): string {
   if (distance === null) return "Set location to check distance";
   if (distance < 1) return `${Math.max(100, Math.round(distance * 1000))} m away`;
   return `${distance.toFixed(distance < 10 ? 1 : 0)} km away`;
-}
-
-function matchesMilk(provider: PublicProvider, filter: MilkFilter): boolean {
-  if (filter === "all") return true;
-  return provider.milkType === filter || provider.products.some((product) => product.milkType === filter);
 }
 
 export default function ProviderDiscovery() {
@@ -98,25 +85,10 @@ export default function ProviderDiscovery() {
     }
   }, []);
 
-  const visibleProviders = useMemo(() => {
-    const normalizedSearch = search.trim().toLocaleLowerCase();
-    const list = providers.filter((provider) => {
-      const searchable = [
-        provider.name,
-        provider.area,
-        provider.city,
-        ...provider.products.map((product) => product.name),
-      ].join(" ").toLocaleLowerCase();
-
-      return searchable.includes(normalizedSearch) && matchesMilk(provider, milkFilter);
-    });
-
-    return list.sort((a, b) => {
-      if (sortMode === "rating") return (b.rating ?? -1) - (a.rating ?? -1);
-      if (sortMode === "price") return (minPrice(a) ?? Number.POSITIVE_INFINITY) - (minPrice(b) ?? Number.POSITIVE_INFINITY);
-      return (a.distanceKm ?? Number.POSITIVE_INFINITY) - (b.distanceKm ?? Number.POSITIVE_INFINITY);
-    });
-  }, [providers, search, milkFilter, sortMode]);
+  const visibleProviders = useMemo(
+    () => filterAndSortProviders(providers, search, milkFilter, sortMode),
+    [providers, search, milkFilter, sortMode],
+  );
 
   const shareLocation = () => {
     if (!navigator.geolocation) {
@@ -239,9 +211,7 @@ export default function ProviderDiscovery() {
         {status === "ready" && visibleProviders.length > 0 && (
           <div className={styles.grid}>
             {visibleProviders.map((provider) => {
-              const products = milkFilter === "all"
-                ? provider.products
-                : provider.products.filter((product) => product.milkType === milkFilter);
+              const products = productsForMilkFilter(provider.products, milkFilter);
               const displayedProducts = products;
 
               return (
