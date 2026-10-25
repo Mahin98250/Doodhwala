@@ -65,6 +65,5 @@ const nextConfig: NextConfig = {
     return legacyRoutes;
   },
 };
-};
 
 export default nextConfig;
