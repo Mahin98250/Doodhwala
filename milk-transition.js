@@ -18,7 +18,7 @@
     if(!loader){
       loader=d.createElement("div");loader.className="dw-milk-loading";loader.hidden=true;
       loader.setAttribute("role","status");loader.setAttribute("aria-live","polite");
-      loader.innerHTML='<div class="dw-milk-loading-scene">'+scene("Loading fresh data")+'</div>';
+      loader.innerHTML='<div class="dw-milk-loading-scene"><div class="dw-milk-scene"><span class="dw-milk-bottle dw-milk-source">'+bottle+'</span><span class="dw-milk-pour" aria-hidden="true"><i></i><i></i><i></i></span><span class="dw-milk-bottle dw-milk-target">'+bottle+'</span></div></div><strong class="dw-milk-title">Loading fresh data</strong>';
       d.body.appendChild(loader);
     }
     return true;
