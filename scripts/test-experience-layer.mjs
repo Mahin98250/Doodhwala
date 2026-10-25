@@ -4,7 +4,7 @@ import fs from "node:fs";
 const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const cssPages = ["checkout.html","index.html","orders.html","plans.html","product.html","provider.html","store.html"];
 const networkPages = ["admin.html","auth.html","checkout.html","index.html","legal.html","orders.html","plans.html","product.html","provider.html","store.html","support.html"];
-const cssTag = "/Doodhwala/experience-layer.css?v=20261023.5";
+const cssTag = "/Doodhwala/experience-layer.css?v=20261025.1";
 const networkTag = "/Doodhwala/network-status.js?v=20261023.1";
 
 for (const path of cssPages) {
@@ -30,6 +30,12 @@ assert.doesNotMatch(connection, /queue.*order|offline.*place.*order/i,
 const experience = read("experience-layer.css");
 assert.match(experience, /focus-visible/, "keyboard focus must remain visible");
 assert.match(experience, /prefers-reduced-motion:reduce/, "reduced-motion must be honored");
+assert.match(experience, /market-paper:#f7f7f1/, "editorial paper palette must be present");
+assert.match(experience, /sidebar nav button\.active/, "navigation active state must be distinct");
+assert.match(experience, /hero h1\{max-width:620px/, "hero hierarchy must be intentionally constrained");
+assert.match(experience, /@media\(max-width:760px\)/, "marketplace redesign must include a mobile layout");
+assert.match(experience, /20261025\.1/, "shared experience CSS cache version must be refreshed");
+
 
 const customer = read("customer-10x.js");
 const provider = read("provider-10x.js");
