@@ -1,5 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabasePublicConfig } from "./config";
 
 const secureStorage = {
   getItem: (key: string) => SecureStore.getItemAsync(key),
@@ -7,13 +8,14 @@ const secureStorage = {
   removeItem: (key: string) => SecureStore.deleteItemAsync(key),
 };
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
-const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim();
+const config = getSupabasePublicConfig(
+  process.env.EXPO_PUBLIC_SUPABASE_URL,
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+);
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
-
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabaseKey!, {
+export const isSupabaseConfigured = config !== null;
+export const supabase = config
+  ? createClient(config.url, config.anonKey, {
       auth: {
         storage: secureStorage,
         persistSession: true,
