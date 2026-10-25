@@ -23,6 +23,7 @@ const ordersBaseSelect = orders.match(/\.from\(["']orders["']\)\s*\.select\(["']
 assert.ok(ordersBaseSelect, "Orders must keep a primary orders query.");
 assert.doesNotMatch(ordersBaseSelect[1], /payment_(?:method|status|reference|confirmed_at)/, "Optional payment columns must not block core order history on older production schemas.");
 assert.match(orders, /paymentResult/, "Payment details should be loaded separately as optional metadata.");
+assert.match(orders, /Payment method not recorded/, "Older production orders must not be incorrectly labeled as COD when payment metadata is absent.");
 
 for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ordersHtml]]) {
   assert.match(html, /customer-ui-polish\.css\?v=20261025\.3/, name + " page must load the responsive UI fixes.");
