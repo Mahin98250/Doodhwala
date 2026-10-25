@@ -14,6 +14,7 @@ try{favorites=JSON.parse(localStorage.getItem("doodhwala-favorites")||"[]")}catc
 try{cart=JSON.parse(localStorage.getItem("doodhwala-cart")||"{}")}catch(_){cart={}}
 
 const $=id=>document.getElementById(id);
+const navigateCustomerPage=url=>{if(window.DoodhwalaMilkTransition&&typeof window.DoodhwalaMilkTransition.navigate==="function")window.DoodhwalaMilkTransition.navigate(url);else location.href=url};
 const grid=$("providersGrid"),cartCount=$("cartCount"),mobileCartCount=$("mobileCartCount"),cartItems=$("cartItems"),empty=$("empty"),summary=$("summary");
 function installDiscoveryStyles(){
  if(document.getElementById("doodhwalaDiscoveryStyles"))return;
@@ -115,8 +116,8 @@ function render(){
  grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
  grid.querySelectorAll("[data-save]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFavorite(b.dataset.save)});
  grid.querySelectorAll("[data-compare]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleCompare(b.dataset.compare)});
- grid.querySelectorAll("[data-store]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();location.href="/Doodhwala/store.html?provider="+encodeURIComponent(b.dataset.store)});
- grid.querySelectorAll("[data-product]").forEach(b=>b.onclick=e=>{if(b.dataset.product){e.preventDefault();e.stopPropagation();location.href="/Doodhwala/product.html?provider="+encodeURIComponent(b.dataset.provider)+"&product="+encodeURIComponent(b.dataset.product)}});
+ grid.querySelectorAll("[data-store]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();navigateCustomerPage("/Doodhwala/store.html?provider="+encodeURIComponent(b.dataset.store))});
+ grid.querySelectorAll("[data-product]").forEach(b=>b.onclick=e=>{if(b.dataset.product){e.preventDefault();e.stopPropagation();navigateCustomerPage("/Doodhwala/product.html?provider="+encodeURIComponent(b.dataset.provider)+"&product="+encodeURIComponent(b.dataset.product))}});
 }
 
 function add(key){
@@ -210,7 +211,7 @@ function openCompareDialog(){
  const columns=rows.map(p=>'<th scope="col"><span class="compare-seller-name">'+p.name+'</span><small>Independent seller</small></th>').join("");
  const body=[["Rating",p=>p.rating],["Milk & price",p=>p.milk],["Delivery area",p=>p.area],["Distance",p=>p.distance],["Delivery availability",p=>p.delivery],["Delivery window",p=>p.window],["Daily plan",p=>p.daily]];
  content.innerHTML='<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th scope="col">Compare</th>'+columns+'</tr></thead><tbody>'+body.map(([label,get])=>'<tr><th scope="row">'+label+'</th>'+rows.map(p=>'<td>'+get(p)+'</td>').join("")+'</tr>').join("")+'<tr><th scope="row">Open seller</th>'+rows.map(p=>'<td><button type="button" class="primary compare-open-store" data-compare-store="'+p.store+'">View store →</button></td>').join("")+'</tr></tbody></table></div><p class="compare-footnote">Prices and availability reflect the current catalogue. Confirm the final order total and delivery details at checkout.</p>';
- content.querySelectorAll("[data-compare-store]").forEach(button=>button.addEventListener("click",()=>{location.href="/Doodhwala/store.html?provider="+encodeURIComponent(button.dataset.compareStore)}));
+ content.querySelectorAll("[data-compare-store]").forEach(button=>button.addEventListener("click",()=>{navigateCustomerPage("/Doodhwala/store.html?provider="+encodeURIComponent(button.dataset.compareStore))}));
  overlay.hidden=false;overlay.setAttribute("aria-hidden","false");document.body.classList.add("compare-open");$("closeCompare")?.focus();
 }
 function closeCompareDialog(){
@@ -258,7 +259,7 @@ function closeCart(){document.body.classList.remove("drawer-open")}
 window.openCart=openCart;window.closeCart=closeCart;
 $("openCart")?.addEventListener("click",openCart);$("openCartMobile")?.addEventListener("click",openCart);$("closeCart")?.addEventListener("click",closeCart);$("backdrop")?.addEventListener("click",closeCart);
 $("how")?.addEventListener("click",()=>document.body.classList.add("modal-open"));$("closeModal")?.addEventListener("click",()=>document.body.classList.remove("modal-open"));$("modalBackdrop")?.addEventListener("click",e=>{if(e.target.id==="modalBackdrop")document.body.classList.remove("modal-open")});
-$("checkout")?.addEventListener("click",()=>{if(!entries().length){toast("Your cart is empty");return}location.href="/Doodhwala/checkout.html"});
+$("checkout")?.addEventListener("click",()=>{if(!entries().length){toast("Your cart is empty");return}navigateCustomerPage("/Doodhwala/checkout.html")});
 ["locationBtn","locationTop","locationHero"].forEach(id=>{const el=$(id);if(el)el.addEventListener("click",()=>window.DoodhwalaLocation?.open?.())});
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>navigateHomeView(b.dataset.go)));
 
