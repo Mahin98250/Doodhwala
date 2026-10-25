@@ -74,6 +74,34 @@ Post-apply catalog checks confirmed the intended policy definitions are present.
 
 The performance advisor also no longer reports unindexed foreign keys after the two payment FK indexes were added. It still reports 41 unused indexes on staging; without representative traffic, these are not safe candidates for deletion. Keep them until a measured workload and query plans justify a change.
 
+## Order/RPC smoke tests and lifecycle dependency repairs (2026-10-25)
+
+The full staging SQL smoke test was run inside one transaction with synthetic Auth users, profiles, a customer-owned address, an approved synthetic seller, a service area, a synthetic milk product, and generated orders. The transaction ended with `ROLLBACK`; follow-up catalog counts confirmed that **zero** synthetic Auth/profile/provider/product/order/tracking fixture rows persisted.
+
+The smoke test returned `PASS` for these database/RPC scenarios:
+
+- `customer_order_payment_controls_ready()` reported schema readiness.
+- Real `public.create_order(...)` placed a synthetic COD order.
+- The request included a deliberately forged client unit price of ₹0.01; the saved order and item used the database's seller price of ₹50.00.
+- Repeating the same customer/idempotency key and request returned the same order ID and created exactly one order; changing the payload under the same key raised `idempotency_key_reuse_conflict`.
+- Customer COD selection and exact-choice retry succeeded.
+- Seller status flow `placed → accepted → preparing → ready → out_for_delivery → delivered` passed; COD collection confirmation succeeded only after delivery.
+- Direct UPI failed closed while the approved synthetic seller had no enabled UPI settings.
+- Customer cancellation from an eligible `placed` order passed.
+- A different authenticated customer could not set the original customer's payment method (`order_not_found`).
+- The customer and provider owner could read the order's tracking event; an unrelated authenticated user could not.
+
+Two missing staging dependencies were repaired after the smoke test exposed them:
+
+1. `20261025210000_doodhwala_restore_delivery_promise_functions.sql` adds the private `calculate_order_eta(uuid)` and `set_order_delivery_promise(uuid)` helpers used by the existing provider status lifecycle migration. The helpers use a hardened empty search path and have browser-role EXECUTE revoked.
+2. `20261025211000_grant_customer_cancel_order_implementation.sql` grants the authenticated role EXECUTE on the customer-owned SECURITY DEFINER cancellation implementation because the public wrapper remains SECURITY INVOKER. The implementation still checks `auth.uid()`, `customer_id`, and eligible status.
+
+After applying these fixes, the entire transactional smoke test passed, including the acceptance ETA/promise path and cancellation. A later read-only query confirmed no synthetic fixture data persisted.
+
+**Test scope:** this is a real PostgreSQL/RPC smoke test under the `authenticated` database role with synthetic JWT subject claims, within a rollback-only transaction. It proves core database/RPC logic and RLS behavior in staging; it is **not** a browser/UI test or a real Supabase Auth login session, and does not verify OAuth, phone OTP delivery, Vercel environment isolation, Realtime transport, or money settlement. Those remain release gates.
+
+The test discoveries are now guarded by the static CI script `scripts/test-staging-order-security-dependencies.mjs`. CI result for its newest workflow commit must be checked before treating the release gate as green.
+
 ## Production migration snapshot and repository drift
 
 ### Focused live-schema check
