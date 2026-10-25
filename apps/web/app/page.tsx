@@ -14,8 +14,12 @@ export default function HomePage() {
         </a>
         <nav className="topnav" aria-label="Main navigation">
           <a href="/providers">Discover</a>
+          <a href="/cart">Cart</a>
+          <a href="/saved">Saved</a>
+          <a href="/orders">Orders</a>
+          <a href="/account">Account</a>
           <a href="#how-it-works">How it works</a>
-          <a className="nav-cta" href="/providers">Find local milk <span aria-hidden="true">↗</span></a>
+          <a className="nav-cta" href="/auth/sign-in">Sign in <span aria-hidden="true">↗</span></a>
         </nav>
       </header>
 
@@ -38,7 +42,7 @@ export default function HomePage() {
       <section className="discover" id="discover" aria-labelledby="discover-title">
         <div className="section-heading"><div><p className="eyebrow">A GOOD PLACE TO START</p><h2 id="discover-title">Find your kind of milk</h2></div><p>Explore the options available from local providers.</p></div>
         <div className="category-grid">{categories.map((category) => <a className="category-card" href={"/providers?milk=" + category.filter} style={{ color: "inherit", textDecoration: "none" }} key={category.title} aria-label={"Explore " + category.title}><span className="category-mark">{category.mark}</span><span className="category-copy"><strong>{category.title}</strong><small>{category.detail}</small></span><span className="category-arrow" aria-hidden="true">↗</span></a>)}</div>
-        <p className="migration-note"><span aria-hidden="true">✦</span> Provider discovery now reads the existing live catalogue. Accounts, order placement, carts and checkout remain on the established app until each flow passes migration and security tests.</p>
+        <p className="migration-note"><span aria-hidden="true">✦</span> Discover local sellers, save products, build your cart, place orders and manage recurring milk plans from the new workspace. Authentication provider redirects and live database permissions still need preview configuration and end-to-end verification before production cutover.</p>
       </section>
 
       <section className="how-section" id="how-it-works"><p className="eyebrow">SIMPLE BY DESIGN</p><h2 id="how-title">Local milk. Less hassle.</h2><div className="steps"><article><span>01</span><strong>Discover nearby</strong><p>Explore independent providers serving your area.</p></article><article><span>02</span><strong>Compare confidently</strong><p>Review milk types, prices and delivery details.</p></article><article><span>03</span><strong>Order directly</strong><p>Choose a seller and follow a clear order journey.</p></article></div></section>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./public-catalogue-detail.module.css";
 import { normalizeProviderRow, type PublicProvider } from "@/lib/providers/normalize";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { addCartItem, readCart, writeCart } from "@/lib/commerce/cart";
 
 interface Props {
   providerId: string;
@@ -31,6 +32,7 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
   const [status, setStatus] = useState<Status>("loading");
   const [message, setMessage] = useState("");
   const [locationLabel, setLocationLabel] = useState("Location not shared");
+  const [actionMessage, setActionMessage] = useState("");
   const requestId = useRef(0);
   const locationAttempt = useRef(0);
 
@@ -118,6 +120,55 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
     void load(null);
   };
 
+  function addToCart(item: PublicProvider["products"][number]) {
+    if (item.pricePerLitre === null || item.pricePerLitre <= 0) {
+      setActionMessage("This product has no valid listed price. Contact the seller before ordering.");
+      return;
+    }
+    const next = addCartItem(readCart(), {
+      productId: item.id,
+      providerId: provider!.id,
+      milk: item.name,
+      provider: provider!.name,
+      unitPrice: item.pricePerLitre,
+      qty: 1,
+    });
+    writeCart(next);
+    setActionMessage(`Added 1 L of ${item.name} to your cart. Checkout will verify the current price and availability.`);
+  }
+
+  function saveProvider() {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem("doodhwala-favorites") ?? "[]");
+      const saved: string[] = Array.isArray(raw) ? raw.filter((id): id is string => typeof id === "string") : [];
+      if (saved.includes(provider!.id)) {
+        setActionMessage(`${provider!.name} is already saved as a favourite seller.`);
+        return;
+      }
+      saved.unshift(provider!.id);
+      window.localStorage.setItem("doodhwala-favorites", JSON.stringify([...new Set(saved)].slice(0, 100)));
+      setActionMessage(`${provider!.name} saved as a favourite seller on this device.`);
+    } catch {
+      setActionMessage("Favourite sellers could not be stored in this browser.");
+    }
+  }
+
+  function saveItem(item: PublicProvider["products"][number]) {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem("doodhwala-saved-items-v1") ?? "[]");
+      const saved = Array.isArray(raw) ? raw.filter((entry) => entry && typeof entry.id === "string" && typeof entry.providerId === "string") : [];
+      if (saved.some((entry) => entry.id === item.id && entry.providerId === provider!.id)) {
+        setActionMessage(`${item.name} is already in your saved items.`);
+        return;
+      }
+      saved.unshift({ id: item.id, providerId: provider!.id, name: item.name, providerName: provider!.name, savedAt: Date.now() });
+      window.localStorage.setItem("doodhwala-saved-items-v1", JSON.stringify(saved.slice(0, 100)));
+      setActionMessage(`${item.name} saved on this device. View saved items in your account.`);
+    } catch {
+      setActionMessage("Saved items could not be stored in this browser. Check your device storage settings.");
+    }
+  }
+
   const stateTitle = status === "loading"
     ? "Loading live catalogue…"
     : status === "not-configured"
@@ -160,6 +211,9 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
               <div><span>Delivery window</span><strong>{deliveryWindow(provider)}</strong></div>
               <div><span>Service radius</span><strong>{provider.serviceRadiusKm === null ? "Check delivery area" : `${provider.serviceRadiusKm} km`}</strong></div>
             </div>
+            <div className={styles.detailActions}>
+              <button type="button" className={styles.textButton} onClick={saveProvider}>♡ Save this seller</button>
+            </div>
             <div className={styles.locationBar}>
               <div><strong>Delivery area</strong><span>{locationLabel}</span></div>
               <div className={styles.locationActions}>
@@ -187,12 +241,17 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
                       <strong className={styles.productPrice}>{item.pricePerLitre === null ? "Price not listed" : `${money.format(item.pricePerLitre)} / L`}</strong>
                       <span className={styles.daily}>{item.dailyAvailable ? "Daily plan availability listed" : "Availability varies"}</span>
                       <a className={styles.productLink} href={`/products/${encodeURIComponent(item.id)}?provider=${encodeURIComponent(provider.id)}`}>View product details <span aria-hidden="true">→</span></a>
+                      <div className={styles.detailActions}>
+                        <button type="button" className={styles.primaryButton} onClick={() => addToCart(item)}>Add 1 L to cart</button>
+                        <button type="button" className={styles.textButton} onClick={() => saveItem(item)}>♡ Save</button>
+                        {item.dailyAvailable && <a className={styles.textButton} href={`/subscriptions?provider=${encodeURIComponent(provider.id)}&product=${encodeURIComponent(item.id)}`}>Daily plan</a>}
+                      </div>
                     </div>
                   </article>
                 ))}
               </div>
             )}
-            <p className={styles.boundaryNote}>Read-only migration route. Cart, order placement and payments remain on the existing marketplace while those flows are tested for parity.</p>
+            <p className={styles.boundaryNote}>Cart and recurring-plan actions are connected to the new workspace. Server-side product, price, service-area and payment controls are checked again before an order is accepted.</p>
           </section>
         </>
       )}
@@ -220,15 +279,20 @@ export default function PublicCatalogueDetail({ providerId, productId }: Props) 
                 <div><span>Daily plan</span><strong>{product.dailyAvailable ? "Availability listed" : "Not listed"}</strong></div>
                 <div><span>Seller delivery</span><strong>{deliveryWindow(provider)}</strong></div>
               </div>
-              <p className={styles.boundaryNote}>This migrated page is read-only. Add-to-cart, recurring plans and checkout will be connected only after their existing validation and security behaviour is covered by tests.</p>
+              <p className={styles.boundaryNote}>Order totals, seller availability and payment state are verified by the existing backend controls during checkout. The price shown here is only the current catalogue listing.</p>
               <div className={styles.detailActions}>
-                <a className={styles.primaryButton} href={`/stores/${encodeURIComponent(provider.id)}`}>View seller catalogue</a>
+                <button type="button" className={styles.primaryButton} onClick={() => addToCart(product)}>Add 1 L to cart</button>
+                <button type="button" className={styles.textButton} onClick={() => saveItem(product)}>♡ Save item</button>
+                {product.dailyAvailable && <a className={styles.textButton} href={`/subscriptions?provider=${encodeURIComponent(provider.id)}&product=${encodeURIComponent(product.id)}`}>Start a milk plan</a>}
+                <a className={styles.textButton} href={`/stores/${encodeURIComponent(provider.id)}`}>View seller catalogue</a>
                 <a className={styles.textButton} href="/providers">Browse other sellers</a>
               </div>
             </div>
           </div>
         </section>
       )}
+
+      {actionMessage && <p className={styles.notice} role="status" aria-live="polite">{actionMessage} <a href="/cart">Open cart →</a></p>}
 
       <footer className={styles.footer}>
         <a className={styles.brand} href="/"><span className={styles.brandMark} aria-hidden="true">D</span><span><strong>Doodhwala</strong><small>Built around local sellers.</small></span></a>

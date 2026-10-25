@@ -55,14 +55,18 @@ Seller RPCs observed include `provider_get_dashboard`, `provider_upsert_own_prof
 
 Admin RPCs observed include `is_current_user_admin`, `get_admin_overview`, provider moderation/control operations, and scoped order/customer/subscription detail reads. Treat these operations as privileged until their grants and RLS/role checks are verified individually.
 
-## Migration sequencing
+## Migration sequencing and current draft implementation
 
-1. **Completed in current draft PR:** isolated Next.js foundation, typed public catalogue models, unit tests, public browse/store/product routes, loading/error/not-found states, npm lockfile, reproducible CI install and production-route smoke tests.
-2. **Next:** verify public RPCs in a configured preview, add browser-based accessibility checks, and compare mobile behaviour with the legacy app.
-3. **Then:** migrate sign-in/profile-completion/session flows, with OAuth redirect configuration and unauthorized-access tests.
-4. **Then:** migrate cart/order history/checkout only after duplicate-submit, price-tampering, seller-mixing, payment-readiness, direct-UPI, COD and RLS scenarios are covered.
-5. **Finally:** migrate seller and owner consoles with server-verified roles and operation-level audit checks, then perform a controlled cutover/rollback rehearsal.
+The current draft contains a new Next.js route/UI implementation for:
+1. Customer account creation and sign-in (email/password, Google OAuth initiation, phone OTP request/verification), recovery and profile completion.
+2. Saved items, profile and delivery addresses, a compatibility-minded browser cart, promo preview, seller-grouped order placement with persisted idempotency keys, COD/direct-UPI selection, order history, cancellation, rating, reorder and UPI-app handoff.
+3. Milk subscription create/edit/pause/resume/cancel and delivery skips.
+4. Seller profile onboarding, product management, store availability, service-area location sharing, order status updates, dispatch/recurring route views and payment receipt acknowledgements.
+5. Owner/admin analytics, provider review/control/service-area moderation, order/customer/subscription detail, product state, support ticket triage, audit log and error-report views.
+6. Customer support submission and ticket history, plus legal/offline pages and rewrite aliases for legacy .html and /Doodhwala/... entry paths.
 
-## Explicitly out of scope for the current PR
+These are implemented against existing RPC/table contracts; there is no new schema or payment gateway. They are **not yet certified as full functional parity** until the configured preview is exercised with customer, provider and owner accounts. Auth redirects/SMS, the real RPC result shapes, RLS and all sensitive mutations must pass browser-level tests before release.
 
-No production SQL migrations, production rows, RLS policies, auth provider settings, payment settlement rules, secret values or production deployment were changed. The current legacy app remains the source of truth for any flow not listed as already migrated.
+## Explicitly out of scope for this PR
+
+Production SQL migrations, production rows, RLS policy changes, auth provider settings, payment settlement changes, secret values, and production deployment/domain cutover remain out of scope. The root HTML app is intentionally preserved as the live fallback until migration parity and rollback are confirmed.

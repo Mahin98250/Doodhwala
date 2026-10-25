@@ -1,57 +1,52 @@
-# Doodhwala web app
+# Doodhwala Next.js application
 
-This directory contains the new Next.js App Router + React + TypeScript application. It remains isolated from the root-level HTML/CSS/JavaScript app so the current marketplace is not disrupted during migration.
+This app lives under apps/web and is being migrated incrementally from the existing HTML/CSS/JavaScript marketplace. It uses Next.js App Router, React, TypeScript and the existing Supabase backend. The root legacy app remains untouched by the migration branch.
 
-## Requirements
+## Local setup
 
-- Node.js 20.9 or newer (CI uses Node 22)
-- npm
+1. Install Node.js 22 or newer.
+2. Copy .env.example to .env.local.
+3. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to the public browser-safe Supabase project values. Do not put a service-role or secret key in any NEXT_PUBLIC_* variable.
+4. Run npm ci, then npm run dev from this directory.
 
-## Local development
+Validation commands:
 
-1. Copy `.env.example` to `.env.local`.
-2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the existing project's URL and browser-safe publishable/anon key.
-3. Run `npm ci` from this directory.
-4. Run `npm run dev`.
+    npm test
+    npm run typecheck
+    npm run build
+    npm run smoke
 
-Never set a Supabase secret or service-role key in any `NEXT_PUBLIC_*` variable. The browser client explicitly rejects the `sb_secret_*` format and legacy JWTs with the `service_role` claim.
+## Migrated route groups in this draft
 
-## Verification
+| Route | Purpose |
+| --- | --- |
+| /, /providers, /stores/[providerId], /products/[productId] | Home, live provider discovery and seller/product catalogue |
+| /saved, /account | Local saved products and seller favourites; profile and addresses |
+| /auth/sign-in, /auth/sign-up, /auth/reset-password | Email/password, Google OAuth entry, phone OTP and password recovery |
+| /cart, /checkout | Browser-persisted cart, addresses, promo preview, seller-grouped orders, COD and direct seller UPI |
+| /orders, /orders/[orderId] | Customer order history, status timeline, cancellation, rating, reorder and direct-UPI instructions |
+| /subscriptions, /subscriptions/[subscriptionId] | Create, edit, pause/resume, cancel and skip a delivery |
+| /seller, /seller/products, /seller/deliveries | Provider profile, catalogue and store status, UPI settings, order queue, recurring route and COD/UPI receipt actions |
+| /owner | Admin overview and report range, provider/product moderation, orders, support, customer/subscription details, audit and error-report views |
+| /support, /legal, /offline | Customer tickets and ticket history, marketplace information and offline recovery |
+| Legacy .html aliases | Rewrites for former paths including /Doodhwala/auth.html, checkout/orders/plans/provider/admin/support/store/product/legal/offline pages |
 
-Run these commands before proposing or merging changes:
+The route matrix and legacy RPC inventory live in ../../docs/LEGACY_ROUTE_FLOW_INVENTORY.md. This is a feature migration, not a schema migration. The UI uses existing RPCs and user-scoped tables instead of creating parallel data models.
 
-```sh
-npm test
-npm run typecheck
-npm run build
-npm run smoke
-```
+## Authentication provider configuration
 
-- `npm test` checks provider normalization, catalogue filtering/sorting, and browser-safe Supabase key classification.
-- `npm run smoke` starts the production build locally and checks HTTP status/content for home, discovery, seller, product and not-found routes.
-- GitHub Actions runs the same checks after an `npm ci` install.
+The preview origin must be configured in Supabase Authentication's allowed redirect URL list. Google OAuth requires the Google provider and callback configuration to be enabled. Phone sign-in requires SMS/OTP to be enabled with suitable rate limits/provider configuration. These project settings cannot be validated by a static build and have intentionally not been changed by this branch.
 
-## What works in this phase
+## Security boundaries
 
-- Responsive green-and-white customer home page with milk-category deep links.
-- `/providers` reads the existing `find_nearby_providers_v2` RPC and supports search, milk-type filtering, price/rating/distance sorting and an opt-in location search.
-- `/stores/[providerId]` and `/products/[productId]?provider=[providerId]` read the existing `get_provider_storefront` RPC.
-- Typed data normalization prevents malformed public rows from being rendered as seller/product cards.
-- Location is requested only by an explicit user action and is not persisted by these routes.
-- Read-only catalogue routes do not create orders, modify provider data, maintain a cart, or process payments.
-- Route loading, retryable errors, not-found handling, keyboard focus and reduced-motion support are included.
-- HTTP responses include MIME-sniffing, framing, referrer and browser-permission headers; same-origin geolocation remains allowed.
+- The browser only receives the publishable/anon key. The client refuses known Supabase secret/service-role key shapes.
+- Session identity comes from Supabase Auth, but roles and access must be enforced by existing RPCs/RLS; client-rendered hiding is not an authorization boundary.
+- Order product IDs, prices, delivery coverage, promo eligibility, idempotency and payment method readiness must be checked by the backend when order creation occurs.
+- Direct UPI hands off to the seller's payee URI. Opening a UPI app is not payment proof; only the seller confirmation flow changes recorded receipt status. COD is likewise recorded by the seller.
+- Saved products and provider favourites are stored locally in the current browser, not synced between devices.
+- Precise location is only requested after the user presses the relevant button. Sellers can explicitly share a business location to set a delivery area.
+- No SQL migrations, production data changes, auth settings, payment configuration, or production-domain cutover are part of this PR.
 
-## Not migrated yet
+## Verification still required before launch
 
-Authentication, saved items, cart, checkout, order history, subscriptions, seller operations, owner/admin tools and support tickets remain on the existing app. Do not point the production domain to this app until route parity, authorization, payment integrity, accessibility, responsive journeys and rollback criteria in [the migration plan](../../docs/NEXTJS_MIGRATION_PLAN.md) are complete.
-
-See the [legacy route and flow inventory](../../docs/LEGACY_ROUTE_FLOW_INVENTORY.md) for the RPC, page and payment behaviours that must be preserved.
-
-## Data and security rules
-
-- Only use public/publishable Supabase credentials in browser components.
-- Public catalogue RPCs must continue to respect function grants and database RLS; do not make provider tables publicly writable.
-- Treat browser-supplied location as untrusted input and never use it as proof of delivery eligibility.
-- Prices, seller ownership, order totals, payment status and role permissions remain server/database-authoritative.
-- Preserve existing auth, order isolation, subscription capacity, COD and direct-UPI invariants when those flows are migrated.
+Automated checks prove route rendering, compilation and pure helper behavior; they do not prove that live Supabase grants/RLS allow every intended operation, nor that Google/SMS works on the preview host. Before cutover, configure the preview, run real customer/provider/owner browser journeys using test accounts and non-production order data, validate mobile behaviour and keyboard accessibility, inspect the actual backend RPC response shapes, and rehearse rollback. This pull request should remain draft until those gates pass.

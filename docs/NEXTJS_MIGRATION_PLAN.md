@@ -86,6 +86,16 @@ Route names are proposed and must be reconciled with existing links before cutov
 - Run staging journeys, accessibility and responsive checks, security review, load tests and rollback rehearsal.
 - Switch traffic only after sign-off; keep the previous deployment available for rollback.
 
-## Current implementation boundary
+## Current implementation boundary (2026-10-25 draft)
 
-The new app includes the framework foundation and initial **read-only live discovery, seller storefront and product detail routes**. The legacy root HTML/CSS/JS app remains the current marketplace and retains its existing cart, checkout, authentication, seller and owner flows. The new routes are not a replacement for production and do not create orders, maintain carts or process payments. No production Supabase schema, RLS policy, data, payment configuration or deployment has been changed by this work.
+The migration branch now contains a new Next.js route/UI implementation for the customer, seller, owner and support flows listed in apps/web/README.md. This includes auth entry flows, profile/address management, local saved items, seller-grouped checkout, order history/cancellations, subscription lifecycle actions, provider operations, owner moderation/analytics, ticket creation/triage, legal/offline pages and legacy route aliases.
+
+This is **not yet a fully verified production replacement**. CI can verify build/type safety, helper unit tests and the new route/HTTP-header smoke suite. It cannot prove external auth provider configuration, real RLS grants for every operation, payment/receipt correctness, mobile interactions, accessibility, or complete cross-role journeys. The configured preview and browser-level tests are still release gates. In particular:
+
+- Google OAuth redirect URLs need an allow-list entry for the chosen preview host.
+- Phone OTP requires the existing Supabase phone/SMS provider configuration and rate limits.
+- get_provider_storefront, nearby discovery, account addresses and all existing mutation RPCs must be checked against live preview grants/RLS.
+- Prices, promo codes, provider ownership, order creation/idempotency, payment selection and receipt confirmation remain backend-authoritative.
+- Saved products and seller favourites are local browser state and are not cross-device synced.
+- No production schema, production rows, auth provider settings, payment configuration or production deployment/domain was changed.
+- Keep PR #60 in draft; do not merge or cut traffic over until the remaining preview, functional, security and rollback gates pass.
