@@ -144,7 +144,7 @@
         notice = d.createElement("section");
         notice.setAttribute("role", "status");
         notice.setAttribute("aria-live", "polite");
-        const routeNeedsBottomNav = /\/Doodhwala\/(?:index\.html|plans\.html|orders\.html|checkout\.html|store\.html|product\.html)?$/.test(currentRoute());
+        const routeNeedsBottomNav = /(?:^\/$|\/Doodhwala\/(?:index\.html|plans\.html|orders\.html|checkout\.html|store\.html|product\.html)?$)/.test(currentRoute());
         const aboveCustomerNav = w.matchMedia && w.matchMedia("(max-width:760px)").matches && (d.body.classList.contains("has-customer-nav") || routeNeedsBottomNav);
         const noticeBottom = aboveCustomerNav ? "calc(94px + env(safe-area-inset-bottom))" : "calc(12px + env(safe-area-inset-bottom))";
         notice.style.cssText = "position:fixed;z-index:2147483000;left:12px;right:12px;bottom:"+noticeBottom+";max-width:540px;margin:0 auto;padding:14px 15px;border:1px solid #e4c98d;border-radius:16px;background:#fffaf0;color:#243329;box-shadow:0 12px 38px rgba(0,0,0,.18);font:14px/1.45 system-ui,-apple-system,sans-serif";
