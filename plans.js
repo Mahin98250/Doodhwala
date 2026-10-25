@@ -23,7 +23,7 @@ function setupPlansRealtime(user){
  const channel=sup.channel("customer-plans-"+user.id)
   .on("postgres_changes",{event:"*",schema:"public",table:"milk_subscriptions",filter:"customer_id=eq."+user.id},function(){
     if(document.visibilityState==="hidden")return;
-    clearTimeout(window.__plansRealtimeRefresh);window.__plansRealtimeRefresh=setTimeout(loadPlans,250);
+    clearTimeout(window.__plansRealtimeRefresh);window.__plansRealtimeRefresh=setTimeout(()=>{loadPlans().catch(err=>console.warn("Realtime plan refresh failed",err))},250);
   })
   .on("postgres_changes",{event:"*",schema:"public",table:"subscription_deliveries"},function(){
     if(document.visibilityState==="hidden")return;
@@ -238,9 +238,19 @@ function openPlanEditor(plan){
   const btn=this,err=modal.querySelector("#editPlanError");err.textContent="";btn.disabled=true;btn.textContent="Saving…";
   const time=modal.querySelector("#editPlanTime").value,address=modal.querySelector("#editPlanAddress").value;
   if(!time||!address){err.textContent="Choose a delivery time and address.";btn.disabled=false;btn.textContent="Save changes →";return}
-  const r=await sup.rpc("update_milk_subscription",{p_subscription_id:plan.id,p_quantity_litres:Number(modal.querySelector("#editPlanQty").value),p_delivery_time:time+":00",p_address_id:address});
-  if(r.error){err.textContent=niceError(r.error.message);btn.disabled=false;btn.textContent="Save changes →";return}
-  closePlanModal();await loadPlans();
+  try{
+   const r=await sup.rpc("update_milk_subscription",{p_subscription_id:plan.id,p_quantity_litres:Number(modal.querySelector("#editPlanQty").value),p_delivery_time:time+":00",p_address_id:address});
+   if(r.error){err.textContent=niceError(r.error.message);return}
+   closePlanModal();
+   const refreshed=await loadPlans();
+   if(refreshed===false)$("plansState").textContent="Changes saved, but the list needs refreshing.";
+  }catch(error){
+   console.warn("Milk plan edit could not be confirmed",error);
+   err.textContent="We couldn’t confirm the save. Refresh your plans and check the current values before retrying.";
+  }finally{
+   btn.disabled=false;
+   if(document.body.contains(modal))btn.textContent="Save changes →";
+  }
  };
 }
 async function pausePlan(id){
@@ -252,12 +262,33 @@ async function pausePlan(id){
 }
 function localIsoDateForPlans(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return y+"-"+m+"-"+day}
 async function planAction(action,id){
- if(action==="edit"){const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,address_id,provider_id,product_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type)").eq("id",id).maybeSingle();if(r.error||!r.data){alert(niceError(r.error?.message||"subscription_not_editable"));return}openPlanEditor(r.data);return}
- if(action==="pause"){await pausePlan(id);return}
- const fn=action==="resume"?"resume_milk_subscription":"cancel_milk_subscription";
- const r=await sup.rpc(fn,{p_subscription_id:id});
- if(r.error){alert(niceError(r.error.message));return}await loadPlans()
+ try{
+  if(action==="edit"){
+   const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,address_id,provider_id,product_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type)").eq("id",id).maybeSingle();
+   if(r.error||!r.data){alert(niceError(r.error?.message||"subscription_not_editable"));return}
+   openPlanEditor(r.data);return
+  }
+  if(action==="pause"){await pausePlan(id);return}
+  const fn=action==="resume"?"resume_milk_subscription":"cancel_milk_subscription";
+  const r=await sup.rpc(fn,{p_subscription_id:id});
+  if(r.error){alert(niceError(r.error.message));return}
+  const refreshed=await loadPlans();
+  if(refreshed===false)$("plansState").textContent="Your change was sent, but the plan list needs refreshing.";
+ }catch(error){
+  console.warn("Milk plan action failed",error);
+  alert("We couldn’t confirm this change. Refresh your plans and check the current status before trying again.");
+ }
 }
-async function skipDelivery(id){const r=await sup.rpc("skip_milk_delivery",{p_delivery_id:id,p_reason:"Customer skipped"});if(r.error){alert(niceError(r.error.message));return}await loadPlans()}
+async function skipDelivery(id){
+ try{
+  const r=await sup.rpc("skip_milk_delivery",{p_delivery_id:id,p_reason:"Customer skipped"});
+  if(r.error){alert(niceError(r.error.message));return}
+  const refreshed=await loadPlans();
+  if(refreshed===false)$("plansState").textContent="Delivery updated, but the list needs refreshing.";
+ }catch(error){
+  console.warn("Milk delivery skip could not be confirmed",error);
+  alert("We couldn’t confirm whether this delivery was skipped. Refresh your plans before retrying.");
+ }
+}
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&user)loadPlans().catch(function(err){console.warn("Plans foreground refresh failed",err)})});
 $("planForm").onsubmit=createPlan;$("planQuantity").onchange=updatePreview;$("planStart").onchange=function(){if(!$("planEnd").value||$("planEnd").value<=$("planStart").value)$("planEnd").value=addDays($("planStart").value,29);updatePreview()};$("planEnd").onchange=updatePreview;$("refreshPlans").onclick=loadContext;setDays();loadContext();
