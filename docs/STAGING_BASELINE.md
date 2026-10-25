@@ -1,6 +1,6 @@
 # Staging baseline and migration reconciliation
 
-**Status: staging project not yet provisioned or validated.** This document is the first execution gate for the scalability roadmap. Do not run synthetic checkout/load tests against production.
+**Status as of 2026-10-25: a separate staging project exists and is healthy, but complete environment isolation and end-to-end acceptance are still pending.** Staging project ref: `jbcekiaiyxcatueixeqh` (`Doodhwala Staging`), region `ap-northeast-2`, PostgreSQL 17.11.0.003. API URL: `https://jbcekiaiyxcatueixeqh.supabase.co`. Do not run synthetic checkout/load tests against production.
 
 ## Known current state (read-only audit, 2026-10-24)
 
@@ -14,21 +14,16 @@
 
 ## Current no-cost blocker (checked 2026-10-25)
 
-- The existing Supabase Free organization has reached its limit of two active free projects (Learner's Guide and Doodhwala). A new `Doodhwala Staging` project was not created.
-- A development branch quote returned `$0.01344/hour` (about `$9.81` for 30 days of continuous use at that quoted rate). It was not created because the user has not approved additional charges.
-- Do not delete, pause, or repurpose either existing project merely to free a slot. Do not upgrade the plan or create paid compute/branches without explicit approval.
-- Until a zero-cost isolated staging environment is available, continue with disposable PostgreSQL CI fixtures, static contracts, migration-manifest review, and local-only checks. These tests are useful but **do not replace** full Supabase Auth/RLS/Realtime/end-to-end testing or prove live capacity.
-- Phase 1 remains **blocked for full staging acceptance** until a separate test project is available. Production remains off-limits for synthetic load or test-order writes.
+- The separate `Doodhwala Staging` project was subsequently provisioned and is currently reported `ACTIVE_HEALTHY`; it is in `ap-northeast-2`, not the production region `ap-south-1`. Account billing/plan details still need to be reviewed in the Supabase dashboard; do not infer that all future use is free.
+- A previous development-branch quote returned `$0.01344/hour` (about `$9.81` for 30 days at that quoted rate). Do not create paid branches, upgrade plans, or accept additional charges without explicit approval.
+- Do not delete, pause, or repurpose the existing Learner's Guide or production Doodhwala projects. Production remains off-limits for synthetic load or test-order writes.
+- Full staging acceptance remains **blocked** until deployment environment binding is verified, migration/schema reconciliation is completed, and synthetic customer→seller order journeys pass. Disposable PostgreSQL CI and static contracts remain useful but do **not** replace live Supabase Auth/RLS/Realtime/E2E tests or prove capacity.
 
-## Provision staging first
+## Staging project and environment binding
 
-### Current blocker — no staging environment exists yet
+A separate project now exists: `Doodhwala Staging` (`jbcekiaiyxcatueixeqh`), reported `ACTIVE_HEALTHY`, region `ap-northeast-2`. It is separate from production project `hmiboyfcvtfawrwujslg` in `ap-south-1`; the region difference should be noted when interpreting latency/load results. Do not assume the Vercel preview is connected to staging until the project owner verifies the preview's environment variables in Vercel. The connected integration returned 403 for environment-variable metadata, so that binding is not independently verified here.
 
-The attempt to create `Doodhwala Staging` was rejected because the organization/user already reached the free-project limit. No new project was created. A development branch was quoted at a nonzero hourly cost and was not created because the budget rule is **no additional charges without approval**. Until a free slot or separately approved budget is available, continue with repository tests and disposable PostgreSQL CI only; do not point staging variables at production and do not claim a measured staging baseline.
-
-Use a separate Supabase project in the same organization as Doodhwala, preferably in `ap-south-1` to match the production region and reduce regional differences in test results. Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging.
-
-Before creating a project, confirm the organization and inspect the quoted cost. Do not accept a nonzero project/compute charge without explicit approval. Use separate staging URL and publishable key; never copy a service-role key into browser code or repository files.
+Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging. Confirm the project’s plan and billing in Supabase before scaling tests; do not upgrade plans, create paid branches, or accept additional charges without explicit approval. Use the staging URL and publishable/anon key only in browser/client environments; never put a service-role key in browser code or repository files.
 
 Suggested GitHub Actions secrets/environment variables for a staging-only load workflow:
 - `STAGING_PROJECT_REF` (exact 20-character ref; must not equal the production project ref)
@@ -81,9 +76,10 @@ Run `scripts/staging-schema-audit.sql` only after connecting your SQL client to 
 
 ## First acceptance gates
 
-- [ ] Organization and project cost confirmed.
-- [ ] Separate staging project created and healthy.
-- [ ] Staging project ref and URL saved as GitHub repository variables, anon key saved as a repository secret (not committed).
+- [x] Separate staging project exists and reports healthy (`jbcekiaiyxcatueixeqh`).
+- [ ] Organization/project billing and plan confirmed before load testing.
+- [ ] Vercel preview environment binding independently verified as staging-only.
+- [ ] Staging project ref and URL configured in the appropriate protected GitHub environment; publishable/anon key stored as a secret (never committed).
 - [ ] Repository migration history reconciled against staging.
 - [ ] RLS, function grants, payment gates and order-capacity constraints reviewed.
 - [ ] Synthetic end-to-end order journey passes.
