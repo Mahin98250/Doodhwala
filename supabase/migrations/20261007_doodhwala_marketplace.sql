@@ -673,3 +673,57 @@ create index if not exists order_items_order_idx on public.order_items(order_id)
 
 comment on table public.provider_profiles is 'Independent/local milk sellers only. Large packaged dairy brands are not intended to be onboarded as ordinary providers.';
 comment on table public.provider_verifications is 'Marketplace-controlled provider verification state.';
+
+-- Delivery tracking is part of the baseline because order-rating and provider
+-- security migrations enable realtime and RLS policies against this table.
+create table if not exists public.delivery_tracking_events (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  provider_id uuid not null references public.provider_profiles(id) on delete cascade,
+  status text not null,
+  latitude numeric,
+  longitude numeric,
+  eta_minutes integer,
+  note text,
+  created_at timestamptz not null default now()
+);
+create index if not exists idx_delivery_tracking_order_created
+  on public.delivery_tracking_events(order_id, created_at desc);
+create index if not exists idx_delivery_tracking_provider_id
+  on public.delivery_tracking_events(provider_id);
+alter table public.delivery_tracking_events enable row level security;
+grant select, insert, update, delete on public.delivery_tracking_events to authenticated;
+
+-- Customer favourites are account-owned rows, with exactly one target per row.
+create table if not exists public.customer_favorites (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references public.profiles(id) on delete cascade,
+  provider_id uuid references public.provider_profiles(id) on delete cascade,
+  product_id uuid references public.milk_products(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  constraint customer_favorite_target_chk check (
+    (provider_id is not null and product_id is null)
+    or (provider_id is null and product_id is not null)
+  ),
+  constraint customer_favorite_unique_product unique (customer_id, product_id),
+  constraint customer_favorite_unique_provider unique (customer_id, provider_id)
+);
+create index if not exists idx_customer_favorites_provider_id
+  on public.customer_favorites(provider_id);
+create index if not exists idx_customer_favorites_product_id
+  on public.customer_favorites(product_id);
+alter table public.customer_favorites enable row level security;
+grant select, insert, update, delete on public.customer_favorites to authenticated;
+
+drop policy if exists customer_favorites_select_own on public.customer_favorites;
+create policy customer_favorites_select_own
+  on public.customer_favorites for select to authenticated
+  using ((select auth.uid()) = customer_id);
+drop policy if exists customer_favorites_insert_own on public.customer_favorites;
+create policy customer_favorites_insert_own
+  on public.customer_favorites for insert to authenticated
+  with check ((select auth.uid()) = customer_id);
+drop policy if exists customer_favorites_delete_own on public.customer_favorites;
+create policy customer_favorites_delete_own
+  on public.customer_favorites for delete to authenticated
+  using ((select auth.uid()) = customer_id);
