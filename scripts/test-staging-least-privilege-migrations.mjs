@@ -28,7 +28,7 @@ assert.match(verificationWriteGuard, /provider_verifications_browser_write_privi
 const hideOwnerId = lower("supabase/migrations/20261013170000_doodhwala_hide_provider_owner_uuid.sql");
 assert.match(hideOwnerId, /revoke select \(owner_user_id\)\s+on table public\.provider_profiles\s+from authenticated/);
 const anonRevoke = lower("supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql");
-assert.match(anonRevoke, /revoke insert, update, delete on all tables in schema public from anon/);
+assert.match(anonRevoke, /revoke insert, update, delete\s+on all tables in schema public\s+from anon/);
 
 const nearby = lower("supabase/migrations/20261023120000_doodhwala_bounded_nearby_provider_search.sql");
 assert.match(nearby, /bounded_providers as/);
