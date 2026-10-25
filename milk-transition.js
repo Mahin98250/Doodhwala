@@ -1,24 +1,27 @@
-/* Doodhwala milk-transfer page transition and data-loading indicator. No network dependency. */
+/* Doodhwala milk-pour page transition and data-loading indicator. No network dependency. */
 (function(w,d){
   "use strict";
   if(w.DoodhwalaMilkTransition)return;
   var overlay=null,loader=null,timer=null;
-  var bottle='<svg viewBox="0 0 52 70" aria-hidden="true"><path d="M19 4h14v8l5 7v39c0 4-3 7-7 7H21c-4 0-7-3-7-7V19l5-7Z" fill="#fff" stroke="#2a6845" stroke-width="2"/><path d="M19 12h14M16 28h20" fill="none" stroke="#a9cbb0" stroke-width="1.6"/><path class="dw-milk-fill" d="M16 40h20v18c0 3-2 5-5 5H21c-3 0-5-2-5-5Z" fill="#dff2df"/><path d="M26 34c-3 4-4 6-4 8a4 4 0 0 0 8 0c0-2-1-4-4-8Z" fill="#7fb78a"/></svg>';
-  function scene(label){
-    return '<div class="dw-milk-scene"><span class="dw-milk-bottle dw-milk-source">'+bottle+'</span><span class="dw-milk-pour" aria-hidden="true"><i></i><i></i><i></i></span><span class="dw-milk-bottle dw-milk-target">'+bottle+'</span></div><strong class="dw-milk-title">'+label+'</strong>';
+  var bottle='<svg viewBox="0 0 64 92" aria-hidden="true" focusable="false"><path class="dw-milk-glass" d="M22 9h20v10l8 11v46c0 6-4 9-10 9H24c-6 0-10-3-10-9V30l8-11Z"/><path class="dw-milk-fill" d="M17 43h30v33c0 4-2 6-6 6H23c-4 0-6-2-6-6Z"/><path class="dw-milk-surface" d="M18 44q7-3 14 0t14 0"/><path d="M22 19h20M18 32h28" fill="none" stroke="#b8d2bf" stroke-width="1.4"/><ellipse cx="32" cy="9" rx="10" ry="3.2" fill="#f8fff9" stroke="#3b7953" stroke-width="1.5"/><ellipse cx="32" cy="9" rx="7.2" ry="1.6" fill="#dcebe0" stroke="#9ebea6" stroke-width=".8"/><path d="M18 35v35c0 4 2 7 5 8M45 35v31" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".78"/><path d="M24 55q8 3 16 0" fill="none" stroke="#bfdac6" stroke-width="1.1" opacity=".8"/></svg>';
+  function stream(){
+    return '<svg class="dw-milk-stream" viewBox="0 0 250 118" aria-hidden="true" focusable="false"><path class="dw-milk-stream-shadow" d="M83 20 C109 22 145 48 201 31"/><path class="dw-milk-stream-core" d="M83 20 C109 22 145 48 201 31"/><path class="dw-milk-stream-glint" d="M83 20 C109 22 145 48 201 31"/></svg>';
+  }
+  function scene(label,variant){
+    return '<div class="dw-milk-scene '+(variant||'')+'">'+stream()+'<span class="dw-milk-bottle dw-milk-source">'+bottle+'</span><span class="dw-milk-bottle dw-milk-target">'+bottle+'</span><span class="dw-milk-pour" aria-hidden="true"><i></i><i></i><i></i></span></div><strong class="dw-milk-title">'+label+'</strong>';
   }
   function ensure(){
     if(!d.body)return false;
     if(!overlay){
       overlay=d.createElement("div");overlay.className="dw-milk-transition";overlay.hidden=true;
       overlay.setAttribute("role","status");overlay.setAttribute("aria-live","polite");
-      overlay.innerHTML='<div class="dw-milk-transition-card"><span class="dw-milk-brand-mark">D</span><div class="dw-milk-content">'+scene("Pouring fresh milk")+'<small>Taking you to your next stop</small></div></div>';
+      overlay.innerHTML='<div class="dw-milk-transition-card"><span class="dw-milk-brand-mark">D</span><div class="dw-milk-content">'+scene("Pouring fresh milk","dw-milk-scene--transition")+'<small>Taking you to your next stop</small></div></div>';
       d.body.appendChild(overlay);
     }
     if(!loader){
       loader=d.createElement("div");loader.className="dw-milk-loading";loader.hidden=true;
       loader.setAttribute("role","status");loader.setAttribute("aria-live","polite");
-      loader.innerHTML='<div class="dw-milk-loading-scene"><div class="dw-milk-scene"><span class="dw-milk-bottle dw-milk-source">'+bottle+'</span><span class="dw-milk-pour" aria-hidden="true"><i></i><i></i><i></i></span><span class="dw-milk-bottle dw-milk-target">'+bottle+'</span></div></div><strong class="dw-milk-title">Loading fresh data</strong>';
+      loader.innerHTML='<div class="dw-milk-loading-scene">'+scene("","")+'</div><strong class="dw-milk-title">Loading fresh data</strong>';
       d.body.appendChild(loader);
     }
     return true;
@@ -40,8 +43,6 @@
   }
   function showLoading(label){
     if(!ensure())return;
-    // Prepare the inline loader even while the full transition overlay is visible.
-    // When the short overlay fades, the data-loading indicator remains until work ends.
     loader.querySelector(".dw-milk-title").textContent=label||"Loading fresh data…";
     loader.hidden=false;
   }
@@ -51,8 +52,7 @@
     try{target=new URL(url,w.location.href)}catch(_){w.location.href=url;return;}
     if(target.origin!==w.location.origin){w.location.href=target.href;return;}
     showTransition("Pouring fresh milk");
-    try{w.sessionStorage.setItem("dw-milk-transition-pending",String(Date.now()));}catch(_){}
-    timer=w.setTimeout(function(){w.location.assign(target.href);},540);
+    timer=w.setTimeout(function(){w.location.assign(target.href);},850);
   }
   w.DoodhwalaMilkTransition={showTransition:showTransition,hideTransition:hideTransition,showLoading:showLoading,hideLoading:hideLoading,navigate:navigate};
   d.addEventListener("click",function(event){
@@ -68,13 +68,4 @@
     if(!target.pathname.startsWith("/Doodhwala/"))return;
     event.preventDefault();navigate(target.href);
   },true);
-  function resume(){
-    var pending=0;
-    try{pending=Number(w.sessionStorage.getItem("dw-milk-transition-pending")||0);w.sessionStorage.removeItem("dw-milk-transition-pending");}catch(_){}
-    if(pending&&Date.now()-pending<3500){
-      showTransition("Fresh milk, right on time");
-      w.setTimeout(hideTransition,300);
-    }
-  }
-  if(d.readyState==="loading")d.addEventListener("DOMContentLoaded",resume,{once:true});else resume();
 })(window,document);
