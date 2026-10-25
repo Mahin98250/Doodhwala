@@ -43,7 +43,7 @@ test("page changes show a local milk-transfer animation without a network depend
   assert.match(transitionCss, /@keyframes dw-milk-drop/);
   assert.match(transitionCss, /@keyframes dw-milk-tip/);
   assert.match(transitionCss, /@keyframes dw-milk-fill-level/);
-  assert.match(transitionJs, /dw-milk-loading-scene[^>]*>[\\s\\S]*dw-milk-title/);
+  assert.match(transitionJs, /loader\\.innerHTML=.*dw-milk-loading-scene.*dw-milk-title/);
   assert.match(nav, /DoodhwalaMilkTransition\.navigate/);
   assert.match(nav, /animateSection\(/);
   for (const html of [indexHtml, plansHtml, ordersHtml]) {
