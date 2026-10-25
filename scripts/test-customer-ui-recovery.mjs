@@ -65,7 +65,7 @@ test("customer, seller and owner boot loaders always clear and show recoverable 
   assert.match(productHtml, /product\.js\?v=20261025\.6/);
   assert.match(sellerHtml, /provider\.js\?v=20261025\.3/);
   assert.match(adminHtml, /admin\.js\?v=20261025\.1/);
-  assert.match(serviceWorker, /const CACHE="doodhwala-v92"/);
+  assert.match(serviceWorker, /const CACHE="doodhwala-v93"/);
   for (const asset of [
     "/Doodhwala/checkout.js?v=20261025.3",
     "/Doodhwala/store.js?v=20261025.2",
@@ -94,7 +94,7 @@ test("page changes show a local milk-transfer animation without a network depend
 test("the milk loader is defined before each data workspace initializes", () => {
   const orderChecks = [
     [indexHtml, "index", "app.js?v=20261025.2"],
-    [plansHtml, "plans", "plans.js?v=20261025.2"],
+    [plansHtml, "plans", "plans.js?v=20261025.3"],
     [ordersHtml, "orders", "orders.js?v=20261025.2"],
     [checkoutHtml, "checkout", "checkout.js?v=20261025.3"],
     [storeHtml, "store", "store.js?v=20261025.2"],
@@ -105,7 +105,7 @@ test("the milk loader is defined before each data workspace initializes", () => 
     [supportHtml, "support", "support.js?v=20261022.2"]
   ];
   for (const [html, page, runtime] of orderChecks) {
-    const transitionAt = html.indexOf("milk-transition.js?v=20261025.1");
+    const transitionAt = html.indexOf("milk-transition.js?v=20261025.2");
     const runtimeAt = html.indexOf(runtime);
     assert.ok(transitionAt >= 0, page + " page should load the milk transition manager");
     assert.ok(runtimeAt >= 0, page + " page should load its app runtime");
