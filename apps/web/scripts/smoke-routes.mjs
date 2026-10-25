@@ -26,6 +26,17 @@ async function waitForServer() {
   throw new Error("Next.js server did not become ready within 20 seconds.");
 }
 
+async function checkRedirect(path, expectedLocation) {
+  const response = await fetch(new URL(path, baseUrl), { redirect: "manual" });
+  assert.ok([307, 308].includes(response.status), `${path} should redirect to a clean framework route`);
+  const location = response.headers.get("location");
+  assert.ok(location, `${path} should return a redirect location`);
+  const actual = new URL(location, baseUrl);
+  const expected = new URL(expectedLocation, baseUrl);
+  assert.equal(actual.pathname + actual.search, expected.pathname + expected.search, `${path} should redirect to ${expectedLocation}`);
+  console.log(`✓ redirect ${path} → ${actual.pathname + actual.search}`);
+}
+
 async function checkPage(path, expectedStatus, expectedText) {
   const response = await fetch(new URL(path, baseUrl), { redirect: "manual" });
   assert.equal(response.status, expectedStatus, `${path} should return HTTP ${expectedStatus}`);
@@ -48,8 +59,8 @@ try {
   await checkPage("/", 200, "Your neighbourhood");
   await checkPage("/providers", 200, "Find milk close to home");
   await checkPage("/saved", 200, "Your saved items");
-  await checkPage("/?view=saved", 200, "Your saved items");
-  await checkPage("/?view=providers", 200, "Find milk close to home");
+  await checkRedirect("/?view=saved", "/saved");
+  await checkRedirect("/?view=providers", "/providers");
   await checkPage("/stores/" + providerId, 200, "Loading live catalogue");
   await checkPage("/products/" + productId + "?provider=" + providerId, 200, "Loading live catalogue");
 
@@ -70,23 +81,32 @@ try {
   await checkPage("/support", 200, "Customer support");
   await checkPage("/legal", 200, "Marketplace information");
   await checkPage("/offline", 200, "You may be offline");
-  await checkPage("/Doodhwala/index.html", 200, "Your neighbourhood");
-  await checkPage("/Doodhwala/checkout.html", 200, "Secure checkout");
-  await checkPage("/Doodhwala/orders.html", 200, "Your orders");
-  await checkPage("/Doodhwala/plans.html", 200, "Milk subscriptions");
-  await checkPage("/Doodhwala/provider.html", 200, "Seller workspace");
-  await checkPage("/Doodhwala/admin.html", 200, "Owner control");
-  await checkPage("/Doodhwala/support.html", 200, "Customer support");
-  await checkPage("/Doodhwala/legal.html", 200, "Marketplace information");
-  await checkPage("/Doodhwala/offline.html", 200, "You may be offline");
-  await checkPage("/Doodhwala/store.html?provider=" + providerId, 200, "Loading live catalogue");
-  await checkPage("/Doodhwala/product.html?provider=" + providerId + "&product=" + productId, 200, "Loading live catalogue");
+  await checkRedirect("/Doodhwala/index.html", "/");
+  await checkRedirect("/Doodhwala/checkout.html", "/checkout");
+  await checkRedirect("/Doodhwala/orders.html", "/orders");
+  await checkRedirect("/Doodhwala/plans.html", "/subscriptions");
+  await checkRedirect("/Doodhwala/provider.html", "/seller");
+  await checkRedirect("/Doodhwala/admin.html", "/owner");
+  await checkRedirect("/Doodhwala/support.html", "/support");
+  await checkRedirect("/Doodhwala/legal.html", "/legal");
+  await checkRedirect("/Doodhwala/offline.html", "/offline");
+  await checkRedirect("/Doodhwala/store.html?provider=" + providerId, "/store?provider=" + providerId);
+  await checkRedirect("/Doodhwala/product.html?provider=" + providerId + "&product=" + productId, "/product?provider=" + providerId + "&product=" + productId);
 
   await checkPage("/store?provider=" + providerId, 200, "Loading live catalogue");
   await checkPage("/product?provider=" + providerId + "&product=" + productId, 200, "Loading live catalogue");
   await checkPage("/auth", 307);
-  await checkPage("/auth.html", 307);
-  await checkPage("/Doodhwala/auth.html", 307);
+  await checkRedirect("/index.html", "/");
+  await checkRedirect("/auth.html", "/auth");
+  await checkRedirect("/Doodhwala/auth.html", "/auth");
+  await checkRedirect("/checkout.html", "/checkout");
+  await checkRedirect("/orders.html", "/orders");
+  await checkRedirect("/plans.html", "/subscriptions");
+  await checkRedirect("/provider.html", "/seller");
+  await checkRedirect("/admin.html", "/owner");
+  await checkRedirect("/support.html", "/support");
+  await checkRedirect("/store.html?provider=" + providerId, "/store?provider=" + providerId);
+  await checkRedirect("/product.html?provider=" + providerId + "&product=" + productId, "/product?provider=" + providerId + "&product=" + productId);
   await checkPage("/plans", 307);
   await checkPage("/provider", 307);
   await checkPage("/admin", 307);
