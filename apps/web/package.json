@@ -2,9 +2,7 @@
   "name": "@doodhwala/web",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=20.9.0"
-  },
+  "engines": { "node": ">=20.9.0" },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
