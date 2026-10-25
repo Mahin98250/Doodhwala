@@ -59,8 +59,8 @@ try {
   await checkPage("/", 200, "Your neighbourhood");
   await checkPage("/providers", 200, "Find milk close to home");
   await checkPage("/saved", 200, "Your saved items");
-  await checkRedirect("/?view=saved", "/saved");
-  await checkRedirect("/?view=providers", "/providers");
+  await checkRedirect("/?view=saved", "/saved?view=saved");
+  await checkRedirect("/?view=providers", "/providers?view=providers");
   await checkPage("/stores/" + providerId, 200, "Loading live catalogue");
   await checkPage("/products/" + productId + "?provider=" + providerId, 200, "Loading live catalogue");
 
