@@ -14,5 +14,5 @@ test("checkout clearly disables the unavailable promo controls", () => {
   assert.match(checkout, /Offers coming soon/);
   assert.match(checkout, /disabled={!PROMO_CHECKOUT_ENABLED \|\| busy}/);
   assert.match(checkout, /Promo discounts are disabled until server-side validation/);
-  assert.match(checkout, /PROMO_CHECKOUT_ENABLED \? .*Unavailable/s);
+  assert.match(checkout, /PROMO_CHECKOUT_ENABLED \? .*Unavailable/);
 });
