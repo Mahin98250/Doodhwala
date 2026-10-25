@@ -66,6 +66,14 @@ Migration `20261025190000_doodhwala_payment_fk_indexes.sql` was then applied to 
 
 **Still blocked:** live authenticated customer → COD order → seller status progression → delivery tracking tests, direct-UPI configuration/confirmation tests, and independent proof that the Vercel preview is wired only to staging. Production remains untouched.
 
+## RLS SELECT-policy consolidation (2026-10-25)
+
+The source migration `20261012090500_doodhwala_consolidate_admin_select_policies.sql` was applied to staging, followed by `20261025200000_doodhwala_consolidate_admin_select_policies_followup.sql` for the remaining affected tables. The changes consolidate admin access with the existing owner/customer visibility rules on `profiles`, `milk_products`, `provider_service_areas`, `orders`, `milk_subscriptions`, `provider_profiles`, `provider_verifications`, and `subscription_deliveries`.
+
+Post-apply catalog checks confirmed the intended policy definitions are present. `provider_profiles` and `provider_verifications` now have separate anon and authenticated SELECT policies; the anonymous policies do not invoke `private.is_current_user_admin()`. Customer/provider ownership and approved-public catalogue visibility predicates were preserved. The performance advisor no longer reports the earlier eight `multiple_permissive_policies` warnings.
+
+The performance advisor also no longer reports unindexed foreign keys after the two payment FK indexes were added. It still reports 41 unused indexes on staging; without representative traffic, these are not safe candidates for deletion. Keep them until a measured workload and query plans justify a change.
+
 ## Production migration snapshot and repository drift
 
 ### Focused live-schema check
