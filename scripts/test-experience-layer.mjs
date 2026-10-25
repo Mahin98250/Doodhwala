@@ -43,4 +43,15 @@ assert.ok(workflow.includes("support.js network-status.js; do"), "new shared JS 
 assert.ok(workflow.includes('node --check "$file"'), "syntax-check loop must execute node --check for every listed file");
 assert.ok(workflow.includes("Test premium experience and connection feedback"), "new contract test must run in CI");
 
+const uiPages = ["admin.html","auth.html","checkout.html","index.html","legal.html","orders.html","plans.html","product.html","provider.html","store.html","support.html"];
+for (const path of uiPages) {
+  const html = read(path);
+  assert.ok(html.includes("/Doodhwala/ui-system.css?v=20261025.2"), path + " must include the shared cross-route UI system");
+  assert.equal(html.split("/Doodhwala/ui-system.css?v=20261025.2").length - 1, 1, path + " must not include duplicate UI system CSS");
+}
+const uiSystem = read("ui-system.css");
+assert.match(uiSystem, /prefers-reduced-motion:reduce/, "shared UI system must respect reduced motion");
+assert.match(uiSystem, /focus-visible/, "shared UI system must preserve keyboard focus");
+assert.match(uiSystem, /env\(safe-area-inset-bottom/, "mobile UI must respect device safe areas");
+assert.match(uiSystem, /max-width:600px/, "shared UI system must include phone-sized layouts");
 console.log("Experience-layer contracts passed: route coverage, accessible connectivity status, safe offline messaging, reduced-motion support, and customer-facing naming.");
