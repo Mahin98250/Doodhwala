@@ -533,6 +533,8 @@ $("providerTopSignout")?.addEventListener("click",signOutProvider);
 $("mobileProfile").onclick=()=>showView("profile");
 $("resetProvider").onclick=()=>{if(!confirm("Reset the Phase 2 demo provider and return to onboarding?"))return;localStorage.removeItem(STORAGE_KEY);location.reload()};
 async function bootProvider(){
+  window.DoodhwalaMilkTransition?.showLoading("Opening your seller workspace…");
+  try {
  try{
   if(window.Doodhwala?.configured){
     const live=await loadProviderBackendState();
@@ -572,6 +574,14 @@ async function bootProvider(){
  }else{
    $("providerName").value="";$("ownerName").value="";$("phone").value="";$("providerType").value="";
  }
+
+  } catch (error) {
+    console.warn("Seller workspace failed to initialize", error);
+    const note = document.getElementById("providerMode");
+    if (note) note.textContent = "Could not refresh live seller data. Check your connection and retry.";
+  } finally {
+    window.DoodhwalaMilkTransition?.hideLoading();
+  }
 }
 bootProvider();
 document.addEventListener("visibilitychange",function(){
