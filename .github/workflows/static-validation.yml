@@ -51,6 +51,8 @@ jobs:
         run: node scripts/test-delivery-tracking-policy.mjs
       - name: Test staging order-security dependency contracts
         run: node scripts/test-staging-order-security-dependencies.mjs
+      - name: Test staging least-privilege and payment-ledger migration contracts
+        run: node scripts/test-staging-least-privilege-migrations.mjs
       - name: Report production migration-history drift (static snapshot)
         run: node scripts/test-production-migration-manifest.mjs
       - name: Validate focused production schema inventory snapshot
