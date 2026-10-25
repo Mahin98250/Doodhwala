@@ -32,6 +32,33 @@ The `staging recorded version` column comes from the staging project's `supabase
 | Consolidate remaining admin SELECT policies | `20261025200000_doodhwala_consolidate_admin_select_policies_followup.sql` | `20261025110930` | `doodhwala_consolidate_admin_select_policies_followup` |
 | Restore private delivery-promise functions | `20261025210000_doodhwala_restore_delivery_promise_functions.sql` | `20261025111833` | `doodhwala_restore_delivery_promise_functions` |
 | Grant authenticated cancellation implementation access | `20261025211000_grant_customer_cancel_order_implementation.sql` | `20261025111956` | `grant_customer_cancel_order_implementation` |
+| Revoke default public table/sequence/function grants | `20261012084800_doodhwala_security_default_privileges.sql` | `20261025114129` | `doodhwala_security_default_privileges` |
+| Revoke anonymous table writes | `20261013130000_doodhwala_revoke_anon_table_writes.sql` | `20261025114133` | `doodhwala_revoke_anon_table_writes` |
+| Limit anonymous catalogue columns and approved visibility | `20261013150000_doodhwala_limit_anon_catalogue_columns.sql` | `20261025114137` | `doodhwala_limit_anon_catalogue_columns` |
+| Staging least-privilege guards (compatibility version; see notes) | `20261025214000_staging_least_privilege_role_guards.sql` | `20261025114231` | `staging_least_privilege_role_guards` |
+| Staging seller private-field grants (compatibility version) | `20261025215000_staging_protect_seller_private_fields.sql` | `20261025114245` | `staging_protect_seller_private_fields` |
+| Hide provider owner UUID | `20261013170000_doodhwala_hide_provider_owner_uuid.sql` | `20261025114258` | `doodhwala_hide_provider_owner_uuid` |
+| Add owner-scoped provider profile RPCs | `20261013180000_doodhwala_secure_provider_profile_upsert.sql` | `20261025114301` | `doodhwala_secure_provider_profile_upsert` |
+| Add provider-owner RLS helper | `20261013190000_doodhwala_provider_rls_owner_helper.sql` | `20261025114305` | `doodhwala_provider_rls_owner_helper` |
+| Revoke direct provider writes | `20261013200000_doodhwala_revoke_provider_direct_writes.sql` | `20261025114308` | `doodhwala_revoke_provider_direct_writes` |
+| Re-consolidate owner SELECT policies after helper migration | `20261025216000_staging_reconsolidate_security_select_policies.sql` | `20261025114323` | `staging_reconsolidate_security_select_policies` |
+| Bounded nearby-provider query | `20261023120000_doodhwala_bounded_nearby_provider_search.sql` | `20261025114528` | `doodhwala_bounded_nearby_provider_search` |
+| Provider order-capacity indexes | `20261023130000_doodhwala_order_capacity_query_indexes.sql` | `20261025114532` | `doodhwala_order_capacity_query_indexes` |
+| Payment provider event ledger and state guard | `20261022133000_doodhwala_pay_event_ledger.sql` | `20261025114535` | `doodhwala_pay_event_ledger` |
+| Immutable order payment audit/reference guard | `20261023150000_doodhwala_payment_audit_and_reference_guard.sql` | `20261025114539` | `doodhwala_payment_audit_and_reference_guard` |
+| Payment audit actor FK index | `20261025217000_order_payment_events_actor_index.sql` | `20261025114619` | `order_payment_events_actor_index` |
+| SECURITY DEFINER empty search-path sweep | `20261025218000_staging_definer_search_path_hardening.sql` | `20261025114924` | `staging_definer_search_path_hardening` |
+
+## Repository migrations not applied verbatim / deferred dependencies
+
+These local source files are intentionally **not** represented as an applied version of the same filename:
+
+- `20261012084616_doodhwala_security_least_privilege.sql`: its desired protections were applied in staging through the default-privilege source migration plus staging-compatible role guards and the SECURITY DEFINER search-path sweep. The source's static revokes include multiple helper signatures that are absent from this staging schema; it was not run wholesale.
+- `20261013090000_doodhwala_lock_admin_allowlist_rls.sql`: its only DDL effect (enabling RLS on `private.admin_allowlist`) was already applied by `staging_security_hardening`. Verify the state rather than replaying it for bookkeeping.
+- `20261013140000_doodhwala_split_anon_provider_read_policies.sql`: the later `20261013150000_doodhwala_limit_anon_catalogue_columns.sql` source migration establishes separate public/authenticated catalogue policies and stricter allowed columns; the earlier migration was not run separately due policy-name overlap.
+- `20261013160000_doodhwala_protect_seller_private_fields.sql`: staging-compatible equivalent is `20261025215000_staging_protect_seller_private_fields.sql`; the repository source refers to a private nearby-search helper absent from the current staging catalog.
+- `20261022203000_doodhwala_support_operations.sql`: **deferred**. It returns/uses `public.support_tickets`, but that table does not exist in the staging schema and this migration does not create it. Do not apply until a separately reviewed table/schema/auth/RLS migration exists.
+- Other missing historical filename versions remain a migration-history bookkeeping problem. An applied SQL effect or an equivalent compatibility migration is not proof that the CLI considers the original file version applied.
 
 ## Required reconciliation procedure
 
