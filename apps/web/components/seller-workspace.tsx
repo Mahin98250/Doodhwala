@@ -189,6 +189,24 @@ export default function SellerWorkspace({ initialSection = "dashboard" }: { init
     finally { setBusy(false); }
   }
 
+  async function quickToggleStock(product: Product) {
+    setBusy(true); setNotice(null);
+    try {
+      const supabase = getBrowserSupabaseClient();
+      if (!supabase) throw new Error("Supabase is not configured.");
+      const result = await supabase.rpc("provider_upsert_product", {
+        p_provider_id: profile?.id, p_product_id: product.id, p_name: product.name,
+        p_milk_type: product.milk_type, p_price_per_litre: Number(product.price_per_litre),
+        p_unit_label: product.unit_label || "1 L", p_stock: !product.stock,
+        p_daily_available: product.daily_available, p_is_active: product.is_active,
+      });
+      if (result.error) throw result.error;
+      setProducts((current) => current.map((item) => item.id === product.id ? { ...item, stock: !product.stock } : item));
+      setNotice({ kind: "success", text: product.stock ? product.name + " marked out of stock." : product.name + " marked in stock." });
+    } catch (error) { setNotice({ kind: "error", text: String((error as { message?: string })?.message ?? error) }); }
+    finally { setBusy(false); }
+  }
+
   async function deleteProduct(id: string) {
     if (!window.confirm("Remove this product from your seller catalogue?")) return;
     setBusy(true);
@@ -289,6 +307,11 @@ export default function SellerWorkspace({ initialSection = "dashboard" }: { init
           <button className="workspace-button workspace-button-primary" disabled={busy}>{busy ? "Saving…" : "Save seller profile"}</button>
         </form>
       </section> : <>
+        {initialSection === "dashboard" && <section className="workspace-card seller-today-card">
+          <div className="seller-today-head"><div><p className="workspace-eyebrow">YOUR DAILY WORKSPACE</p><h2>Today at a glance</h2><p className="workspace-muted">The next task first. Keep your store and deliveries moving.</p></div><span className={"seller-store-pill " + (profile.accepting_orders === false ? "paused" : "open")}>{profile.accepting_orders === false ? "Store paused" : "Store open"}</span></div>
+          <div className="seller-today-stats"><div><strong>{orders.filter((o) => ["pending","placed","confirmed","new"].includes(o.status)).length}</strong><span>Need your decision</span></div><div><strong>{orders.filter((o) => ["accepted","preparing"].includes(o.status)).length}</strong><span>Being prepared</span></div><div><strong>{orders.filter((o) => o.status === "out_for_delivery").length}</strong><span>Out for delivery</span></div></div>
+          <div className="seller-today-actions"><a className="workspace-button workspace-button-primary" href="/seller/deliveries">Open order queue →</a><a className="workspace-button workspace-button-secondary" href="/seller/products">Update milk &amp; prices</a><button type="button" className="workspace-button workspace-button-secondary" disabled={busy} onClick={() => void toggleStore()}>{busy ? "Please wait…" : profile.accepting_orders === false ? "Resume new orders" : "Pause new orders"}</button></div>
+        </section>}
         <div className="workspace-metric-grid">
           <article className="workspace-metric"><small>STORE STATUS</small><strong>{profile.accepting_orders === false ? "Paused" : "Accepting orders"}</strong><span>Verification: {profile.verification_status ?? "pending"}</span><button className="workspace-text-button" disabled={busy} onClick={() => void toggleStore()}>{profile.accepting_orders === false ? "Resume orders" : "Pause new orders"}</button></article>
           <article className="workspace-metric"><small>PRODUCTS</small><strong>{products.length}</strong><span>{products.filter((p) => p.is_active && p.stock).length} active and in stock</span><a href="/seller/products">Manage products →</a></article>
@@ -321,7 +344,7 @@ export default function SellerWorkspace({ initialSection = "dashboard" }: { init
           </div>
           <section className="workspace-card"><p className="workspace-eyebrow">DELIVERY COVERAGE</p><h2>Set your business location</h2><p className="workspace-muted">Share the dairy/base location only when you press the button. This enables distance-based provider discovery; the browser will ask you to grant permission.</p><button type="button" className="workspace-button workspace-button-secondary" disabled={busy} onClick={() => void setServiceLocation()}>Use this device location for service area</button></section>
           <section className="workspace-card"><p className="workspace-eyebrow">PAYMENT SETTINGS</p><h2>Direct seller UPI</h2><p className="workspace-muted">Payments go directly to your UPI/bank account. Doodhwala does not hold these funds.</p><form className="workspace-form" onSubmit={saveUpi}><label>UPI ID<input value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="seller@upi" /></label><label>Payee name shown in the UPI app<input value={upiPayee} onChange={(e) => setUpiPayee(e.target.value)} /></label><label className="workspace-checkbox"><input type="checkbox" checked={upiEnabled} onChange={(e) => setUpiEnabled(e.target.checked)} /> Enable direct UPI for eligible orders</label><button className="workspace-button workspace-button-primary" disabled={busy}>Save payment settings</button></form></section>
-          <section className="workspace-card"><p className="workspace-eyebrow">PRODUCT SNAPSHOT</p><h2>Your current listings</h2>{products.slice(0,8).map((p)=><div className="workspace-summary-item" key={p.id}><span><strong>{p.name}</strong><small>{p.is_active?"Active":"Hidden"} · {p.stock?"In stock":"Out of stock"}</small></span><b>{money.format(Number(p.price_per_litre))}/L</b></div>)}<a className="workspace-inline-link" href="/seller/products">Manage the full catalogue →</a></section>
+          <section className="workspace-card"><div className="workspace-section-head"><div><p className="workspace-eyebrow">QUICK STOCK</p><h2>Milk available today</h2><p className="workspace-muted">Mark a product out of stock in one tap. Price and delivery plan stay unchanged.</p></div><a className="workspace-inline-link" href="/seller/products">Edit prices →</a></div>{products.slice(0,6).map((p)=><div className="workspace-summary-item seller-stock-row" key={p.id}><span><strong>{p.name}</strong><small>{money.format(Number(p.price_per_litre))}/L · {p.is_active?"Active":"Hidden"} · {p.stock?"In stock":"Out of stock"}</small></span><button type="button" className={"seller-stock-toggle " + (p.stock ? "in-stock" : "out-stock")} disabled={busy || !p.is_active} onClick={() => void quickToggleStock(p)}>{busy ? "Saving…" : p.stock ? "Mark sold out" : "Restock"}</button></div>)}<a className="workspace-inline-link" href="/seller/products">Manage the full catalogue →</a></section>
           <section className="workspace-card"><p className="workspace-eyebrow">SUBSCRIBER OPERATIONS</p><h2>Recurring customers</h2>{subscriptions.length ? <div className="workspace-list">{subscriptions.slice(0,15).map((s,index)=><div className="workspace-list-row" key={String(s.id ?? index)}><div className="workspace-list-main"><strong>{String(s.customer_name ?? s.product_name ?? "Milk subscription")}</strong><span>{String(s.status ?? "active")} · {String(s.quantity_litres ?? "")} L · {String(s.delivery_time ?? "")}</span></div></div>)}</div> : <p className="workspace-muted">No subscription rows available.</p>}</section>
         </>}
       </>}
