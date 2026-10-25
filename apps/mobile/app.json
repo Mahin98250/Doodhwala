@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Doodhwala",
+    "slug": "doodhwala",
+    "scheme": "doodhwala",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.doodhwala.app"
+    },
+    "android": {
+      "package": "in.doodhwala.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#f3f8ef"
+      }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
