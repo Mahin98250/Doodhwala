@@ -9,6 +9,8 @@
 .dw-milk-bottle svg{width:100%;height:100%;overflow:visible}
 .dw-milk-source{animation:dw-milk-tip 1.35s ease-in-out infinite}
 .dw-milk-target{animation:dw-milk-receive 1.35s ease-in-out infinite}
+.dw-milk-source svg .dw-milk-fill{transform-box:fill-box;transform-origin:bottom;animation:dw-milk-empty 1.35s ease-in-out infinite}
+.dw-milk-target svg .dw-milk-fill{transform-box:fill-box;transform-origin:bottom;animation:dw-milk-fill-level 1.35s ease-in-out infinite}
 .dw-milk-pour{position:absolute;left:71px;right:70px;top:27px;height:27px;z-index:1}
 .dw-milk-pour i{position:absolute;top:0;width:6px;height:9px;border-radius:70% 35% 65% 40%;background:#c5e6d0;opacity:0;transform:rotate(35deg);animation:dw-milk-drop 1.35s linear infinite}
 .dw-milk-pour i:nth-child(1){left:5px;animation-delay:0s}
@@ -24,6 +26,8 @@
 .dw-milk-loading .dw-milk-title{font-size:11px;white-space:nowrap}
 @keyframes dw-milk-tip{0%,18%,100%{transform:rotate(0)}38%,66%{transform:rotate(-18deg) translateY(-2px)}}
 @keyframes dw-milk-receive{0%,35%,100%{transform:translateY(0)}50%,78%{transform:translateY(-2px)}}
+@keyframes dw-milk-empty{0%,15%,100%{transform:scaleY(1)}45%,80%{transform:scaleY(.42)}}
+@keyframes dw-milk-fill-level{0%,20%,100%{transform:scaleY(.48)}60%,86%{transform:scaleY(1)}}
 @keyframes dw-milk-drop{0%{opacity:0;transform:translate(0,-4px) rotate(35deg) scale(.65)}22%{opacity:1}72%{opacity:1;transform:translate(7px,19px) rotate(35deg) scale(1)}100%{opacity:0;transform:translate(10px,27px) rotate(35deg) scale(.65)}}
 @media(max-width:420px){.dw-milk-transition-card{width:min(275px,100%);padding:19px}.dw-milk-loading{padding-right:10px}.dw-milk-loading .dw-milk-title{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.dw-milk-transition,.dw-milk-source,.dw-milk-target,.dw-milk-pour i{animation:none!important;transition:none!important}.dw-milk-pour i{display:none}}
