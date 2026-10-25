@@ -18,10 +18,11 @@ This directory contains the new Next.js App Router + React + TypeScript applicat
 
 - The home page links into /providers.
 - /providers reads the existing find_nearby_providers_v2 Supabase RPC using the public browser client.
+- /stores/[providerId] and /products/[productId]?provider=[providerId] read the existing get_provider_storefront RPC and render the seller's live public catalogue.
 - Provider/product rows are normalized into typed, bounded view models before rendering.
 - Search, milk-type filtering and sorting run locally on the loaded catalogue.
 - Precise browser location is requested only after a user action, used for that RPC request, and not stored by this page.
-- The discovery route is read-only; it does not create orders, modify provider data, or process payments.
+- Discovery and seller/product detail routes are read-only; they do not create orders, modify provider data, maintain a cart, or process payments.
 
 ## Not migrated yet
 
