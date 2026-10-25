@@ -75,6 +75,7 @@ async function loadContext(){
   $("myPlans").classList.remove("hidden");
   $("plansState").textContent="Loading your recurring deliveries…";
   let addressProblem=false;
+  let productProblem=false;
   const [plansLoad,addressesLoad]=await Promise.allSettled([
    loadPlans(),
    client.from("addresses")
@@ -101,8 +102,14 @@ async function loadContext(){
   }
 
   if(providerId&&productId){
-   try{await loadProductContext();}
-   catch(err){console.warn("Selected milk product could not be loaded",err);$("plansState").textContent="This milk option is temporarily unavailable. Please return to the shop and try again.";}
+   try{
+    await loadProductContext();
+    if(!product)productProblem=true;
+   }catch(err){
+    productProblem=true;
+    console.warn("Selected milk product could not be loaded",err);
+    $("plansState").textContent="This milk option is temporarily unavailable. Please return to the shop and try again.";
+   }
   }else{
    $("createPlan").classList.remove("hidden");
    $("planProductTitle").textContent="Choose a milk product first";
@@ -112,7 +119,9 @@ async function loadContext(){
   catch(err){console.warn("Milk plan live updates could not start",err);}
 
   const plansAvailable=plansLoad.status==="fulfilled"&&plansLoad.value!==false;
-  if(addressProblem&&plansAvailable){
+  if(productProblem&&plansAvailable){
+   // Preserve the product availability error instead of replacing it with a generic success state.
+  }else if(addressProblem&&plansAvailable){
    $("plansState").textContent="Your plans are available, but saved addresses couldn’t be loaded. Tap Refresh to retry.";
   }else if(plansAvailable){
    $("plansState").textContent="Your recurring deliveries, in one place.";
