@@ -325,7 +325,7 @@ async function loadOrders(options={}){
       try{
         const litres=await window.Doodhwala10X.reorder(button.dataset["10xReorder"]);
         window.Doodhwala10X.toast(litres+" L added to cart");
-        setTimeout(function(){location.href="/Doodhwala/";},250);
+        setTimeout(function(){if(window.DoodhwalaMilkTransition)window.DoodhwalaMilkTransition.navigate("/Doodhwala/");else location.href="/Doodhwala/";},250);
       }catch(e){
         window.Doodhwala10X?.toast(e.message||"Reorder unavailable");
       }finally{
