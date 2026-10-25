@@ -23,7 +23,7 @@ assert.doesNotMatch(sellerPrivacy, /grant select\s*\([^)]*phone/i,
   "seller private phone must not be granted through the public table");
 
 const hideOwnerId = lower("supabase/migrations/20261013170000_doodhwala_hide_provider_owner_uuid.sql");
-assert.match(hideOwnerId, /revoke select \(owner_user_id\) on public\.provider_profiles from authenticated/);
+assert.match(hideOwnerId, /revoke select \(owner_user_id\)\s+on table public\.provider_profiles from authenticated/);
 const anonRevoke = lower("supabase/migrations/20261013130000_doodhwala_revoke_anon_table_writes.sql");
 assert.match(anonRevoke, /revoke insert, update, delete on all tables in schema public from anon/);
 
