@@ -29,8 +29,8 @@ A React + Vite SPA would also be valid, but would need a separate strategy for s
 
 - / — customer discovery/home
 - /providers — nearby provider discovery and filters
-- /stores/[slug] — public seller storefront
-- /products/[slug] — product details and metadata
+- /stores/[providerId] — initial public seller storefront keyed by the existing provider UUID; a stable public slug is a later improvement
+- /products/[productId]?provider=[providerId] — initial product details using its seller context; public slugs and canonical SEO metadata are deferred
 - /cart and /checkout — cart and checkout
 - /orders and /orders/[id] — customer order history/details
 - /auth/sign-in and /auth/sign-up — authentication
@@ -58,9 +58,10 @@ Route names are proposed and must be reconciled with existing links before cutov
 
 - Home page routes customers into /providers.
 - /providers calls the existing find_nearby_providers_v2 RPC with the public Supabase client and normalizes its response to typed public view models.
-- Search, milk-type filters and sort modes are client-side on the fetched catalogue.
+- /stores/[providerId] and /products/[productId]?provider=[providerId] call the existing get_provider_storefront RPC; they are read-only public views and do not add items to a cart or place orders.
+- Search, milk-type filters and sort modes are client-side on the fetched catalogue. Home-page milk categories deep-link into the matching filter.
 - Location lookup is user-initiated, not persisted by the new page, and never treated as proof of delivery eligibility.
-- Next: verify the RPC grant/RLS contract, add repeatable tests for the normalizer and data states, then migrate public store/product detail routes.
+- Repeatable normalizer unit tests are wired into CI. Next: verify the RPC grant/RLS contract against a configured preview and add route-level smoke tests.
 - Exit: live data, empty/error/loading states, mobile layouts and public metadata are verified in a configured preview.
 
 ### Phase 3 — identity and account journeys
@@ -85,4 +86,4 @@ Route names are proposed and must be reconciled with existing links before cutov
 
 ## Current implementation boundary
 
-The new app includes the framework foundation and an initial **read-only live provider discovery route**. The legacy root HTML/CSS/JS app remains the current marketplace and retains its existing cart, checkout, authentication, seller and owner flows. The new route is not a replacement for production and does not create orders or process payments. No production Supabase schema, RLS policy, data, payment configuration or deployment has been changed by this work.
+The new app includes the framework foundation and initial **read-only live discovery, seller storefront and product detail routes**. The legacy root HTML/CSS/JS app remains the current marketplace and retains its existing cart, checkout, authentication, seller and owner flows. The new routes are not a replacement for production and do not create orders, maintain carts or process payments. No production Supabase schema, RLS policy, data, payment configuration or deployment has been changed by this work.
