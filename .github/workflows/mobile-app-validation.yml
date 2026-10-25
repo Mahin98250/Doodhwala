@@ -38,6 +38,8 @@ jobs:
           cache-dependency-path: apps/mobile/package.json
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Unit tests
+        run: npm test
       - name: Typecheck
         run: npm run typecheck
       - name: Export Android bundle
