@@ -152,12 +152,45 @@ async function createPlan(e){
  e.preventDefault();showError("");
  if(!user||!product||!provider){showError("Choose a provider and milk product first.");return}
  if(!addresses.length){showError("Save a delivery address first from checkout.");return}
- const days=selectedDays(),start=$("planStart").value,end=$("planEnd").value,time=$("planTime").value;
+ const days=selectedDays(),start=$( "planStart" ).value,end=$( "planEnd" ).value,time=$( "planTime" ).value;
  if(!days.length||!start||!end||end<start){showError("Check your dates and delivery days.");return}
- const button=$("createPlanButton");button.disabled=true;button.textContent="Starting your plan…";
- const r=await sup.rpc("create_milk_subscription",{p_provider_id:providerId,p_product_id:productId,p_address_id:$("planAddress").value,p_quantity_litres:Number($("planQuantity").value),p_delivery_time:time+":00",p_start_date:start,p_end_date:end,p_days_of_week:days,p_customer_note:$("planNote").value.trim()||null,p_cutoff_minutes:120});
- if(r.error){showError(niceError(r.error.message));button.disabled=false;button.textContent="Start daily milk plan →";return}
- button.textContent="Plan started ✓";$("plansState").textContent="Your daily milk plan is active.";await loadPlans();setTimeout(()=>button.textContent="Start daily milk plan →",1600)
+ const button=$( "createPlanButton" );
+ button.disabled=true;button.textContent="Starting your plan…";
+ let responseReceived=false,created=false;
+ try{
+  const result=await sup.rpc("create_milk_subscription",{
+   p_provider_id:providerId,p_product_id:productId,p_address_id:$( "planAddress" ).value,
+   p_quantity_litres:Number($( "planQuantity" ).value),p_delivery_time:time+":00",
+   p_start_date:start,p_end_date:end,p_days_of_week:days,
+   p_customer_note:$( "planNote" ).value.trim()||null,p_cutoff_minutes:120
+  });
+  responseReceived=true;
+  if(result.error){showError(niceError(result.error.message));return}
+  created=true;
+  button.textContent="Plan started ✓";
+  $("plansState").textContent="Your daily milk plan is active.";
+  const refreshed=await loadPlans();
+  if(refreshed===false){
+   showError("Your plan was created, but the list could not refresh. Tap Refresh to verify it before creating another plan.");
+   $("plansState").textContent="Plan created; list refresh needs another try.";
+   return;
+  }
+  setTimeout(()=>{button.textContent="Start daily milk plan →"},1600);
+ }catch(error){
+  console.warn("Create milk plan request failed",error);
+  if(created){
+   showError("Your plan was created, but the list did not refresh. Tap Refresh to verify it.");
+   $("plansState").textContent="Plan created; list refresh needs another try.";
+  }else if(!responseReceived){
+   showError("We couldn’t confirm whether your plan was created. Tap Refresh and check your existing plans before retrying.");
+   $("plansState").textContent="Plan status needs verification. Please refresh before trying again.";
+  }else{
+   showError(niceError(error?.message||"plan_creation_failed"));
+  }
+ }finally{
+  button.disabled=false;
+  if(!created)button.textContent="Start daily milk plan →";
+ }
 }
 async function loadPlans(){
  const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,start_date,end_date,days_of_week,cutoff_minutes,customer_note,paused_until,provider_id,product_id,address_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type),addresses(label,address_line,area_name,city,pin_code)").eq("customer_id",user.id).order("created_at",{ascending:false});
