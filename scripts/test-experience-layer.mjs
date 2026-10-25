@@ -30,6 +30,12 @@ assert.doesNotMatch(connection, /queue.*order|offline.*place.*order/i,
 const experience = read("experience-layer.css");
 assert.match(experience, /focus-visible/, "keyboard focus must remain visible");
 assert.match(experience, /prefers-reduced-motion:reduce/, "reduced-motion must be honored");
+assert.match(experience, /market-paper:#f7f7f1/, "editorial paper palette must be present");
+assert.match(experience, /sidebar nav button\.active/, "navigation active state must be distinct");
+assert.match(experience, /hero h1\{max-width:620px/, "hero hierarchy must be intentionally constrained");
+assert.match(experience, /@media\(max-width:760px\)/, "marketplace redesign must include a mobile layout");
+assert.match(experience, /20261025\.1/, "shared experience CSS cache version must be refreshed");
+
 
 const customer = read("customer-10x.js");
 const provider = read("provider-10x.js");
