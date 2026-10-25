@@ -271,7 +271,7 @@ export default function ProviderDiscovery() {
                     )) : <p className={styles.noProducts}>{milkFilter === "all" ? "No active products listed." : "No products listed for this milk type."}</p>}
                     {displayedProducts.length > 3 && <small className={styles.moreProducts}>+ {displayedProducts.length - 3} more products</small>}
                   </div>
-                  <p className={styles.cardFoot}>Read-only catalogue · Ordering will be connected after store and checkout parity testing.</p>
+                  <div className={styles.cardActions}><a className={styles.storeLink} href={"/stores/" + encodeURIComponent(provider.id)}>View seller and products <span aria-hidden="true">→</span></a></div><p className={styles.cardFoot}>Read-only catalogue · Ordering will be connected after store and checkout parity testing.</p>
                 </article>
               );
             })}
