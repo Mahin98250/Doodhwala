@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./provider-discovery.module.css";
-import { normalizeProviderRow, type MilkType, type PublicProvider } from "@/lib/providers/normalize";
+import { normalizeProviderRow, type PublicProvider } from "@/lib/providers/normalize";
 import { filterAndSortProviders, productsForMilkFilter, type MilkFilter, type SortMode } from "@/lib/providers/catalogue";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
@@ -34,6 +34,7 @@ export default function ProviderDiscovery() {
   const [sortMode, setSortMode] = useState<SortMode>("closest");
   const [locationLabel, setLocationLabel] = useState("Location not shared");
   const requestId = useRef(0);
+  const locationAttempt = useRef(0);
 
   const loadProviders = useCallback(async (coordinates: Coordinates | null) => {
     const currentRequest = ++requestId.current;
@@ -75,6 +76,7 @@ export default function ProviderDiscovery() {
     void loadProviders(null);
     return () => {
       requestId.current += 1;
+      locationAttempt.current += 1;
     };
   }, [loadProviders]);
 
@@ -96,9 +98,11 @@ export default function ProviderDiscovery() {
       return;
     }
 
+    const attempt = ++locationAttempt.current;
     setMessage("Requesting location permission…");
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (attempt !== locationAttempt.current) return;
         setLocationLabel("Location used for this search");
         void loadProviders({
           latitude: position.coords.latitude,
@@ -106,6 +110,7 @@ export default function ProviderDiscovery() {
         });
       },
       () => {
+        if (attempt !== locationAttempt.current) return;
         setLocationLabel("Location not shared");
         setMessage("Location wasn’t shared. You can still browse without it; your choice is respected.");
       },
@@ -114,6 +119,7 @@ export default function ProviderDiscovery() {
   };
 
   const clearLocation = () => {
+    locationAttempt.current += 1;
     setLocationLabel("Location not shared");
     void loadProviders(null);
   };
