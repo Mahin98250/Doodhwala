@@ -9,7 +9,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "in.doodhwala.app"
+      "bundleIdentifier": "in.doodhwala.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Doodhwala uses your location only when you ask to find milk sellers serving your area."
+      }
     },
     "android": {
       "package": "in.doodhwala.app",
@@ -18,7 +21,13 @@
       }
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Doodhwala to find independent milk sellers near your delivery area."
+        }
+      ]
     ]
   }
 }
