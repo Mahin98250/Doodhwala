@@ -23,6 +23,8 @@ test("normalizes the existing nearby-provider RPC response", () => {
   assert.ok(provider);
   assert.equal(provider.id, "provider-123");
   assert.equal(provider.name, "Neighbourhood Dairy");
+  assert.equal(provider.description, "Fresh local milk from an independent provider.");
+  assert.equal(provider.serviceRadiusKm, null);
   assert.equal(provider.rating, 4.6);
   assert.equal(provider.distanceKm, 1.25);
   assert.equal(provider.deliveryFrom, "06:00");
@@ -35,6 +37,7 @@ test("normalizes the existing nearby-provider RPC response", () => {
       milkType: "cow",
       pricePerLitre: 58,
       dailyAvailable: true,
+      unitLabel: "1 L",
     },
     {
       id: "product-2",
@@ -42,6 +45,7 @@ test("normalizes the existing nearby-provider RPC response", () => {
       milkType: "cow",
       pricePerLitre: null,
       dailyAvailable: false,
+      unitLabel: "1 L",
     },
   ]);
 });
