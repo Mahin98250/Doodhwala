@@ -136,7 +136,12 @@ export default function OwnerWorkspace({ initialSection = "overview" }: { initia
   ] : [];
 
   const sectionUsesFilter = ["orders", "providers", "products", "subscriptions", "support"].includes(section);
-  const visibleRows = !sectionUsesFilter || filter === "all" ? rows : rows.filter((row) => String(row.status ?? row.verification_status ?? row.priority ?? "").toLowerCase() === filter);
+  const visibleRows = !sectionUsesFilter || filter === "all" ? rows : rows.filter((row) => {
+    const value = section === "products"
+      ? String(row.is_active !== false)
+      : String(row.status ?? row.verification_status ?? row.priority ?? "");
+    return value.toLowerCase() === filter;
+  });
 
   return (
     <WorkspaceFrame title="Owner control centre" eyebrow="PRIVATE BUSINESS OPERATIONS" description="Monitor marketplace health and manage moderation, orders, support and seller controls. All privileged mutations use existing backend RPCs.">
