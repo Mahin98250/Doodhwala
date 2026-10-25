@@ -49,6 +49,16 @@ Production has not been changed and the security branch remains draft/unmerged.
 
 A rollback-only SQL/RPC subscription smoke test **passed**: create plan and schedule deliveries, enforce server-owned price, update quantity/time, reject non-owner edit/skip/cancel attempts, skip a delivery, pause and skip upcoming deliveries in the pause window, resume, then cancel future scheduled deliveries. Post-test catalog checks returned zero synthetic fixture rows. As with the order tests, this is database-role/RPC coverage and does not replace browser tests with genuine Supabase Auth sessions.
 
+## Current staging security baseline (2026-10-25)
+
+- Catalog checks: 0 anonymous DML grants on public tables; no direct anon/authenticated SELECT on seller owner UUID or private owner name; legacy nearby RPC revoked; bounded public catalogue RPC tested under anon.
+- All current SECURITY DEFINER functions use an empty search_path (61 checked).
+- Rollback-only SQL/RPC test coverage now includes COD checkout/lifecycle and cancellation, direct UPI seller attestation and payment-audit protections, payment webhook-event idempotency/state transitions, provider-profile role spoofing and owner-scoped upsert, subscription lifecycle and materialized-order idempotency, tracking RLS, and admin/non-admin authorization. Synthetic fixtures were confirmed absent after rollback.
+- Database/RPC test success is **not** browser/Auth session acceptance. Vercel Preview → staging project binding remains unverified; confirm the preview's Supabase URL/key in Vercel settings before using it for writes.
+- Staging migration history has execution-time versions that do not match the tracked filenames. See [STAGING_MIGRATION_RECONCILIATION.md](STAGING_MIGRATION_RECONCILIATION.md). Do not use `db push`, reset, direct history edits, or production promotion until a reviewed repair plan is complete.
+- `public.support_tickets` is absent, so support RPC migration remains deferred pending a separately reviewed table/RLS design.
+- Security Advisor still has five service-only/no-policy INFO findings and eight authenticated SECURITY DEFINER RPC warnings. Keep table grants narrow; do not silence warnings with broad access.
+
 ## Pre-test environment gate
 
 - [ ] Confirm the deployed commit SHA and branch.
