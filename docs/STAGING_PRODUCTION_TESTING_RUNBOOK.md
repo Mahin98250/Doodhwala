@@ -53,7 +53,7 @@ Do not create or repoint a branch from an unmerged PR simply to make the branch 
 - [ ] Order history shows only the signed-in customer's orders.
 - [ ] Customer cancellation succeeds only in allowed statuses and records a reason/event.
 - [ ] Subscription create, edit, pause, resume, skip, and next-delivery scheduling.
-- [ ] Promo code valid, expired, usage limit, minimum cart, and tampered discount cases.
+- [ ] Promo-code backend acceptance tests (valid/expired code, usage and per-customer limits, minimum cart, tampered discount, concurrent redemption). **Currently blocked:** the staging schema has no promo tables or `preview_promo_code` / `create_order_with_promo` RPCs. The Next.js promo UI is intentionally disabled and must remain so until atomic server-side validation/redemption is implemented.
 
 ## Seller and delivery acceptance tests
 
@@ -118,6 +118,7 @@ A release is eligible for production only when all are true:
 - Security PR #61 remains draft and unmerged: https://github.com/Mahin98250/Doodhwala/pull/61
 - The latest preview deployment for commit `c512d303f7edc56ddac531747aeaa0f68ca731fa` reached Vercel `READY`: https://doodhwala-next-preview-eintluyph-patelmahin140-4489s-projects.vercel.app
 - Vercel environment-variable metadata could not be inspected by the connected integration (403), so the preview's staging-only Supabase binding is not yet verified. Do not treat it as a fully validated staging environment until an authorized project owner confirms the binding.
-- Staging-only database hardening and legacy order-overload removal were applied and verified on the Doodhwala Staging Supabase project. Production was not modified.
+- Staging-only database hardening and legacy order-overload removal were applied and verified on the Doodhwala Staging Supabase project. Production was not modified. The separate staging project reports healthy, but Vercel environment-variable metadata is inaccessible to this connection, so the preview's backend binding still needs owner-side verification.
+- Promo-code checkout is intentionally disabled in the Next.js UI because the staging database has no promo tables or required promo RPCs. Do not advertise promo discounts as available until the backend feature is implemented and tested.
 - Security advisor still reports RLS-enabled/no-policy informational findings for `private.admin_allowlist`, `public.client_error_reports`, and `public.delivery_tracking_events`. These are currently deny-by-default/service-only; test the trusted application paths before adding narrowly scoped policies.
 - The frontend build being READY does not mean the end-to-end order workflow has passed. Record test results with pass/fail, commit SHA, environment, and evidence before promoting.
