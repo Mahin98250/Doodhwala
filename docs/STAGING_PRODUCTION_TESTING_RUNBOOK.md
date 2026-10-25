@@ -25,6 +25,26 @@
 
 Do not create or repoint a branch from an unmerged PR simply to make the branch names look right. First agree on the integration baseline, then create the staging branch from that baseline.
 
+## Current staging release-gate snapshot (2026-10-25)
+
+The following **database/RPC-level** smoke tests passed on the separate staging database using synthetic Auth rows and JWT claims inside rollback-only SQL transactions:
+
+- Actual checkout RPC with server-authoritative price, same-request idempotency and changed-payload idempotency conflict.
+- COD choice/retry, order lifecycle through delivery including ETA/promise, COD confirmation after delivery, customer cancellation, and cross-customer access denial.
+- Direct-UPI seller settings, invalid-UPI rejection, order-scoped payee/amount instructions, unrelated-user denial, and seller confirmation of its own pending order.
+- Owner-scoped tracking visibility, unrelated-user tracking denial, and allowlisted-admin vs non-admin RPC authorization.
+
+After those tests, read-only catalog queries confirmed zero synthetic test rows persisted. These tests do **not** replace browser/API tests with real Supabase Auth sessions.
+
+**Current hard blockers:**
+
+- Preview-to-staging Supabase URL/key isolation remains unverified because Vercel environment metadata access is denied. Do not use the preview for data-affecting browser tests until the Preview variables are manually confirmed to reference project `jbcekiaiyxcatueixeqh` and contain no production secrets.
+- Staging migration history contains execution-time versions that do not match repository filename timestamps. See [STAGING_MIGRATION_RECONCILIATION.md](STAGING_MIGRATION_RECONCILIATION.md). Do not run `supabase db push`, reset, or promote migrations until a reviewed official reconciliation is complete. Do not manually edit `supabase_migrations.schema_migrations`.
+- Promo-code checkout remains disabled until atomic server-side promo validation and redemption exist.
+- Direct-UPI seller confirmation is only a seller attestation and does not prove bank settlement.
+
+Production has not been changed and the security branch remains draft/unmerged.
+
 ## Pre-test environment gate
 
 - [ ] Confirm the deployed commit SHA and branch.
