@@ -56,6 +56,10 @@ export default function App() {
   const cartTotal = cart.reduce((sum, line) => sum + (line.product.price ?? 0) * line.quantity, 0);
   const changeCart = (provider: Provider, product: Product, delta: number) => {
     const key = `${provider.id}:${product.id}`;
+    if (delta > 0 && cart.length > 0 && !cart.some((line) => line.provider.id === provider.id)) {
+      setMessage("For now, keep one seller per basket. Remove the current seller’s items before adding products from another seller.");
+      return;
+    }
     setCart((current) => {
       const found = current.find((line) => line.key === key);
       if (!found && delta > 0) return [...current, { key, provider, product, quantity: 1 }];
