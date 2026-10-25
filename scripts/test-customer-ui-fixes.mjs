@@ -39,6 +39,7 @@ assert.match(mobileCss, /grid-template-areas/);
 assert.match(mobileCss, /@media\(max-width:390px\)/);
 assert.match(worker, /doodhwala-v91/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
 assert.match(worker, /customer-ui-polish\.css\?v=20261025\.3/);
+assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
 assert.match(worker, /milk-transition\.js\?v=20261025\.3/);
 assert.match(resilience, /aboveCustomerNav/);
 assert.match(resilience, /APP_VERSION = "20261025\.3"/);
