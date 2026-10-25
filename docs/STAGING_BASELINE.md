@@ -104,6 +104,20 @@ After applying these fixes, the entire transactional smoke test passed, includin
 
 The missing-function and cancellation-grant discoveries are guarded by the static CI script `scripts/test-staging-order-security-dependencies.mjs`. Static validation run #1123 and Next.js app validation run #129 both passed for commit `cf03de3095d544c3852f805fd520baa8af420538`; check the current branch head's own CI status before any merge.
 
+## Subscription lifecycle smoke test (2026-10-25)
+
+A rollback-only transaction using synthetic customer/provider Auth identities **passed** the following subscription RPC journey on staging:
+
+- Create a one-week milk plan and generate seven scheduled delivery rows.
+- Verify the stored plan price comes from the active product's server price.
+- Update quantity and delivery time; future scheduled rows are updated accordingly.
+- Verify a different customer cannot edit, skip or cancel the plan.
+- Skip one delivery before cutoff; pause the plan through a future date and verify upcoming in-window deliveries become skipped.
+- Resume the plan; cancel it as the owner and verify future scheduled deliveries are cancelled.
+- A follow-up read-only catalog query found zero synthetic Auth/profile/address/provider/product/subscription/delivery rows persisted.
+
+This test uses the authenticated database role with synthetic JWT claims; it is not a browser/Auth-session test. It confirms core subscription RPC logic and database side effects only.
+
 ## Production migration snapshot and repository drift
 
 ### Focused live-schema check
