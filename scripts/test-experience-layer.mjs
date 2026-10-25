@@ -34,7 +34,7 @@ assert.match(experience, /market-paper:#f7f7f1/, "editorial paper palette must b
 assert.match(experience, /sidebar nav button\.active/, "navigation active state must be distinct");
 assert.match(experience, /hero h1\{max-width:620px/, "hero hierarchy must be intentionally constrained");
 assert.match(experience, /@media\(max-width:760px\)/, "marketplace redesign must include a mobile layout");
-assert.match(experience, /20261025\.1/, "shared experience CSS cache version must be refreshed");
+// Cache-busting is a URL contract, validated above against every HTML page. The CSS file itself should not contain its URL version.
 
 
 const customer = read("customer-10x.js");
