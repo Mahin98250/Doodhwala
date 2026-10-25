@@ -233,12 +233,12 @@ if(localFiles.has("/orders.js")){
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Doodhwala/orders.html">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
-  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261023.2')) errors.push("checkout.html -> checkout runtime cache version stale");
+  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("checkout.html -> checkout runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swP0.includes('const CACHE="doodhwala-v93"')) errors.push("sw.js -> P0 checkout cache revision missing");
-  if(!swP0.includes('/Doodhwala/checkout.js?v=20261023.2')) errors.push("sw.js -> latest checkout runtime missing from precache");
+  if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
@@ -275,9 +275,18 @@ if(localFiles.has("/sw.js")){
 
 
 const productHtml=fs.readFileSync(path.join(root,"product.html"),"utf8");
-if(!productHtml.includes('/Doodhwala/product.js?v=20261022.5')) errors.push("product.html -> product detail runtime cache version stale");
+if(!productHtml.includes('/Doodhwala/product.js?v=20261025.6')) errors.push("product.html -> product detail runtime cache version stale");
 const productSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-if(!productSw.includes('/Doodhwala/product.js?v=20261022.5')) errors.push("sw.js -> guarded product detail runtime missing from offline precache");
+if(!productSw.includes('/Doodhwala/product.js?v=20261025.6')) errors.push("sw.js -> guarded product detail runtime missing from offline precache");
+const storeHtml=fs.readFileSync(path.join(root,"store.html"),"utf8");
+if(!storeHtml.includes('/Doodhwala/store.js?v=20261025.4')) errors.push("store.html -> provider storefront runtime cache version stale");
+if(!productSw.includes('/Doodhwala/store.js?v=20261025.4')) errors.push("sw.js -> provider storefront runtime missing from offline precache");
+for(const file of ["/store.html","/product.html","/checkout.html"]){
+  const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+  if(!html.includes('/Doodhwala/milk-transition.css?v=20261025.3')) errors.push(file+" -> milk transition stylesheet missing");
+  if(!html.includes('/Doodhwala/milk-transition.js?v=20261025.3')) errors.push(file+" -> milk transition runtime missing");
+}
+if(!productSw.includes('/Doodhwala/milk-transition.css?v=20261025.3')||!productSw.includes('/Doodhwala/milk-transition.js?v=20261025.3')) errors.push("sw.js -> milk transition assets missing from PWA precache");
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");

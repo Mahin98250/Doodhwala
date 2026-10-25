@@ -98,7 +98,11 @@ assert.ok(cache.has(origin + "/Doodhwala/index.html"), "core offline shell must 
 assert.ok(installWarnings.some(args => String(args[0]).includes("optional offline asset")), "optional cache failures must be reported for diagnosis");
 
 
-assert.ok(source.includes('/Doodhwala/product.js?v=20261022.5'), "the guarded product detail runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/product.js?v=20261025.6'), "the guarded product detail runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/store.js?v=20261025.4'), "the provider storefront runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/checkout.js?v=20261025.3'), "the checkout runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261025.3'), "the shared milk transition stylesheet must be precached");
+assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261025.3'), "the shared milk transition runtime must be precached");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
 assert.ok(source.includes('const CACHE="doodhwala-v93"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");

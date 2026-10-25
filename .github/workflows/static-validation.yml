@@ -63,6 +63,8 @@ jobs:
         run: node scripts/test-customer-journey-refresh.mjs
       - name: Test customer runtime and milk transition fixes
         run: node scripts/test-customer-ui-fixes.mjs
+      - name: Test milk loading coverage across customer journey
+        run: node scripts/test-milk-loading-coverage.mjs
       - name: Test admin cross-role realtime cache invalidation
         run: node scripts/test-admin-data-sync.mjs
       - name: Test security contracts
