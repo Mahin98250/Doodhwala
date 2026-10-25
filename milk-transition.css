@@ -1,33 +1,42 @@
+/* Realistic milk-pour transition: lightweight SVG liquid, bottle tilt, and rising milk level. */
 .dw-milk-transition[hidden],.dw-milk-loading[hidden]{display:none!important}
-.dw-milk-transition{position:fixed;inset:0;z-index:2147483200;display:grid;place-items:center;padding:22px;background:rgba(246,249,243,.94);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);opacity:0;transition:opacity .18s ease;pointer-events:auto;font-family:inherit;color:#183e2b}
+.dw-milk-transition{position:fixed;inset:0;z-index:2147483200;display:grid;place-items:center;padding:22px;background:rgba(246,249,243,.94);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);opacity:0;transition:opacity .2s ease;pointer-events:auto;font-family:inherit;color:#183e2b}
 .dw-milk-transition.is-visible{opacity:1}
-.dw-milk-transition-card{width:min(310px,100%);padding:24px 22px 20px;border:1px solid rgba(255,255,255,.9);border-radius:26px;background:rgba(255,255,255,.9);box-shadow:0 24px 70px rgba(20,58,35,.16),inset 0 1px 0 #fff;text-align:center}
-.dw-milk-brand-mark{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 8px;border-radius:12px;background:#164d32;color:#fff;font-size:18px;font-weight:900}
+.dw-milk-transition-card{width:min(340px,100%);padding:23px 20px 20px;border:1px solid rgba(255,255,255,.92);border-radius:27px;background:rgba(255,255,255,.93);box-shadow:0 24px 70px rgba(20,58,35,.16),inset 0 1px 0 #fff;text-align:center;overflow:hidden}
+.dw-milk-brand-mark{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 7px;border-radius:12px;background:#164d32;color:#fff;font-size:18px;font-weight:900;box-shadow:0 4px 12px rgba(22,77,50,.2)}
 .dw-milk-content{display:grid;justify-items:center}
-.dw-milk-scene{position:relative;width:190px;height:92px;margin:2px auto 10px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 2px}
-.dw-milk-bottle{position:relative;z-index:2;display:block;width:47px;height:65px;filter:drop-shadow(0 6px 5px rgba(25,67,40,.12));transform-origin:50% 80%}
-.dw-milk-bottle svg{width:100%;height:100%;overflow:visible}
-.dw-milk-source{animation:dw-milk-tip 1.35s ease-in-out infinite}
-.dw-milk-target{animation:dw-milk-receive 1.35s ease-in-out infinite}
-.dw-milk-source svg .dw-milk-fill{transform-box:fill-box;transform-origin:bottom;animation:dw-milk-empty 1.35s ease-in-out infinite}
-.dw-milk-target svg .dw-milk-fill{transform-box:fill-box;transform-origin:bottom;animation:dw-milk-fill-level 1.35s ease-in-out infinite}
-.dw-milk-pour{position:absolute;left:71px;right:70px;top:27px;height:27px;z-index:1}
-.dw-milk-pour i{position:absolute;top:0;width:6px;height:9px;border-radius:70% 35% 65% 40%;background:#c5e6d0;opacity:0;transform:rotate(35deg);animation:dw-milk-drop 1.35s linear infinite}
-.dw-milk-pour i:nth-child(1){left:5px;animation-delay:0s}
-.dw-milk-pour i:nth-child(2){left:20px;animation-delay:.25s}
-.dw-milk-pour i:nth-child(3){left:34px;animation-delay:.5s}
+.dw-milk-scene{--dw-pour-duration:1.68s;position:relative;width:250px;height:118px;margin:0 auto 4px;flex:none}
+.dw-milk-bottle{position:absolute;z-index:2;bottom:4px;display:block;width:64px;height:92px;transform-origin:50% 82%;filter:drop-shadow(0 5px 4px rgba(25,67,40,.11));will-change:transform}
+.dw-milk-bottle svg{display:block;width:100%;height:100%;overflow:visible}
+.dw-milk-glass{fill:#f7fcf8;fill-opacity:.9;stroke:#3b7953;stroke-width:1.5;stroke-linejoin:round}
+.dw-milk-fill{fill:#fff;fill-opacity:.96;transform-box:fill-box;transform-origin:50% 100%}
+.dw-milk-surface{fill:none;stroke:#d3e8d7;stroke-width:1.5;stroke-linecap:round;transform-box:fill-box;transform-origin:50% 100%}
+.dw-milk-source{left:4px;animation:dw-milk-tip var(--dw-pour-duration) cubic-bezier(.42,0,.28,1) infinite}
+.dw-milk-target{right:4px;bottom:-4px;animation:dw-milk-receive var(--dw-pour-duration) ease-in-out infinite}
+.dw-milk-source svg .dw-milk-fill{animation:dw-milk-empty-source var(--dw-pour-duration) ease-in-out infinite}
+.dw-milk-target svg .dw-milk-fill,.dw-milk-target svg .dw-milk-surface{animation:dw-milk-fill-target var(--dw-pour-duration) ease-in-out infinite}
+.dw-milk-stream{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none;animation:dw-milk-stream-on var(--dw-pour-duration) linear infinite}
+.dw-milk-stream-shadow{fill:none;stroke:#8fbea0;stroke-width:9;stroke-linecap:round;opacity:.3}
+.dw-milk-stream-core{fill:none;stroke:#f9fff9;stroke-width:5.4;stroke-linecap:round}
+.dw-milk-stream-glint{fill:none;stroke:#fff;stroke-width:1.15;stroke-linecap:round;stroke-dasharray:4 13;opacity:.85;animation:dw-milk-stream-glide var(--dw-pour-duration) linear infinite}
+.dw-milk-pour{position:absolute;z-index:3;left:177px;top:24px;width:28px;height:28px;pointer-events:none}
+.dw-milk-pour i{position:absolute;display:block;width:3.5px;height:5px;border-radius:60% 45% 65% 45%;background:#e7f4e9;box-shadow:0 0 0 1px rgba(117,174,132,.14);opacity:0;animation:dw-milk-drop var(--dw-pour-duration) ease-in infinite}
+.dw-milk-pour i:nth-child(1){left:5px;top:5px;animation-delay:0s}
+.dw-milk-pour i:nth-child(2){left:15px;top:8px;animation-delay:.08s}
+.dw-milk-pour i:nth-child(3){left:21px;top:3px;animation-delay:.16s}
 .dw-milk-title{display:block;color:#173e2a;font-size:13px;font-weight:850;letter-spacing:-.01em}
 .dw-milk-transition-card small{display:block;margin-top:7px;color:#718277;font-size:10px;line-height:1.5}
-.dw-milk-loading{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;z-index:2147483100;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.94);border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 8px 26px rgba(20,58,35,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transform:translateX(-50%);color:#1e5135;pointer-events:none}
-.dw-milk-loading-scene{width:78px;height:38px;overflow:hidden;flex:0 0 auto}
-.dw-milk-loading-scene .dw-milk-scene{width:190px;height:92px;margin:0;transform:scale(.4);transform-origin:left top}
-.dw-milk-loading-scene .dw-milk-bottle{width:47px;height:65px}
-.dw-milk-loading-scene .dw-milk-pour{top:27px}
+.dw-milk-scene--transition{--dw-pour-duration:1.14s}
+.dw-milk-loading{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;z-index:2147483100;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.94);border-radius:999px;background:rgba(255,255,255,.95);box-shadow:0 8px 26px rgba(20,58,35,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transform:translateX(-50%);color:#1e5135;pointer-events:none}
+.dw-milk-loading-scene{width:79px;height:38px;overflow:hidden;flex:0 0 auto}
+.dw-milk-loading-scene .dw-milk-scene{margin:0;transform:scale(.31);transform-origin:left top;--dw-pour-duration:1.7s}
 .dw-milk-loading .dw-milk-title{font-size:11px;white-space:nowrap}
-@keyframes dw-milk-tip{0%,18%,100%{transform:rotate(0)}38%,66%{transform:rotate(-18deg) translateY(-2px)}}
-@keyframes dw-milk-receive{0%,35%,100%{transform:translateY(0)}50%,78%{transform:translateY(-2px)}}
-@keyframes dw-milk-empty{0%,15%,100%{transform:scaleY(1)}45%,80%{transform:scaleY(.42)}}
-@keyframes dw-milk-fill-level{0%,20%,100%{transform:scaleY(.48)}60%,86%{transform:scaleY(1)}}
-@keyframes dw-milk-drop{0%{opacity:0;transform:translate(0,-4px) rotate(35deg) scale(.65)}22%{opacity:1}72%{opacity:1;transform:translate(7px,19px) rotate(35deg) scale(1)}100%{opacity:0;transform:translate(10px,27px) rotate(35deg) scale(.65)}}
-@media(max-width:420px){.dw-milk-transition-card{width:min(275px,100%);padding:19px}.dw-milk-loading{padding-right:10px}.dw-milk-loading .dw-milk-title{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.dw-milk-transition,.dw-milk-source,.dw-milk-target,.dw-milk-pour i{animation:none!important;transition:none!important}.dw-milk-pour i{display:none}}
+@keyframes dw-milk-tip{0%,9%,87%,100%{transform:rotate(0deg)}23%,62%{transform:rotate(32deg) translateY(-1px)}72%,80%{transform:rotate(17deg)}}
+@keyframes dw-milk-receive{0%,100%{transform:translateY(0)}36%,66%{transform:translateY(1.5px)}}
+@keyframes dw-milk-empty-source{0%,10%,100%{transform:scaleY(.96)}26%,66%{transform:scaleY(.52)}}
+@keyframes dw-milk-fill-target{0%,14%,100%{transform:scaleY(.34)}26%{transform:scaleY(.43)}63%,78%{transform:scaleY(.94)}}
+@keyframes dw-milk-stream-on{0%,15%,78%,100%{opacity:0}23%,68%{opacity:1}}
+@keyframes dw-milk-stream-glide{0%{stroke-dashoffset:28}100%{stroke-dashoffset:-42}}
+@keyframes dw-milk-drop{0%,15%,75%,100%{opacity:0;transform:translate(0,-2px) scale(.55)}30%,62%{opacity:.9;transform:translate(2px,9px) scale(1)}}
+@media(max-width:420px){.dw-milk-transition-card{width:min(300px,100%);padding:18px 14px}.dw-milk-transition-card .dw-milk-scene{transform:scale(.92);transform-origin:center center;margin-top:-3px;margin-bottom:-4px}.dw-milk-loading{padding-right:10px}.dw-milk-loading .dw-milk-title{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.dw-milk-transition,.dw-milk-source,.dw-milk-target,.dw-milk-stream,.dw-milk-stream-glint,.dw-milk-pour i{animation:none!important;transition:none!important}.dw-milk-stream{opacity:0}.dw-milk-pour i{display:none}.dw-milk-source{transform:rotate(22deg)}.dw-milk-target svg .dw-milk-fill,.dw-milk-target svg .dw-milk-surface{transform:scaleY(.75)}}
