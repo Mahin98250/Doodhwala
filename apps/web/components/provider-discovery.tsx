@@ -234,7 +234,7 @@ export default function ProviderDiscovery() {
               const products = milkFilter === "all"
                 ? provider.products
                 : provider.products.filter((product) => product.milkType === milkFilter);
-              const displayedProducts = products.length ? products : provider.products;
+              const displayedProducts = products;
 
               return (
                 <article className={styles.card} key={provider.id}>
@@ -260,7 +260,7 @@ export default function ProviderDiscovery() {
                         <div><strong>{product.name}</strong><small>{product.dailyAvailable ? "Daily availability listed" : "Availability varies"}</small></div>
                         <span className={styles.price}>{product.pricePerLitre === null ? "Price not listed" : `${money.format(product.pricePerLitre)} / L`}</span>
                       </div>
-                    )) : <p className={styles.noProducts}>No active products listed.</p>}
+                    )) : <p className={styles.noProducts}>{milkFilter === "all" ? "No active products listed." : "No products listed for this milk type."}</p>}
                     {displayedProducts.length > 3 && <small className={styles.moreProducts}>+ {displayedProducts.length - 3} more products</small>}
                   </div>
                   <p className={styles.cardFoot}>Read-only catalogue · Ordering will be connected after store and checkout parity testing.</p>
