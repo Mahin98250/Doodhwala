@@ -154,7 +154,17 @@ async function loadPlans(){
  const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,start_date,end_date,days_of_week,cutoff_minutes,customer_note,paused_until,provider_id,product_id,address_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type),addresses(label,address_line,area_name,city,pin_code)").eq("customer_id",user.id).order("created_at",{ascending:false});
  if(r.error){console.warn("Daily plans query failed",r.error);$("plansList").innerHTML='<div class="empty-plans"><b>We couldn’t load your plans.</b><br>Check your connection and tap Refresh to try again.</div>';$("plansState").textContent="We couldn’t load your milk plans. Please refresh to retry.";return false}
  const plans=r.data||[];if(!plans.length){$("plansList").innerHTML='<div class="empty-plans"><b>No recurring plans yet.</b><br>Choose a local provider and tap Plan on their milk.</div>';return true}
- const ids=plans.map(p=>p.id);const d=ids.length?await sup.from("subscription_deliveries").select("id,subscription_id,scheduled_for,delivery_date,quantity_litres,unit_price,status,order_id").in("subscription_id",ids).order("scheduled_for",{ascending:true}):{data:[]};const by={};(d.data||[]).forEach(x=>(by[x.subscription_id]??=[]).push(x));
+ const ids=plans.map(p=>p.id);
+ const by={};
+ if(ids.length){
+  try{
+   const deliveryResult=await sup.from("subscription_deliveries").select("id,subscription_id,scheduled_for,delivery_date,quantity_litres,unit_price,status,order_id").in("subscription_id",ids).order("scheduled_for",{ascending:true});
+   if(deliveryResult.error)console.warn("Optional delivery schedule details could not load",deliveryResult.error);
+   (deliveryResult.data||[]).forEach(x=>(by[x.subscription_id]??=[]).push(x));
+  }catch(deliveryError){
+   console.warn("Optional delivery schedule details could not load; preserving the plan list",deliveryError);
+  }
+ }
  $("plansList").innerHTML=plans.map((p,idx)=>planCard(p,by[p.id]||[],idx)).join("");
  document.querySelectorAll("[data-plan-action]").forEach(b=>b.onclick=()=>planAction(b.dataset.planAction,b.dataset.id));
  document.querySelectorAll("[data-skip]").forEach(b=>b.onclick=()=>skipDelivery(b.dataset.skip));
