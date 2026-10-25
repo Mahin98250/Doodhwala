@@ -40,6 +40,7 @@ npm run smoke
 - Location is requested only by an explicit user action and is not persisted by these routes.
 - Read-only catalogue routes do not create orders, modify provider data, maintain a cart, or process payments.
 - Route loading, retryable errors, not-found handling, keyboard focus and reduced-motion support are included.
+- HTTP responses include MIME-sniffing, framing, referrer and browser-permission headers; same-origin geolocation remains allowed.
 
 ## Not migrated yet
 
