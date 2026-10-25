@@ -3,19 +3,14 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import WorkspaceFrame from "@/components/workspace-frame";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { safeReturnPath } from "@/lib/auth/redirect";
 
 type AuthMode = "signin" | "signup" | "reset";
 type Notice = { kind: "error" | "success" | "info"; text: string } | null;
 
 function safeReturnPath(): string {
   if (typeof window === "undefined") return "/";
-  const value = new URLSearchParams(window.location.search).get("return") || "/";
-  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\") || /[\u0000-\u001f]/.test(value)) return "/";
-  try {
-    const target = new URL(value, window.location.origin);
-    if (target.origin !== window.location.origin) return "/";
-    return target.pathname + target.search + target.hash;
-  } catch { return "/"; }
+  return getSafeReturnPath(new URLSearchParams(window.location.search).get("return"), window.location.origin);
 }
 
 function normalizePhone(value: string): string {
