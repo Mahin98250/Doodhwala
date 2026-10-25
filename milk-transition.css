@@ -14,7 +14,9 @@
 .dw-milk-source{left:4px;bottom:15px;animation:dw-milk-tip var(--dw-pour-duration) cubic-bezier(.42,0,.28,1) infinite}
 .dw-milk-target{right:4px;bottom:-4px;animation:dw-milk-receive var(--dw-pour-duration) ease-in-out infinite}
 .dw-milk-source svg .dw-milk-fill{animation:dw-milk-empty-source var(--dw-pour-duration) ease-in-out infinite}
-.dw-milk-target svg .dw-milk-fill,.dw-milk-target svg .dw-milk-surface{animation:dw-milk-fill-target var(--dw-pour-duration) ease-in-out infinite}
+.dw-milk-source svg .dw-milk-surface{animation:dw-milk-surface-source var(--dw-pour-duration) ease-in-out infinite}
+.dw-milk-target svg .dw-milk-fill{animation:dw-milk-fill-target var(--dw-pour-duration) ease-in-out infinite}
+.dw-milk-target svg .dw-milk-surface{animation:dw-milk-surface-target var(--dw-pour-duration) ease-in-out infinite}
 .dw-milk-stream{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;opacity:0;pointer-events:none;animation:dw-milk-stream-on var(--dw-pour-duration) linear infinite}
 .dw-milk-stream-shadow{fill:none;stroke:#8fbea0;stroke-width:9;stroke-linecap:round;opacity:.3}
 .dw-milk-stream-core{fill:none;stroke:#f9fff9;stroke-width:5.4;stroke-linecap:round}
@@ -35,6 +37,8 @@
 @keyframes dw-milk-receive{0%,100%{transform:translateY(0)}36%,66%{transform:translateY(1.5px)}}
 @keyframes dw-milk-empty-source{0%,10%,100%{transform:scaleY(.96)}26%,66%{transform:scaleY(.52)}}
 @keyframes dw-milk-fill-target{0%,14%,100%{transform:scaleY(.34)}26%{transform:scaleY(.43)}63%,78%{transform:scaleY(.94)}}
+@keyframes dw-milk-surface-source{0%,10%,100%{transform:translateY(1px)}26%,66%{transform:translateY(17px)}}
+@keyframes dw-milk-surface-target{0%,14%,100%{transform:translateY(23px)}26%{transform:translateY(20px)}63%,78%{transform:translateY(1px)}}
 @keyframes dw-milk-stream-on{0%,15%,78%,100%{opacity:0}23%,68%{opacity:1}}
 @keyframes dw-milk-stream-glide{0%{stroke-dashoffset:28}100%{stroke-dashoffset:-42}}
 @keyframes dw-milk-drop{0%,15%,75%,100%{opacity:0;transform:translate(0,-2px) scale(.55)}30%,62%{opacity:.9;transform:translate(2px,9px) scale(1)}}
