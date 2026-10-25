@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -126,7 +127,7 @@ export default function OwnerWorkspace({ initialSection = "overview" }: { initia
   }
 
   if (!checked) return <WorkspaceFrame title="Owner control" description="Verifying privileged access with Supabase."><section className="workspace-card"><p>Checking owner permissions…</p></section></WorkspaceFrame>;
-  if (!authorized) return <WorkspaceFrame title="Owner control" description="The admin area is restricted to authorised owner accounts."><section className="workspace-card workspace-empty"><h2>Owner access required</h2><p>Authentication alone does not grant admin access. The private admin-role RPC must approve this account.</p><a className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fowner">Sign in</a><button className="workspace-button workspace-button-secondary" onClick={() => void signOut()}>Sign out</button></section>{notice && <p className="workspace-notice error">{notice.text}</p>}</WorkspaceFrame>;
+  if (!authorized) return <WorkspaceFrame title="Owner control" description="The admin area is restricted to authorised owner accounts."><section className="workspace-card workspace-empty"><h2>Owner access required</h2><p>Authentication alone does not grant admin access. The private admin-role RPC must approve this account.</p><Link className="workspace-button workspace-button-primary" href="/auth/sign-in?return=%2Fowner">Sign in</Link><button className="workspace-button workspace-button-secondary" onClick={() => void signOut()}>Sign out</button></section>{notice && <p className="workspace-notice error">{notice.text}</p>}</WorkspaceFrame>;
 
   const metricCards = overview ? [
     ["Gross sales", money.format(Number((overview as any).gross_sales ?? (overview as any).total_sales ?? 0)), "Reported by the backend overview RPC"],
