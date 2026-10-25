@@ -11,6 +11,15 @@
 - Repository `main` contains newer migrations after the production history, including nearby search / order-capacity changes and payment foundations. A repository migration file is not proof that it was applied to a database.
 - The most recent disposable PostgreSQL CI run passed for the repository's synthetic nearby-search and payment-audit fixtures. This is not a complete staging end-to-end test.
 
+
+## Current no-cost blocker (checked 2026-10-25)
+
+- The existing Supabase Free organization has reached its limit of two active free projects (Learner's Guide and Doodhwala). A new `Doodhwala Staging` project was not created.
+- A development branch quote returned `$0.01344/hour` (about `$9.81` for 30 days of continuous use at that quoted rate). It was not created because the user has not approved additional charges.
+- Do not delete, pause, or repurpose either existing project merely to free a slot. Do not upgrade the plan or create paid compute/branches without explicit approval.
+- Until a zero-cost isolated staging environment is available, continue with disposable PostgreSQL CI fixtures, static contracts, migration-manifest review, and local-only checks. These tests are useful but **do not replace** full Supabase Auth/RLS/Realtime/end-to-end testing or prove live capacity.
+- Phase 1 remains **blocked for full staging acceptance** until a separate test project is available. Production remains off-limits for synthetic load or test-order writes.
+
 ## Provision staging first
 
 ### Current blocker — no staging environment exists yet
