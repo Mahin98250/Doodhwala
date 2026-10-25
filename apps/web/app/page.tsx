@@ -1,7 +1,7 @@
 const categories = [
-  { title: "Cow milk", detail: "Fresh and creamy", mark: "C" },
-  { title: "Buffalo milk", detail: "Rich and thick", mark: "B" },
-  { title: "A2 milk", detail: "Explore local options", mark: "A2" },
+  { title: "Cow milk", detail: "Fresh and creamy", mark: "C", filter: "cow" },
+  { title: "Buffalo milk", detail: "Rich and thick", mark: "B", filter: "buffalo" },
+  { title: "A2 milk", detail: "Explore local options", mark: "A2", filter: "a2" },
 ];
 
 export default function HomePage() {
@@ -37,7 +37,7 @@ export default function HomePage() {
 
       <section className="discover" id="discover" aria-labelledby="discover-title">
         <div className="section-heading"><div><p className="eyebrow">A GOOD PLACE TO START</p><h2 id="discover-title">Find your kind of milk</h2></div><p>Explore the options available from local providers.</p></div>
-        <div className="category-grid">{categories.map((category) => <a className="category-card" href="/providers" style={{ color: "inherit", textDecoration: "none" }} key={category.title} aria-label={"Explore " + category.title}><span className="category-mark">{category.mark}</span><span className="category-copy"><strong>{category.title}</strong><small>{category.detail}</small></span><span className="category-arrow" aria-hidden="true">↗</span></a>)}</div>
+        <div className="category-grid">{categories.map((category) => <a className="category-card" href={"/providers?milk=" + category.filter} style={{ color: "inherit", textDecoration: "none" }} key={category.title} aria-label={"Explore " + category.title}><span className="category-mark">{category.mark}</span><span className="category-copy"><strong>{category.title}</strong><small>{category.detail}</small></span><span className="category-arrow" aria-hidden="true">↗</span></a>)}</div>
         <p className="migration-note"><span aria-hidden="true">✦</span> Provider discovery now reads the existing live catalogue. Accounts, order placement, carts and checkout remain on the established app until each flow passes migration and security tests.</p>
       </section>
 
