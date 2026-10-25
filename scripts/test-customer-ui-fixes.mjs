@@ -40,6 +40,7 @@ assert.match(app, /milkTransition\?\.hideLoading\(\)/, "Home provider data loadi
 assert.match(app, /destination==="plans"\|\|destination==="orders"/, "Desktop sidebar must navigate to Plans and Orders.");
 assert.match(app, /DoodhwalaMilkTransition\.navigate\(url\)/, "Desktop customer navigation must use the milk transition.");
 assert.ok(home.indexOf("milk-transition.js?v=20261025.3") < home.indexOf("app.js?v=20261025.5"), "Milk transition runtime must be available before the home app requests data.");
+assert.match(ordersHtml, /customer-10x\.js\?v=20261023\.4" data-doodhwala-10x="1"/, "Orders page must use one current customer 10X runtime without injecting a duplicate.");
 assert.match(worker, /doodhwala-v93/, "PWA cache must change when the home runtime changes.");
 assert.match(transitionJs, /showLoading/);
 assert.match(transitionJs, /navigate\(url\)/);
