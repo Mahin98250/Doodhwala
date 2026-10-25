@@ -25,6 +25,8 @@ A React + Vite SPA would also be valid, but would need a separate strategy for s
 6. Keep the existing app deployable until the replacement passes functional parity, security checks, accessibility checks and mobile journey tests.
 7. Do not run two public production apps indefinitely; use a staged preview and a planned cutover with rollback.
 
+See [the legacy route and flow inventory](./LEGACY_ROUTE_FLOW_INVENTORY.md) for the entry-point-to-route matrix, observed Supabase RPC/table usage and critical migration invariants.
+
 ## Proposed route map
 
 - / — customer discovery/home
