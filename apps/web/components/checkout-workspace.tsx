@@ -4,10 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import WorkspaceFrame from "@/components/workspace-frame";
 import { clearProviderCheckoutKey, cartEntries, cartSubtotal, groupCartByProvider, idempotencyKeyForProvider, readCart, writeCart, type Cart, type CartItem } from "@/lib/commerce/cart";
-
-// Keep the promo UI fail-closed until preview_promo_code and create_order_with_promo
-// are present in the reviewed staging schema and their redemption limits are tested.
-const PROMO_CHECKOUT_ENABLED = false;
+import { PROMO_CHECKOUT_ENABLED, PROMO_CHECKOUT_UNAVAILABLE_MESSAGE } from "@/lib/commerce/promo";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 interface Address {
@@ -167,7 +164,7 @@ export default function CheckoutWorkspace() {
   async function applyPromo() {
     if (!PROMO_CHECKOUT_ENABLED) {
       setPromo(null);
-      setNotice({ kind: "error", text: "Promo codes are temporarily unavailable while server-side validation is completed. You can still place your order at the displayed price." });
+      setNotice({ kind: "error", text: PROMO_CHECKOUT_UNAVAILABLE_MESSAGE });
       return;
     }
     setBusy(true);
