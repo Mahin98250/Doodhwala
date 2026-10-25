@@ -53,6 +53,8 @@ jobs:
         run: node scripts/test-production-schema-inventory.mjs
       - name: Test product-detail null and price recovery
         run: node scripts/test-product-runtime.mjs
+      - name: Test milk loading coverage across customer journey
+        run: node scripts/test-milk-loading-coverage.mjs
       - name: Test PWA registration diagnostics
         run: node scripts/test-pwa-registration.mjs
       - name: Test premium experience and connection feedback
