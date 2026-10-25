@@ -11,7 +11,7 @@
 .dw-milk-glass{fill:#f7fcf8;fill-opacity:.9;stroke:#3b7953;stroke-width:1.5;stroke-linejoin:round}
 .dw-milk-fill{fill:#fff;fill-opacity:.96;transform-box:fill-box;transform-origin:50% 100%}
 .dw-milk-surface{fill:none;stroke:#d3e8d7;stroke-width:1.5;stroke-linecap:round;transform-box:fill-box;transform-origin:50% 100%}
-.dw-milk-source{left:4px;animation:dw-milk-tip var(--dw-pour-duration) cubic-bezier(.42,0,.28,1) infinite}
+.dw-milk-source{left:4px;bottom:15px;animation:dw-milk-tip var(--dw-pour-duration) cubic-bezier(.42,0,.28,1) infinite}
 .dw-milk-target{right:4px;bottom:-4px;animation:dw-milk-receive var(--dw-pour-duration) ease-in-out infinite}
 .dw-milk-source svg .dw-milk-fill{animation:dw-milk-empty-source var(--dw-pour-duration) ease-in-out infinite}
 .dw-milk-target svg .dw-milk-fill,.dw-milk-target svg .dw-milk-surface{animation:dw-milk-fill-target var(--dw-pour-duration) ease-in-out infinite}
