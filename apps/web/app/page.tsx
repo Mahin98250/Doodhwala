@@ -13,9 +13,9 @@ export default function HomePage() {
           <span><strong>Doodhwala</strong><small>Local milk, nearby.</small></span>
         </a>
         <nav className="topnav" aria-label="Main navigation">
-          <a href="#discover">Discover</a>
+          <a href="/providers">Discover</a>
           <a href="#how-it-works">How it works</a>
-          <a className="nav-cta" href="#discover">Find local milk <span aria-hidden="true">↗</span></a>
+          <a className="nav-cta" href="/providers">Find local milk <span aria-hidden="true">↗</span></a>
         </nav>
       </header>
 
@@ -24,7 +24,7 @@ export default function HomePage() {
           <p className="eyebrow"><span className="status-dot" /> FRESH · LOCAL · DIRECT</p>
           <h1 id="hero-title">Your neighbourhood’s milk, <em>one tap away.</em></h1>
           <p className="hero-description">Meet independent milk sellers near you. Compare what they offer, choose what suits your home, and order directly.</p>
-          <div className="hero-actions"><a className="button button-primary" href="#discover">Explore local milk <span aria-hidden="true">→</span></a><a className="text-link" href="#how-it-works">How Doodhwala works</a></div>
+          <div className="hero-actions"><a className="button button-primary" href="/providers">Explore local milk <span aria-hidden="true">→</span></a><a className="text-link" href="#how-it-works">How Doodhwala works</a></div>
           <div className="trust-row"><span aria-hidden="true">✓</span> Independent local sellers <span className="trust-divider">·</span> Transparent prices <span className="trust-divider">·</span> Direct ordering</div>
         </div>
         <div className="hero-art" aria-label="Illustration of a milk bottle in a green countryside" role="img">
@@ -37,8 +37,8 @@ export default function HomePage() {
 
       <section className="discover" id="discover" aria-labelledby="discover-title">
         <div className="section-heading"><div><p className="eyebrow">A GOOD PLACE TO START</p><h2 id="discover-title">Find your kind of milk</h2></div><p>Explore the options available from local providers.</p></div>
-        <div className="category-grid">{categories.map((category) => <article className="category-card" key={category.title}><span className="category-mark">{category.mark}</span><span className="category-copy"><strong>{category.title}</strong><small>{category.detail}</small></span><span className="category-arrow" aria-hidden="true">↗</span></article>)}</div>
-        <p className="migration-note"><span aria-hidden="true">✦</span> This is the new framework foundation. Live provider search, accounts, carts and checkout will be migrated only after their existing behaviour is mapped and tested.</p>
+        <div className="category-grid">{categories.map((category) => <a className="category-card" href="/providers" style={{ color: "inherit", textDecoration: "none" }} key={category.title} aria-label={"Explore " + category.title}><span className="category-mark">{category.mark}</span><span className="category-copy"><strong>{category.title}</strong><small>{category.detail}</small></span><span className="category-arrow" aria-hidden="true">↗</span></a>)}</div>
+        <p className="migration-note"><span aria-hidden="true">✦</span> Provider discovery now reads the existing live catalogue. Accounts, order placement, carts and checkout remain on the established app until each flow passes migration and security tests.</p>
       </section>
 
       <section className="how-section" id="how-it-works"><p className="eyebrow">SIMPLE BY DESIGN</p><h2 id="how-title">Local milk. Less hassle.</h2><div className="steps"><article><span>01</span><strong>Discover nearby</strong><p>Explore independent providers serving your area.</p></article><article><span>02</span><strong>Compare confidently</strong><p>Review milk types, prices and delivery details.</p></article><article><span>03</span><strong>Order directly</strong><p>Choose a seller and follow a clear order journey.</p></article></div></section>
