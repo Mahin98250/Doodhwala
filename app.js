@@ -222,6 +222,12 @@ function clearComparison(closeDialog=false){
  comparedProviderIds=[];render();if(closeDialog)closeCompareDialog();toast("Comparison cleared");
 }
 function navigateHomeView(destination){
+ if(destination==="plans"||destination==="orders"){
+  const url="/Doodhwala/"+(destination==="plans"?"plans.html":"orders.html");
+  if(window.DoodhwalaMilkTransition&&typeof window.DoodhwalaMilkTransition.navigate==="function")window.DoodhwalaMilkTransition.navigate(url);
+  else window.location.href=url;
+  return;
+ }
  if(destination==="providers"){browseMode="all";activeFilter=activeFilter||"all";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="saved"){browseMode="saved";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="home"){browseMode="all";render();window.scrollTo({top:0,behavior:"smooth"})}
