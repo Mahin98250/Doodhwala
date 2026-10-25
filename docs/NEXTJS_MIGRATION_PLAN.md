@@ -52,7 +52,7 @@ Route names are proposed and must be reconciled with existing links before cutov
 
 ### Phase 1 — framework foundation
 
-- Establish the isolated Next.js app, design shell, metadata, typed configuration and CI build/type-check.
+- Establish the isolated Next.js app, design shell, metadata, typed configuration, baseline HTTP security headers and CI build/type-check.
 - Add preview deployment without changing the existing production domain.
 - Exit: deterministic install, type-check, build and preview smoke test pass.
 
