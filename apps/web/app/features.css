@@ -151,3 +151,13 @@
 .workspace-location-panel strong{font-size:12px}
 .workspace-location-panel span{font-size:11px;color:var(--ws-muted);overflow-wrap:anywhere}
 .workspace-location-panel .workspace-muted{flex-basis:100%;margin:0}
+
+
+/* Seller dispatch: thumb-friendly queue filters and mobile-first controls */
+.workspace-order-filters{display:flex;gap:8px;flex-wrap:wrap;overflow-x:auto;margin:18px 0 10px;padding:4px 0;border-bottom:0;}
+.workspace-order-filters button{appearance:none;border:1px solid var(--ws-line);border-radius:999px;background:#fff;color:var(--ws-muted);font-size:12px;font-weight:750;padding:11px 15px;min-height:42px;white-space:nowrap;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease;}
+.workspace-order-filters button.active{background:var(--ws-green);border-color:var(--ws-green);color:#fff;}
+.workspace-order-filters button:focus-visible{outline:3px solid #9ac59c;outline-offset:3px;}
+.workspace-metric .workspace-text-button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;margin-top:12px;padding:9px 12px;border:1px solid var(--ws-line);border-radius:11px;background:#fff;color:var(--ws-green);font-weight:800;cursor:pointer;}
+.workspace-row-actions select{min-height:42px;max-width:100%;border:1px solid var(--ws-line);border-radius:11px;background:#fff;padding:9px 11px;color:var(--ws-ink);}
+@media(max-width:600px){.workspace-order-filters{flex-wrap:nowrap;margin-right:-2px;padding-bottom:6px;}.workspace-order-filters button{flex:0 0 auto;min-height:44px;padding:11px 14px}.workspace-row-actions select{width:100%;min-height:46px}.workspace-metric .workspace-text-button{width:100%;min-height:44px}.workspace-list-row{gap:12px}}
