@@ -15,6 +15,9 @@ const worker = read("sw.js");
 const resilience = read("resilience.js");
 
 assert.doesNotMatch(plans, /\bsup\.(?:from|rpc)\(/, "Plans must call the Supabase client accessor before from()/rpc().");
+for (const script of ["app.js", "auth.js", "checkout.js", "checkout-10x.js", "customer-nav.js", "customer-10x.js", "customer-market-10x.js", "location.js", "orders.js", "plans.js", "product.js", "store.js"]) {
+  assert.doesNotMatch(read(script), /\\bsup\\.(?:from|rpc)\\(/, script + " must not call from()/rpc() on a Supabase client accessor function.");
+}
 assert.match(plans, /const sup\s*=\s*\(\)\s*=>\s*window\.Doodhwala\?\.supabase/, "Plans Supabase accessor should remain explicit.");
 assert.match(plans, /async function loadContext\(/, "Plans account loading entry point must exist.");
 assert.match(plans, /async function loadPlans\(/, "Plans list loading entry point must exist.");
