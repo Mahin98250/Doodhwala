@@ -129,14 +129,14 @@ if(fs.existsSync(providerHtmlPath)){
   if(!providerHtml.includes('data-view="subscriptions"')) errors.push("provider.html -> subscriptions navigation missing");
   if(!providerHtml.includes('id="view-subscriptions"')) errors.push("provider.html -> subscriptions view missing");
   if(!providerHtml.includes("provider.js?v=")) errors.push("provider.html -> provider bundle cache bust missing");
-  if(!providerHtml.includes("/Doodhwala/provider.js?v=20261022.5")) errors.push("provider.html -> provider feed runtime cache version stale");
+  if(!providerHtml.includes("/Doodhwala/provider.js?v=20261025.3")) errors.push("provider.html -> provider feed runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Doodhwala/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
-  if(!swText.includes("/Doodhwala/provider.js?v=20261022.5")) errors.push("sw.js -> latest provider feed runtime missing from precache");
+  if(!swText.includes("/Doodhwala/provider.js?v=20261025.3")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Doodhwala/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v90"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v93"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -173,11 +173,11 @@ if(localFiles.has("/admin.js")){
   ]) if(!adminJs.includes(required)) errors.push("admin live sync -> missing integration contract "+required);
 }
 const adminHtmlPath=path.join(root,"admin.html");
-if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261025.1")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v90"')) errors.push("sw.js -> admin live-sync cache revision stale");
-  if(!swText.includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
+  if(!swText.includes('const CACHE="doodhwala-v93"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes("/Doodhwala/admin.js?v=20261025.1")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
 if(!localFiles.has(adminRealtimeMigration)) errors.push("admin live-sync migration missing");
@@ -233,12 +233,12 @@ if(localFiles.has("/orders.js")){
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Doodhwala/orders.html">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
-  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261023.2')) errors.push("checkout.html -> checkout runtime cache version stale");
+  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("checkout.html -> checkout runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v90"')) errors.push("sw.js -> P0 checkout cache revision missing");
-  if(!swP0.includes('/Doodhwala/checkout.js?v=20261023.2')) errors.push("sw.js -> latest checkout runtime missing from precache");
+  if(!swP0.includes('const CACHE="doodhwala-v93"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
@@ -251,12 +251,12 @@ if(fs.existsSync(path.join(root,"admin.html"))){
   const adminHtml=fs.readFileSync(path.join(root,"admin.html"),"utf8");
   if(!adminHtml.includes('data-section="health"')) errors.push("admin.html -> System Health navigation missing");
   if(!adminHtml.includes('data-section="support"')) errors.push("admin.html -> support inbox navigation missing");
-  if(!adminHtml.includes('admin.js?v=20261022.3')) errors.push("admin.html -> admin runtime cache version stale");
+  if(!adminHtml.includes('admin.js?v=20261025.1')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
   if(file==="/offline.html") continue; // Keep the offline recovery page independent of app bootstrapping.
   const htmlText=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!htmlText.includes('/Doodhwala/resilience.js?v=20261023.5')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
+  if(!htmlText.includes('/Doodhwala/resilience.js?v=20261025.1')) errors.push(file+" -> resilience bootstrap missing or cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swCheck=fs.readFileSync(path.join(root,"sw.js"),"utf8");
@@ -275,13 +275,13 @@ if(localFiles.has("/sw.js")){
 
 
 const productHtml=fs.readFileSync(path.join(root,"product.html"),"utf8");
-if(!productHtml.includes('/Doodhwala/product.js?v=20261022.5')) errors.push("product.html -> product detail runtime cache version stale");
+if(!productHtml.includes('/Doodhwala/product.js?v=20261025.6')) errors.push("product.html -> product detail runtime cache version stale");
 const productSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-if(!productSw.includes('/Doodhwala/product.js?v=20261022.5')) errors.push("sw.js -> guarded product detail runtime missing from offline precache");
+if(!productSw.includes('/Doodhwala/product.js?v=20261025.6')) errors.push("sw.js -> guarded product detail runtime missing from offline precache");
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!html.includes('resilience.js?v=20261023.5')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
+  if(!html.includes('resilience.js?v=20261025.1')) errors.push(file+" -> resilience runtime must be cache-busted and loaded");
 }
 for(const [file,expected] of [["/checkout.html","return=%2FDoodhwala%2Fcheckout.html"],["/orders.html","return=%2FDoodhwala%2Forders.html"],["/plans.html","return=%2FDoodhwala%2Fplans.html"]]){
   if(localFiles.has(file)){

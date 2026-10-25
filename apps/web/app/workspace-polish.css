@@ -1,0 +1,207 @@
+/* Doodhwala workspace refresh — calm dairy-green palette, clear hierarchy, responsive layouts. */
+:root {
+  --dw-forest: #123c2a;
+  --dw-green: #1f7048;
+  --dw-green-hover: #185a3a;
+  --dw-lime: #d8f29a;
+  --dw-green-wash: #edf6e9;
+  --dw-ink: #17251d;
+  --dw-muted: #68766c;
+  --dw-border: #e3eae1;
+  --dw-surface: #ffffff;
+  --dw-canvas: #f5f8f3;
+  --dw-shadow: 0 8px 26px rgba(20, 56, 34, .055);
+}
+
+/* Shared customer + commerce workspaces */
+.workspace {
+  color: var(--dw-ink);
+  background:
+    radial-gradient(ellipse at 88% -12%, rgba(208, 232, 195, .42), transparent 32rem),
+    var(--dw-canvas);
+}
+.workspace-header {
+  min-height: 76px;
+  border-bottom-color: var(--dw-border);
+}
+.workspace-brand-mark {
+  background: var(--dw-forest);
+  border-radius: 13px;
+  box-shadow: 0 5px 14px rgba(18, 60, 42, .16);
+}
+.workspace-brand strong { font-size: 16px; }
+.workspace-nav { gap: clamp(10px, 1.5vw, 20px); color: #526357; }
+.workspace-nav a { padding: 10px 0; transition: color .16s ease; }
+.workspace-nav a:hover { color: var(--dw-green); text-decoration: none; }
+.workspace-content { padding-top: clamp(28px, 4vw, 46px); }
+.workspace-intro { margin-bottom: 26px; }
+.workspace-intro h1 { max-width: 850px; font-size: clamp(32px, 4vw, 48px); letter-spacing: -.055em; line-height: 1.08; }
+.workspace-eyebrow { color: var(--dw-green); letter-spacing: .14em; }
+.workspace-card, .workspace-metric {
+  border: 1px solid var(--dw-border);
+  box-shadow: var(--dw-shadow);
+}
+.workspace-card { border-radius: 18px; }
+.workspace-button { min-height: 40px; border-radius: 11px; transition: background .16s ease, transform .16s ease, box-shadow .16s ease; }
+.workspace-button-primary { background: var(--dw-green); box-shadow: 0 5px 12px rgba(31, 112, 72, .12); }
+.workspace-button-primary:hover { background: var(--dw-green-hover); }
+.workspace-button-secondary { background: #fff; border-color: #dce6db; color: #314b39; }
+.workspace-metric { border-radius: 16px; background: #fff; }
+.workspace-metric strong { color: var(--dw-forest); letter-spacing: -.04em; }
+.workspace-notice { border-radius: 12px; }
+.workspace-table-wrap { border: 1px solid var(--dw-border); border-radius: 14px; }
+.workspace-table th { background: #f5f8f3; }
+.workspace-table td, .workspace-table th { border-bottom-color: #e8eee6; }
+.workspace-footer { border-top-color: var(--dw-border); }
+
+/* Owner/admin: inspired by Mahin's compact admin shell, adapted to Doodhwala green. */
+.workspace:has(.workspace-owner-layout) .workspace-header {
+  min-height: 72px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(248, 250, 246, .92);
+  backdrop-filter: blur(16px);
+}
+.workspace:has(.workspace-owner-layout) .workspace-nav { display: none; }
+.workspace:has(.workspace-owner-layout) .workspace-content {
+  max-width: 1480px;
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  column-gap: 22px;
+  align-items: start;
+  padding-top: 30px;
+}
+.workspace:has(.workspace-owner-layout) .workspace-intro,
+.workspace:has(.workspace-owner-layout) > .workspace-content > .workspace-notice {
+  grid-column: 1 / -1;
+}
+.workspace:has(.workspace-owner-layout) .workspace-intro { max-width: none; margin-bottom: 22px; }
+.workspace:has(.workspace-owner-layout) .workspace-intro h1 { font-size: clamp(30px, 3vw, 40px); }
+.workspace-owner-layout { display: contents; }
+.workspace-owner-nav {
+  grid-column: 1;
+  position: sticky;
+  top: 94px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background: linear-gradient(165deg, #153f2c, #102f22);
+  box-shadow: 0 14px 30px rgba(17, 55, 36, .13);
+}
+.workspace-owner-nav::before {
+  content: "DOODHWALA  /  CONTROL";
+  display: block;
+  padding: 10px 9px 14px;
+  color: #b7d4c1;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .13em;
+}
+.workspace-owner-nav button {
+  min-height: 40px;
+  padding: 10px 11px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #e5efe8;
+  font-size: 12px;
+  font-weight: 680;
+}
+.workspace-owner-nav button span { color: #9ab7a4; }
+.workspace-owner-nav button:hover { background: rgba(255,255,255,.07); color: #fff; }
+.workspace-owner-nav button.active {
+  color: #173c29;
+  background: var(--dw-lime);
+  box-shadow: 0 5px 14px rgba(0,0,0,.08);
+}
+.workspace-owner-nav button.active span { color: #315e3e; }
+.workspace-owner-main { grid-column: 2; min-width: 0; }
+.workspace-owner-main .workspace-section-head { align-items: center; margin: 0 0 16px; }
+.workspace-owner-main .workspace-section-head h2 { font-size: clamp(22px, 2.4vw, 30px); letter-spacing: -.05em; }
+.workspace-owner-main .workspace-card { padding: clamp(16px, 2vw, 24px); }
+.workspace-owner-main .workspace-metric-grid { gap: 12px; }
+.workspace-owner-main .workspace-metric { padding: 18px; }
+.workspace-owner-main .workspace-metric small { color: var(--dw-muted); }
+.workspace-owner-main .workspace-metric strong { font-size: clamp(23px, 2.6vw, 31px); }
+.workspace-owner-main .workspace-table { min-width: 620px; }
+
+/* Seller workspace: fewer competing links, prominent daily tasks and consistent action styles. */
+.workspace:has(.workspace-subnav) .workspace-nav { display: none; }
+.workspace:has(.workspace-subnav) .workspace-content { max-width: 1180px; padding-top: 34px; }
+.workspace:has(.workspace-subnav) .workspace-intro h1 { font-size: clamp(31px, 4vw, 46px); }
+.workspace-subnav {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px;
+  gap: 4px;
+  border: 1px solid var(--dw-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 6px 18px rgba(20, 56, 34, .045);
+  backdrop-filter: blur(12px);
+}
+.workspace-subnav a {
+  min-height: 37px;
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 13px;
+  border-color: transparent;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.workspace-subnav a.active { background: var(--dw-green-wash); color: var(--dw-green); border-color: #d8e8d3; }
+.seller-today-card { background: linear-gradient(145deg, #fff 0%, #f8fcf6 100%); }
+.seller-today-stats > div { border: 1px solid var(--dw-border); border-radius: 13px; background: #fff; padding: 14px; }
+.seller-today-stats strong { color: var(--dw-forest); }
+.seller-store-pill.open { background: var(--dw-green-wash); color: var(--dw-green); }
+
+/* Mobile: avoid cramped navigation and preserve usable tap targets. */
+@media (max-width: 900px) {
+  .workspace:has(.workspace-owner-layout) .workspace-content {
+    display: block;
+    padding-top: 24px;
+  }
+  .workspace-owner-layout { display: block; }
+  .workspace-owner-nav {
+    position: sticky;
+    top: 76px;
+    z-index: 25;
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 7px;
+    border-radius: 13px;
+    margin-bottom: 18px;
+    scrollbar-width: thin;
+  }
+  .workspace-owner-nav::before { display: none; }
+  .workspace-owner-nav button { flex: 0 0 auto; min-height: 38px; padding: 9px 12px; }
+  .workspace-owner-nav button span { display: none; }
+  .workspace-owner-main { width: 100%; }
+  .workspace-owner-main .workspace-section-head { align-items: flex-start; }
+}
+@media (max-width: 600px) {
+  .workspace-header { min-height: auto; padding: 14px 0 10px; gap: 10px; }
+  .workspace-brand small { max-width: 220px; }
+  .workspace-nav { gap: 14px; padding: 4px 0 7px; font-size: 11px; }
+  .workspace-content { padding-top: 24px; padding-bottom: 32px; }
+  .workspace-intro { margin-bottom: 20px; }
+  .workspace-intro h1 { font-size: 34px; }
+  .workspace-card { border-radius: 16px; margin-bottom: 13px; }
+  .workspace-section-head, .workspace-order-head { gap: 12px; flex-wrap: wrap; }
+  .workspace:has(.workspace-subnav) .workspace-content { padding-top: 24px; }
+  .workspace-subnav { top: 5px; width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  .workspace-subnav a { flex: 0 0 auto; }
+  .workspace-owner-nav { top: 68px; }
+  .workspace-owner-main .workspace-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-owner-main .workspace-metric { padding: 13px; }
+  .workspace-owner-main .workspace-metric strong { font-size: 23px; }
+  .workspace-footer { font-size: 10px; line-height: 1.6; }
+}

@@ -25,6 +25,8 @@ function setDefaultDates(){const t=new Date(),to=t.toISOString().slice(0,10),f=n
 function gateError(msg){$("adminGate").classList.add("error");$("adminGate").innerHTML='<img src="/Doodhwala/assets/mascot.png" alt=""><span>DOODHWALA CONTROL</span><h1>'+esc(msg)+'</h1><p><a href="/Doodhwala/auth.html?return=/Doodhwala/admin.html">Sign in as owner</a> · <a href="/Doodhwala/">Return to Doodhwala</a></p>'}
 async function adminRpc(name,args={}){const {data,error}=await Doodhwala.supabase.rpc(name,args);if(error)throw error;return data||[]}
 async function boot(){
+  window.DoodhwalaMilkTransition?.showLoading("Opening owner control centre…");
+  try {
  if(!Doodhwala.configured){gateError("Backend unavailable.");return}
  const {data,error}=await Doodhwala.supabase.auth.getUser();
  if(error||!data.user){gateError("Sign in required.");return}
@@ -33,6 +35,14 @@ async function boot(){
  $("adminGate").classList.add("hidden");$("adminApp").classList.remove("hidden");setDefaultDates();setupAdminRealtime();
  $("adminSignout").onclick=async()=>{await Doodhwala.supabase.auth.signOut();location.href="/Doodhwala/"};
  await loadSection("overview");prefetchAdminData();
+
+  } catch (error) {
+    console.warn("Owner workspace failed to initialize", error);
+    if (document.getElementById("adminApp")?.classList.contains("hidden")) gateError("Could not load the owner workspace. Check your connection and retry.");
+    else { const toast = document.getElementById("adminToast"); if (toast) { toast.textContent = "Could not load owner data. Check your connection and refresh."; toast.className = "admin-toast error"; } }
+  } finally {
+    window.DoodhwalaMilkTransition?.hideLoading();
+  }
 }
 async function loadOverview(){
  const {data,error}=await Doodhwala.supabase.rpc("get_admin_overview",{p_from:$("fromDate").value,p_to:$("toDate").value});

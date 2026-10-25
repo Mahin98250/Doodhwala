@@ -88,6 +88,8 @@ function render(){
  renderStoreMap();
 }
 async function load(){
+  window.DoodhwalaMilkTransition?.showLoading("Opening this local dairy…");
+  try {
  setLocationLabel();
  if(!PROVIDER_ID){$("storeState").innerHTML='<div class="market-empty"><h3>Provider not found</h3><p>Return to Explore and choose a local provider.</p><a class="primary" href="/Doodhwala/?view=providers">Explore providers →</a></div>';return}
  if(!window.Doodhwala?.configured){$("storeState").innerHTML='<div class="market-empty"><h3>Marketplace backend is unavailable.</h3><p>Please try again when the connection is restored.</p></div>';return}
@@ -96,6 +98,13 @@ async function load(){
  const {data,error}=await sup().rpc("get_provider_storefront",{p_provider_id:PROVIDER_ID,p_latitude:pos?.latitude??null,p_longitude:pos?.longitude??null});
  if(error||!data?.[0]){$("storeState").innerHTML='<div class="market-empty"><h3>Provider unavailable</h3><p>'+esc(error?.message||"This provider is not currently available.")+'</p><a class="primary" href="/Doodhwala/?view=providers">Back to Explore →</a></div>';return}
  store=data[0];$("storeState").innerHTML="";render();
+
+  } catch (error) {
+    console.warn("store.js initialization failed", error);
+    $("storeState").innerHTML='<div class="market-empty"><h3>Store temporarily unavailable</h3><p>We couldn’t load this seller’s catalogue. Your cart has not been changed. Check your connection and try again.</p><a class="primary" href="/Doodhwala/?view=providers">Back to Explore →</a></div>';
+  } finally {
+    window.DoodhwalaMilkTransition?.hideLoading();
+  }
 }
 $("storeChangeLocation").onclick=()=>location.href="/Doodhwala/?openLocation=1";
 load();

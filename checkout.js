@@ -21,6 +21,8 @@ function checkoutMilkIcon(){return '<svg viewBox="0 0 64 66" aria-hidden="true">
 function renderItems(){const entries=cartEntries();if(!entries.length){$("checkoutItems").innerHTML='<div class="empty-provider-state"><div class="checkout-empty-icon">'+checkoutMilkIcon()+'</div><h3>Your cart is empty</h3><p>Choose milk from a local provider first.</p><a class="primary checkout-cta" href="/Doodhwala/">Back to shop →</a></div>';return}const valid=entries.filter(x=>x.providerId&&x.productId);const invalid=entries.length-valid.length;if(invalid){$("checkoutState").textContent="Your cart contains older demo items. Please add the milk again after the backend is connected.";$("checkoutState").style.color="#a46a22"}$("providerCount").textContent=grouped().length+" provider"+(grouped().length===1?"":"s");$("checkoutItems").innerHTML=valid.map(x=>'<div class="checkout-line"><div class="checkout-thumb">'+checkoutMilkIcon()+'</div><div><h4>'+escapeHtml(x.milk)+'</h4><p>'+escapeHtml(x.provider)+" · "+money(x.unitPrice||0)+" / L · "+x.qty+" L"+'</p></div><b>'+money((x.unitPrice||0)*x.qty)+'</b></div>').join("");const subtotal=valid.reduce((s,x)=>s+(Number(x.unitPrice)||0)*x.qty,0);$("checkoutSubtotal").textContent=money(subtotal);const discount=Number(appliedPromo?.discount_amount||0);const discountRow=$("checkoutDiscountRow");if(discountRow){discountRow.hidden=discount<=0;$("checkoutDiscount").textContent="−"+money(discount)}$("checkoutTotal").textContent=money(Math.max(0,subtotal-discount))}
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 async function load(){
+  window.DoodhwalaMilkTransition?.showLoading("Preparing your milk bag…");
+  try {
  if(!window.Doodhwala.configured){$("checkoutState").textContent="Supabase credentials are not configured yet. The checkout UI is ready, but real orders are disabled.";$("checkoutState").style.color="#a46a22";return}
  const {data,error}=await Doodhwala.supabase.auth.getUser();
  if(error||!data.user){$("checkoutState").textContent="Sign in to continue to checkout";$("authGate").classList.remove("hidden");renderItems();return}
@@ -29,6 +31,13 @@ async function load(){
  const {data:addresses}=await Doodhwala.supabase.from("addresses").select("*").order("is_default",{ascending:false}).limit(1);
  if(addresses?.[0])fillAddress(addresses[0]);
  renderItems();
+
+  } catch (error) {
+    console.warn("checkout.js initialization failed", error);
+    $("checkoutState").textContent="We couldn’t prepare checkout right now. Your cart is safe; check your connection and reload to retry."; $("checkoutState").style.color="#a46a22";
+  } finally {
+    window.DoodhwalaMilkTransition?.hideLoading();
+  }
 }
 function fillAddress(a){savedAddressId=a.id||null;$("recipient").value=a.recipient_name||sessionUser?.user_metadata?.full_name||"";$("addressPhone").value=a.phone||"";$("addressLine").value=a.address_line||"";$("addressArea").value=a.area_name||"";$("addressCity").value=a.city||"Ahmedabad";$("addressPin").value=a.pin_code||"";$("defaultAddress").checked=Boolean(a.is_default);$("addressLatitude").value=a.latitude??"";$("addressLongitude").value=a.longitude??"";syncCheckoutLocation()}
 $("addressForm").onsubmit=async e=>{
