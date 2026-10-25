@@ -31,7 +31,7 @@ Validation commands:
 | /support, /legal, /offline | Customer tickets and ticket history, marketplace information and offline recovery |
 | Legacy .html aliases | Rewrites for former paths including /Doodhwala/auth.html, checkout/orders/plans/provider/admin/support/store/product/legal/offline pages |
 
-The route matrix and legacy RPC inventory live in ../../docs/LEGACY_ROUTE_FLOW_INVENTORY.md. This is a feature migration, not a schema migration. The UI uses existing RPCs and user-scoped tables instead of creating parallel data models.
+The route matrix and legacy RPC inventory live in ../../docs/LEGACY_ROUTE_FLOW_INVENTORY.md. The stability and scale gates live in docs/SCALE_AND_STABILITY.md. This is a feature migration, not a schema migration. The UI uses existing RPCs and user-scoped tables instead of creating parallel data models.
 
 ## Authentication provider configuration
 
@@ -40,6 +40,7 @@ The preview origin must be configured in Supabase Authentication's allowed redir
 ## Security boundaries
 
 - The browser only receives the publishable/anon key. The client refuses known Supabase secret/service-role key shapes.
+- Supabase project URLs are normalized and validated; insecure non-local HTTP URLs and URLs containing embedded credentials, query strings or fragments are rejected.
 - Session identity comes from Supabase Auth, but roles and access must be enforced by existing RPCs/RLS; client-rendered hiding is not an authorization boundary.
 - Order product IDs, prices, delivery coverage, promo eligibility, idempotency and payment method readiness must be checked by the backend when order creation occurs.
 - Direct UPI hands off to the seller's payee URI. Opening a UPI app is not payment proof; only the seller confirmation flow changes recorded receipt status. COD is likewise recorded by the seller.
