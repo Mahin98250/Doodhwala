@@ -44,6 +44,10 @@ assert.ok(home.indexOf("milk-transition.js?v=20261025.3") < home.indexOf("app.js
 assert.match(ordersHtml, /customer-10x\.js\?v=20261023\.4" data-doodhwala-10x="1"/, "Orders page must use one current customer 10X runtime without injecting a duplicate.");
 assert.match(worker, /doodhwala-v93/, "PWA cache must change when the home runtime changes.");
 assert.match(transitionJs, /showLoading/);
+const showLoadingBlock = transitionJs.slice(transitionJs.indexOf("function showLoading"), transitionJs.indexOf("function hideLoading"));
+assert.match(showLoadingBlock, /loader\.hidden=false/, "Data loader must be prepared before a transition overlay fades.");
+assert.doesNotMatch(showLoadingBlock, /if\(overlay&&overlay\.classList\.contains\("is-visible"\)\)return/, "A visible page-transition overlay must not suppress the data-loading indicator.");
+
 assert.match(transitionJs, /navigate\(url\)/);
 assert.match(transitionCss, /@keyframes dw-milk-drop/);
 assert.match(transitionCss, /prefers-reduced-motion/);
