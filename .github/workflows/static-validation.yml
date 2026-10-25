@@ -2,9 +2,9 @@ name: Static validation
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging, architecture/nextjs-migration-foundation, security/staging-db-hardening]
   pull_request:
-    branches: [main]
+    branches: [main, staging, architecture/nextjs-migration-foundation]
 
 jobs:
   validate:
