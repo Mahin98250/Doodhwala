@@ -80,4 +80,7 @@ assert.ok(ordersHtml.includes("qrcode@1.5.4"), "QR library must load before the 
 assert.ok(ordersHtml.includes("direct-upi-checkout.js?v=20261023.1"));
 assert.ok(ordersHtml.includes("direct-upi-checkout.css?v=20261023.1"));
 assert.doesNotMatch(checkout + provider + orders, /upi_pin|bank_password|card_cvv/i, "Doodhwala must never collect payment credentials");
+const paymentIndexes = read("supabase/migrations/20261025190000_doodhwala_payment_fk_indexes.sql");
+assert.match(paymentIndexes, /create index if not exists orders_payment_confirmed_by_idx\\s+on public\\.orders \\(payment_confirmed_by\\)/i, "payment confirmer foreign key should be indexed");
+assert.match(paymentIndexes, /create index if not exists payment_transactions_provider_id_idx\\s+on public\\.payment_transactions \\(provider_id\\)/i, "payment transaction provider foreign key should be indexed");
 console.log("Direct seller payment contracts passed: seller-scoped UPI, customer-owned orders, explicit COD, manual confirmation, race protection, and guarded payment fields.");
