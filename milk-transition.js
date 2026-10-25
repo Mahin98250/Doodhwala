@@ -40,7 +40,8 @@
   }
   function showLoading(label){
     if(!ensure())return;
-    if(overlay&&overlay.classList.contains("is-visible"))return;
+    // Prepare the inline loader even while the full transition overlay is visible.
+    // When the short overlay fades, the data-loading indicator remains until work ends.
     loader.querySelector(".dw-milk-title").textContent=label||"Loading fresh data…";
     loader.hidden=false;
   }
