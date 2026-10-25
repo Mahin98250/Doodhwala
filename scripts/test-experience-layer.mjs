@@ -43,7 +43,7 @@ assert.ok(workflow.includes("support.js network-status.js; do"), "new shared JS 
 assert.ok(workflow.includes('node --check "$file"'), "syntax-check loop must execute node --check for every listed file");
 assert.ok(workflow.includes("Test premium experience and connection feedback"), "new contract test must run in CI");
 
-const uiPages = ["admin.html","auth.html","checkout.html","index.html","legal.html","orders.html","plans.html","product.html","provider.html","store.html","support.html"];
+const uiPages = ["admin.html","auth.html","checkout.html","index.html","legal.html","offline.html","orders.html","plans.html","product.html","provider.html","store.html","support.html"];
 for (const path of uiPages) {
   const html = read(path);
   assert.ok(html.includes("/Doodhwala/ui-system.css?v=20261025.2"), path + " must include the shared cross-route UI system");
