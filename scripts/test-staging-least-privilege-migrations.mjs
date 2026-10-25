@@ -15,7 +15,7 @@ assert.match(privileges, /before insert or update on public\.profiles/);
 const sellerPrivacy = lower("supabase/migrations/20261025215000_staging_protect_seller_private_fields.sql");
 assert.match(sellerPrivacy, /revoke select on table public\.provider_profiles from authenticated/);
 assert.match(sellerPrivacy, /revoke select on table public\.provider_verifications from authenticated/);
-assert.match(sellerPrivacy, /grant select \\(provider_id, status\\)\\s+on table public\\.provider_verifications to authenticated/);
+assert.match(sellerPrivacy, /grant select \(provider_id, status\)\s+on table public\.provider_verifications to authenticated/);
 assert.match(sellerPrivacy, /revoke execute on function public\.find_nearby_providers\(numeric, numeric, numeric\) from public, anon, authenticated/);
 assert.doesNotMatch(sellerPrivacy, /grant select\s*\([^)]*owner_name/i,
   "seller private name must not be granted through the public table");
