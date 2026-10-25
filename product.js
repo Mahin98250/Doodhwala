@@ -69,6 +69,8 @@ function render(){
  else {box.className="location-service-card";$("locationServiceTitle").textContent="Check delivery availability";$("locationServiceCopy").textContent="Choose a delivery location to see if this provider serves you."}
 }
 async function load(){
+  window.DoodhwalaMilkTransition?.showLoading("Finding this milk…");
+  try {
  setLocationLabel();
  $("addToCart").disabled=true;
  $("minus").disabled=true;
@@ -93,6 +95,13 @@ async function load(){
    console.error("Product detail load failed",error);
    setState("Could not load this product","Check your connection and try again. No order or cart changes were made.",["/Doodhwala/product.html?provider="+encodeURIComponent(providerId)+"&product="+encodeURIComponent(productId),"Try again →"]);
  }
+
+  } catch (error) {
+    console.warn("product.js initialization failed", error);
+    setState("Could not load this milk","Check your connection and try again. No order or cart changes were made.",["/Doodhwala/?view=providers","Back to Explore →"]);
+  } finally {
+    window.DoodhwalaMilkTransition?.hideLoading();
+  }
 }
 $("minus").onclick=()=>{if(!store||!product)return;qty=Math.max(1,qty-1);render()};
 $("plus").onclick=()=>{if(!store||!product)return;qty=Math.min(100,qty+1);render()};
