@@ -265,6 +265,8 @@ document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=
 async function loadRemoteProviders(lat=null,lng=null){
  if(!window.Doodhwala?.configured){dataState="error";render();return}
  dataState="loading";render();
+ window.DoodhwalaMilkTransition?.showLoading("Finding fresh milk nearby…");
+ try{
  const {data,error}=await Doodhwala.supabase.rpc("find_nearby_providers_v2",{p_latitude:lat,p_longitude:lng,p_max_km:20});
  if(error)throw error;
  providers=(data||[]).map(row=>{
@@ -281,6 +283,7 @@ async function loadRemoteProviders(lat=null,lng=null){
    }
  });
  window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
+}finally{window.DoodhwalaMilkTransition?.hideLoading();}
 }
 async function loadRemoteProvidersFromSaved(){
  const pos=readLocation();
