@@ -47,6 +47,8 @@ jobs:
         run: node scripts/test-staging-load-test-safety.mjs
       - name: Test staging baseline and read-only audit contracts
         run: node scripts/test-staging-baseline.mjs
+      - name: Test delivery tracking owner-policy contract
+        run: node scripts/test-delivery-tracking-policy.mjs
       - name: Report production migration-history drift (static snapshot)
         run: node scripts/test-production-migration-manifest.mjs
       - name: Validate focused production schema inventory snapshot
