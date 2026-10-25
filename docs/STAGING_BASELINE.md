@@ -2,6 +2,37 @@
 
 **Status as of 2026-10-25: a separate staging project exists and is healthy, but complete environment isolation and end-to-end acceptance are still pending.** Staging project ref: `jbcekiaiyxcatueixeqh` (`Doodhwala Staging`), region `ap-northeast-2`, PostgreSQL 17.11.0.003. API URL: `https://jbcekiaiyxcatueixeqh.supabase.co`. Do not run synthetic checkout/load tests against production.
 
+## Current staging security and acceptance results (2026-10-25)
+
+The latest checks below apply only to staging project `jbcekiaiyxcatueixeqh`. Production project `hmiboyfcvtfawrwujslg` has not been modified.
+
+### Live database protections verified
+
+- Anonymous table writes are fully revoked: the catalog query reports **0 public tables / 0 anon DML grants**.
+- The legacy `public.find_nearby_providers(numeric,numeric,numeric)` RPC is no longer executable by anon/authenticated clients. The bounded `find_nearby_providers_v2` RPC remains available and returns only public marketplace fields, bounded to a maximum 25 km query candidate range.
+- Anonymous catalogue smoke passed under the actual `anon` database role for a synthetic active/approved provider. The provider's display name appeared in the catalogue, while direct SELECT of `owner_name` and `owner_user_id` failed with insufficient privilege. Authenticated owner UUID selection is also revoked.
+- New profile role-spoofing smoke passed: new profiles remain `customer`; a normal authenticated user cannot update `profiles.account_type` to `provider`; the owner-scoped provider profile upsert/get RPC still works. Direct provider table INSERT is denied.
+- All 61 current `SECURITY DEFINER` functions in `public` and `private` have an empty `search_path`; the catalog assertion reports **0** left with an empty path unset or non-empty.
+- Payment provider-event inbox is service-role-only and has a unique `(gateway_name, gateway_event_id)` constraint. The payment transaction state machine accepted `created → pending_provider → authorized → captured`, rejected `captured → failed`, and rejected a duplicate provider event ID in a rollback-only smoke test.
+- The payment audit/reference test passed: a direct-UPI reference could not be reused for a second order, the seller attestation was logged with actor and amount, audit rows were visible only to the order customer/provider owner, and audit-row mutation was rejected. The response explicitly sets `bank_settlement_verified_by_doodhwala=false`.
+
+### Post-hardening database/RPC smoke tests
+
+The full COD/order lifecycle passed again after the privilege and search-path repairs: server-authoritative ₹50 price despite a forged client price of ₹0.01, COD selection, seller transitions through delivered with ETA promise, COD paid confirmation only after delivery, customer cancellation, and cross-customer denial.
+
+Subscription smoke also passed after search-path hardening: plan creation, scheduled deliveries, server-set price, quantity/time edits, non-owner skip/cancel denial, skip, pause with upcoming deliveries skipped, resume, and cancel future deliveries. The scheduled-delivery materializer created exactly one server-priced order for a due subscription delivery; its second run created zero duplicates.
+
+Direct-UPI checkout→seller confirmation passed after search-path hardening. Earlier rollback-only tests additionally passed duplicate reference rejection, payment-audit visibility, and immutability. Synthetic profile, catalogue, order, subscription, provider-event and payment-audit fixtures were each used only inside `BEGIN ... ROLLBACK`; final read-only catalog checks confirmed **zero** synthetic Auth users, orders, providers, subscriptions, provider events and payment audit rows persisted.
+
+### Remaining security and release gates
+
+- Current Security Advisor: five informational RLS-enabled/no-policy findings remain on deny-by-default/service-role-only tables; eight authenticated-executable SECURITY DEFINER payment RPC warnings remain. These RPCs have owner/eligibility checks and have database-role smoke coverage, but still require real Supabase Auth/API session tests.
+- Performance Advisor no longer reports the duplicate permissive SELECT pairs or unindexed foreign keys. It currently lists 34 unused-index informational findings; no indexes have been dropped without representative workload evidence.
+- Staging source-vs-remote migration history still requires the reviewed reconciliation described in [STAGING_MIGRATION_RECONCILIATION.md](STAGING_MIGRATION_RECONCILIATION.md). Do not run `supabase db push`, reset, or promote anything until this is complete.
+- Preview environment binding to staging remains unverified because Vercel environment metadata access is denied. Manually verify the Preview Supabase URL/key before browser-based write tests.
+- `public.support_tickets` is absent. The repository's support-operations migration is explicitly deferred until a reviewed support-ticket table/RLS migration exists.
+- CI regression tests now cover the migration contracts above; each latest branch head must pass its own Static and Next.js workflows before any merge.
+
 ## Known current state (read-only audit, 2026-10-24)
 
 - Supabase production project: `hmiboyfcvtfawrwujslg` (`Doodhwala`, `ap-south-1`).
