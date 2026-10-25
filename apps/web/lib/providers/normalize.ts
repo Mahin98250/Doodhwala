@@ -6,11 +6,13 @@ export interface ProviderProduct {
   milkType: MilkType;
   pricePerLitre: number | null;
   dailyAvailable: boolean;
+  unitLabel: string;
 }
 
 export interface PublicProvider {
   id: string;
   name: string;
+  description: string;
   area: string;
   city: string;
   milkType: MilkType;
@@ -18,6 +20,7 @@ export interface PublicProvider {
   deliveryFrom: string | null;
   deliveryTo: string | null;
   distanceKm: number | null;
+  serviceRadiusKm: number | null;
   isServiceable: boolean | null;
   products: ProviderProduct[];
 }
@@ -81,6 +84,7 @@ export function normalizeProviderRow(value: unknown): PublicProvider | null {
         milkType: milkType(product.milk_type ?? row.milk_type),
         pricePerLitre,
         dailyAvailable: product.daily_available === true,
+        unitLabel: text(product.unit_label, "1 L"),
       };
     })
     .filter((product): product is ProviderProduct => product !== null);
@@ -89,10 +93,13 @@ export function normalizeProviderRow(value: unknown): PublicProvider | null {
   const rating = ratingValue !== null && ratingValue >= 0 && ratingValue <= 5 ? ratingValue : null;
   const distanceValue = numeric(row.distance_km);
   const distanceKm = distanceValue !== null && distanceValue >= 0 ? distanceValue : null;
+  const radiusValue = numeric(row.service_radius_km);
+  const serviceRadiusKm = radiusValue !== null && radiusValue >= 0 ? radiusValue : null;
 
   return {
     id,
     name,
+    description: text(row.description, "Fresh local milk from an independent provider."),
     area: text(row.area_name, "Local area"),
     city: text(row.city),
     milkType: milkType(row.milk_type),
@@ -100,6 +107,7 @@ export function normalizeProviderRow(value: unknown): PublicProvider | null {
     deliveryFrom: time(row.delivery_from),
     deliveryTo: time(row.delivery_to),
     distanceKm,
+    serviceRadiusKm,
     isServiceable: typeof row.is_serviceable === "boolean" ? row.is_serviceable : null,
     products,
   };
