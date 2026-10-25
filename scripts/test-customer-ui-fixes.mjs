@@ -102,7 +102,7 @@ assert.match(mockElements.get("plansList").innerHTML, /No recurring plans yet/, 
 /* Exercise the real-time setup with the actual function. This catches using the
    Supabase accessor as an object (sup.channel) instead of its client (sup().channel). */
 const realtimeStart = plans.indexOf("function setupPlansRealtime(user){");
-const realtimeEnd = plans.indexOf("\\nasync function loadContext()", realtimeStart);
+const realtimeEnd = plans.indexOf("\nasync function loadContext()", realtimeStart);
 assert.ok(realtimeStart >= 0 && realtimeEnd > realtimeStart, "Could not isolate the Plans realtime setup function.");
 const realtimeSource = plans.slice(realtimeStart, realtimeEnd);
 const createdChannels = [];
@@ -120,8 +120,8 @@ const mockRealtimeClient = {
   removeChannel(channel) { removedChannels.push(channel); return Promise.resolve("removed"); }
 };
 await runInNewContext(
-  helperMatch[0] + "\\n" + realtimeSource +
-  "\\nsetupPlansRealtime({id: \"first-customer\"}); setupPlansRealtime({id: \"second-customer\"});",
+  helperMatch[0] + "\n" + realtimeSource +
+  "\nsetupPlansRealtime({id: \"first-customer\"}); setupPlansRealtime({id: \"second-customer\"});",
   {
     window: { Doodhwala: { configured: true, supabase: mockRealtimeClient } },
     document: { visibilityState: "visible" },
