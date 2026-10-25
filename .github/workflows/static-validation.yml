@@ -14,7 +14,7 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js pwa-register.js session-controls.js support.js network-status.js; do
+          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js pwa-register.js session-controls.js support.js network-status.js; do
             node --check "$file"
           done
       - name: Syntax-check production readiness probe
@@ -61,6 +61,8 @@ jobs:
         run: node scripts/test-marketplace-refresh.mjs
       - name: Test customer journey visual refresh
         run: node scripts/test-customer-journey-refresh.mjs
+      - name: Test customer runtime and milk transition fixes
+        run: node scripts/test-customer-ui-fixes.mjs
       - name: Test admin cross-role realtime cache invalidation
         run: node scripts/test-admin-data-sync.mjs
       - name: Test security contracts
