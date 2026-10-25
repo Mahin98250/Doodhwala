@@ -59,6 +59,8 @@ jobs:
         run: node scripts/test-experience-layer.mjs
       - name: Test retail-first marketplace refresh
         run: node scripts/test-marketplace-refresh.mjs
+      - name: Test customer journey visual refresh
+        run: node scripts/test-customer-journey-refresh.mjs
       - name: Test admin cross-role realtime cache invalidation
         run: node scripts/test-admin-data-sync.mjs
       - name: Test security contracts

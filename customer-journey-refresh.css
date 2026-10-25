@@ -1,0 +1,135 @@
+/* Customer journey retail polish: scoped to customer storefront, plans, orders and checkout pages.
+   Does not affect provider/admin consoles or application logic. */
+:root{
+  --retail-green:#17623e;
+  --retail-deep:#10482f;
+  --retail-lime:#d9f36a;
+  --retail-line:#e3eadf;
+  --retail-shadow:0 12px 34px rgba(22,54,31,.065);
+}
+.market-page,.plans-page,.orders-page,.checkout-page{
+  background-color:#f7f9f4;
+  background-image:radial-gradient(circle at 92% 0,rgba(219,239,199,.62),transparent 30rem);
+}
+.market-top,.plans-top,.orders-top,.checkout-top{
+  background:rgba(255,255,255,.96);
+  border-bottom-color:var(--retail-line);
+  box-shadow:0 4px 18px rgba(20,50,28,.025);
+}
+.market-brand img,.plans-brand img,.orders-brand img,.checkout-brand img{
+  border-radius:12px;object-fit:contain;
+}
+.market-brand b,.plans-brand b,.orders-brand b,.checkout-brand b{
+  color:#193c27;letter-spacing:-.035em;
+}
+.market-location{min-height:44px;border-color:#e5ecdf;border-radius:13px;background:#f9fbf6}
+.market-location-icon{color:var(--retail-green)}
+.market-back,.back-shop{color:var(--retail-green);font-weight:800}
+.market-main{max-width:1240px;padding-top:26px}
+.market-breadcrumb{font-size:10px;margin-bottom:18px}
+.market-breadcrumb a{color:#3f744c;font-weight:750}
+.store-hero{gap:18px}
+.store-identity,.store-side,.product-info,.product-visual,.plans-card,.subscription-card,.orders-card,.order-card,.checkout-card{
+  border-radius:22px;
+}
+.store-identity{padding:22px;border-color:var(--retail-line);box-shadow:var(--retail-shadow)}
+.store-cover{min-height:215px;border-radius:18px;background:linear-gradient(135deg,#eff7db,#d9efce 56%,#fbf3d8)}
+.store-cover-orb{background:#f4dc76;box-shadow:0 0 0 14px rgba(244,220,118,.16)}
+.store-title-row h1{font-size:clamp(28px,3.5vw,42px);line-height:1.04}
+.store-side{background:linear-gradient(145deg,#155735,#247448);box-shadow:0 14px 30px rgba(21,87,53,.12)}
+.store-side h3{font-size:clamp(20px,2.2vw,27px);line-height:1.15}
+.store-side .primary{min-height:44px;border-radius:12px;background:var(--retail-lime);color:#213c21}
+.store-section{margin-top:28px}
+.store-section-head h2{font-size:clamp(22px,2.5vw,29px)}
+.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.product-card{min-width:0;padding:15px;border-color:var(--retail-line);border-radius:18px;box-shadow:0 5px 18px rgba(24,55,31,.035)}
+.product-card:hover{border-color:#c7dcb8;box-shadow:var(--retail-shadow)}
+.product-icon{border-radius:15px;background:linear-gradient(135deg,#f9f5dc,#e7f3d8)}
+.product-card h3{font-size:14px;line-height:1.35}
+.product-price{color:#185d39;font-size:21px}
+.product-actions .primary{background:var(--retail-green);border-radius:10px}
+.product-actions .secondary{border-radius:10px}
+.product-visual{border-radius:24px;background:linear-gradient(145deg,#eef6dc,#d3ebc9 60%,#f8f0d6);border-color:#e0ead8}
+.product-info{padding:clamp(20px,3vw,34px);border-color:var(--retail-line);box-shadow:var(--retail-shadow)}
+.product-info h1{font-size:clamp(29px,4vw,46px);line-height:1.04;letter-spacing:-.05em}
+.price-row b{color:var(--retail-green);font-size:clamp(28px,3vw,38px)}
+.location-service-card,.buy-box{border-radius:16px;border-color:#e3eadf}
+.buy-box{background:#fbfcf8}
+.stepper{border:1px solid #dfe9d8;border-radius:12px;background:#fff}
+.stepper button{border-radius:9px;color:var(--retail-green)}
+.buy-actions .primary{background:var(--retail-green);border-radius:12px}
+.buy-actions .secondary{border-radius:12px}
+.detail-row{padding:12px 0;border-color:#edf1e9}
+.plans-main,.orders-main,.checkout-main{padding-top:clamp(28px,5vw,54px)}
+.plans-heading h1,.orders-heading h1,.checkout-heading h1{
+  color:#193b27;letter-spacing:-.06em;line-height:1.02;
+}
+.plans-heading p,.orders-heading p,.checkout-heading p{font-size:12px;line-height:1.65}
+.plans-card,.subscription-card,.orders-card,.order-card,.checkout-card{
+  border-color:var(--retail-line);box-shadow:0 8px 26px rgba(22,54,31,.045);
+}
+.plans-card{padding:clamp(18px,3vw,28px)}
+.plan-icon{background:#edf6dc;color:#2b693c}
+.plan-badge,.secure-pill,.provider-count{background:#edf6dc;color:#275e38}
+.plan-submit,.checkout-cta{min-height:48px;border-radius:13px;background:var(--retail-green)}
+.plan-submit:hover,.checkout-cta:hover{background:var(--retail-deep)}
+.plan-preview div,.plan-product-summary,.checkout-location-row{border-color:#e2eadb;background:#f7faef;border-radius:14px}
+.day-button{border-radius:11px}
+.day-button.active{background:#1b613d;border-color:#1b613d}
+.orders-card{padding:clamp(18px,3vw,30px)}
+.order-card{padding:clamp(15px,2.5vw,22px)}
+.customer-status{letter-spacing:.025em}
+.customer-status.delivered{background:#eaf6d9;color:#235c35}
+.customer-address{background:#f7faef;border:1px solid #e7eee0;border-radius:14px}
+.order-promise.live,.order-promise.delivered{background:#f0f7e4;border-color:#dce9ca}
+.checkout-layout{gap:18px}
+.checkout-card{padding:clamp(16px,2.5vw,23px)}
+.checkout-heading h1{font-size:clamp(34px,4.6vw,49px)}
+.address-grid input,.checkout-card textarea,.plan-grid input,.plan-grid select,.plan-note textarea{
+  border-color:#dfe8d9;background:#fcfdf9;border-radius:12px;min-height:44px;
+}
+.address-grid input:focus,.plan-grid input:focus,.plan-grid select:focus,.plan-note textarea:focus{
+  border-color:#a7c88e;box-shadow:0 0 0 4px rgba(95,145,57,.1);
+}
+.checkout-line{border-color:#e4ebdf;border-radius:14px;background:#fff}
+.checkout-totals .grand{color:#174e32}
+.checkout-card .primary{border-radius:12px}
+.site-legal-footer{background:rgba(255,255,255,.9);border-top-color:var(--retail-line)}
+@media(max-width:800px){
+  .market-top,.plans-top,.orders-top,.checkout-top{min-height:62px;height:auto;padding:10px 14px}
+  .market-main{padding:18px 13px 42px}
+  .store-hero{grid-template-columns:minmax(0,1fr);gap:12px}
+  .store-identity{padding:14px;border-radius:19px}
+  .store-cover{min-height:165px;border-radius:15px}
+  .store-title-row{gap:9px;flex-wrap:wrap}
+  .store-title-row h1{font-size:30px}
+  .store-side{padding:19px;border-radius:19px}
+  .store-section{margin-top:23px}
+  .store-section-head h2{font-size:23px}
+  .product-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .product-card{grid-template-columns:62px minmax(0,1fr);gap:11px;padding:12px;border-radius:16px}
+  .product-icon{width:62px;height:62px}
+  .product-actions{flex-wrap:wrap}
+  .product-actions button,.product-actions a{min-height:40px!important}
+  .product-detail{grid-template-columns:minmax(0,1fr)!important;gap:13px!important}
+  .product-visual{min-height:190px;border-radius:20px}
+  .product-info{padding:19px;border-radius:20px}
+  .plans-main,.orders-main,.checkout-main{width:auto;padding:28px 13px 50px}
+  .plans-heading,.orders-heading{align-items:flex-start;flex-direction:column;gap:10px}
+  .plans-heading h1,.orders-heading h1{font-size:36px}
+  .plans-card,.orders-card,.checkout-card{padding:16px;border-radius:18px}
+  .plan-grid{grid-template-columns:minmax(0,1fr)}
+  .plan-grid .wide{grid-column:auto}
+  .checkout-layout{grid-template-columns:minmax(0,1fr)}
+  .checkout-heading h1{font-size:36px}
+  .checkout-layout .order-card{position:static}
+}
+@media(max-width:380px){
+  .store-title-row h1{font-size:27px}
+  .product-card{grid-template-columns:54px minmax(0,1fr);gap:9px}
+  .product-icon{width:54px;height:54px}
+  .plans-heading h1,.orders-heading h1,.checkout-heading h1{font-size:32px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
