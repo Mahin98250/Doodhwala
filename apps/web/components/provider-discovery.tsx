@@ -91,6 +91,13 @@ export default function ProviderDiscovery() {
     };
   }, [loadProviders]);
 
+  useEffect(() => {
+    const requestedMilk = new URLSearchParams(window.location.search).get("milk");
+    if (requestedMilk === "cow" || requestedMilk === "buffalo" || requestedMilk === "a2") {
+      setMilkFilter(requestedMilk);
+    }
+  }, []);
+
   const visibleProviders = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase();
     const list = providers.filter((provider) => {
@@ -166,6 +173,7 @@ export default function ProviderDiscovery() {
           </div>
         </div>
         <p className={styles.privacyNote}>Your precise location is requested only after you tap the button. It is used for this nearby-provider search and is not saved by this page.</p>
+        {message && status === "ready" && providers.length > 0 && <p className={styles.inlineMessage} role="status">{message}</p>}
       </section>
 
       <section className={styles.catalogue} aria-labelledby="catalogue-title">
