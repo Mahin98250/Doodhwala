@@ -13,7 +13,10 @@ export function productsForMilkFilter(
 
 export function matchesMilkFilter(provider: PublicProvider, filter: MilkFilter): boolean {
   if (filter === "all") return true;
-  return provider.milkType === filter || provider.products.some((product) => product.milkType === filter);
+  if (provider.products.length > 0) {
+    return provider.products.some((product) => product.milkType === filter);
+  }
+  return provider.milkType === filter;
 }
 
 export function filterAndSortProviders(
@@ -28,7 +31,7 @@ export function filterAndSortProviders(
       provider.name,
       provider.area,
       provider.city,
-      ...provider.products.map((product) => product.name),
+      ...productsForMilkFilter(provider.products, milkFilter).map((product) => product.name),
     ].join(" ").toLocaleLowerCase();
 
     return searchable.includes(normalizedSearch) && matchesMilkFilter(provider, milkFilter);
