@@ -45,6 +45,7 @@ export default function SellerWorkspace({ initialSection = "dashboard" }: { init
   const [busy, setBusy] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [orderFilter, setOrderFilter] = useState<"needs-action" | "all" | "preparing" | "delivery">("needs-action");
+  const [onboardingStep, setOnboardingStep] = useState<1 | 2>(1);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -298,13 +299,24 @@ export default function SellerWorkspace({ initialSection = "dashboard" }: { init
       {!profile?.id ? <section className="workspace-card">
         <p className="workspace-eyebrow">SELLER ONBOARDING</p><h2>Set up your local milk business</h2>
         <p className="workspace-muted">Only real independent/local providers belong on Doodhwala. Approval and activation are still governed by the marketplace.</p>
+        <div className="seller-onboarding-progress" aria-label={"Step " + onboardingStep + " of 2"}>
+          <div className="seller-onboarding-step"><span className={onboardingStep === 1 ? "current" : "complete"}>{onboardingStep === 1 ? "1" : "✓"}</span><div><strong>Business details</strong><small>Who you are and what you sell</small></div></div>
+          <div className={"seller-onboarding-line " + (onboardingStep === 2 ? "complete" : "")} />
+          <div className="seller-onboarding-step"><span className={onboardingStep === 2 ? "current" : ""}>2</span><div><strong>Delivery area</strong><small>Where and when you deliver</small></div></div>
+        </div>
         <form className="workspace-form" onSubmit={saveProfile}>
-          <div className="workspace-grid-two"><label>Business name<input required value={profileForm.display_name} onChange={(e) => profileField("display_name", e.target.value)} /></label><label>Owner name<input required value={profileForm.owner_name} onChange={(e) => profileField("owner_name", e.target.value)} /></label></div>
-          <div className="workspace-grid-two"><label>Phone<input required inputMode="tel" value={profileForm.phone} onChange={(e) => profileField("phone", e.target.value)} /></label><label>Primary milk type<select value={profileForm.primary_milk_type} onChange={(e) => profileField("primary_milk_type", e.target.value)}><option value="cow">Cow milk</option><option value="buffalo">Buffalo milk</option><option value="a2">A2 milk</option><option value="mixed">Mixed local milk</option></select></label></div>
-          <div className="workspace-grid-two"><label>Area / locality<input required value={profileForm.area_name} onChange={(e) => profileField("area_name", e.target.value)} /></label><label>City<input required value={profileForm.city} onChange={(e) => profileField("city", e.target.value)} /></label></div>
-          <div className="workspace-grid-two"><label>PIN code<input required maxLength={6} inputMode="numeric" value={profileForm.pin_code} onChange={(e) => profileField("pin_code", e.target.value.replace(/\D/g, ""))} /></label><label>Service radius (km)<input required min="1" max="100" type="number" value={profileForm.service_radius_km} onChange={(e) => profileField("service_radius_km", e.target.value)} /></label></div>
-          <div className="workspace-grid-two"><label>Delivery from<input type="time" value={profileForm.delivery_from} onChange={(e) => profileField("delivery_from", e.target.value)} /></label><label>Delivery until<input type="time" value={profileForm.delivery_to} onChange={(e) => profileField("delivery_to", e.target.value)} /></label></div>
-          <button className="workspace-button workspace-button-primary" disabled={busy}>{busy ? "Saving…" : "Save seller profile"}</button>
+          {onboardingStep === 1 ? <>
+            <div className="seller-onboarding-fields"><label>Business name<input required autoComplete="organization" value={profileForm.display_name} onChange={(e) => profileField("display_name", e.target.value)} placeholder="e.g. Patel Dairy" /></label><label>Owner name<input required autoComplete="name" value={profileForm.owner_name} onChange={(e) => profileField("owner_name", e.target.value)} placeholder="Your full name" /></label></div>
+            <label>Phone number<input required type="tel" inputMode="tel" autoComplete="tel" value={profileForm.phone} onChange={(e) => profileField("phone", e.target.value)} placeholder="Number customers can reach you on" /></label>
+            <label>What kind of milk do you sell?<select value={profileForm.primary_milk_type} onChange={(e) => profileField("primary_milk_type", e.target.value)}><option value="cow">Cow milk</option><option value="buffalo">Buffalo milk</option><option value="a2">A2 milk</option><option value="mixed">A mix of milk types</option></select></label>
+            <div className="seller-onboarding-actions"><span>Step 1 of 2 · About 1 minute</span><button type="button" className="workspace-button workspace-button-primary" onClick={() => { if (!profileForm.display_name.trim() || !profileForm.owner_name.trim() || !profileForm.phone.trim()) { setNotice({ kind: "error", text: "Add your business name, owner name and phone number to continue." }); return; } setNotice(null); setOnboardingStep(2); }}>Continue to delivery area →</button></div>
+          </> : <>
+            <p className="workspace-muted seller-onboarding-hint">Set the area you can reliably serve. Your business will still follow Doodhwala’s verification and publishing rules.</p>
+            <div className="workspace-grid-two"><label>Area or locality<input required autoComplete="address-level3" value={profileForm.area_name} onChange={(e) => profileField("area_name", e.target.value)} placeholder="e.g. Satellite" /></label><label>City<input required autoComplete="address-level2" value={profileForm.city} onChange={(e) => profileField("city", e.target.value)} /></label></div>
+            <div className="workspace-grid-two"><label>PIN code<input required maxLength={6} inputMode="numeric" autoComplete="postal-code" value={profileForm.pin_code} onChange={(e) => profileField("pin_code", e.target.value.replace(/\D/g, ""))} placeholder="6 digits" /></label><label>Delivery radius (km)<input required min="1" max="100" type="number" value={profileForm.service_radius_km} onChange={(e) => profileField("service_radius_km", e.target.value)} /></label></div>
+            <div className="workspace-grid-two"><label>Start delivering<input type="time" value={profileForm.delivery_from} onChange={(e) => profileField("delivery_from", e.target.value)} /></label><label>Finish delivering<input type="time" value={profileForm.delivery_to} onChange={(e) => profileField("delivery_to", e.target.value)} /></label></div>
+            <div className="seller-onboarding-actions"><button type="button" className="workspace-button workspace-button-secondary" onClick={() => { setNotice(null); setOnboardingStep(1); }}>← Back</button><button className="workspace-button workspace-button-primary" disabled={busy}>{busy ? "Saving your details…" : "Save business details"}</button></div>
+          </>}
         </form>
       </section> : <>
         {initialSection === "dashboard" && <section className="workspace-card seller-today-card">
