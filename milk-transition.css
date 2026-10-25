@@ -19,8 +19,8 @@
 .dw-milk-title{display:block;color:#173e2a;font-size:13px;font-weight:850;letter-spacing:-.01em}
 .dw-milk-transition-card small{display:block;margin-top:7px;color:#718277;font-size:10px;line-height:1.5}
 .dw-milk-loading{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;z-index:2147483100;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);padding:7px 12px 7px 8px;border:1px solid rgba(255,255,255,.94);border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 8px 26px rgba(20,58,35,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transform:translateX(-50%);color:#1e5135;pointer-events:none}
-.dw-milk-loading-scene{width:57px;height:38px;overflow:hidden;flex:0 0 auto}
-.dw-milk-loading-scene .dw-milk-scene{width:90px;height:38px;margin:0;padding:0 7px;transform:scale(.54);transform-origin:left top}
+.dw-milk-loading-scene{width:78px;height:38px;overflow:hidden;flex:0 0 auto}
+.dw-milk-loading-scene .dw-milk-scene{width:190px;height:92px;margin:0;transform:scale(.4);transform-origin:left top}
 .dw-milk-loading-scene .dw-milk-bottle{width:47px;height:65px}
 .dw-milk-loading-scene .dw-milk-pour{top:27px}
 .dw-milk-loading .dw-milk-title{font-size:11px;white-space:nowrap}
