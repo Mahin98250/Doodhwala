@@ -98,4 +98,40 @@ assert.equal(planRuntimeResult, true, "Plans loader should complete with a valid
 assert.deepEqual(queriedTables, ["milk_subscriptions"], "Plans loader must call from() on the returned client, not on the accessor function.");
 assert.match(mockElements.get("plansList").innerHTML, /No recurring plans yet/, "Empty plan history should render a usable empty state.");
 
+
+/* Exercise the real-time setup with the actual function. This catches using the
+   Supabase accessor as an object (sup.channel) instead of its client (sup().channel). */
+const realtimeStart = plans.indexOf("function setupPlansRealtime(user){");
+const realtimeEnd = plans.indexOf("\nasync function loadContext()", realtimeStart);
+assert.ok(realtimeStart >= 0 && realtimeEnd > realtimeStart, "Could not isolate the Plans realtime setup function.");
+const realtimeSource = plans.slice(realtimeStart, realtimeEnd);
+const createdChannels = [];
+const removedChannels = [];
+const mockRealtimeClient = {
+  channel(name) {
+    const channel = {
+      name,
+      on() { return this; },
+      subscribe(callback) { callback("SUBSCRIBED"); return this; }
+    };
+    createdChannels.push(channel);
+    return channel;
+  },
+  removeChannel(channel) { removedChannels.push(channel); return Promise.resolve("removed"); }
+};
+await runInNewContext(
+  helperMatch[0] + "\n" + realtimeSource +
+  "\nsetupPlansRealtime({id: \"first-customer\"}); setupPlansRealtime({id: \"second-customer\"});",
+  {
+    window: { Doodhwala: { configured: true, supabase: mockRealtimeClient } },
+    document: { visibilityState: "visible" },
+    console: { warn() {}, error() {} }
+  }
+);
+assert.deepEqual(createdChannels.map(channel => channel.name), [
+  "customer-plans-first-customer",
+  "customer-plans-second-customer"
+], "Plans realtime must create a channel through the returned Supabase client.");
+assert.deepEqual(removedChannels, [createdChannels[0]], "Changing customer channels must remove the previous channel through the client.");
+
 console.log("PASS: customer mobile layout, Plans Supabase calls, Orders schema compatibility, milk transitions, PWA cache, and recovery-notice contracts.");

@@ -16,18 +16,21 @@ function setDays(){ $("dayButtons").innerHTML=dayNames.map((x,i)=>'<button type=
 function showError(v){$("planError").textContent=v||""}
 function niceError(v){const m=String(v||"");const map={delivery_time_outside_provider_window:"Choose a time inside this provider's delivery window.",subscription_product_unavailable:"This milk is not currently available for daily plans.",address_not_owned:"Choose one of your saved delivery addresses.",same_day_delivery_time_has_passed:"That time has already passed today. Choose tomorrow or a later date.",plan_has_no_delivery_days:"Choose at least one delivery day.",start_date_in_past:"Choose today or a future start date.",authentication_required:"Please sign in again.",subscription_change_cutoff_passed:"Your next delivery is too close to change this plan. Try again before the cutoff.",new_delivery_time_too_soon:"That delivery time is too close to now. Choose a later time.",subscription_not_editable:"This plan can no longer be edited.",pause_date_in_past:"Choose today or a future pause date.",no_subscription_changes:"Choose at least one change."};return map[m]||m.replace(/^.*?:/,"").replace(/_/g," ")||"Could not update the plan."}
 function setupPlansRealtime(user){
- if(!window.Doodhwala?.configured||!user)return;
+ const client=sup();
+ if(!window.Doodhwala?.configured||!user||!client?.channel)return;
  const existing=window.__doodhwalaPlansChannel;
  if(existing&&window.__doodhwalaPlansChannelUser===user.id)return;
- if(existing){try{sup.removeChannel(existing)}catch(_){}} 
- const channel=sup.channel("customer-plans-"+user.id)
+ if(existing&&client.removeChannel){try{client.removeChannel(existing)}catch(_){}}
+ const channel=client.channel("customer-plans-"+user.id)
   .on("postgres_changes",{event:"*",schema:"public",table:"milk_subscriptions",filter:"customer_id=eq."+user.id},function(){
     if(document.visibilityState==="hidden")return;
-    clearTimeout(window.__plansRealtimeRefresh);window.__plansRealtimeRefresh=setTimeout(()=>{loadPlans().catch(err=>console.warn("Realtime plan refresh failed",err))},250);
+    clearTimeout(window.__plansRealtimeRefresh);
+    window.__plansRealtimeRefresh=setTimeout(()=>{loadPlans().catch(err=>console.warn("Realtime plan refresh failed",err))},250);
   })
   .on("postgres_changes",{event:"*",schema:"public",table:"subscription_deliveries"},function(){
     if(document.visibilityState==="hidden")return;
-    clearTimeout(window.__plansRealtimeRefresh);window.__plansRealtimeRefresh=setTimeout(loadPlans,250);
+    clearTimeout(window.__plansRealtimeRefresh);
+    window.__plansRealtimeRefresh=setTimeout(()=>{loadPlans().catch(err=>console.warn("Realtime delivery refresh failed",err))},250);
   });
  window.__doodhwalaPlansChannel=channel;
  window.__doodhwalaPlansChannelUser=user.id;
@@ -41,7 +44,8 @@ function setupPlansRealtime(user){
   window.__plansRealtimeReconnectTimer=setTimeout(function(){
     if(window.__doodhwalaPlansChannel!==channel)return;
     window.__doodhwalaPlansChannel=null;window.__doodhwalaPlansChannelUser=null;
-    try{sup.removeChannel(channel)}catch(_){}
+    const activeClient=sup();
+    if(activeClient?.removeChannel){try{activeClient.removeChannel(channel)}catch(_){}}
     setupPlansRealtime(user);
     if(document.visibilityState!=="hidden")loadPlans().catch(function(err){console.warn("Plans realtime refresh failed",err)});
   },delay);
