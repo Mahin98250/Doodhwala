@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 interface WorkspaceFrameProps {
@@ -23,12 +24,12 @@ export default function WorkspaceFrame({ title, eyebrow = "DOODHWALA WORKSPACE",
   return (
     <main className="workspace">
       <header className="workspace-header">
-        <a className="workspace-brand" href="/" aria-label="Doodhwala home">
+        <Link className="workspace-brand" href="/" aria-label="Doodhwala home">
           <span className="workspace-brand-mark" aria-hidden="true">D</span>
           <span><strong>Doodhwala</strong><small>Independent local milk marketplace</small></span>
-        </a>
+        </Link>
         <nav aria-label="Main navigation" className="workspace-nav">
-          {nav.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}
+          {nav.map((item) => <Link href={item.href} key={item.href}>{item.label}</Link>)}
         </nav>
       </header>
       <section className={"workspace-content" + (compact ? " workspace-content-compact" : "")}>
@@ -42,7 +43,7 @@ export default function WorkspaceFrame({ title, eyebrow = "DOODHWALA WORKSPACE",
       <footer className="workspace-footer">
         <span>© {new Date().getFullYear()} Doodhwala</span>
         <span>Local sellers · Transparent pricing · Secure order flows</span>
-        <a href="/legal">Policies &amp; marketplace terms</a>
+        <Link href="/legal">Policies &amp; marketplace terms</Link>
       </footer>
     </main>
   );
