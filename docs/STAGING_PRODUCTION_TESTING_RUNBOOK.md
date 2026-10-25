@@ -45,6 +45,10 @@ After those tests, read-only catalog queries confirmed zero synthetic test rows 
 
 Production has not been changed and the security branch remains draft/unmerged.
 
+### Additional staging subscription result (2026-10-25)
+
+A rollback-only SQL/RPC subscription smoke test **passed**: create plan and schedule deliveries, enforce server-owned price, update quantity/time, reject non-owner edit/skip/cancel attempts, skip a delivery, pause and skip upcoming deliveries in the pause window, resume, then cancel future scheduled deliveries. Post-test catalog checks returned zero synthetic fixture rows. As with the order tests, this is database-role/RPC coverage and does not replace browser tests with genuine Supabase Auth sessions.
+
 ## Pre-test environment gate
 
 - [ ] Confirm the deployed commit SHA and branch.
