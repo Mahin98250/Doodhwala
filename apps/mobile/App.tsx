@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import * as Location from "expo-location";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { ActivityIndicator, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
@@ -45,6 +46,9 @@ export default function App() {
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [savedProviders, setSavedProviders] = useState<string[]>([]);
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [storageReady, setStorageReady] = useState(false);
+  const [cartOffset, setCartOffset] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
   const [cart, setCart] = useState<CartLine[]>([]);
   const cartCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const cartTotal = cart.reduce((sum, line) => sum + (line.product.price ?? 0) * line.quantity, 0);
@@ -90,6 +94,24 @@ export default function App() {
     const urlListener = Linking.addEventListener("url", ({ url }) => { void handleRecoveryUrl(url); });
     return () => { mounted = false; listener.subscription.unsubscribe(); urlListener.remove(); };
   }, []);
+
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([SecureStore.getItemAsync("doodhwala.cart.v1"), SecureStore.getItemAsync("doodhwala.saved.v1")]).then(([cartJson, savedJson]) => {
+      if (!active) return;
+      try { const parsed = cartJson ? JSON.parse(cartJson) : []; if (Array.isArray(parsed)) setCart(parsed.filter((x) => x && typeof x.key === "string" && x.provider && x.product && Number.isInteger(x.quantity) && x.quantity > 0)); } catch { /* Ignore a corrupt local basket and start clean. */ }
+      try { const parsed = savedJson ? JSON.parse(savedJson) : []; if (Array.isArray(parsed)) setSavedProviders(parsed.filter((x) => typeof x === "string").slice(0, 200)); } catch { /* Ignore corrupt favourites. */ }
+      setStorageReady(true);
+    }).catch(() => { if (active) setStorageReady(true); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!storageReady) return;
+    void SecureStore.setItemAsync("doodhwala.cart.v1", JSON.stringify(cart)).catch(() => setMessage("Your basket works for this session, but secure local saving is unavailable on this device."));
+    void SecureStore.setItemAsync("doodhwala.saved.v1", JSON.stringify(savedProviders)).catch(() => setMessage("Your saved sellers work for this session, but secure local saving is unavailable on this device."));
+  }, [cart, savedProviders, storageReady]);
 
   const submitAuth = async () => {
     if (!supabase || !authMode) { setAuthMessage("Connect the staging Supabase configuration first."); return; }
@@ -181,7 +203,7 @@ export default function App() {
 
   return <SafeAreaView style={s.safe}>
     <StatusBar style="dark" />
-    <ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+    <ScrollView ref={scrollRef} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
       <View style={s.topbar}><View style={s.logo}><Text style={s.logoText}>D</Text></View><View style={s.brand}><Text style={s.brandName}>Doodhwala</Text><Text style={s.tagline}>Local milk, nearby.</Text></View><Pressable accessibilityRole="button" onPress={() => { if (cartCount) setMessage("Your cart is below the seller list. Review quantities before checkout becomes available."); }} style={s.cartTop}><Text style={s.cartTopIcon}>▣</Text><View><Text style={s.cartTopTitle}>Your cart</Text><Text style={s.cartTopSub}>{cartCount} {cartCount === 1 ? "item" : "items"}</Text></View><Text style={s.cartTopTotal}>{money.format(cartTotal)}</Text></Pressable></View>
       <View style={s.authCard}>
         {recoveryMode ? <>
@@ -226,7 +248,7 @@ export default function App() {
           {prices.length > 0 && <Text style={s.fromPrice}>From {money.format(Math.min(...prices))} per litre</Text>}
         </View>;
       })}
-      <View style={s.cartSection}>
+      <View style={s.cartSection} onLayout={(event) => setCartOffset(event.nativeEvent.layout.y)}>
         <View style={s.cartSectionHead}><View><Text style={s.eyebrow}>READY WHEN YOU ARE</Text><Text style={s.sectionTitle}>Your basket</Text></View><Text style={s.cartCount}>{cartCount} items</Text></View>
         {cart.length === 0 ? <View style={s.cartEmpty}><Text style={s.cartEmptyIcon}>＋</Text><Text style={s.cartEmptyTitle}>Your basket is waiting</Text><Text style={s.cartEmptyText}>Add an available milk product from a local seller above.</Text></View> : <>
           {cart.map((line) => <View key={line.key} style={s.cartLine}><View style={s.cartLineCopy}><Text style={s.cartLineName}>{line.product.name}</Text><Text style={s.cartLineMeta}>{line.provider.name} · {line.product.unit}</Text><Text style={s.cartLinePrice}>{line.product.price === null ? "Price unavailable" : money.format(line.product.price * line.quantity)}</Text></View><View style={s.quantityControl}><Pressable accessibilityRole="button" accessibilityLabel={`Remove one ${line.product.name}`} onPress={() => changeCart(line.provider,line.product,-1)} style={s.quantityButton}><Text style={s.quantityButtonText}>−</Text></Pressable><Text style={s.quantityValue}>{line.quantity}</Text><Pressable accessibilityRole="button" accessibilityLabel={`Add one ${line.product.name}`} onPress={() => changeCart(line.provider,line.product,1)} style={s.quantityButton}><Text style={s.quantityButtonText}>＋</Text></Pressable></View></View>)}
@@ -237,11 +259,18 @@ export default function App() {
       <View style={s.notice}><Text style={s.noticeTitle}>{isSupabaseConfigured ? "Existing catalogue connection" : "Staging setup needed"}</Text><Text style={s.noticeText}>{isSupabaseConfigured ? "Seller data uses the existing nearby-provider RPC. Ordering and payments remain disabled until end-to-end staging verification." : "Add the public Supabase URL and publishable/anon key locally. Never put service-role secrets in a mobile app."}</Text></View>
       <View style={s.footer}><Text style={s.footerBrand}>Doodhwala</Text><Text style={s.footerText}>Built around neighbourhoods, powered by local sellers.</Text><Text style={s.footerMeta}>Website · Android · iOS</Text></View>
     </ScrollView>
+    <View style={s.bottomNav}>
+      <Pressable accessibilityRole="button" onPress={() => { setShowSavedOnly(false); scrollRef.current?.scrollTo({ y: 0, animated: true }); }} style={s.navItem}><Text style={s.navIcon}>⌂</Text><Text style={s.navLabel}>Home</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityState={{ selected: showSavedOnly }} onPress={() => { setShowSavedOnly(true); scrollRef.current?.scrollTo({ y: 0, animated: true }); }} style={s.navItem}><Text style={[s.navIcon, showSavedOnly && s.navSelected]}>♡</Text><Text style={[s.navLabel, showSavedOnly && s.navSelected]}>Saved</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => scrollRef.current?.scrollTo({ y: Math.max(0, cartOffset - 20), animated: true })} style={s.navItem}><View><Text style={s.navIcon}>▣</Text>{cartCount > 0 && <View style={s.navCount}><Text style={s.navCountText}>{cartCount > 9 ? "9+" : cartCount}</Text></View>}</View><Text style={s.navLabel}>Basket</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => { scrollRef.current?.scrollTo({ y: 0, animated: true }); setAuthMode(session ? null : "sign-in"); setAuthMessage(""); }} style={s.navItem}><Text style={s.navIcon}>◉</Text><Text style={s.navLabel}>Account</Text></Pressable>
+    </View>
   </SafeAreaView>;
 }
 
 const s = StyleSheet.create({
-  safe:{flex:1,backgroundColor:"#f8faf5"},page:{paddingHorizontal:22,paddingTop:12,paddingBottom:36,maxWidth:620,width:"100%",alignSelf:"center"},
+  safe:{flex:1,backgroundColor:"#f8faf5"},page:{paddingHorizontal:22,paddingTop:12,paddingBottom:112,maxWidth:620,width:"100%",alignSelf:"center"},
+  bottomNav:{flexDirection:"row",alignItems:"center",justifyContent:"space-around",paddingTop:9,paddingBottom:7,paddingHorizontal:8,backgroundColor:"#fffffff5",borderTopWidth:1,borderTopColor:"#e1e9de"},navItem:{minWidth:62,alignItems:"center",justifyContent:"center",gap:3,paddingHorizontal:10,paddingVertical:3},navIcon:{fontSize:21,color:"#718274",fontWeight:"700"},navSelected:{color:"#246b40"},navLabel:{fontSize:9,color:"#718274",fontWeight:"800"},navCount:{position:"absolute",right:-9,top:-4,minWidth:16,height:16,paddingHorizontal:3,borderRadius:8,backgroundColor:"#286d43",alignItems:"center",justifyContent:"center"},navCountText:{color:"#fff",fontSize:8,fontWeight:"900"},
   topbar:{flexDirection:"row",alignItems:"center",marginBottom:25},cartTop:{marginLeft:"auto",flexDirection:"row",alignItems:"center",gap:8,backgroundColor:"#fff",borderWidth:1,borderColor:"#e0e9dc",borderRadius:14,paddingHorizontal:10,paddingVertical:8},cartTopIcon:{fontSize:18,color:"#2f7548"},cartTopTitle:{fontSize:10,fontWeight:"800",color:"#244a30"},cartTopSub:{fontSize:9,color:"#829083",marginTop:2},cartTopTotal:{fontSize:11,fontWeight:"800",color:"#2f7548",marginLeft:3},logo:{width:42,height:42,borderRadius:15,backgroundColor:"#1f6b43",alignItems:"center",justifyContent:"center"},logoText:{color:"#fff",fontSize:23,fontWeight:"800"},brand:{marginLeft:10},brandName:{color:"#183a29",fontSize:18,fontWeight:"800",letterSpacing:-.5},tagline:{color:"#738276",fontSize:11,marginTop:2},badge:{marginLeft:"auto",flexDirection:"row",alignItems:"center",gap:6,backgroundColor:"#eaf3e7",paddingHorizontal:10,paddingVertical:8,borderRadius:20},dot:{width:6,height:6,borderRadius:3,backgroundColor:"#3d8c55"},badgeText:{color:"#356848",fontSize:9,fontWeight:"800",letterSpacing:.7},
   hero:{backgroundColor:"#edf5e8",borderRadius:28,padding:22,overflow:"hidden"},eyebrow:{color:"#4c805b",fontSize:10,fontWeight:"800",letterSpacing:1.5,marginBottom:10},title:{color:"#183a29",fontSize:32,lineHeight:37,fontWeight:"800",letterSpacing:-1.1},titleAccent:{color:"#4c8a53",fontStyle:"italic"},description:{color:"#607565",fontSize:14,lineHeight:21,marginTop:14},pills:{flexDirection:"row",flexWrap:"wrap",gap:8,marginTop:16},pill:{color:"#315e40",backgroundColor:"#fff",borderRadius:18,paddingHorizontal:10,paddingVertical:7,fontSize:10,fontWeight:"700"},
   art:{height:170,backgroundColor:"#dcebd1",borderRadius:20,marginTop:22,overflow:"hidden",alignItems:"center",justifyContent:"flex-end"},sun:{position:"absolute",width:68,height:68,borderRadius:34,backgroundColor:"#f8e6a9",top:18,right:26},hillBack:{position:"absolute",width:300,height:130,borderRadius:100,backgroundColor:"#b9d6a9",bottom:-70,left:-50,transform:[{rotate:"-8deg"}]},hillFront:{position:"absolute",width:350,height:100,borderRadius:100,backgroundColor:"#8fbd82",bottom:-65,right:-80,transform:[{rotate:"8deg"}]},cap:{position:"absolute",width:35,height:13,borderTopLeftRadius:5,borderTopRightRadius:5,backgroundColor:"#39754d",bottom:112,zIndex:2},neck:{position:"absolute",width:30,height:24,backgroundColor:"#fffdf7",bottom:91,zIndex:1},bottle:{position:"absolute",width:76,height:90,bottom:13,backgroundColor:"#fffdf7",borderRadius:18,borderWidth:2,borderColor:"#d2dfcc",alignItems:"center",justifyContent:"center",zIndex:1},flower:{fontSize:24,color:"#4c8a53"},bottleLabel:{color:"#3f6e4c",textAlign:"center",fontSize:9,fontWeight:"900",letterSpacing:1,marginTop:3},caption:{position:"absolute",bottom:12,left:12,backgroundColor:"rgba(255,255,255,0.9)",borderRadius:13,paddingHorizontal:12,paddingVertical:9,zIndex:3},captionStrong:{color:"#244c31",fontSize:11,fontWeight:"800"},captionSmall:{color:"#728375",fontSize:9,marginTop:2},
