@@ -1,3 +1,4 @@
+import Link from "next/link";
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,8 +22,8 @@ export default function CartWorkspace() {
   return (
     <WorkspaceFrame title="Your cart" description="Review quantities before checkout. The backend recalculates the final price when the order is placed.">
       <section className="workspace-card">
-        <div className="workspace-section-head"><div><p className="workspace-eyebrow">YOUR MILK SELECTION</p><h2>{items.length} item{items.length === 1 ? "" : "s"}</h2></div><a className="workspace-inline-link" href="/providers">Continue shopping →</a></div>
-        {!ready ? <p className="workspace-muted">Loading your cart…</p> : !items.length ? <div className="workspace-empty"><div className="workspace-item-icon">✳</div><h2>Your cart is waiting for fresh milk.</h2><p>Choose a local provider and add the products you need.</p><a className="workspace-button workspace-button-primary" href="/providers">Explore local milk</a></div> : (
+        <div className="workspace-section-head"><div><p className="workspace-eyebrow">YOUR MILK SELECTION</p><h2>{items.length} item{items.length === 1 ? "" : "s"}</h2></div><Link className="workspace-inline-link" href="/providers">Continue shopping →</Link></div>
+        {!ready ? <p className="workspace-muted">Loading your cart…</p> : !items.length ? <div className="workspace-empty"><div className="workspace-item-icon">✳</div><h2>Your cart is waiting for fresh milk.</h2><p>Choose a local provider and add the products you need.</p><Link className="workspace-button workspace-button-primary" href="/providers">Explore local milk</Link></div> : (
           <>
             <div className="workspace-list">
               {Object.entries(cart).map(([key, item]) => <article className="workspace-list-row" key={key}>
@@ -39,7 +40,7 @@ export default function CartWorkspace() {
             </div>
             <div className="workspace-cart-total"><span>Estimated subtotal</span><strong>{money.format(cartSubtotal(cart))}</strong></div>
             <p className="workspace-muted">This estimate is for planning only. Checkout validates products, delivery area, price and payment readiness with Supabase before creating orders.</p>
-            <div className="workspace-actions"><a className="workspace-button workspace-button-secondary" href="/providers">Add more milk</a><a className="workspace-button workspace-button-primary" href="/checkout">Secure checkout →</a></div>
+            <div className="workspace-actions"><Link className="workspace-button workspace-button-secondary" href="/providers">Add more milk</Link><Link className="workspace-button workspace-button-primary" href="/checkout">Secure checkout →</Link></div>
           </>
         )}
       </section>
