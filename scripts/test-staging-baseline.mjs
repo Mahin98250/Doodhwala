@@ -15,11 +15,13 @@ assert.match(sql, /relrowsecurity/i);
 assert.doesNotMatch(sql, /^\s*(insert|update|delete|truncate|alter|drop|create|grant|revoke|refresh|vacuum|analyze)\b/gim, "staging audit SQL must remain read-only");
 assert.match(docs, /STAGING_PROJECT_REF/i);
 assert.match(docs, /must not equal the production project ref/i);
-assert.match(docs, /Do not accept a nonzero project\/compute charge without explicit approval/i);
+assert.match(docs, /jbcekiaiyxcatueixeqh/i);
+assert.match(docs, /ACTIVE_HEALTHY/i);
+assert.match(docs, /ap-northeast-2/i);
+assert.match(docs, /Vercel preview environment binding independently verified as staging-only/i);
+assert.match(docs, /Full staging acceptance remains.*blocked/i);
+assert.match(docs, /Do not create paid branches, upgrade plans, or accept additional charges without explicit approval/i);
 assert.match(docs, /No capacity claim/i);
-assert.match(docs, /reached its limit of two active free projects/i);
-assert.match(docs, /Phase 1 remains.*blocked for full staging acceptance/i);
-assert.match(docs, /Do not delete, pause, or repurpose either existing project/i);
 assert.match(readme, /docs\/STAGING_BASELINE\.md/);
 assert.match(readme, /scripts\/staging-schema-audit\.sql/);
 
