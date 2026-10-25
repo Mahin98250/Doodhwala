@@ -193,7 +193,15 @@ async function createPlan(e){
  }
 }
 async function loadPlans(){
- const r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,start_date,end_date,days_of_week,cutoff_minutes,customer_note,paused_until,provider_id,product_id,address_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type),addresses(label,address_line,area_name,city,pin_code)").eq("customer_id",user.id).order("created_at",{ascending:false});
+ let r;
+ try{
+  r=await sup.from("milk_subscriptions").select("id,status,quantity_litres,price_per_litre,delivery_time,start_date,end_date,days_of_week,cutoff_minutes,customer_note,paused_until,provider_id,product_id,address_id,provider_profiles(display_name,area_name,city,delivery_from,delivery_to),milk_products(name,milk_type),addresses(label,address_line,area_name,city,pin_code)").eq("customer_id",user.id).order("created_at",{ascending:false});
+ }catch(error){
+  console.warn("Daily plans query could not reach the server",error);
+  $("plansList").innerHTML='<div class="empty-plans"><b>We couldn’t reach your plans.</b><br>Check your connection and tap Refresh to retry.</div>';
+  $("plansState").textContent="We couldn’t load your milk plans. Please refresh to retry.";
+  return false;
+ }
  if(r.error){console.warn("Daily plans query failed",r.error);$("plansList").innerHTML='<div class="empty-plans"><b>We couldn’t load your plans.</b><br>Check your connection and tap Refresh to try again.</div>';$("plansState").textContent="We couldn’t load your milk plans. Please refresh to retry.";return false}
  const plans=r.data||[];if(!plans.length){$("plansList").innerHTML='<div class="empty-plans"><b>No recurring plans yet.</b><br>Choose a local provider and tap Plan on their milk.</div>';return true}
  const ids=plans.map(p=>p.id);
