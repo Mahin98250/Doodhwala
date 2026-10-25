@@ -24,6 +24,8 @@ const storeHtml = read("store.html");
 const productHtml = read("product.html");
 const sellerHtml = read("provider.html");
 const adminHtml = read("admin.html");
+const authHtml = read("auth.html");
+const supportHtml = read("support.html");
 
 test("orders keep the core history query independent of optional payment columns", () => {
   assert.match(orders, /\.select\("id,status,subtotal,delivery_fee,total,customer_note,created_at,[^"]*provider_id,provider_profiles/);
@@ -86,6 +88,28 @@ test("page changes show a local milk-transfer animation without a network depend
     assert.match(html, /customer-ui-polish\.css/);
     assert.match(html, /milk-transition\.css/);
     assert.match(html, /milk-transition\.js/);
+  }
+});
+
+test("the milk loader is defined before each data workspace initializes", () => {
+  const orderChecks = [
+    [indexHtml, "index", "app.js?v=20261025.2"],
+    [plansHtml, "plans", "plans.js?v=20261025.2"],
+    [ordersHtml, "orders", "orders.js?v=20261025.2"],
+    [checkoutHtml, "checkout", "checkout.js?v=20261025.3"],
+    [storeHtml, "store", "store.js?v=20261025.2"],
+    [productHtml, "product", "product.js?v=20261025.6"],
+    [sellerHtml, "seller", "provider.js?v=20261025.3"],
+    [adminHtml, "owner", "admin.js?v=20261025.1"],
+    [authHtml, "auth", "auth.js?v=20261012.1"],
+    [supportHtml, "support", "support.js?v=20261022.2"]
+  ];
+  for (const [html, page, runtime] of orderChecks) {
+    const transitionAt = html.indexOf("milk-transition.js?v=20261025.1");
+    const runtimeAt = html.indexOf(runtime);
+    assert.ok(transitionAt >= 0, page + " page should load the milk transition manager");
+    assert.ok(runtimeAt >= 0, page + " page should load its app runtime");
+    assert.ok(transitionAt < runtimeAt, page + " must load animation manager before startup data requests");
   }
 });
 
