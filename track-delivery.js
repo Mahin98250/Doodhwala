@@ -173,7 +173,9 @@
       })
       .on("broadcast", { event: "stop_updated" }, packet => {
         const event = packet?.payload || packet;
-        if (event?.route_id === routeId && event?.order_id === orderId) {
+        // Route topics carry only a generic invalidation signal. Refresh through the
+        // customer-scoped RPC so this page never needs another stop's identifiers.
+        if (event?.route_id === routeId) {
           loadTracking().catch(err => console.warn("Delivery stop update could not be loaded:", err));
         }
       })
