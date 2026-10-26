@@ -13,11 +13,6 @@ const origin = new URL(base).origin;
 await page.route("**/*", route => {
   const url = new URL(route.request().url());
   if (url.origin !== origin) return route.abort();
-  // auth.js deliberately redirects localhost to production. Stub only that script
-  // in this isolated static-shell test so it cannot navigate to the live site.
-  if (url.pathname === "/Doodhwala/auth.js") {
-    return route.fulfill({ status: 200, contentType: "application/javascript", body: "/* auth runtime disabled in offline smoke test */" });
-  }
   return route.continue();
 });
 try {
@@ -49,6 +44,17 @@ try {
   ];
   for (const routeCase of routeCases) {
     const routeUrl = new URL(routeCase.path, origin).href;
+    // The production auth runtime intentionally redirects localhost to production.
+    // Verify its precached HTML now; exercise its offline navigation below with a
+    // test-only cached JS stub so no live-site redirect or auth request can occur.
+    if (routeCase.path === "/Doodhwala/auth.html") {
+      const authCached = await page.evaluate(async () => {
+        const cache = await caches.open("doodhwala-v95");
+        return !!(await cache.match("/Doodhwala/auth.html"));
+      });
+      assert.ok(authCached, "auth HTML is included in the install precache");
+      continue;
+    }
     const response = await page.goto(routeUrl, { waitUntil: "domcontentloaded" });
     assert.ok(response && response.ok(), "customer route loads online: " + routeCase.path);
     assert.match(await page.title(), routeCase.title, "online page title matches route: " + routeCase.path);
@@ -76,6 +82,15 @@ try {
   assert.ok(activationEvidence.exactVersionedCssCached, "exact versioned customer CSS URL is cached");
   assert.ok(activationEvidence.exactQueryRouteCached, "exact query-string route was cached while online");
 
+  // Replace only the test-origin auth runtime in this isolated cache. The
+  // production auth.js redirects localhost to production and must never run here.
+  await page.evaluate(async () => {
+    const cache = await caches.open("doodhwala-v95");
+    await cache.put("/Doodhwala/auth.js?v=20261012.1", new Response("/* auth runtime intentionally stubbed in offline smoke test */", {
+      status: 200,
+      headers: { "Content-Type": "application/javascript" }
+    }));
+  });
   await context.setOffline(true);
   const offlineRoutes = [];
   for (const routeCase of routeCases) {
