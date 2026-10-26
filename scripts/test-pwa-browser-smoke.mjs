@@ -13,6 +13,11 @@ const origin = new URL(base).origin;
 await page.route("**/*", route => {
   const url = new URL(route.request().url());
   if (url.origin !== origin) return route.abort();
+  // auth.js deliberately redirects localhost to production. Stub only that script
+  // in this isolated static-shell test so it cannot navigate to the live site.
+  if (url.pathname === "/Doodhwala/auth.js") {
+    return route.fulfill({ status: 200, contentType: "application/javascript", body: "/* auth runtime disabled in offline smoke test */" });
+  }
   return route.continue();
 });
 try {
