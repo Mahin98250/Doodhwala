@@ -466,16 +466,20 @@ begin
     raise exception 'skip_reason_required';
   end if;
 
-  select s.* into v_stop
-  from public.delivery_route_stops s
-  join public.delivery_route_runs r on r.id=s.route_id
+  -- Always lock the route row before the stop row. ETA refresh takes the same
+  -- lock order, avoiding stop/route deadlocks during concurrent driver actions.
+  select r.* into v_route
+  from public.delivery_route_runs r
+  join public.delivery_route_stops s on s.route_id=r.id
   where s.id=p_stop_id
     and (r.driver_user_id=v_uid or r.provider_owner_id=v_uid)
-  for update of s;
+  for update of r;
   if not found then raise exception 'route_stop_not_assigned_to_user'; end if;
-
-  select * into v_route from public.delivery_route_runs r
-  where r.id=v_stop.route_id for update;
+  select s.* into v_stop
+  from public.delivery_route_stops s
+  where s.id=p_stop_id and s.route_id=v_route.id
+  for update;
+  if not found then raise exception 'route_stop_not_assigned_to_user'; end if;
   if v_route.status<>'active' then raise exception 'active_route_required'; end if;
   if exists(
     select 1 from public.delivery_route_stops previous
