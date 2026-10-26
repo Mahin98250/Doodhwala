@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-26
 **Scope:** Public customer-facing Doodhwala UI, source inspection of `index.html`, `styles.css`, `app.js`, and `customer-nav.js`.
-**Environment limitation:** This pass used repository source inspection. A real interactive browser/device session was not available, so runtime behavior, screenshots, and end-to-end form submissions are not claimed as verified.
+**Verification boundary:** Source review is paired with a Chromium viewport smoke workflow at 320, 390, 768, 1024 and 1440 CSS px. It checks horizontal overflow, responsive bottom-nav visibility, search accessible name and uncaught page errors, and uploads screenshots/results. The latest post-sync run is in progress: [UI browser viewport evidence](https://github.com/Mahin98250/Doodhwala/actions/runs/40365597970). This does not replace manual route-by-route, keyboard, touch-target or screen-reader checks.
 
 ## Finding UX-001 — Mobile bottom-navigation labels are too small
 
@@ -22,7 +22,7 @@ The following are test cases to execute in a browser; they are not represented a
 | Area | Route / viewport | Steps | Expected behavior | Severity if failing | Status |
 |---|---|---|---|---|---|
 | Primary navigation | `/`, desktop ≥1024px | Activate Home, Providers, Plans, Orders, Saved | Correct section/route opens; active state follows destination | High | Needs browser verification |
-| Bottom navigation | `/`, mobile 320–390px | Tap all six items; repeat with cart empty and populated | Targets are tappable, labels readable, active state and cart badge update | Medium | Label-size fix in branch; device verification pending |
+| Bottom navigation | `/`, mobile 320–390px | Tap all six items; repeat with cart empty and populated | Targets are tappable, labels readable, active state and cart badge update | Medium | Label-size fix in branch; automated Chromium viewport evidence is running; physical-device verification pending |
 | Search and filters | `/`, mobile + desktop | Search known provider, then unmatched query; switch milk filters and sort | Results match query/filter; no-results state is clear and recoverable | High | Needs browser verification |
 | Location selection | `/`, mobile + desktop | Open location picker; deny location permission; try manual location selection | Permission denial is explained; user can recover without a dead end | High | Needs browser verification |
 | Cart and checkout | `/checkout.html`, mobile + desktop | Open empty cart, add item, change quantity, submit invalid/incomplete checkout | Empty state is actionable; totals update; validation errors are clear | Critical if order/payment can be incorrect | Needs browser verification |
@@ -32,9 +32,9 @@ The following are test cases to execute in a browser; they are not represented a
 | Layout/overflow | `/`, 320px, 360px, 768px, 1024px, 1440px | Check header, cards, dialogs, comparison dock and bottom nav | No horizontal page overflow; content is not obscured by fixed controls | Medium | Needs browser verification |
 | Keyboard/accessibility | `/` and `/auth.html`, desktop | Tab through controls; activate with keyboard; inspect focus and labels | Visible focus, semantic controls, understandable accessible names | Medium | Needs browser verification |
 
-## Screenshots
+## Screenshots and browser evidence
 
-No screenshots are attached in this source-only pass because no browser viewport was available to capture trustworthy before/after images. Capture before/after screenshots at 320px and 390px widths when validating the navigation-label change.
+The `UI browser viewport evidence` workflow captures `home-320px.png`, `home-390px.png`, `home-768px.png`, `home-1024px.png`, `home-1440px.png`, and `viewport-results.json` as the `doodhwala-ui-browser-evidence` artifact. Latest post-sync run: https://github.com/Mahin98250/Doodhwala/actions/runs/40365597970. These are after-change screenshots; no before-change baseline was captured. Physical-device and route-specific screenshots remain follow-up verification.
 
 ## Release note
 
