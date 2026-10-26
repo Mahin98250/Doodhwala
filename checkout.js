@@ -120,7 +120,8 @@ $("placeOrder").onclick=async()=>{
   try{controlsReadiness=await Doodhwala.supabase.rpc("customer_order_payment_controls_ready")}
   catch(error){controlsReadiness={error}}
   if(controlsReadiness?.error||controlsReadiness?.data?.ready!==true){
-   showError("Checkout is temporarily paused while secure payment controls are being deployed or verified. No order has been placed; your cart is safe. Please try again later.");
+   if(checkoutProgress?.orderIds?.length){showError("Checkout is temporarily paused while secure payment controls are being deployed or verified. No new order was placed on this attempt. Already-placed order ID(s): "+checkoutProgress.orderIds.join(", ")+". Your remaining items are preserved; please try again later.")}
+   else showError("Checkout is temporarily paused while secure payment controls are being deployed or verified. No order has been placed; your cart is safe. Please try again later.");
    return;
   }
   const paymentMethod=document.querySelector('input[name="paymentMethod"]:checked')?.value==="direct_upi"?"direct_upi":"cod";
