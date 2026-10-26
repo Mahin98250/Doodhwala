@@ -506,6 +506,7 @@ begin
   ) then
     update public.delivery_route_runs set status='completed',completed_at=now(),updated_at=now()
     where id=v_stop.route_id;
+    delete from public.delivery_live_locations where route_id=v_stop.route_id;
   end if;
   return jsonb_build_object(
     'route_id',v_stop.route_id,'stop_id',p_stop_id,'action',p_action,
@@ -513,6 +514,110 @@ begin
   );
 end;
 $$;
+
+create or replace function public.delivery_get_active_route_eta(p_route_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_uid uuid:=auth.uid();
+  v_route public.delivery_route_runs%rowtype;
+  v_location public.delivery_live_locations%rowtype;
+  v_stops jsonb;
+begin
+  if v_uid is null then raise exception 'authentication_required'; end if;
+  select * into v_route
+  from public.delivery_route_runs r
+  where r.id=p_route_id and r.driver_user_id=v_uid and r.status='active';
+  if not found then raise exception 'active_driver_route_required'; end if;
+
+  select * into v_location from public.delivery_live_locations l
+  where l.route_id=p_route_id and l.updated_at>now()-interval '2 minutes';
+  if not found then raise exception 'fresh_driver_location_required'; end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'stop_id',s.id,'sequence_no',s.sequence_no,
+    'latitude',o.delivery_latitude,'longitude',o.delivery_longitude
+  ) order by s.sequence_no),'[]'::jsonb)
+  into v_stops
+  from public.delivery_route_stops s
+  join public.orders o on o.id=s.order_id
+  where s.route_id=p_route_id and s.status='pending';
+
+  return jsonb_build_object(
+    'route_id',p_route_id,
+    'location',jsonb_build_object('latitude',v_location.latitude,'longitude',v_location.longitude,'updated_at',v_location.updated_at),
+    'stop_service_seconds',v_route.stop_service_seconds,
+    'pending_stops',v_stops
+  );
+end;
+$;
+
+create or replace function public.delivery_update_remaining_etas(
+  p_route_id uuid,
+  p_stop_ids uuid[],
+  p_eta_starts timestamptz[],
+  p_eta_ends timestamptz[]
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_uid uuid:=auth.uid();
+  v_route public.delivery_route_runs%rowtype;
+  v_expected uuid[];
+  v_count integer;
+  v_i integer;
+begin
+  if v_uid is null then raise exception 'authentication_required'; end if;
+  select * into v_route from public.delivery_route_runs r
+  where r.id=p_route_id and r.driver_user_id=v_uid and r.status='active'
+  for update;
+  if not found then raise exception 'active_driver_route_required'; end if;
+
+  select coalesce(array_agg(s.id order by s.sequence_no),'{}'::uuid[])
+  into v_expected
+  from public.delivery_route_stops s
+  where s.route_id=p_route_id and s.status='pending';
+  v_count:=cardinality(v_expected);
+  if cardinality(coalesce(p_stop_ids,'{}'::uuid[]))<>v_count
+     or p_stop_ids is distinct from v_expected then
+    raise exception 'route_stops_changed_refresh_route';
+  end if;
+  if cardinality(coalesce(p_eta_starts,'{}'::timestamptz[]))<>v_count
+     or cardinality(coalesce(p_eta_ends,'{}'::timestamptz[]))<>v_count then
+    raise exception 'eta_arrays_must_match_route';
+  end if;
+  if exists(
+    select 1 from unnest(p_eta_starts,p_eta_ends) as eta(starts_at,ends_at)
+    where starts_at is null or ends_at is null or ends_at<starts_at
+  ) then raise exception 'invalid_eta_window'; end if;
+
+  if v_count>0 then
+    for v_i in 1..v_count loop
+      update public.delivery_route_stops
+      set estimated_arrival_at=p_eta_starts[v_i]+((p_eta_ends[v_i]-p_eta_starts[v_i])/2),
+          eta_window_start=p_eta_starts[v_i],
+          eta_window_end=p_eta_ends[v_i],
+          updated_at=now()
+      where id=p_stop_ids[v_i] and route_id=p_route_id and status='pending';
+      if not found then raise exception 'route_stops_changed_refresh_route'; end if;
+    end loop;
+  end if;
+
+  perform realtime.send(
+    payload => jsonb_build_object('route_id',p_route_id,'updated_at',now()),
+    event => 'eta_updated',
+    topic => 'delivery-route:'||p_route_id::text,
+    private => true
+  );
+  return true;
+end;
+$;
 
 create or replace function public.delivery_get_my_active_route()
 returns jsonb
@@ -724,6 +829,8 @@ revoke all on function public.delivery_create_route(uuid,uuid,date,timestamptz,u
 revoke all on function public.delivery_start_route(uuid) from public,anon;
 revoke all on function public.delivery_update_location(uuid,double precision,double precision,double precision,double precision,double precision) from public,anon;
 revoke all on function public.delivery_mark_route_stop_action(uuid,text,text) from public,anon;
+revoke all on function public.delivery_get_active_route_eta(uuid) from public,anon;
+revoke all on function public.delivery_update_remaining_etas(uuid,uuid[],timestamptz[],timestamptz[]) from public,anon;
 revoke all on function public.delivery_get_my_active_route() from public,anon;
 revoke all on function public.delivery_get_my_tracking(uuid) from public,anon;
 
@@ -739,6 +846,8 @@ grant execute on function public.delivery_create_route(uuid,uuid,date,timestampt
 grant execute on function public.delivery_start_route(uuid) to authenticated;
 grant execute on function public.delivery_update_location(uuid,double precision,double precision,double precision,double precision,double precision) to authenticated;
 grant execute on function public.delivery_mark_route_stop_action(uuid,text,text) to authenticated;
+grant execute on function public.delivery_get_active_route_eta(uuid) to authenticated;
+grant execute on function public.delivery_update_remaining_etas(uuid,uuid[],timestamptz[],timestamptz[]) to authenticated;
 grant execute on function public.delivery_get_my_active_route() to authenticated;
 grant execute on function public.delivery_get_my_tracking(uuid) to authenticated;
 
