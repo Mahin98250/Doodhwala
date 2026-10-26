@@ -2,8 +2,8 @@
 
 > **Purpose:** This is the durable handoff document for anyone (including AI assistants) continuing work on Doodhwala. Read this before making changes. Update it in the same pull request/commit whenever project direction, implementation status, or important decisions change.
 
-**Last updated:** 2026-10-23  
-**Repository:** https://github.com/Mahin98250/Dudh-Wallah  
+**Last updated:** 2026-10-26  
+**Repository:** https://github.com/Mahin98250/Doodhwala  
 **Default branch:** `main`  
 **Product:** Doodhwala — a local-first marketplace connecting customers with independent neighbourhood milk sellers.
 
@@ -97,45 +97,30 @@ These items are direction and proposed next work, not claims that changes have a
 
 Useful starting points currently present in the repository:
 - `README.md` — overview, roadmap and staging release checklist.
+- `PROJECT_CONTEXT.md` — architecture and durable session handoff.
+- `TASK_BOARD.md` — shared task ownership, checkboxes, acceptance criteria, and work log.
+- `CODING_AGENT_GUIDE.md` — required workflow and guardrails for every human or coding agent.
 - `SUPABASE_SETUP.md` — Supabase configuration and setup.
 - `SECURITY.md` — security guidance and reporting expectations.
 - `app.js` — main customer-side JavaScript.
 - `admin.html`, `admin.js`, `admin.css` — admin interface.
 - `auth.html`, `auth.js`, `auth.css` — authentication interface.
 - `provider.html` and provider-related assets/scripts — seller onboarding and dashboard.
-- `checkout-10x.js` — checkout-related logic; inspect its imports/call sites before editing.
 - Supabase migrations and `supabase/functions/` — database policies and server-side functions.
 
 File names are a starting map; confirm current paths and dependencies from the checked-out branch before making assumptions.
 
-## 6. How our small team should collaborate
+## 6. Team workflow
 
-For a team of 2–4 people, avoid multiple people editing the same file on `main` simultaneously.
+The detailed, shared workflow is in [CODING_AGENT_GUIDE.md](./CODING_AGENT_GUIDE.md). The current queue and task checkboxes live in [TASK_BOARD.md](./TASK_BOARD.md).
 
-1. **Start each session:** pull the latest `main`, read this file and `README.md`, inspect recent commits, and check open pull requests/issues.
-2. **Agree on ownership:** split work by bounded area (for example: customer UI, provider UI, backend/security, QA/docs). Name an owner for each task.
-3. **Use branches:** create a short branch such as `feat/daily-delivery-summary` or `fix/mobile-checkout`. Do not commit directly to `main` for multi-person feature work.
-4. **Small pull requests:** one purpose per PR; include screenshots for UI changes, test steps, risks, and any migration/deployment notes.
-5. **Review before merge:** another teammate checks behavior, responsive states, security/authorization impact, and regressions.
-6. **Never share secrets in chat, commits, screenshots, or this document.** Use each person's authorized account and the project's secret manager.
-7. **Coordinate schema changes:** migrations should be additive where possible, reviewed before applying, and tested in staging first.
-8. **Update the handoff:** after a meaningful change, update the status table below and record the commit/PR, tests run, known issues, and next step.
-
-Suggested Git routine:
-```bash
-git switch main
-git pull --ff-only
-git switch -c feat/short-task-name
-# make one bounded change
-git diff --check
-# run the project’s available checks; document checks that cannot be run
-git add <specific-files>
-git commit -m "feat: describe the change"
-git push -u origin feat/short-task-name
-# open a pull request and request review
-```
-
-Do not assume a test command exists. Inspect repository configuration first and use the actual scripts/tools available.
+Short version:
+1. Read the context, task board, and README before coding.
+2. Claim one task and record its owner, status, and branch.
+3. Work in a separate branch; avoid editing the same files as another teammate.
+4. Open a focused PR with acceptance criteria, test results, and screenshots for UI changes.
+5. Review before merge; update the task board and context with evidence.
+6. Never commit secrets or claim unverified behavior is production-ready.
 
 ## 7. Session handoff / network-loss recovery
 
@@ -143,24 +128,23 @@ When the connection drops or a new person/assistant resumes:
 1. Open this file first, then `README.md` and `SUPABASE_SETUP.md` if backend work is involved.
 2. Check `git status`, current branch, latest commit, and open PRs. Preserve uncommitted work; do not overwrite another person's changes.
 3. Compare this document with the current code. The code and merged commits are the source of truth if this note is stale.
-4. Resume the **Next task** below only after checking whether someone has already started or completed it.
+4. Resume the next unclaimed task in `TASK_BOARD.md` only after checking whether someone has already started or completed it.
 5. After making changes, update this file with factual results. Clearly distinguish implemented, tested, deployed, and still unverified.
 
 ## 8. Progress log
 
 | Date | Update | Evidence / status |
 |---|---|---|
-| 2026-10-23 | Merged premium UI polish and connectivity feedback in PR #31; refreshed offline precache to cache revision v82. | Main commit `5ef002602443bd0e782bbe349862a26cb489c77f`; post-merge static validation run `39902752389` passed; GitHub Pages build/deploy workflow `39902752033` passed. Visual live-page/mobile testing remains pending because this environment could not retrieve the public page. Live Supabase payment migrations remain unapplied. |
-| 2026-10-23 | Created this team handoff and context document. | Commit [`7e3195b`](https://github.com/Mahin98250/Dudh-Wallah/commit/7e3195b75fb3761a56350c7718c2404adf83fb59); documentation only. |
-| 2026-10-23 | Inspected the current `index.html` entry page while checking the “Doodhwala 10x” request. | Current `index.html` uses “Doodhwala” branding and contains no “Doodhwala 10x” / “10x” text. No UI change was made based on this check; investigate other routes or the deployed build before removing anything blindly. |
-| Previously documented in README | Customer/provider workflows, Supabase foundation, order creation, and Doodhwala Pay foundation described. | Treat runtime and production status as unverified until tested; payment gateway is explicitly not ready for live money movement. |
+| 2026-10-26 | Added shared team task board and coding-agent workflow guide. | Documentation branch `docs/team-collaboration-system`; pending review/merge. |
+| 2026-10-23 | Merged premium UI polish and connectivity feedback in PR #31; refreshed offline precache to cache revision v82. | Main commit `5ef002602443bd0e782bbe349862a26cb489c77f`; post-merge static validation run `39902752389` passed; GitHub Pages build/deploy workflow `39902752033` passed. Visual live-page/mobile testing remains pending because the public page could not be retrieved in that session. Live Supabase payment migrations remain unapplied. |
+| 2026-10-23 | Created the original project context and handoff. | Commit `7e3195b75fb3761a56350c7718c2404adf83fb59`; documentation only. |
 
 Add newest entries at the top. Include commit/PR links and test outcomes whenever available. Do not invent commit hashes, deployment status, or test results.
 
-## 9. Current session checkpoint
+## 9. Current checkpoint
 
-**Next task:** visually browser-test the deployed home, provider, orders, and checkout pages; verify offline/reconnect behavior on mobile and desktop. Continue the daily customer/seller workflow audit for one high-value feature. Keep Doodhwala as the working brand until a final name is approved.
+**Next task:** choose an unclaimed item in `TASK_BOARD.md`, ideally DW-001 (staging order journey) or DW-002 (responsive UI audit). Keep Doodhwala as the working brand until a final name is approved.
 
-**Current verification boundary:** GitHub Actions static validation and the GitHub Pages build/deploy workflow both passed for main commit `5ef002602443bd0e782bbe349862a26cb489c77f`. The public page URL could not be retrieved from this session, so visual live-page and device testing remain pending. The banner reports browser connectivity only and does not queue offline orders. End-to-end order flow is not verified, and Doodhwala Pay cannot be claimed to collect money. Payment-related SQL migrations have not been applied to live Supabase.
+**Verification boundary:** The prior documented static validation and GitHub Pages workflow passed for main commit `5ef002602443bd0e782bbe349862a26cb489c77f`. Visual live-page/device testing and end-to-end order flow remain unverified. Payment-related SQL migrations were documented as absent from deployed Supabase migration history on 2026-10-23; re-check before deployment. Doodhwala Pay is not a live automated gateway.
 
-**Definition of done for the next session:** a small, reviewed change; checks recorded; no secrets committed; this document updated with actual commit/PR and test results.
+**Definition of done:** a focused reviewed change, checks recorded, no secrets committed, and the task board/context updated with evidence.
