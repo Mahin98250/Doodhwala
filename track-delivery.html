@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#175a3c"><meta name="description" content="Private live delivery tracking for your Doodhwala milk order.">
+<title>Doodhwala · Track delivery</title>
+<link rel="icon" href="/Doodhwala/assets/mascot.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/Doodhwala/track-delivery.css?v=20261026.1">
+</head>
+<body class="customer-tracking-page">
+<header class="tracking-header"><a href="/Doodhwala/" class="tracking-brand"><img src="/Doodhwala/assets/mascot.png" alt=""><span><b>Doodhwala</b><small>Local milk, nearby.</small></span></a><a href="/Doodhwala/orders.html" class="tracking-back">← My orders</a></header>
+<main class="tracking-main">
+<section class="tracking-intro"><span class="tracking-eyebrow">ORDER TRACKING</span><h1>Your morning milk, tracked.</h1><p>See the assigned route status and your delivery person’s live position when the round is active.</p></section>
+<div id="trackingStatus" class="tracking-status" role="status" aria-live="polite">Loading your delivery…</div>
+<section id="trackingContent" class="tracking-grid hidden">
+<div class="tracking-left">
+<div class="tracking-map-card">
+<div class="tracking-map-head"><div><span class="tracking-eyebrow">LIVE MAP</span><h2 id="trackingMapTitle">Your delivery</h2></div><span id="trackingLivePill" class="tracking-live-pill">WAITING</span></div>
+<div id="trackingMap" class="tracking-map" aria-label="Private driver and delivery destination map"></div>
+<div id="trackingLocationState" class="tracking-location-state">The live marker appears when the assigned driver starts sharing location.</div>
+</div>
+<div class="tracking-panel">
+<h2>Delivery progress</h2>
+<div id="trackingTimeline" class="tracking-timeline"></div>
+</div>
+</div>
+<aside class="tracking-right">
+<section class="tracking-eta-card"><span class="tracking-eyebrow">YOUR DELIVERY SLOT</span><div id="trackingEta" class="tracking-eta">ETA is being prepared</div><p id="trackingEtaNote">Your time window may change as the round progresses.</p><div class="tracking-stop-badge" id="trackingStopBadge">Stop number pending</div></section>
+<section class="tracking-panel"><h2>Your order</h2><div id="trackingOrderSummary" class="tracking-order-summary"></div></section>
+<div class="tracking-privacy"><b>Private by design</b><p>You see your own delivery status, your doorstep and the driver's current location. Other households’ names, phone numbers and addresses are never shown.</p></div>
+</aside>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+<script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+<script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/Doodhwala/track-delivery.js?v=20261026.1"></script>
+</body></html>
