@@ -44,13 +44,13 @@ The following are test cases to execute in a browser; they are not represented a
 
 ## Screenshots and browser evidence
 
-The `UI browser viewport evidence` workflow captures `home-320px.png`, `home-390px.png`, `home-768px.png`, `home-1024px.png`, `home-1440px.png`, `location-denied-390px.png`, `auth-validation-390px.png`, `checkout-entry-390px.png`, `product-unavailable-390px.png`, and JSON results in the `doodhwala-ui-browser-evidence` artifact. Latest run: https://github.com/Mahin98250/Doodhwala/actions/runs/40369588713. These are after-change screenshots; no before-change baseline was captured. Physical-device and full route-specific screenshots remain follow-up verification.
+The `UI browser viewport evidence` workflow captures home screenshots at 320/390/768/1024/1440px; checkout/plans/orders/auth/product/support route screenshots at 390/1440px; `location-denied-390px.png`, `auth-validation-390px.png`, `checkout-entry-390px.png`, `product-unavailable-390px.png`; and JSON results in the `doodhwala-ui-browser-evidence` artifact. Latest run: https://github.com/Mahin98250/Doodhwala/actions/runs/40371176028. These are after-change screenshots; no before-change baseline was captured. Physical-device checks remain follow-up verification.
 
 ## Release note
 
-Do not merge or deploy until the branch has been reviewed and the browser/device checks above have been run. Any Critical/High runtime failures found during execution should be fixed here or filed as follow-up issues with the same reproduction details.
+Do not merge or deploy until the branch has been reviewed and the remaining physical-device/accessibility checks are complete. Automated Chromium tests passed. Any Critical/High runtime failures found during manual execution should be fixed here or filed as follow-up issues with the same reproduction details.
 
 
 ## Customer journey interaction audit
 
-See [`CUSTOMER_JOURNEY_INTERACTION_AUDIT.md`](CUSTOMER_JOURNEY_INTERACTION_AUDIT.md) for source-confirmed expected/actual findings, reproducible test steps, the search accessible-name fix, source-contract coverage, and the explicit browser/device matrix. Runtime tests and screenshots remain pending because no interactive browser was available; none are reported as passed.
+See [`CUSTOMER_JOURNEY_INTERACTION_AUDIT.md`](CUSTOMER_JOURNEY_INTERACTION_AUDIT.md) for source-confirmed expected/actual findings, reproducible test steps, the search accessible-name and active-navigation fixes, source-contract coverage, passing Chromium evidence, and the remaining manual/device matrix.
