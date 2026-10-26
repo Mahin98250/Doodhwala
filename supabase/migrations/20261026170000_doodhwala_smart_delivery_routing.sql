@@ -96,7 +96,9 @@ using (
     select 1
     from public.delivery_route_stops s
     join public.orders o on o.id = s.order_id
-    where s.route_id = delivery_live_locations.route_id and o.customer_id = (select auth.uid())
+    where s.route_id = delivery_live_locations.route_id
+      and o.customer_id = (select auth.uid())
+      and s.status in ('pending','arrived')
   )
 );
 
