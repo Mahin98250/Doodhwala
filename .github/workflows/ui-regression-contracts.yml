@@ -1,0 +1,48 @@
+name: UI regression contracts
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "customer-nav.js"
+      - "index.html"
+      - "app.js"
+      - "product.js"
+      - "location.js"
+      - "checkout.js"
+      - "checkout.html"
+      - "auth.html"
+      - "scripts/test-ui-regression-contracts.mjs"
+      - ".github/workflows/ui-regression-contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "customer-nav.js"
+      - "index.html"
+      - "app.js"
+      - "product.js"
+      - "location.js"
+      - "checkout.js"
+      - "checkout.html"
+      - "auth.html"
+      - "scripts/test-ui-regression-contracts.mjs"
+      - ".github/workflows/ui-regression-contracts.yml"
+
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Syntax-check audited customer journey scripts
+        run: |
+          set -e
+          node --check customer-nav.js
+          node --check app.js
+          node --check product.js
+          node --check location.js
+          node --check checkout.js
+      - name: Run customer UI and journey source contracts
+        run: node scripts/test-ui-regression-contracts.mjs
