@@ -297,6 +297,20 @@ begin
      or p_planned_duration_s is null or p_planned_duration_s < 0 then
     raise exception 'invalid_route_metrics';
   end if;
+
+  -- Serialize assignments across providers by locking the driver profile.
+  -- This prevents two simultaneous dispatches from creating overlapping routes.
+  perform 1 from public.profiles p where p.id=p_driver_user_id for update;
+  if not found then raise exception 'delivery_driver_not_found'; end if;
+  if exists (
+    select 1 from public.delivery_route_runs r
+    where r.driver_user_id=p_driver_user_id and r.status='active'
+  ) then raise exception 'driver_already_has_active_route'; end if;
+  if exists (
+    select 1 from public.delivery_route_runs r
+    where r.driver_user_id=p_driver_user_id and r.service_date=p_service_date
+      and r.status='planned'
+  ) then raise exception 'driver_already_has_planned_route_for_service_date'; end if;
   if p_route_geometry is null or jsonb_typeof(p_route_geometry)<>'object'
      or p_route_geometry->>'type'<>'LineString'
      or jsonb_typeof(p_route_geometry->'coordinates')<>'array' then
@@ -390,6 +404,16 @@ begin
     return jsonb_build_object('route_id',v_route.id,'status','active','started_at',v_route.started_at);
   end if;
   if v_route.status<>'planned' then raise exception 'route_not_startable'; end if;
+
+  -- Two tabs/devices may try to start different planned routes at once. Lock the
+  -- driver profile before checking other active runs so only one can win.
+  perform 1 from public.profiles p where p.id=v_route.driver_user_id for update;
+  if exists (
+    select 1 from public.delivery_route_runs other
+    where other.driver_user_id=v_route.driver_user_id
+      and other.id<>v_route.id and other.status='active'
+  ) then raise exception 'driver_already_has_active_route'; end if;
+
   if v_route.planned_start_at is not null and now()<v_route.planned_start_at-interval '30 minutes' then
     raise exception 'route_start_too_early';
   end if;
