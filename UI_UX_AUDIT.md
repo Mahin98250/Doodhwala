@@ -15,6 +15,16 @@
 - **Change in this branch:** Increase labels to 9px (8.5px at ≤360px) and use a slightly more readable line-height.
 - **Verification:** Source diff inspected; real-device visual check still required.
 
+## Finding UX-004 — Active navigation did not follow in-page Explore/Saved views
+
+- **Severity:** Medium (navigation feedback/accessibility)
+- **Route:** `/Doodhwala/`, mobile bottom navigation
+- **Steps:** Tap Explore, then Saved, then Home without leaving the home route.
+- **Expected:** The selected view and the shared navigation's active styling / `aria-current="page"` identify the same destination.
+- **Source finding:** Explore/Saved updated the marketplace view in `app.js` without a corresponding event for `customer-nav.js`, which otherwise derives active state from the URL.
+- **Fix:** The app now dispatches `doodhwala:view-changed` for in-page home views; shared navigation listens and updates its active state. A source-contract assertion and Chromium interaction regression cover Explore → Saved → Home.
+- **Verification:** Source-contract checks passed. The latest browser run is pending: https://github.com/Mahin98250/Doodhwala/actions/runs/40370254143.
+
 ## Audit checklist and follow-up verification
 
 The following are test cases to execute in a browser; they are not represented as passed without runtime evidence.
