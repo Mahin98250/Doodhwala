@@ -22,8 +22,8 @@
 - **Steps:** Tap Explore, then Saved, then Home without leaving the home route.
 - **Expected:** The selected view and the shared navigation's active styling / `aria-current="page"` identify the same destination.
 - **Source finding:** Explore/Saved updated the marketplace view in `app.js` without a corresponding event for `customer-nav.js`, which otherwise derives active state from the URL.
-- **Fix:** The app now dispatches `doodhwala:view-changed` for in-page home views; shared navigation listens and updates its active state. A source-contract assertion and Chromium interaction regression cover Explore → Saved → Home.
-- **Verification:** Source-contract checks passed. The latest browser run is pending: https://github.com/Mahin98250/Doodhwala/actions/runs/40370254143.
+- **Fix:** The app now dispatches `doodhwala:view-changed` for in-page home views; shared navigation listens and updates its active state. A source-contract assertion and Chromium interaction regression passed for Explore → Saved → Home.
+- **Verification:** Source-contract checks passed. The Chromium regression passed: https://github.com/Mahin98250/Doodhwala/actions/runs/40370425002.
 
 ## Audit checklist and follow-up verification
 
