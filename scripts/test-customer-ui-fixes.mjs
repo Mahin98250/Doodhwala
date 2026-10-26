@@ -31,7 +31,7 @@ assert.match(orders, /paymentResult/, "Payment details should be loaded separate
 assert.match(orders, /Payment method not recorded/, "Older production orders must not be incorrectly labeled as COD when payment metadata is absent.");
 
 for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ordersHtml]]) {
-  assert.match(html, /customer-ui-polish\.css\?v=20261026\.1/, name + " page must load the responsive UI fixes.");
+  assert.match(html, /customer-ui-polish\\.css\?v=20261025\.3/, name + " page must load the responsive UI fixes.");
   assert.match(html, /milk-transition\.css\?v=20261025\.4/, name + " page must load the milk animation styles.");
   assert.match(html, /milk-transition\.js\?v=20261025\.4/, name + " page must load the transition runtime.");
 }
@@ -40,7 +40,7 @@ assert.match(app, /showLoading\("Finding fresh milk nearby…?"\)/, "Home provid
 assert.match(app, /milkTransition\?\.hideLoading\(\)/, "Home provider data loading must always clear the loader.");
 assert.match(app, /destination==="plans"\|\|destination==="orders"/, "Desktop sidebar must navigate to Plans and Orders.");
 assert.match(app, /DoodhwalaMilkTransition\.navigate\(url\)/, "Desktop customer navigation must use the milk transition.");
-assert.match(home, /customer-ui-polish\\.css\\?v=20261026\\.1/, "Home page must load the latest mobile header polish.");
+assert.match(home, /customer-ui-polish\\.css\?v=20261026\.1/, "Home page must load the latest mobile header polish.");
 assert.ok(home.indexOf("milk-transition.js?v=20261025.4") < home.indexOf("app.js?v=20261025.5"), "Milk transition runtime must be available before the home app requests data.");
 assert.match(ordersHtml, /customer-10x\.js\?v=20261023\.4" data-doodhwala-10x="1"/, "Orders page must use one current customer 10X runtime without injecting a duplicate.");
 assert.match(worker, /doodhwala-v93/, "PWA cache must change when the home runtime changes.");
