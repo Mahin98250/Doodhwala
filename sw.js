@@ -15,11 +15,15 @@ self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin)return;
+  // Attach the cache write to the fetch event's lifetime. Fire-and-forget
+  // cache.put() can be abandoned when the browser terminates an idle worker.
+  const networkResponse=fetch(event.request);
+  const cacheUpdate=networkResponse.then(response=>{
+    if(response.ok)return caches.open(CACHE).then(cache=>cache.put(event.request,response.clone())).catch(()=>{});
+  }).catch(()=>{});
+  event.waitUntil(cacheUpdate);
   event.respondWith(
-    fetch(event.request).then(response=>{
-      if(response.ok)caches.open(CACHE).then(cache=>cache.put(event.request,response.clone())).catch(()=>{});
-      return response;
-    }).catch(async()=>{
+    networkResponse.then(response=>response).catch(async()=>{
       // Check the exact request first, then its query-free path. This keeps offline
       // deep links (for example orders.html?filter=active) on the correct screen.
       const exact=await caches.match(event.request);
