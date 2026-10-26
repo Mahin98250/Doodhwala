@@ -202,6 +202,44 @@ try {
     await checkoutPage.screenshot({ path: path.join(out, "checkout-entry-390px.png"), fullPage: true });
     interactionResults.push({ check: "checkout entry and required address fields", status: "passed" });
 
+    // Exercise common customer routes at mobile and desktop widths, using only
+    // local HTML and blocking external services. The auth runtime remains stubbed.
+    const routeLayouts = [
+      { path: "/Doodhwala/checkout.html", title: /Checkout/i, slug: "checkout" },
+      { path: "/Doodhwala/plans.html", title: /Milk Plans/i, slug: "plans" },
+      { path: "/Doodhwala/orders.html", title: /Orders/i, slug: "orders" },
+      { path: "/Doodhwala/auth.html", title: /Sign in/i, slug: "auth" },
+      { path: "/Doodhwala/product.html", title: /Milk/i, slug: "product" },
+      { path: "/Doodhwala/support.html", title: /Support/i, slug: "support" }
+    ];
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      for (const routeCase of routeLayouts) {
+        const routeUrl = new URL(routeCase.path, baseOrigin).href;
+        const response = await page.goto(routeUrl, { waitUntil: "domcontentloaded" });
+        assert.ok(response && response.ok(), "route layout loads: " + routeCase.path + " at " + width + "px");
+        assert.match(await page.title(), routeCase.title, "route title is correct: " + routeCase.path);
+        const layout = await page.evaluate(() => ({
+          width: innerWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          horizontalOverflow: document.documentElement.scrollWidth > innerWidth
+        }));
+        assert.equal(layout.horizontalOverflow, false,
+          "no horizontal overflow on " + routeCase.path + " at " + width + "px: " + JSON.stringify(layout));
+        await page.screenshot({
+          path: path.join(out, `route-${routeCase.slug}-${width}px.png`),
+          fullPage: true
+        });
+        interactionResults.push({
+          check: "customer route layout",
+          path: routeCase.path,
+          viewport: width,
+          status: "passed",
+          ...layout
+        });
+      }
+    }
+
     fs.writeFileSync(path.join(out, "interaction-results.json"), JSON.stringify(interactionResults, null, 2));
   } finally {
     await interactionContext.close();
