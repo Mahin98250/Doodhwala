@@ -146,7 +146,7 @@ Add newest entries at the top. Include commit/PR links and test outcomes wheneve
 
 ## 9. Current checkpoint
 
-**Next task:** choose an unclaimed item in `TASK_BOARD.md`, ideally DW-001 (staging order journey) or DW-002 (responsive UI audit). Keep Doodhwala as the working brand until a final name is approved.
+**Next task:** Mahin can begin DW-001 (staging order journey) if staging credentials and test accounts are available. DW-002 (responsive UI audit) is assigned to Vaidik and awaits his acknowledgement and branch claim. Keep Doodhwala as the working brand until a final name is approved.
 
 **Verification boundary:** The prior documented static validation and GitHub Pages workflow passed for main commit `5ef002602443bd0e782bbe349862a26cb489c77f`. Visual live-page/device testing and end-to-end order flow remain unverified. Payment-related SQL migrations were documented as absent from deployed Supabase migration history on 2026-10-23; re-check before deployment. Doodhwala Pay is not a live automated gateway.
 
