@@ -208,7 +208,7 @@ as $$
     b.rating_avg desc nulls last,
     b.display_name,
     b.id;
-$;
+$$;
 
 revoke execute on function public.find_nearby_providers_v3(numeric, numeric, numeric, text, integer, integer) from public;
 grant execute on function public.find_nearby_providers_v3(numeric, numeric, numeric, text, integer, integer) to anon, authenticated;
