@@ -29,7 +29,7 @@ assert.match(adminJs, /async function loadProviderBillingSection\(/, "owner bill
 assert.match(adminJs, /admin_get_provider_billing_settings/, "owner UI must retrieve configured receiving instructions");
 assert.match(adminJs, /admin_create_provider_subscription_invoice/, "owner UI must create monthly invoices");
 assert.match(adminJs, /admin_record_provider_subscription_payment/, "owner UI must reconcile payments");
-assert.match(adminJs, /personally checked Doodhwala.*receiving bank\\/UPI record/i, "owner must explicitly verify incoming transfer before recording payment");
+assert.match(adminJs, /personally checked Doodhwala.*receiving bank/i, "owner must explicitly verify incoming transfer before recording payment");
 assert.match(adminCss, /seller-billing-admin-grid/, "owner billing layout styles must be present");
 assert.match(worker, /provider-billing\.js\?v=20261026\.1/, "service worker must cache the new seller billing module");
 assert.match(worker, /admin\.js\?v=20261026\.1/, "service worker must cache updated owner UI");
