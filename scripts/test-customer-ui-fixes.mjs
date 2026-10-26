@@ -57,7 +57,7 @@ assert.match(transitionCss, /@keyframes dw-milk-fill-target/, "Receiving bottle 
 assert.match(transitionCss, /prefers-reduced-motion/);
 assert.match(mobileCss, /grid-template-areas/);
 assert.match(mobileCss, /@media\(max-width:390px\)/);
-assert.match(worker, /doodhwala-v93/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
+assert.match(worker, /doodhwala-v95/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
 assert.match(worker, /customer-ui-polish\.css\?v=20261026\.1/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
 assert.match(worker, /milk-transition\.js\?v=20261025\.4/);
