@@ -44,7 +44,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare v_uid uuid := auth.uid();
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -54,26 +54,26 @@ begin
     set is_active=true,consented_at=now(),updated_at=now();
   return true;
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_driver_is_enrolled()
 returns boolean
 language sql
 security definer
 set search_path = ''
-as $
+as $delivery_fn$
   select exists(
     select 1 from public.delivery_driver_enrollments e
     where e.driver_user_id=auth.uid() and e.is_active
   );
-$;
+$delivery_fn$;
 
 create or replace function public.delivery_driver_opt_out()
 returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare v_uid uuid := auth.uid();
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -89,7 +89,7 @@ begin
   where driver_user_id=v_uid;
   return true;
 end;
-$$;
+$delivery_fn$;
 
 -- Provider owners can only link drivers who explicitly enrolled first.
 create or replace function public.delivery_provider_link_driver(
@@ -100,7 +100,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare v_uid uuid := auth.uid();
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -121,7 +121,7 @@ begin
     set is_active=true,linked_by=v_uid,linked_at=now(),updated_at=now();
   return true;
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_provider_unlink_driver(
   p_provider_id uuid,
@@ -131,7 +131,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare v_uid uuid := auth.uid();
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -149,14 +149,14 @@ begin
   where provider_id=p_provider_id and driver_user_id=p_driver_user_id;
   return true;
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_list_enrolled_drivers(p_provider_id uuid)
 returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare v_uid uuid := auth.uid(); v_result jsonb;
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -177,7 +177,7 @@ begin
   where e.is_active;
   return v_result;
 end;
-$$;
+$delivery_fn$;
 
 -- This endpoint returns only eligible drops for the authenticated provider owner.
 -- Coordinates and address details are limited to signed-in operations users.
@@ -189,7 +189,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare
   v_uid uuid := auth.uid();
   v_origin record;
@@ -247,7 +247,7 @@ begin
     'limit',v_limit
   );
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_create_route(
   p_provider_id uuid,
@@ -266,7 +266,7 @@ returns uuid
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare
   v_uid uuid := auth.uid();
   v_owner uuid;
@@ -363,14 +363,14 @@ begin
   end loop;
   return v_route_id;
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_start_route(p_route_id uuid)
 returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare
   v_uid uuid:=auth.uid();
   v_route public.delivery_route_runs%rowtype;
@@ -404,7 +404,7 @@ begin
   where id=p_route_id;
   return jsonb_build_object('route_id',p_route_id,'status','active','started_at',now());
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_update_location(
   p_route_id uuid,
@@ -418,7 +418,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare v_uid uuid:=auth.uid(); v_saved uuid;
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -443,7 +443,7 @@ begin
   returning route_id into v_saved;
   return v_saved is not null;
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_mark_route_stop_action(
   p_stop_id uuid,
@@ -454,7 +454,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare
   v_uid uuid:=auth.uid();
   v_stop public.delivery_route_stops%rowtype;
@@ -513,14 +513,14 @@ begin
     'route_status',(select r.status from public.delivery_route_runs r where r.id=v_stop.route_id)
   );
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_get_active_route_eta(p_route_id uuid)
 returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $delivery_fn$
 declare
   v_uid uuid:=auth.uid();
   v_route public.delivery_route_runs%rowtype;
@@ -553,7 +553,7 @@ begin
     'pending_stops',v_stops
   );
 end;
-$;
+$delivery_fn$;
 
 create or replace function public.delivery_update_remaining_etas(
   p_route_id uuid,
@@ -565,7 +565,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $delivery_fn$
 declare
   v_uid uuid:=auth.uid();
   v_route public.delivery_route_runs%rowtype;
@@ -617,14 +617,14 @@ begin
   );
   return true;
 end;
-$;
+$delivery_fn$;
 
 create or replace function public.delivery_get_my_active_route()
 returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare
   v_uid uuid:=auth.uid();
   v_route public.delivery_route_runs%rowtype;
@@ -666,14 +666,14 @@ begin
     )
   );
 end;
-$$;
+$delivery_fn$;
 
 create or replace function public.delivery_get_my_tracking(p_order_id uuid)
 returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 declare
   v_uid uuid:=auth.uid();
   v_order public.orders%rowtype;
@@ -716,14 +716,14 @@ begin
     ) else null end
   );
 end;
-$$;
+$delivery_fn$;
 
 create or replace function private.broadcast_delivery_location()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $$
+as $delivery_fn$
 begin
   perform realtime.send(
     payload => jsonb_build_object(
@@ -737,7 +737,7 @@ begin
   );
   return new;
 end;
-$$;
+$delivery_fn$;
 
 drop trigger if exists delivery_live_location_broadcast on public.delivery_live_locations;
 create trigger delivery_live_location_broadcast
@@ -749,7 +749,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $delivery_fn$
 begin
   perform realtime.send(
     payload => jsonb_build_object('route_id',old.route_id,'updated_at',now()),
@@ -759,7 +759,7 @@ begin
   );
   return old;
 end;
-$;
+$delivery_fn$;
 
 drop trigger if exists delivery_live_location_stopped_broadcast on public.delivery_live_locations;
 create trigger delivery_live_location_stopped_broadcast
@@ -771,7 +771,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $delivery_fn$
 declare v_uid uuid:=auth.uid();
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
@@ -782,7 +782,7 @@ begin
   delete from public.delivery_live_locations where route_id=p_route_id;
   return found;
 end;
-$;
+$delivery_fn$;
 
 drop policy if exists "Customers with a route stop can view route run" on public.delivery_route_runs;
 create policy "Customers with a route stop can view route run"
