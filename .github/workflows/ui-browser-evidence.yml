@@ -1,5 +1,9 @@
 name: UI browser viewport evidence
 
+concurrency:
+  group: ui-browser-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches: [main]
@@ -36,7 +40,7 @@ jobs:
         run: |
           npm init -y
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
       - name: Start local static server
         run: |
           python3 -m http.server 4173 --directory "$GITHUB_WORKSPACE/.." > /tmp/doodhwala-http.log 2>&1 &
