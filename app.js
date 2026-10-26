@@ -239,9 +239,23 @@ function navigateHomeView(destination){
   else window.location.href=url;
   return;
  }
- if(destination==="providers"){browseMode="all";activeFilter=activeFilter||"all";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
- if(destination==="saved"){browseMode="saved";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
- if(destination==="home"){browseMode="all";render();window.scrollTo({top:0,behavior:"smooth"})}
+ if(destination==="providers"){
+  browseMode="all";activeFilter=activeFilter||"all";render();
+  window.dispatchEvent(new CustomEvent("doodhwala:view-changed",{detail:{view:"providers"}}));
+  $("providers")?.scrollIntoView({behavior:"smooth",block:"start"});
+  return;
+ }
+ if(destination==="saved"){
+  browseMode="saved";render();
+  window.dispatchEvent(new CustomEvent("doodhwala:view-changed",{detail:{view:"saved"}}));
+  $("providers")?.scrollIntoView({behavior:"smooth",block:"start"});
+  return;
+ }
+ if(destination==="home"){
+  browseMode="all";render();
+  window.dispatchEvent(new CustomEvent("doodhwala:view-changed",{detail:{view:"home"}}));
+  window.scrollTo({top:0,behavior:"smooth"});
+ }
 }
 window.__doodhwalaNavigate=navigateHomeView;
 
