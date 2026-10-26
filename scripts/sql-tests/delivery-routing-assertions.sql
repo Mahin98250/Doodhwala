@@ -92,6 +92,11 @@ begin
       and extension='broadcast'
       and payload->'payload'->>'latitude'='23.025'
   ) then raise exception 'location_broadcast_not_emitted'; end if;
+  if not exists(
+    select 1 from realtime.messages
+    where topic='delivery-route:'||(select route_id::text from delivery_test_context)
+      and extension='broadcast' and payload->>'event'='eta_updated'
+  ) then raise exception 'eta_update_broadcast_not_emitted'; end if;
   begin
     perform public.delivery_mark_route_stop_action(
       (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=2),
@@ -113,11 +118,7 @@ select public.delivery_mark_route_stop_action(
 );
 select public.delivery_mark_route_stop_action(
  (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=2),
- 'arrived',null
-);
-select public.delivery_mark_route_stop_action(
- (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=2),
- 'delivered',null
+ 'skipped','Customer requested a later handoff'
 );
 
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false);
@@ -140,14 +141,19 @@ begin
 end $$;
 
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000004',false);
-do $$
+do $
+declare v_tracking jsonb;
 begin
+  v_tracking:=public.delivery_get_my_tracking('20000000-0000-4000-8000-000000000002');
+  if v_tracking->>'stop_status'<>'skipped' then raise exception 'own_skipped_stop_not_exposed'; end if;
+  if v_tracking->>'skip_reason'<>'Customer requested a later handoff' then raise exception 'skip_reason_not_saved'; end if;
+  if (v_tracking->'location') <> 'null'::jsonb then raise exception 'skipped_customer_still_sees_driver_location'; end if;
   begin
     perform public.delivery_get_my_tracking('20000000-0000-4000-8000-000000000001');
     raise exception 'other_customer_tracking_was_allowed';
   exception when others then
     if sqlerrm<>'order_not_owned_or_missing' then raise; end if;
   end;
-end $$;
+end $;
 
 select 'PASS: consent, provider/driver assignment, planning, route lifecycle, private GPS broadcast, stop order and customer isolation' as result;
