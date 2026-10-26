@@ -400,6 +400,131 @@ async function loadSupportTicketsSection(statusFilter="all"){
    catch(error){toast(error.message||"Could not update ticket","error");button.disabled=false;button.textContent="Save"}
  });
 }
+
+async function loadProviderBillingSection(){
+ const [providers,plansResult,invoicesResult,settings]=await Promise.all([
+  adminRpc("admin_list_providers",{p_limit:250}),
+  Doodhwala.supabase.from("provider_billing_plans").select("*").order("created_at",{ascending:false}).limit(100),
+  Doodhwala.supabase.from("provider_subscription_invoices").select("*").order("created_at",{ascending:false}).limit(250),
+  adminRpc("admin_get_provider_billing_settings",{})
+ ]);
+ if(plansResult.error)throw plansResult.error;
+ if(invoicesResult.error)throw invoicesResult.error;
+ const providerRows=providers||[],plans=plansResult.data||[],invoices=invoicesResult.data||[];
+ const providerById=new Map(providerRows.map(p=>[p.id,p]));
+ const activePlans=plans.filter(p=>p.is_active);
+ const totalDue=invoices.filter(i=>i.status==="due").reduce((sum,i)=>sum+Number(i.amount_paise||0),0);
+ const paidTotal=invoices.filter(i=>i.status==="paid").reduce((sum,i)=>sum+Number(i.amount_paise||0),0);
+ const localDate=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
+ const now=new Date(),periodStart=localDate(new Date(now.getFullYear(),now.getMonth(),1)),periodEnd=localDate(new Date(now.getFullYear(),now.getMonth()+1,0)),dueDate=localDate(new Date(now.getFullYear(),now.getMonth(),now.getDate()+7));
+ const invoiceNo="DHW-SUB-"+localDate(now).replaceAll("-","")+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
+ const rupeesPaise=n=>money(Number(n||0)/100);
+ const providersOptions=providerRows.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.display_name||p.owner_name||"Local provider")+' · '+esc([p.area_name,p.city].filter(Boolean).join(", "))+'</option>').join("");
+ const plansOptions=activePlans.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' · '+rupeesPaise(p.amount_paise)+'/month</option>').join("");
+ const planRows=plans.length?plans.map(p=>'<tr><td><b>'+esc(p.name)+'</b><div class="muted-admin">'+esc(p.description||"Monthly marketplace access")+'</div></td><td><b>'+rupeesPaise(p.amount_paise)+'</b><div class="muted-admin">per month</div></td><td><span class="admin-status '+(p.is_active?"active":"paused")+'">'+(p.is_active?"Active":"Inactive")+'</span></td><td><div class="provider-review-actions"><button data-billing-edit-plan="'+esc(p.id)+'">Edit</button><button data-billing-toggle-plan="'+esc(p.id)+'" data-active="'+String(!!p.is_active)+'">'+(p.is_active?"Deactivate":"Activate")+'</button></div></td></tr>').join(""):'<tr><td colspan="4" class="empty-table">No subscription plans configured yet. Create the first plan above.</td></tr>';
+ const invoiceRows=invoices.length?invoices.map(i=>{
+  const p=providerById.get(i.provider_id)||{};
+  const status=String(i.status||"due");
+  return '<tr><td><b>'+esc(i.invoice_number)+'</b><div class="muted-admin">'+esc(i.plan_name_snapshot||"Monthly subscription")+'</div></td><td>'+esc(p.display_name||"Provider unavailable")+'<div class="muted-admin">'+esc(p.owner_name||"")+'</div></td><td><b>'+rupeesPaise(i.amount_paise)+'</b></td><td>'+dateText(i.period_start)+' → '+dateText(i.period_end)+'<div class="muted-admin">Due '+dateText(i.due_date)+'</div></td><td><span class="admin-status '+esc(status)+'">'+esc(status)+'</span></td><td>'+(status==="due"?'<button data-billing-record-payment="'+esc(i.id)+'">Reconcile payment</button>':status==="paid"?'<small>Recorded '+dateText(i.paid_at)+'</small>':'—')+'</td></tr>';
+ }).join(""):'<tr><td colspan="6" class="empty-table">No invoices yet. Select a seller and plan to create a monthly invoice.</td></tr>';
+ const currentSettings=settings||{};
+ $("adminContent").innerHTML=`<div class="admin-section seller-billing-admin">
+  <div class="admin-hero"><div><span class="eyebrow">SELLER REVENUE · SEPARATE LEDGER</span><h2>Seller subscriptions</h2><p>Customers pay the full milk-order amount directly to providers. This area tracks only fixed fees sellers owe Doodhwala.</p></div><div class="admin-hero-actions"><button id="refreshSellerBilling">↻ Refresh</button></div></div>
+  <div class="metric-grid seller-billing-metrics">
+   <div class="metric"><small>INVOICES DUE</small><b>${invoices.filter(i=>i.status==="due").length}</b><span>${rupeesPaise(totalDue)} outstanding</span></div>
+   <div class="metric"><small>INVOICES PAID</small><b>${invoices.filter(i=>i.status==="paid").length}</b><span>${rupeesPaise(paidTotal)} reconciled</span></div>
+   <div class="metric"><small>SELLER PLANS</small><b>${activePlans.length}</b><span>Active monthly plans</span></div>
+   <div class="metric"><small>PROVIDERS</small><b>${providerRows.length}</b><span>Available to invoice</span></div>
+  </div>
+  <div class="seller-billing-admin-grid">
+   <article class="admin-card"><div class="admin-list-head"><div><span class="eyebrow">PLAN CATALOGUE</span><h3>Create monthly plan</h3></div></div>
+    <form id="sellerBillingPlanForm" class="seller-billing-form">
+     <label>Plan name<input id="sellerBillPlanName" name="name" required minlength="2" maxlength="80" placeholder="e.g. Local Seller Basic"></label>
+     <label>Monthly fee (₹)<input id="sellerBillPlanAmount" name="amount" type="number" min="1" max="1000000" step="0.01" required placeholder="e.g. 2000.00"></label>
+     <label>Description<textarea id="sellerBillPlanDescription" name="description" rows="2" maxlength="1000" placeholder="Marketplace listing and seller tools"></textarea></label>
+     <button class="primary" type="submit">Create monthly plan</button>
+    </form>
+    <div class="table-scroll seller-billing-table-wrap"><table class="table admin-table seller-billing-plan-table"><thead><tr><th>Plan</th><th>Fee</th><th>Status</th><th>Actions</th></tr></thead><tbody>${planRows}</tbody></table></div>
+   </article>
+   <article class="admin-card"><div class="admin-list-head"><div><span class="eyebrow">RECEIVING ACCOUNT</span><h3>Doodhwala payment instructions</h3></div></div>
+    <p class="seller-billing-note">Use an account that belongs to Doodhwala. These details are shown to sellers for subscription invoices only, never to milk customers.</p>
+    <form id="sellerBillingSettingsForm" class="seller-billing-form">
+     <label>Payee / business name<input id="sellerBillPayeeName" required minlength="2" maxlength="120" value="${esc(currentSettings.payee_name||"")}" placeholder="Doodhwala business name"></label>
+     <label>Doodhwala UPI ID<input id="sellerBillUpiId" required maxlength="255" value="${esc(currentSettings.upi_id||"")}" placeholder="businessname@bank"></label>
+     <label>Instructions<textarea id="sellerBillInstructions" rows="3" maxlength="1000">${esc(currentSettings.instructions||"Pay the exact invoice amount and include the invoice number in the payment note.")}</textarea></label>
+     <button class="primary" type="submit">Save payment instructions</button>
+     <small class="seller-billing-note">Saving details does not verify a transfer or charge any seller.</small>
+    </form>
+   </article>
+  </div>
+  <article class="admin-card seller-billing-create-invoice"><div class="admin-list-head"><div><span class="eyebrow">MONTHLY INVOICE</span><h3>Create a seller invoice</h3></div></div>
+   <form id="sellerBillingInvoiceForm" class="seller-billing-form seller-billing-invoice-form">
+    <label>Milk provider<select id="sellerBillProvider" required><option value="">Choose provider</option>${providersOptions}</select></label>
+    <label>Monthly plan<select id="sellerBillPlan" required><option value="">Choose active plan</option>${plansOptions}</select></label>
+    <label>Billing starts<input id="sellerBillPeriodStart" type="date" required value="${periodStart}"></label>
+    <label>Billing ends<input id="sellerBillPeriodEnd" type="date" required value="${periodEnd}"></label>
+    <label>Payment due date<input id="sellerBillDueDate" type="date" required value="${dueDate}"></label>
+    <label>Invoice number<input id="sellerBillInvoiceNumber" required minlength="3" maxlength="80" value="${invoiceNo}"></label>
+    <label class="seller-billing-notes-field">Notes (optional)<input id="sellerBillInvoiceNotes" maxlength="1000" placeholder="Monthly marketplace subscription"></label>
+    <button class="primary" type="submit">Create invoice</button>
+   </form>
+   <p class="seller-billing-note">The amount is read from the selected plan in the database. Do not add order totals or commission here.</p>
+  </article>
+  <article class="admin-card admin-list-card"><div class="admin-list-head"><div><span class="eyebrow">RECONCILIATION</span><h3>Seller billing invoices</h3></div><button id="refreshSellerBillingTable">↻ Refresh</button></div><div class="seller-billing-note">Use “Reconcile payment” only after checking the Doodhwala bank/UPI transaction record. The app does not independently verify manual UPI settlement.</div><div class="table-scroll"><table class="table admin-table seller-billing-invoice-table"><thead><tr><th>Invoice</th><th>Provider</th><th>Amount</th><th>Period / due date</th><th>Status</th><th>Action</th></tr></thead><tbody>${invoiceRows}</tbody></table></div></article>
+ </div>`;
+ $("refreshSellerBilling")?.addEventListener("click",()=>loadSection("seller-billing"));
+ $("refreshSellerBillingTable")?.addEventListener("click",()=>loadSection("seller-billing"));
+ $("sellerBillingPlanForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();const button=event.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
+  try{const amount=Number($("sellerBillPlanAmount").value),paise=Math.round(amount*100);if(!Number.isFinite(amount)||paise<100)throw new Error("Enter a valid monthly plan price.");
+   await adminRpc("admin_upsert_provider_billing_plan",{p_plan_id:null,p_name:$("sellerBillPlanName").value.trim(),p_amount_paise:paise,p_description:$("sellerBillPlanDescription").value.trim(),p_is_active:true});
+   toast("Monthly seller plan saved.");await loadProviderBillingSection();
+  }catch(error){toast(error.message||"Could not save the plan.");button.disabled=false}
+ });
+ $("sellerBillingSettingsForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();const button=event.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
+  try{await adminRpc("admin_set_provider_billing_settings",{p_payee_name:$("sellerBillPayeeName").value.trim(),p_upi_id:$("sellerBillUpiId").value.trim(),p_instructions:$("sellerBillInstructions").value.trim()});
+   toast("Doodhwala billing instructions saved.");await loadProviderBillingSection();
+  }catch(error){toast(error.message||"Could not save payment instructions.");button.disabled=false}
+ });
+ $("sellerBillingInvoiceForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();const button=event.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
+  try{
+   const periodStart=$("sellerBillPeriodStart").value,periodEnd=$("sellerBillPeriodEnd").value,due=$("sellerBillDueDate").value;
+   if(periodEnd<periodStart)throw new Error("Billing end date must be on or after start date.");
+   if(!$("sellerBillProvider").value||!$("sellerBillPlan").value)throw new Error("Choose a provider and active plan.");
+   await adminRpc("admin_create_provider_subscription_invoice",{p_provider_id:$("sellerBillProvider").value,p_plan_id:$("sellerBillPlan").value,p_period_start:periodStart,p_period_end:periodEnd,p_due_date:due,p_invoice_number:$("sellerBillInvoiceNumber").value.trim(),p_notes:$("sellerBillInvoiceNotes").value.trim()});
+   toast("Seller invoice created.");await loadProviderBillingSection();
+  }catch(error){toast(error.message||"Could not create invoice.");button.disabled=false}
+ });
+ $("adminContent").querySelectorAll("[data-billing-edit-plan]").forEach(button=>button.addEventListener("click",async()=>{
+  const plan=plans.find(p=>p.id===button.dataset.billingEditPlan);if(!plan)return;
+  const name=prompt("Monthly plan name:",plan.name);if(name===null)return;
+  const amountText=prompt("Monthly fee in rupees:",(Number(plan.amount_paise)/100).toFixed(2));if(amountText===null)return;
+  const amount=Number(amountText),paise=Math.round(amount*100);if(!Number.isFinite(amount)||paise<100){toast("Enter a valid monthly fee.");return}
+  const description=prompt("Plan description:",plan.description||"")??plan.description;
+  button.disabled=true;try{await adminRpc("admin_upsert_provider_billing_plan",{p_plan_id:plan.id,p_name:name.trim(),p_amount_paise:paise,p_description:description,p_is_active:plan.is_active});toast("Plan updated.");await loadProviderBillingSection()}catch(error){toast(error.message||"Plan update failed.");button.disabled=false}
+ }));
+ $("adminContent").querySelectorAll("[data-billing-toggle-plan]").forEach(button=>button.addEventListener("click",async()=>{
+  const plan=plans.find(p=>p.id===button.dataset.billingTogglePlan);if(!plan)return;
+  const next=!plan.is_active;if(!confirm((next?"Activate":"Deactivate")+" the monthly plan “"+plan.name+"”? Existing invoice amounts will not change."))return;
+  button.disabled=true;try{await adminRpc("admin_upsert_provider_billing_plan",{p_plan_id:plan.id,p_name:plan.name,p_amount_paise:Number(plan.amount_paise),p_description:plan.description||"",p_is_active:next});toast(next?"Plan activated.":"Plan deactivated.");await loadProviderBillingSection()}catch(error){toast(error.message||"Plan state could not be changed.");button.disabled=false}
+ }));
+ $("adminContent").querySelectorAll("[data-billing-record-payment]").forEach(button=>button.addEventListener("click",async()=>{
+  const invoice=invoices.find(x=>x.id===button.dataset.billingRecordPayment);if(!invoice||invoice.status!=="due")return;
+  const exact=(Number(invoice.amount_paise)/100).toFixed(2);
+  const amountText=prompt("Verify the full amount received into Doodhwala's account for invoice "+invoice.invoice_number+". Enter rupees exactly:",exact);if(amountText===null)return;
+  if(Math.round(Number(amountText)*100)!==Number(invoice.amount_paise)){toast("Amount does not match the invoice. No payment was recorded.");return}
+  const method=prompt("Payment method: manual_upi, bank_transfer, or cash","manual_upi");if(method===null)return;
+  if(!["manual_upi","bank_transfer","cash"].includes(method.trim())){toast("Unsupported payment method.");return}
+  const reference=prompt("Enter the bank/UPI reference or internal cash receipt reference:");if(reference===null||reference.trim().length<3){toast("A payment reference is required.");return}
+  if(!confirm("Have you personally checked Doodhwala's receiving bank/UPI record and confirmed the exact amount arrived? This records a manual reconciliation; it is not automated bank verification."))return;
+  button.disabled=true;try{await adminRpc("admin_record_provider_subscription_payment",{p_invoice_id:invoice.id,p_amount_paise:Number(invoice.amount_paise),p_method:method.trim(),p_reference:reference.trim(),p_received_at:new Date().toISOString(),p_notes:"Owner manual reconciliation"});
+   toast("Seller subscription payment reconciled.");await loadProviderBillingSection()
+  }catch(error){toast(error.message||"Payment reconciliation failed.");button.disabled=false}
+ }));
+}
+
 async function loadSection(next){
  currentDetail=null;
  section=next;
@@ -410,6 +535,7 @@ async function loadSection(next){
   if(section==="orders"){await loadOrdersSection();return;}
   if(section==="support"){await loadSupportTicketsSection();return;}
   if(section==="providers"){await loadProvidersSection();return}
+  if(section==="seller-billing"){await loadProviderBillingSection();return}
   if(section==="customers"){cache.customers=await adminRpc("admin_list_customers",{p_limit:150});table("Customers",[["Customer",r=>"<button data-customer='"+esc(r.id)+"'>"+esc(r.full_name||"—")+"</button>"],["Email",r=>esc(r.email||"—")],["Phone",r=>esc(r.phone||"—")],["Orders",r=>r.order_count],["Active plans",r=>r.active_plan_count],["Joined",r=>dateText(r.created_at)]],cache.customers);$("adminContent").querySelectorAll("[data-customer]").forEach(b=>b.onclick=()=>showCustomerDetail(b.dataset.customer));return}
   if(section==="subscriptions"){cache.subscriptions=await adminRpc("admin_list_subscriptions",{p_limit:150});table("Subscriptions",[["Customer",r=>esc(r.customer_name||"—")],["Provider",r=>esc(r.provider_name||"—")],["Milk",r=>esc(r.product_name||"—")],["Status",r=>'<span class="admin-status '+esc(r.status)+'">'+esc(r.status)+'</span>'],["Qty",r=>Number(r.quantity_litres||0)+" L"],["Period",r=>dateText(r.start_date)+" → "+dateText(r.end_date)],["Deliveries",r=>r.delivery_count],["Action",r=>'<button data-subscription="'+esc(r.id)+'">View</button>']],cache.subscriptions);$("adminContent").querySelectorAll("[data-subscription]").forEach(b=>b.onclick=()=>showSubscriptionDetail(b.dataset.subscription));return}
   if(section==="products"){await loadProductsSection();return}
@@ -514,7 +640,7 @@ if($("adminMore"))$("adminMore").onclick=function(){
  const existing=$("adminMoreMenu");if(existing){existing.remove();return}
  const menu=document.createElement("div");menu.id="adminMoreMenu";
  menu.style.cssText="position:fixed;z-index:10001;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));width:min(250px,calc(100vw - 24px));padding:10px;border:1px solid #d7dfd8;border-radius:16px;background:#fff;box-shadow:0 14px 36px rgba(13,37,23,.22);display:grid;gap:5px";
- [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
+ [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Seller billing","seller-billing"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
  const button=document.createElement("button");button.type="button";button.textContent=item[0];
  button.style.cssText="padding:12px;border:0;border-radius:10px;background:#f5f8f5;color:#17251c;text-align:left;font:700 13px system-ui;cursor:pointer";
  button.onclick=()=>{menu.remove();if(item[1]==="search"){const input=$("adminSearch");if(input){input.focus();input.select()}}else navTo(item[1])};
