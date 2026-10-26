@@ -349,6 +349,87 @@ async function planRoute(apiKey: string, token: string, body: Record<string, unk
   };
 }
 
+
+async function refreshEta(apiKey: string, token: string, routeIdValue: unknown) {
+  if (!isUuid(routeIdValue)) return { status: 400, error: "valid_route_id_required" };
+  if (!SUPABASE_URL || !ROUTING_BASE_URL) return { status: 503, error: "routing_service_not_configured" };
+  try {
+    const routeData = await rpcAsUser(apiKey, token, "delivery_get_active_route_eta", {
+      p_route_id: routeIdValue,
+    });
+    if (!routeData?.location || !Array.isArray(routeData.pending_stops)) {
+      return { status: 409, error: "route_eta_data_unavailable" };
+    }
+    const stops = routeData.pending_stops;
+    if (stops.length === 0) return { status: 200, route_id: routeIdValue, updated_stops: 0 };
+    if (stops.length > MAX_STOPS || stops.some((stop: any) =>
+      !isUuid(stop.stop_id) || !Number.isFinite(Number(stop.latitude)) || !Number.isFinite(Number(stop.longitude)))) {
+      return { status: 409, error: "invalid_pending_route_stops" };
+    }
+    const points: Point[] = [
+      { latitude: Number(routeData.location.latitude), longitude: Number(routeData.location.longitude) },
+      ...stops.map((stop: any) => ({ latitude: Number(stop.latitude), longitude: Number(stop.longitude) })),
+    ];
+    if (!points.every(point => Number.isFinite(point.latitude) && Number.isFinite(point.longitude)
+      && Math.abs(point.latitude) <= 90 && Math.abs(point.longitude) <= 180)) {
+      return { status: 409, error: "invalid_route_coordinates" };
+    }
+    const coordinates = points.map(point => Number(point.longitude) + "," + Number(point.latitude)).join(";");
+    let matrix: Matrix;
+    try {
+      matrix = await fetchJson(ROUTING_BASE_URL + "/table/v1/driving/" + coordinates + "?annotations=duration");
+    } catch {
+      return { status: 502, error: "road_matrix_unavailable" };
+    }
+    if (matrix.code !== "Ok" || !matrix.durations || matrix.durations.length !== points.length) {
+      return { status: 502, error: "road_matrix_unavailable" };
+    }
+
+    const etaStarts: string[] = [];
+    const etaEnds: string[] = [];
+    const stopIds: string[] = [];
+    const uncertaintyMs = 5 * 60_000;
+    const serviceSeconds = Math.min(300, Math.max(15, Number(routeData.stop_service_seconds) || 60));
+    let cursor = Date.now();
+    let previousIndex = 0;
+    for (let index = 1; index < points.length; index++) {
+      const seconds = matrix.durations[previousIndex]?.[index];
+      if (seconds === null || seconds === undefined || !Number.isFinite(seconds) || seconds < 0) {
+        return { status: 422, error: "unreachable_delivery_stop" };
+      }
+      cursor += seconds * 1000;
+      etaStarts.push(new Date(Math.max(Date.now(), cursor - uncertaintyMs)).toISOString());
+      etaEnds.push(new Date(cursor + uncertaintyMs).toISOString());
+      stopIds.push(stops[index - 1].stop_id);
+      cursor += serviceSeconds * 1000;
+      previousIndex = index;
+    }
+    try {
+      await rpcAsUser(apiKey, token, "delivery_update_remaining_etas", {
+        p_route_id: routeIdValue,
+        p_stop_ids: stopIds,
+        p_eta_starts: etaStarts,
+        p_eta_ends: etaEnds,
+      });
+    } catch {
+      return { status: 409, error: "eta_update_failed_route_changed_or_permission_denied" };
+    }
+    return {
+      status: 200,
+      route_id: routeIdValue,
+      updated_stops: stopIds.length,
+      eta_window_minutes: 5,
+      eta_note: "Updated from fresh driver GPS and road travel duration; traffic and doorstep delays can still change arrival.",
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("fresh_driver_location_required")) return { status: 409, error: "fresh_driver_location_required" };
+    if (message.includes("active_driver_route_required")) return { status: 403, error: "active_driver_route_required" };
+    if (message.includes("authentication_required")) return { status: 401, error: "authentication_required" };
+    return { status: 502, error: "route_eta_refresh_failed" };
+  }
+}
+
 async function main(req: Request): Promise<Response> {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") return json({ ok: true }, 200, origin);
@@ -375,6 +456,12 @@ async function main(req: Request): Promise<Response> {
   if (!isUuid(user?.id)) return json({ error: "invalid_session" }, 401, origin);
   const body = await readBody(req);
   if (!body) return json({ error: "invalid_or_oversized_json" }, 400, origin);
+  if (body.action === "refresh_eta") {
+    const result = await refreshEta(apiKey, token, body.route_id);
+    const status = Number(result.status || 200);
+    delete result.status;
+    return json(result, status, origin);
+  }
   if (body.action !== "plan_route") return json({ error: "unsupported_action" }, 400, origin);
 
   const result = await planRoute(apiKey, token, body);
