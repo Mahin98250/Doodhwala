@@ -21,6 +21,14 @@
 - **Actual (before fix):** Unrelated Cache Storage entries on the same origin could be deleted.
 - **Fix:** Delete only keys with the `doodhwala-` prefix, retaining unrelated app caches.
 
+### PWA-003 — network response caching was fire-and-forget
+- **Severity:** Medium (recently visited query-string routes may not be persisted before the worker is terminated).
+- **Route:** Any same-origin GET, reproduced in Chromium with `/Doodhwala/orders.html?filter=active`.
+- **Steps:** Load a query-string route online, wait for the navigation response, then inspect Cache Storage or switch offline and revisit the same URL.
+- **Expected:** A successful network response is cached reliably enough for a later offline exact-request lookup.
+- **Actual (browser test before fix):** The exact query-string request was not present in the active cache when the smoke test checked it.
+- **Fix:** Attach the cache-write promise to the fetch event with `event.waitUntil(cacheUpdate)`, rather than starting an untracked `cache.put()` promise. The unit-test harness now models and awaits the event lifetime promise.
+
 ## Verified from source
 
 - Installation awaits core assets and tolerates individual optional asset failures.
@@ -32,6 +40,6 @@
 ## Validation status / limits
 
 - Added source-contract regression checks in `scripts/test-pwa-offline-contracts.mjs` and a Chromium browser workflow in `scripts/test-pwa-browser-smoke.mjs` / `.github/workflows/pwa-browser-evidence.yml`.
-- The Chromium test seeds a v94 cache and an unrelated origin cache, verifies activation removes only the old Doodhwala cache, checks the exact versioned CSS URL, loads a query-string route before disconnecting, tests cached offline navigation and the dedicated fallback page, then reconnects. The latest run is in progress: [PWA offline browser evidence](https://github.com/Mahin98250/Doodhwala/actions/runs/40365348997); do not mark these checks passed until that run completes successfully.
+- The Chromium test seeds a v94 cache and an unrelated origin cache, verifies activation removes only the old Doodhwala cache, checks the exact versioned CSS URL, loads a query-string route before disconnecting, tests cached offline navigation and the dedicated fallback page, then reconnects. An initial run caught the query-route cache-write timing issue above ([failed run](https://github.com/Mahin98250/Doodhwala/actions/runs/40365897322)); the worker and test harness have since been fixed and the latest checks are rerunning. Do not mark the browser suite passed until a current run completes successfully.
 - Manual testing is still required for an already-open tab during service-worker update, physical Android/iOS behavior, and the full customer route matrix before merge.
 - Suggested browser matrix: 320px and 390px mobile widths plus desktop; clear site data, load each customer route online once, go offline, reload each route, test query-string navigation, restore connection, and verify the reconnect message and fresh content after manual refresh.
