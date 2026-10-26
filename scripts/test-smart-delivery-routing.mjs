@@ -100,4 +100,13 @@ assert.match(docs, /heuristic/);
 assert.match(docs, /DELIVERY_ROUTING_BASE_URL/);
 assert.match(docs, /No production migration, live GPS session, route provider billing or customer data was changed/i);
 
+assert.ok(schema.includes("s.status in ('pending','arrived')"), "finished customers must not query route GPS");
+assert.ok(operations.includes("event => 'stop_updated'"), "stop actions must broadcast status updates");
+assert.ok(operations.includes("skip_reason=left(btrim(p_reason),300)"), "skip reason must be persisted");
+assert.ok(operations.includes("s.status in ('pending','arrived')"), "finished customer stops must not receive route broadcasts");
+assert.ok(driverJs.includes("delivery_driver_opt_out"), "drivers need a consent opt-out");
+assert.ok(trackingJs.includes('event: "stop_updated"'), "customer page must receive stop changes");
+assert.ok(sqlAssertions.includes("delivered_customer_still_sees_driver_location"));
+assert.ok(sqlAssertions.includes("own_skipped_stop_not_exposed"));
+
 console.log("PASS: smart delivery route schema, trusted lifecycle RPCs, ETA refresh, live maps, private tracking, PWA caching and rollout safety contracts.");
