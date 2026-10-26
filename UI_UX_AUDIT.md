@@ -1,7 +1,7 @@
 # DW-002 — UI/UX audit findings
 
-**Date:** 2026-10-26  
-**Scope:** Public customer-facing Doodhwala UI, source inspection of `index.html`, `styles.css`, `app.js`, and `customer-nav.js`.  
+**Date:** 2026-10-26
+**Scope:** Public customer-facing Doodhwala UI, source inspection of `index.html`, `styles.css`, `app.js`, and `customer-nav.js`.
 **Environment limitation:** This pass used repository source inspection. A real interactive browser/device session was not available, so runtime behavior, screenshots, and end-to-end form submissions are not claimed as verified.
 
 ## Finding UX-001 — Mobile bottom-navigation labels are too small
