@@ -171,7 +171,7 @@ $$;
 -- Coordinates and address details are limited to signed-in operations users.
 create or replace function public.delivery_get_route_planning_data(
   p_provider_id uuid,
-  p_limit integer default 49
+  p_limit integer default 99
 )
 returns jsonb
 language plpgsql
@@ -182,7 +182,7 @@ declare
   v_uid uuid := auth.uid();
   v_origin record;
   v_orders jsonb;
-  v_limit integer := least(greatest(coalesce(p_limit,49),1),49);
+  v_limit integer := least(greatest(coalesce(p_limit,99),1),99);
 begin
   if v_uid is null then raise exception 'authentication_required'; end if;
   if not exists (
@@ -290,7 +290,7 @@ begin
     raise exception 'invalid_stop_service_time';
   end if;
   v_count:=coalesce(cardinality(p_order_ids),0);
-  if v_count<1 or v_count>49 then raise exception 'route_stop_count_out_of_range'; end if;
+  if v_count<1 or v_count>99 then raise exception 'route_stop_count_out_of_range'; end if;
   select count(distinct x) into v_distinct from unnest(p_order_ids) x;
   if v_distinct<>v_count or array_position(p_order_ids,null) is not null then
     raise exception 'duplicate_or_null_route_order';
@@ -588,7 +588,9 @@ begin
     'route_id',v_route.id,'route_status',v_route.status,'stop_number',v_stop.sequence_no,
     'eta',v_stop.estimated_arrival_at,'eta_window_start',v_stop.eta_window_start,
     'eta_window_end',v_stop.eta_window_end,'stop_status',v_stop.status,
-    'route_geometry',v_route.route_geometry,'location_stale',not v_has_location,
+    'destination',jsonb_build_object('latitude',v_order.delivery_latitude,'longitude',v_order.delivery_longitude,
+      'address_line',v_order.delivery_address_line,'area_name',v_order.delivery_area_name,'city',v_order.delivery_city),
+    'location_stale',not v_has_location,
     'last_location_at',case when found then v_location.updated_at else null end,
     'location',case when v_has_location then jsonb_build_object(
       'latitude',v_location.latitude,'longitude',v_location.longitude,
