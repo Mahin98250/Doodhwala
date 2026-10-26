@@ -36,7 +36,7 @@ assert.ok(home.includes("customer-nav.js"), "home page must load shared customer
 assert.ok(checkout.includes("customer-nav.js"), "checkout must load shared customer navigation");
 assert.ok(auth.includes("session-controls.js"), "authentication page must retain session controls");
 
-console.log("UI and customer journey source-contract checks passed (browser interaction tests still required).");
+
 
 
 // Source-level customer journey regression contracts. These checks guard wiring
@@ -77,3 +77,5 @@ assert.ok(auth.includes('id="email" type="email" autocomplete="email" placeholde
   "email must remain required");
 assert.ok(auth.includes('id="password" type="password" autocomplete="current-password" minlength="8"'),
   "password must retain its minimum length");
+
+console.log("UI and customer journey source-contract checks passed (browser interaction tests still required).");
