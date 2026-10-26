@@ -138,9 +138,11 @@
     if (tracking.location && !tracking.location_stale) showDriver(tracking.location);
     else clearDriver(tracking.stop_status === "skipped"
       ? "Live driver location is hidden for a skipped delivery. Contact your provider to arrange a new drop."
-      : tracking.route_status === "completed"
-        ? "This delivery route is complete; live location sharing has stopped."
-        : "Live location appears after the driver starts the route and shares a fresh GPS fix.");
+      : (tracking.stop_status === "delivered" || tracking.order_status === "delivered")
+        ? "Your delivery is complete; live driver location is now hidden."
+        : tracking.route_status === "completed"
+          ? "This delivery route is complete; live location sharing has stopped."
+          : "Live location appears after the driver starts the route and shares a fresh GPS fix.");
     if (!tracking.available) setStatus(tracking.message || "Your order has not been added to a driver route yet.", "success");
     else setStatus("Tracking is limited to this order and its assigned route. Your stop number and arrival window update when dispatch changes.", "success");
   }
@@ -161,7 +163,8 @@
       })
       .on("broadcast", { event: "location" }, packet => {
         const location = packet?.payload || packet;
-        if (!location || location.route_id !== routeId || state.tracking?.route_status !== "active") return;
+        if (!location || location.route_id !== routeId || state.tracking?.route_status !== "active"
+          || !["pending", "arrived"].includes(state.tracking?.stop_status)) return;
         showDriver(location);
       })
       .on("broadcast", { event: "location_stopped" }, packet => {
