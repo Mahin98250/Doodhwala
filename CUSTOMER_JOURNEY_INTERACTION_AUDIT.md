@@ -1,8 +1,8 @@
 # DW-002 customer journey interaction audit
 
-**Date:** 2026-10-26  
-**Branch:** `vaidik/dw-002-ui-ux-audit`  
-**Scope:** Customer discovery, product detail, cart entry, authentication, location permission, checkout entry, accessibility and failure states.  
+**Date:** 2026-10-26
+**Branch:** `vaidik/dw-002-ui-ux-audit`
+**Scope:** Customer discovery, product detail, cart entry, authentication, location permission, checkout entry, accessibility and failure states.
 **Evidence type:** Source inspection of the current branch plus automated source-contract checks. No interactive browser/device runtime was available in this session. **No browser interactions, screenshots, real authentication, or order submissions are claimed as passed.**
 
 ## Findings and reproducible checks
