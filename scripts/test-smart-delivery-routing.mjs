@@ -46,6 +46,8 @@ assert.match(operations, /Delivery participants can receive private route broadc
 assert.match(operations, /for update of r/i, "route row must be locked before delivery stop rows");
 assert.match(operations, /previous_route_stop_not_completed/i);
 assert.match(operations, /fresh_driver_location_required/i);
+assert.match(operations, /driver_already_has_active_route/i, "a driver must not run concurrent delivery routes");
+assert.match(operations, /driver_already_has_planned_route_for_service_date/i, "a driver must not receive duplicate same-day route plans");
 assert.match(operations, /delete from public\.delivery_live_locations where route_id=v_stop\.route_id/i);
 assert.match(operations, /grant execute on function public\.delivery_get_my_tracking\(uuid\) to authenticated/i);
 
@@ -108,5 +110,7 @@ assert.ok(driverJs.includes("delivery_driver_opt_out"), "drivers need a consent 
 assert.ok(trackingJs.includes('event: "stop_updated"'), "customer page must receive stop changes");
 assert.ok(sqlAssertions.includes("delivered_customer_still_sees_driver_location"));
 assert.ok(sqlAssertions.includes("own_skipped_stop_not_exposed"));
+assert.ok(sqlAssertions.includes("duplicate_active_driver_route_was_allowed"), "PostgreSQL contract must reject a second active run for the same driver");
+assert.ok(sqlAssertions.includes("duplicate_same_day_route_was_allowed"), "PostgreSQL contract must reject duplicate same-day plans");
 
 console.log("PASS: smart delivery route schema, trusted lifecycle RPCs, ETA refresh, live maps, private tracking, PWA caching and rollout safety contracts.");
