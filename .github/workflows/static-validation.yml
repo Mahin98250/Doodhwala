@@ -45,6 +45,8 @@ jobs:
         run: node scripts/test-discovery-pagination.mjs
       - name: Test order capacity query indexes
         run: node scripts/test-order-capacity-query-indexes.mjs
+      - name: Test smart milk delivery routing contracts
+        run: node scripts/test-smart-delivery-routing.mjs
       - name: Test staging load-test safety guards
         run: node scripts/test-staging-load-test-safety.mjs
       - name: Test staging baseline and read-only audit contracts
