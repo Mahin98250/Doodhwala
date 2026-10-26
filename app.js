@@ -1,5 +1,13 @@
 const LOCATION_KEY="doodhwala-customer-location-v1";
 let providers=[];
+const DISCOVERY_PAGE_SIZE=24;
+const DISCOVERY_FETCH_SIZE=DISCOVERY_PAGE_SIZE+1;
+let discoveryOffset=0;
+let discoveryHasMore=false;
+let discoveryLoadingMore=false;
+let discoveryCoordinates={latitude:null,longitude:null};
+let discoveryRequestId=0;
+let discoveryUsingLegacyRpc=false;
 let activeFilter="all";
 let query="";
 let browseMode="all";
@@ -19,6 +27,7 @@ function installDiscoveryStyles(){
  if(document.getElementById("doodhwalaDiscoveryStyles"))return;
  const style=document.createElement("style");style.id="doodhwalaDiscoveryStyles";
  style.textContent=".discover-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:8px 0}.discover-toolbar span{font-size:9px;color:var(--muted)}.discover-toolbar select{height:34px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 10px;font-size:9px;color:var(--ink);outline:0}.provider-live{cursor:default}.provider-live .cover{cursor:pointer}.provider-distance{position:absolute;right:10px;top:10px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid rgba(226,232,225,.9);font-size:7px;font-weight:800}.service-good{color:#17603f}.service-bad{color:#a3483e}.service-neutral{color:#6f7c73}.service-warning{margin-top:9px;padding:8px 9px;background:#fff4ef;border:1px solid #f0ddd7;border-radius:10px;color:#a3483e;font-size:8px}.milk-open{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:0;cursor:pointer;color:inherit}.store-link{border:0;background:transparent;color:var(--green);font-size:8px;font-weight:900;padding:3px;cursor:pointer}.no-results .primary{margin-top:8px}.empty-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:13px}.empty-actions button{min-height:39px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);font-size:10px;font-weight:800}.empty-actions button.primary{border-color:transparent;background:var(--green);color:#fff}.no-results[role=status]{text-align:center}@media(max-width:760px){.discover-toolbar{padding-top:8px}.discover-toolbar select{height:36px}.provider-distance{font-size:6.5px}.empty-actions{gap:7px}.empty-actions button{flex:1;min-width:125px}}";
+ style.textContent += ".discovery-load-more{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px}.discovery-load-more button{min-height:42px;padding:10px 18px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--green);font-size:11px;font-weight:800;cursor:pointer}.discovery-load-more button:disabled{opacity:.65;cursor:wait}.discovery-load-more p{margin:0;color:var(--muted);font-size:10px}";
  document.head.appendChild(style);
 }
 installDiscoveryStyles();
@@ -93,9 +102,10 @@ function render(){
      $("clearDiscoverySearch")?.addEventListener("click",()=>{query="";const input=$("search");if(input)input.value="";render();input?.focus()});
      $("clearDiscoveryFilter")?.addEventListener("click",()=>filter("all"));
      $("clearDeliveryFilter")?.addEventListener("click",()=>{onlyServiceable=false;render()});
+     appendLoadMoreControl();
      return;
    }
-   if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';return}
+   if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';appendLoadMoreControl();return}
    const hasLocation=!!readLocation();
    grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg>')+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or change your delivery area. We will show providers who serve the selected location.":"Use your GPS location or choose an area on the map to see providers who can deliver to you.")+'</p>'+'<button class="primary" id="setLocationInline">'+(hasLocation?"Change location →":"Choose location →")+'</button>'+'</div>';
    $("setLocationInline")?.addEventListener("click",()=>window.DoodhwalaLocation?.open?.());
@@ -112,6 +122,7 @@ function render(){
      '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false&&Number.isFinite(Number(p.productPrices?.[i]))&&Number(p.productPrices[i])>0?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
      '<div class="provider-foot"><span>'+(p.delivery||"Local route")+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
  }).join("");
+ appendLoadMoreControl();
  grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
  grid.querySelectorAll("[data-save]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFavorite(b.dataset.save)});
  grid.querySelectorAll("[data-compare]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();toggleCompare(b.dataset.compare)});
@@ -237,7 +248,7 @@ window.__doodhwalaNavigate=navigateHomeView;
 document.querySelectorAll("#chips button").forEach(b=>b.onclick=()=>filter(b.dataset.filter));
 document.querySelectorAll(".quick button").forEach(b=>b.onclick=()=>{filter(b.dataset.filter);$("providers")?.scrollIntoView({behavior:"smooth"})});
 $("search")?.addEventListener("input",e=>{query=e.target.value;render()});
-$("providerSort")?.addEventListener("change",e=>{sortMode=e.target.value;const hint=$("discoveryHint");if(hint)hint.textContent=sortMode==="rating"?"Highest rated providers first":sortMode==="price"?"Lowest milk price first":"Closest providers first";render()});
+$("providerSort")?.addEventListener("change",e=>{sortMode=e.target.value;const hint=$("discoveryHint");if(hint)hint.textContent=sortMode==="rating"?"Highest rated providers first":sortMode==="price"?"Lowest milk price first":"Closest providers first";loadRemoteProvidersFromSaved()});
 $("deliverableOnly")?.addEventListener("click",toggleDeliveryFilter);
 $("openCompare")?.addEventListener("click",openCompareDialog);
 $("closeCompare")?.addEventListener("click",closeCompareDialog);
@@ -268,30 +279,119 @@ $("checkout")?.addEventListener("click",()=>{if(!entries().length){toast("Your c
 ["locationBtn","locationTop","locationHero"].forEach(id=>{const el=$(id);if(el)el.addEventListener("click",()=>window.DoodhwalaLocation?.open?.())});
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>navigateHomeView(b.dataset.go)));
 
+function mapRemoteProvider(row){
+ const products=Array.isArray(row.products)?row.products:[];
+ return {
+   id:row.provider_id,providerId:row.provider_id,name:row.provider_name,area:(row.area_name||"Local area"),city:row.city,
+   tag:(row.milk_type||"mixed")+" milk",type:row.milk_type||"mixed",emoji:milkEmoji(row.milk_type),
+   rating:Number(row.rating_avg||0).toFixed(1),delivery:row.delivery_from&&row.delivery_to?String(row.delivery_from).slice(0,5)+"–"+String(row.delivery_to).slice(0,5):"Local route",
+   verified:true,latitude:Number(row.latitude),longitude:Number(row.longitude),
+   distanceKm:row.distance_km==null?null:Number(row.distance_km),serviceRadiusKm:row.service_radius_km==null?null:Number(row.service_radius_km),
+   isServiceable:row.is_serviceable==null?null:Boolean(row.is_serviceable),
+   subscription:products.some(p=>p.daily_available),productDailyAvailable:products.map(p=>Boolean(p.daily_available)),
+   productIds:products.map(p=>p.id),productPrices:products.map(p=>Number(p.price_per_litre)),milks:products.map(p=>[p.name,Number.isFinite(Number(p.price_per_litre))&&Number(p.price_per_litre)>0?money(p.price_per_litre)+" / L":"Price unavailable"])
+ };
+}
+function isMissingDiscoveryV3(error){
+ const code=String(error?.code||"");
+ const message=String(error?.message||"");
+ return code==="PGRST202"||code==="42883"||(/find_nearby_providers_v3/i.test(message)&&/schema cache|could not find|does not exist|not found/i.test(message));
+}
+function appendLoadMoreControl(){
+ if(!grid||!discoveryHasMore||discoveryUsingLegacyRpc)return;
+ const wrapper=document.createElement("div");
+ wrapper.className="discovery-load-more";
+ const button=document.createElement("button");
+ button.type="button";
+ button.disabled=discoveryLoadingMore;
+ button.textContent=discoveryLoadingMore?"Loading more local sellers…":"Load more local sellers";
+ button.addEventListener("click",loadMoreProviders);
+ const caption=document.createElement("p");
+ caption.textContent="Showing "+providers.length+" providers so far";
+ wrapper.append(button,caption);
+ grid.appendChild(wrapper);
+}
 async function loadRemoteProviders(lat=null,lng=null){
+ const requestId=++discoveryRequestId;
+ discoveryCoordinates={
+   latitude:lat==null?null:Number(lat),
+   longitude:lng==null?null:Number(lng)
+ };
+ discoveryOffset=0;discoveryHasMore=false;discoveryLoadingMore=false;discoveryUsingLegacyRpc=false;
  const milkTransition=window.DoodhwalaMilkTransition;
  milkTransition?.showLoading("Finding fresh milk nearby…");
  try{
- if(!window.Doodhwala?.configured){dataState="error";render();return}
- dataState="loading";render();
- const {data,error}=await Doodhwala.supabase.rpc("find_nearby_providers_v2",{p_latitude:lat,p_longitude:lng,p_max_km:20});
- if(error)throw error;
- providers=(data||[]).map(row=>{
-   const products=Array.isArray(row.products)?row.products:[];
-   return {
-     id:row.provider_id,providerId:row.provider_id,name:row.provider_name,area:(row.area_name||"Local area"),city:row.city,
-     tag:(row.milk_type||"mixed")+" milk",type:row.milk_type||"mixed",emoji:milkEmoji(row.milk_type),
-     rating:Number(row.rating_avg||0).toFixed(1),delivery:row.delivery_from&&row.delivery_to?String(row.delivery_from).slice(0,5)+"–"+String(row.delivery_to).slice(0,5):"Local route",
-     verified:true,latitude:Number(row.latitude),longitude:Number(row.longitude),
-     distanceKm:row.distance_km==null?null:Number(row.distance_km),serviceRadiusKm:row.service_radius_km==null?null:Number(row.service_radius_km),
-     isServiceable:row.is_serviceable==null?null:Boolean(row.is_serviceable),
-     subscription:products.some(p=>p.daily_available),productDailyAvailable:products.map(p=>Boolean(p.daily_available)),
-     productIds:products.map(p=>p.id),productPrices:products.map(p=>Number(p.price_per_litre)),milks:products.map(p=>[p.name,Number.isFinite(Number(p.price_per_litre))&&Number(p.price_per_litre)>0?money(p.price_per_litre)+" / L":"Price unavailable"])
-   }
- });
- window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
+  if(!window.Doodhwala?.configured){dataState="error";providers=[];render();return}
+  dataState="loading";providers=[];render();
+  let data,error;
+  const result=await window.Doodhwala.supabase.rpc("find_nearby_providers_v3",{
+   p_latitude:discoveryCoordinates.latitude,
+   p_longitude:discoveryCoordinates.longitude,
+   p_max_km:20,
+   p_sort:sortMode,
+   p_limit:DISCOVERY_FETCH_SIZE,
+   p_offset:0
+  });
+  if(result.error){
+   if(!isMissingDiscoveryV3(result.error))throw result.error;
+   // Compatibility while the additive SQL migration rolls out. Old clients and
+   // deployments without v3 continue to use the existing, unchanged RPC.
+   const legacy=await window.Doodhwala.supabase.rpc("find_nearby_providers_v2",{
+    p_latitude:discoveryCoordinates.latitude,
+    p_longitude:discoveryCoordinates.longitude,
+    p_max_km:20
+   });
+   if(legacy.error)throw legacy.error;
+   data=legacy.data;error=null;discoveryUsingLegacyRpc=true;
+  }else{data=result.data;error=result.error}
+  if(error)throw error;
+  if(requestId!==discoveryRequestId)return;
+  const rows=Array.isArray(data)?data:[];
+  if(discoveryUsingLegacyRpc){
+   providers=rows.map(mapRemoteProvider);
+   discoveryOffset=providers.length;
+   discoveryHasMore=false;
+  }else{
+   const firstPage=rows.slice(0,DISCOVERY_PAGE_SIZE);
+   providers=firstPage.map(mapRemoteProvider);
+   discoveryOffset=firstPage.length;
+   discoveryHasMore=rows.length>DISCOVERY_PAGE_SIZE;
+  }
+  window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
+ }catch(error){
+  if(requestId===discoveryRequestId)throw error;
  }finally{
   milkTransition?.hideLoading();
+ }
+}
+async function loadMoreProviders(){
+ if(discoveryLoadingMore||!discoveryHasMore||discoveryUsingLegacyRpc||!window.Doodhwala?.configured)return;
+ const requestId=discoveryRequestId;
+ discoveryLoadingMore=true;render();
+ try{
+  const {data,error}=await window.Doodhwala.supabase.rpc("find_nearby_providers_v3",{
+   p_latitude:discoveryCoordinates.latitude,
+   p_longitude:discoveryCoordinates.longitude,
+   p_max_km:20,
+   p_sort:sortMode,
+   p_limit:DISCOVERY_FETCH_SIZE,
+   p_offset:discoveryOffset
+  });
+  if(error)throw error;
+  if(requestId!==discoveryRequestId)return;
+  const rows=Array.isArray(data)?data:[];
+  const page=rows.slice(0,DISCOVERY_PAGE_SIZE).map(mapRemoteProvider);
+  const existing=new Set(providers.map(provider=>String(provider.id)));
+  page.forEach(provider=>{if(!existing.has(String(provider.id))){providers.push(provider);existing.add(String(provider.id))}});
+  discoveryOffset+=rows.length>DISCOVERY_PAGE_SIZE?DISCOVERY_PAGE_SIZE:Math.min(rows.length,DISCOVERY_PAGE_SIZE);
+  discoveryHasMore=rows.length>DISCOVERY_PAGE_SIZE;
+  window.providers=providers;
+  window.dispatchEvent(new Event("doodhwala:providers-updated"));
+ }catch(error){
+  console.error("Could not load more Doodhwala providers",error);
+  toast("Could not load more sellers. Please try again.");
+ }finally{
+  if(requestId===discoveryRequestId){discoveryLoadingMore=false;render()}
  }
 }
 async function loadRemoteProvidersFromSaved(){
