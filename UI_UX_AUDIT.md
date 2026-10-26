@@ -39,3 +39,8 @@ No screenshots are attached in this source-only pass because no browser viewport
 ## Release note
 
 Do not merge or deploy until the branch has been reviewed and the browser/device checks above have been run. Any Critical/High runtime failures found during execution should be fixed here or filed as follow-up issues with the same reproduction details.
+
+
+## Customer journey interaction audit
+
+See [`CUSTOMER_JOURNEY_INTERACTION_AUDIT.md`](CUSTOMER_JOURNEY_INTERACTION_AUDIT.md) for source-confirmed expected/actual findings, reproducible test steps, the search accessible-name fix, source-contract coverage, and the explicit browser/device matrix. Runtime tests and screenshots remain pending because no interactive browser was available; none are reported as passed.
