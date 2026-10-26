@@ -125,6 +125,16 @@ select public.delivery_mark_route_stop_action(
  (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=1),
  'delivered',null
 );
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false);
+do $test$
+declare v_tracking jsonb;
+begin
+  v_tracking:=public.delivery_get_my_tracking('20000000-0000-4000-8000-000000000001');
+  if v_tracking->>'route_status'<>'active' then raise exception 'route_should_continue_for_other_customer'; end if;
+  if v_tracking->>'stop_status'<>'delivered' then raise exception 'own_delivered_stop_not_exposed'; end if;
+  if (v_tracking->'location') <> 'null'::jsonb then raise exception 'delivered_customer_still_sees_driver_location'; end if;
+end $test$;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',false);
 select public.delivery_mark_route_stop_action(
  (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=2),
  'skipped','Customer requested a later handoff'
