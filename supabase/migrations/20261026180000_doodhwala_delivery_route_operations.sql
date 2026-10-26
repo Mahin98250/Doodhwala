@@ -56,6 +56,18 @@ begin
 end;
 $$;
 
+create or replace function public.delivery_driver_is_enrolled()
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $
+  select exists(
+    select 1 from public.delivery_driver_enrollments e
+    where e.driver_user_id=auth.uid() and e.is_active
+  );
+$;
+
 create or replace function public.delivery_driver_opt_out()
 returns boolean
 language plpgsql
@@ -627,6 +639,46 @@ create trigger delivery_live_location_broadcast
 after insert or update on public.delivery_live_locations
 for each row execute function private.broadcast_delivery_location();
 
+create or replace function private.broadcast_delivery_location_stopped()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  perform realtime.send(
+    payload => jsonb_build_object('route_id',old.route_id,'updated_at',now()),
+    event => 'location_stopped',
+    topic => 'delivery-route:'||old.route_id::text,
+    private => true
+  );
+  return old;
+end;
+$;
+
+drop trigger if exists delivery_live_location_stopped_broadcast on public.delivery_live_locations;
+create trigger delivery_live_location_stopped_broadcast
+after delete on public.delivery_live_locations
+for each row execute function private.broadcast_delivery_location_stopped();
+
+create or replace function public.delivery_stop_location_sharing(p_route_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare v_uid uuid:=auth.uid();
+begin
+  if v_uid is null then raise exception 'authentication_required'; end if;
+  if not exists(
+    select 1 from public.delivery_route_runs r
+    where r.id=p_route_id and r.driver_user_id=v_uid and r.status='active'
+  ) then raise exception 'active_driver_route_required'; end if;
+  delete from public.delivery_live_locations where route_id=p_route_id;
+  return found;
+end;
+$;
+
 drop policy if exists "Customers with a route stop can view route run" on public.delivery_route_runs;
 create policy "Customers with a route stop can view route run"
 on public.delivery_route_runs for select to authenticated
@@ -661,6 +713,8 @@ using (
 );
 
 revoke all on function public.delivery_driver_enroll() from public,anon;
+revoke all on function public.delivery_driver_is_enrolled() from public,anon;
+revoke all on function public.delivery_stop_location_sharing(uuid) from public,anon;
 revoke all on function public.delivery_driver_opt_out() from public,anon;
 revoke all on function public.delivery_provider_link_driver(uuid,uuid) from public,anon;
 revoke all on function public.delivery_provider_unlink_driver(uuid,uuid) from public,anon;
@@ -674,6 +728,8 @@ revoke all on function public.delivery_get_my_active_route() from public,anon;
 revoke all on function public.delivery_get_my_tracking(uuid) from public,anon;
 
 grant execute on function public.delivery_driver_enroll() to authenticated;
+grant execute on function public.delivery_driver_is_enrolled() to authenticated;
+grant execute on function public.delivery_stop_location_sharing(uuid) to authenticated;
 grant execute on function public.delivery_driver_opt_out() to authenticated;
 grant execute on function public.delivery_provider_link_driver(uuid,uuid) to authenticated;
 grant execute on function public.delivery_provider_unlink_driver(uuid,uuid) to authenticated;
@@ -687,3 +743,4 @@ grant execute on function public.delivery_get_my_active_route() to authenticated
 grant execute on function public.delivery_get_my_tracking(uuid) to authenticated;
 
 revoke all on function private.broadcast_delivery_location() from public,anon,authenticated;
+revoke all on function private.broadcast_delivery_location_stopped() from public,anon,authenticated;
