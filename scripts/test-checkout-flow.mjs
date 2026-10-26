@@ -54,6 +54,7 @@ function createHarness(options = {}) {
 
   const calls = { addressUpdates: [], addressInserts: [], rpc: [] };
   let createOrderAttempts = 0;
+  let idempotencySequence = 0;
   const failedProviders = new Set();
   const serverOrdersByIdempotencyKey = new Map();
   const supabase = {
@@ -140,7 +141,7 @@ function createHarness(options = {}) {
 
   const context = vm.createContext({
     window, document, Doodhwala, localStorage,
-    crypto: { randomUUID() { return "stable-test-idempotency-key"; } },
+    crypto: { randomUUID() { idempotencySequence += 1; return "stable-test-idempotency-key-" + idempotencySequence; } },
     console: { warn() {}, error() {}, log() {} },
     structuredClone,
     setTimeout, clearTimeout
