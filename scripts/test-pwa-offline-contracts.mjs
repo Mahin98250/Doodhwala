@@ -14,7 +14,7 @@ function readArray(name) {
 
 const cacheMatch = sw.match(/const CACHE="([^"]+)"/);
 assert.ok(cacheMatch, "service worker has a named cache");
-assert.notEqual(cacheMatch[1], "doodhwala-v94", "PWA cache version is bumped to invalidate old cache");
+assert.equal(cacheMatch[1], "doodhwala-v95", "PWA cache version matches the reviewed revision");
 const assets = readArray("ASSETS");
 const coreAssets = readArray("CORE_ASSETS");
 const cachedUrls = new Set([...assets, ...coreAssets]);
