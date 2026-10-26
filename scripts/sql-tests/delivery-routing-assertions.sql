@@ -79,8 +79,17 @@ select public.delivery_update_location(
   (select route_id from delivery_test_context),
   23.0250,72.4950,8,90,4
 );
+select public.delivery_update_remaining_etas(
+  (select route_id from delivery_test_context),
+  array[
+    (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=1),
+    (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=2)
+  ]::uuid[],
+  array[now()+interval '12 minutes',now()+interval '24 minutes']::timestamptz[],
+  array[now()+interval '22 minutes',now()+interval '34 minutes']::timestamptz[]
+);
 
-do $$
+do $
 declare v_route jsonb;
 begin
   v_route:=public.delivery_get_my_active_route();
