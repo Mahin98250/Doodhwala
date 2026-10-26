@@ -84,3 +84,38 @@ jobs:
       - name: Verify immutable audit, seller attribution and reference validation
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/payment-audit-assertions.sql
 
+  provider-capacity-migration:
+    name: Validate atomic provider capacity SQL on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_capacity_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_capacity_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_capacity_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create isolated provider-capacity schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-capacity-fixture.sql
+      - name: Apply atomic provider-capacity migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026160000_doodhwala_atomic_provider_capacity.sql
+      - name: Verify provider lock, Kolkata-local date and function grants
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-capacity-assertions.sql
