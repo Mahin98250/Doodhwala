@@ -138,6 +138,7 @@ When the connection drops or a new person/assistant resumes:
 
 | Date | Update | Evidence / status |
 |---|---|---|
+| 2026-10-26 | DW-001 checkout recovery preflight | Identified a partial multi-provider checkout recovery gap; committed order IDs/payment method now persist across retry, including retry after reload, with regression coverage. | [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80); Static validation and SQL migration validation passed on latest code. Full staging/Auth/RLS/Realtime/device acceptance remains unverified. |
 | 2026-10-26 | Expanded team collaboration workflow with issue templates, PR checklist, contribution guide, and seven starter task issues. | [PR #72](https://github.com/Mahin98250/Doodhwala/pull/72); starter issues [#73–#79](https://github.com/Mahin98250/Doodhwala/issues/73). Documentation-only changes; pending review/merge. |
 | 2026-10-23 | Merged premium UI polish and connectivity feedback in PR #31; refreshed offline precache to cache revision v82. | Main commit `5ef002602443bd0e782bbe349862a26cb489c77f`; post-merge static validation run `39902752389` passed; GitHub Pages build/deploy workflow `39902752033` passed. Visual live-page/mobile testing remains pending because the public page could not be retrieved in that session. Live Supabase payment migrations remain unapplied. |
 | 2026-10-23 | Created the original project context and handoff. | Commit `7e3195b75fb3761a56350c7718c2404adf83fb59`; documentation only. |
@@ -146,7 +147,7 @@ Add newest entries at the top. Include commit/PR links and test outcomes wheneve
 
 ## 9. Current checkpoint
 
-**Next task:** Mahin can begin DW-001 (staging order journey) if staging credentials and test accounts are available. DW-002 (responsive UI audit) is assigned to Vaidik and awaits his acknowledgement and branch claim. Keep Doodhwala as the working brand until a final name is approved.
+**Current work:** DW-001 is in progress on branch `qa/dw-001-order-retry-recovery`; [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80) adds partial multi-provider checkout recovery and a regression test that passes Static validation. Full staging order creation, provider status propagation, reload/reconnect behavior, and mobile-device acceptance remain blocked until an isolated staging project is provisioned. DW-002 (responsive UI audit) is assigned to Vaidik and awaits his task acknowledgement/branch claim. Keep Doodhwala as the working brand until a final name is approved.
 
 **Verification boundary:** The prior documented static validation and GitHub Pages workflow passed for main commit `5ef002602443bd0e782bbe349862a26cb489c77f`. Visual live-page/device testing and end-to-end order flow remain unverified. Payment-related SQL migrations were documented as absent from deployed Supabase migration history on 2026-10-23; re-check before deployment. Doodhwala Pay is not a live automated gateway.
 
