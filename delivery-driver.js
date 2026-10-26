@@ -4,7 +4,7 @@
   const state = {
     user: null, route: null, map: null, roadLayer: null, stopLayers: [],
     driverMarker: null, watchId: null, gpsRequested: false, lastSentAt: 0,
-    channel: null, loading: false
+    channel: null, loading: false, lastEtaRefreshAt: 0
   };
 
   function esc(value) {
@@ -268,6 +268,23 @@
           p_speed_mps: Number.isFinite(coords.speed) ? coords.speed : null
         });
         if (error) throw error;
+        if (now - state.lastEtaRefreshAt >= 60_000) {
+          state.lastEtaRefreshAt = now;
+          Doodhwala.supabase.functions.invoke("delivery-routing", {
+            body: { action: "refresh_eta", route_id: state.route.id }
+          }).then(({ data, error: etaError }) => {
+            if (etaError || data?.error) {
+              const reason = data?.error || etaError?.message || "ETA refresh unavailable";
+              setGpsStatus("GPS is live. ETA refresh is waiting: " + reason + ".", true);
+              return;
+            }
+            if (Number(data?.updated_stops || 0) > 0) {
+              setGpsStatus("Live GPS active · refreshed arrival windows for " + data.updated_stops + " remaining stops.", true);
+            }
+          }).catch(error => {
+            setGpsStatus("GPS is live. ETA refresh will retry: " + (error?.message || "routing service unavailable") + ".", true);
+          });
+        }
       } catch (error) {
         setGpsStatus("GPS was read, but the secure update failed: " + (error?.message || "retrying"), false);
       }
@@ -291,6 +308,9 @@
     if (!routeId || !window.Doodhwala?.configured) return;
     unsubscribeRoute();
     const channel = Doodhwala.supabase.channel("delivery-route:" + routeId, { config: { private: true } })
+      .on("broadcast", { event: "eta_updated" }, () => {
+        loadRoute().catch(error => console.warn("Driver ETA refresh event could not be loaded:", error));
+      })
       .on("broadcast", { event: "location_stopped" }, () => {
         // The driver already stopped sharing; customers are also told to clear their marker.
       });
