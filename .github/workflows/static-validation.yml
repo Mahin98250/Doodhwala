@@ -41,6 +41,8 @@ jobs:
         run: node scripts/test-discovery-enhancements.mjs
       - name: Test scalable nearby-provider query contract
         run: node scripts/test-nearby-provider-search-scalability.mjs
+      - name: Test bounded provider discovery pagination
+        run: node scripts/test-discovery-pagination.mjs
       - name: Test order capacity query indexes
         run: node scripts/test-order-capacity-query-indexes.mjs
       - name: Test staging load-test safety guards

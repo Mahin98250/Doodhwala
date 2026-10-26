@@ -27,7 +27,7 @@ assert.match(workflow, /retention-days: 14/);
 // Bound the initial load and keep the workload read-only at the RPC/business level.
 assert.match(scenario, /\[1, 5, 10, 25, 50\]/);
 assert.match(scenario, /\[30, 60, 120\]/);
-assert.match(scenario, /rest\/v1\/rpc\/find_nearby_providers_v2/);
+assert.match(scenario, /rest\/v1\/rpc\/find_nearby_providers_v3/);
 assert.doesNotMatch(scenario, /create_order|insert into|update public\.|delete from/i);
 assert.match(scenario, /http_req_failed:\s*\["rate<0\.01"\]/);
 assert.ok(scenario.includes('checks: ["rate>0.99"]'));

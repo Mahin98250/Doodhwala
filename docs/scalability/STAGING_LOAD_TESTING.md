@@ -2,7 +2,7 @@
 
 ## Why this exists
 
-Doodhwala now has a read-only k6 scenario for the public `find_nearby_providers_v2` RPC. It sends a controlled request rate and records latency, failed requests, and dropped iterations. This lets us build a measured capacity baseline before increasing traffic.
+Doodhwala now has a read-only k6 scenario for the public `find_nearby_providers_v3` RPC. It sends a controlled request rate and records latency, failed requests, and dropped iterations. This lets us build a measured capacity baseline before increasing traffic.
 
 **This is not a 100,000-concurrent-query test.** The initial GitHub Actions runner is intentionally capped at 50 requests/second for short, controlled tests. A 100,000-request burst or distributed high-concurrency test needs a dedicated staging environment and a deliberately provisioned load generator; it must never be aimed at production.
 
@@ -12,7 +12,7 @@ Doodhwala now has a read-only k6 scenario for the public `find_nearby_providers_
 - Type exactly `STAGING` before the workflow runs.
 - The target must use HTTPS and a Supabase project hostname.
 - The known production project ref `hmiboyfcvtfawrwujslg` is explicitly blocked.
-- The scenario only POSTs to the read-only `find_nearby_providers_v2` RPC. It does not place orders, update profiles, send payments, or mutate rows.
+- The scenario only POSTs to the read-only `find_nearby_providers_v3` RPC. It does not place orders, update profiles, send payments, or mutate rows.
 - Never test with customer data copied from production. Use synthetic providers/products.
 
 ## Configure a separate staging project

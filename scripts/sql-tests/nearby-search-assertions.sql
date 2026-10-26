@@ -56,6 +56,44 @@ $$;
 
 do $$
 declare
+  provider_name text;
+  page_count integer;
+begin
+  select result.provider_name into provider_name
+  from public.find_nearby_providers_v3(null, null, 20, 'rating', 1, 0) result;
+  if provider_name <> 'Nearby Dairy' then
+    raise exception 'rating-sorted first page should start with Nearby Dairy, got %', provider_name;
+  end if;
+
+  select result.provider_name into provider_name
+  from public.find_nearby_providers_v3(null, null, 20, 'rating', 1, 1) result;
+  if provider_name <> 'Far Dairy' then
+    raise exception 'second page should continue after the first provider, got %', provider_name;
+  end if;
+
+  select count(*) into page_count
+  from public.find_nearby_providers_v3(null, null, 20, 'rating', 1, 2);
+  if page_count <> 1 then
+    raise exception 'third page should contain the final provider, got % rows', page_count;
+  end if;
+
+  -- Invalid/small page parameters must be clamped instead of yielding an unbounded request.
+  select count(*) into page_count
+  from public.find_nearby_providers_v3(null, null, 20, 'unknown', 0, -10);
+  if page_count <> 1 then
+    raise exception 'invalid page controls should clamp to one row at offset zero, got %', page_count;
+  end if;
+
+  select count(*) into page_count
+  from public.find_nearby_providers_v3(null, null, 20, 'rating', 500, 0);
+  if page_count <> 3 then
+    raise exception 'page size must never affect result correctness for a small fixture, got % rows', page_count;
+  end if;
+end;
+$$;
+
+do $$
+declare
   open_index text;
   daily_index text;
 begin

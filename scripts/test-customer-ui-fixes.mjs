@@ -41,9 +41,9 @@ assert.match(app, /milkTransition\?\.hideLoading\(\)/, "Home provider data loadi
 assert.match(app, /destination==="plans"\|\|destination==="orders"/, "Desktop sidebar must navigate to Plans and Orders.");
 assert.match(app, /DoodhwalaMilkTransition\.navigate\(url\)/, "Desktop customer navigation must use the milk transition.");
 assert.ok(home.includes("customer-ui-polish.css?v=20261026.1"), "Home page must load the latest mobile header polish.");
-assert.ok(home.indexOf("milk-transition.js?v=20261025.4") < home.indexOf("app.js?v=20261025.5"), "Milk transition runtime must be available before the home app requests data.");
+assert.ok(home.indexOf("milk-transition.js?v=20261025.4") < home.indexOf("app.js?v=20261026.2"), "Milk transition runtime must be available before the home app requests data.");
 assert.match(ordersHtml, /customer-10x\.js\?v=20261023\.4" data-doodhwala-10x="1"/, "Orders page must use one current customer 10X runtime without injecting a duplicate.");
-assert.match(worker, /doodhwala-v93/, "PWA cache must change when the home runtime changes.");
+assert.match(worker, /doodhwala-v94/, "PWA cache must change when the home runtime changes.");
 assert.match(transitionJs, /showLoading/);
 const showLoadingBlock = transitionJs.slice(transitionJs.indexOf("function showLoading"), transitionJs.indexOf("function hideLoading"));
 assert.match(showLoadingBlock, /loader\.hidden=false/, "Data loader must be prepared before a transition overlay fades.");
@@ -57,7 +57,7 @@ assert.match(transitionCss, /@keyframes dw-milk-fill-target/, "Receiving bottle 
 assert.match(transitionCss, /prefers-reduced-motion/);
 assert.match(mobileCss, /grid-template-areas/);
 assert.match(mobileCss, /@media\(max-width:390px\)/);
-assert.match(worker, /doodhwala-v93/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
+assert.match(worker, /doodhwala-v94/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
 assert.match(worker, /customer-ui-polish\.css\?v=20261026\.1/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
 assert.match(worker, /milk-transition\.js\?v=20261025\.4/);
