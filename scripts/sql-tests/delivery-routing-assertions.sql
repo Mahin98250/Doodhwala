@@ -47,7 +47,7 @@ begin
   v_drivers:=public.delivery_list_enrolled_drivers('10000000-0000-4000-8000-000000000001');
   if jsonb_array_length(v_drivers)<>1 or v_drivers->0->>'linked'<>'true' then raise exception 'driver_enrollment_linking_failed'; end if;
   v_planning:=public.delivery_get_route_planning_data('10000000-0000-4000-8000-000000000001',49);
-  if jsonb_array_length(v_planning->'orders')<>2 then raise exception 'eligible_delivery_queue_missing_stops'; end if;
+  if jsonb_array_length(v_planning->'orders')<>3 then raise exception 'eligible_delivery_queue_missing_stops'; end if;
   if v_planning->'origin'->>'latitude'<>'23.0200' then raise exception 'route_origin_missing'; end if;
 end $test$;
 
@@ -115,6 +115,28 @@ begin
   exception when others then
     if sqlerrm<>'previous_route_stop_not_completed' then raise; end if;
   end;
+
+  -- A different order must not let the same driver start another active run.
+  perform set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000002',false);
+  begin
+    perform public.delivery_create_route(
+      '10000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000003',
+      (now() at time zone 'Asia/Kolkata')::date,
+      now()+interval '30 minutes',
+      array['20000000-0000-4000-8000-000000000003'::uuid],
+      array[now()+interval '40 minutes']::timestamptz[],
+      array[now()+interval '50 minutes']::timestamptz[],
+      1000,300,
+      jsonb_build_object('type','LineString','coordinates',jsonb_build_array(
+        jsonb_build_array(72.4900,23.0200),jsonb_build_array(72.5100,23.0400)
+      )),60
+    );
+    raise exception 'duplicate_active_driver_route_was_allowed';
+  exception when others then
+    if sqlerrm<>'driver_already_has_active_route' then raise; end if;
+  end;
+  perform set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',false);
 end $test$;
 
 select public.delivery_mark_route_stop_action(
@@ -175,4 +197,42 @@ begin
   end;
 end $test$;
 
-select 'PASS: consent, provider/driver assignment, planning, route lifecycle, private GPS broadcast, stop order and customer isolation' as result;
+-- Once the earlier run is complete, only one planned route may remain for a driver
+-- on a service date. This prevents two dispatch tabs from issuing duplicate rounds.
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000002',false);
+select public.delivery_create_route(
+  '10000000-0000-4000-8000-000000000001',
+  '00000000-0000-4000-8000-000000000003',
+  (now() at time zone 'Asia/Kolkata')::date,
+  now()+interval '20 minutes',
+  array['20000000-0000-4000-8000-000000000003'::uuid],
+  array[now()+interval '30 minutes']::timestamptz[],
+  array[now()+interval '40 minutes']::timestamptz[],
+  1000,300,
+  jsonb_build_object('type','LineString','coordinates',jsonb_build_array(
+    jsonb_build_array(72.4900,23.0200),jsonb_build_array(72.5100,23.0400)
+  )),60
+);
+do $test$
+begin
+  begin
+    perform public.delivery_create_route(
+      '10000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000003',
+      (now() at time zone 'Asia/Kolkata')::date,
+      now()+interval '30 minutes',
+      array['20000000-0000-4000-8000-000000000002'::uuid],
+      array[now()+interval '40 minutes']::timestamptz[],
+      array[now()+interval '50 minutes']::timestamptz[],
+      1000,300,
+      jsonb_build_object('type','LineString','coordinates',jsonb_build_array(
+        jsonb_build_array(72.4900,23.0200),jsonb_build_array(72.5050,23.0350)
+      )),60
+    );
+    raise exception 'duplicate_same_day_route_was_allowed';
+  exception when others then
+    if sqlerrm<>'driver_already_has_planned_route_for_service_date' then raise; end if;
+  end;
+end $test$;
+
+select 'PASS: consent, provider/driver assignment, route lifecycle, ETA, single active/planned driver route, private GPS broadcasts, stop order and customer isolation' as result;
