@@ -1,0 +1,55 @@
+name: PWA offline browser evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "sw.js"
+      - "offline.html"
+      - "pwa-register.js"
+      - "network-status.js"
+      - "scripts/test-pwa-browser-smoke.mjs"
+      - ".github/workflows/pwa-browser-evidence.yml"
+  push:
+    branches: [main]
+    paths:
+      - "sw.js"
+      - "offline.html"
+      - "pwa-register.js"
+      - "network-status.js"
+      - "scripts/test-pwa-browser-smoke.mjs"
+      - ".github/workflows/pwa-browser-evidence.yml"
+
+jobs:
+  offline-browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Chromium test runner
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local static server
+        run: |
+          python3 -m http.server 4173 --directory "$GITHUB_WORKSPACE/.." > /tmp/doodhwala-http.log 2>&1 &
+          echo $! > /tmp/doodhwala-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/Doodhwala/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/doodhwala-http.log
+          exit 1
+      - name: Run real Chromium offline checks
+        run: node scripts/test-pwa-browser-smoke.mjs
+      - name: Upload screenshots and offline findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doodhwala-pwa-browser-evidence
+          path: artifacts/pwa/
+          if-no-files-found: warn
+          retention-days: 14
