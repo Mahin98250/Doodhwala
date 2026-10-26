@@ -1,7 +1,9 @@
 const CART_KEY="doodhwala-cart";
 const CHECKOUT_KEYS_KEY="doodhwala-checkout-idempotency-v1";
+const CHECKOUT_PROGRESS_KEY="doodhwala-checkout-progress-v1";
 let cart=window.DoodhwalaResilience?.readObjectStorage(CART_KEY,{})||{};
 let checkoutKeys=window.DoodhwalaResilience?.readObjectStorage(CHECKOUT_KEYS_KEY,{})||{};
+let checkoutProgress=window.DoodhwalaResilience?.readObjectStorage(CHECKOUT_PROGRESS_KEY,null)||null;
 const $=id=>document.getElementById(id);
 let sessionUser=null;
 let savedAddressId=null;
@@ -85,6 +87,10 @@ async function applyPromo(){
 }
 function friendlyPromoError(message){const m=String(message||"");if(/customer_limit_reached/.test(m))return"This offer has already been used on your account.";if(/usage_limit_reached/.test(m))return"This offer has reached its usage limit.";if(/min_order_value/.test(m))return"This order does not meet the minimum value for this offer.";if(/invalid_or_expired|promo not applicable/.test(m))return"This promo code is invalid or expired.";return m.replace(/^.*?:/,"").replace(/_/g," ")||"Promo code could not be applied."}
 function saveCheckoutKeys(){if(window.DoodhwalaResilience)window.DoodhwalaResilience.writeStorage(CHECKOUT_KEYS_KEY,checkoutKeys);else try{localStorage.setItem(CHECKOUT_KEYS_KEY,JSON.stringify(checkoutKeys))}catch(_){}}
+function cartFingerprint(){return JSON.stringify(Object.keys(cart||{}).sort().map(key=>{const item=cart[key]||{};return[key,String(item.providerId||""),String(item.productId||""),Number(item.qty)||0]}))}
+function saveCheckoutProgress(){if(!checkoutProgress)return;if(window.DoodhwalaResilience)window.DoodhwalaResilience.writeStorage(CHECKOUT_PROGRESS_KEY,checkoutProgress);else try{localStorage.setItem(CHECKOUT_PROGRESS_KEY,JSON.stringify(checkoutProgress))}catch(_){}}
+function checkoutProgressForCurrentCart(){const fingerprint=cartFingerprint();if(!checkoutProgress||checkoutProgress.userId!==sessionUser?.id||checkoutProgress.cartFingerprint!==fingerprint||!Array.isArray(checkoutProgress.orderIds)){checkoutProgress={userId:sessionUser.id,cartFingerprint:fingerprint,orderIds:[],paymentMethod:null};saveCheckoutProgress()}return checkoutProgress}
+function recordCheckoutOrder(orderId){if(!checkoutProgress)return;const id=String(orderId);if(!checkoutProgress.orderIds.includes(id))checkoutProgress.orderIds.push(id)}
 function idempotencyKeyForProvider(providerId){if(!checkoutKeys[providerId])checkoutKeys[providerId]={key:(crypto.randomUUID?.()||String(Date.now())+"-"+Math.random())};saveCheckoutKeys();return checkoutKeys[providerId].key}
 function removeProviderFromCart(providerId){Object.keys(cart).forEach(function(k){if(cart[k]&&cart[k].providerId===providerId)delete cart[k]});if(window.DoodhwalaResilience)window.DoodhwalaResilience.writeStorage(CART_KEY,cart);else try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch(_){}delete checkoutKeys[providerId];saveCheckoutKeys()}
 $("applyPromo")?.addEventListener("click",applyPromo);
@@ -107,6 +113,7 @@ $("placeOrder").onclick=async()=>{
   }
   const groups=grouped();
   if(!groups.length){showError("Your cart has no backend-linked products. Return to the shop and add the milk again.");return}
+  checkoutProgressForCurrentCart();
   // Fail closed before create_order: older/partially migrated databases must never
   // create an order and then fail while persisting its payment choice.
   let controlsReadiness;
@@ -117,6 +124,7 @@ $("placeOrder").onclick=async()=>{
    return;
   }
   const paymentMethod=document.querySelector('input[name="paymentMethod"]:checked')?.value==="direct_upi"?"direct_upi":"cod";
+  if(checkoutProgress.paymentMethod&&checkoutProgress.paymentMethod!==paymentMethod){showError("A previous order in this checkout used "+checkoutProgress.paymentMethod.toUpperCase()+". Keep the same payment option to finish the remaining orders.");return}
   if(paymentMethod==="direct_upi"){
    for(const [providerId] of groups){
     let readiness;
@@ -124,6 +132,7 @@ $("placeOrder").onclick=async()=>{
     if(readiness?.error||readiness?.data!==true){showError("Direct UPI is not set up for every seller in this cart. Choose Cash on Delivery or ask the seller to configure their UPI details.");return}
    }
   }
+  if(!checkoutProgress.paymentMethod){checkoutProgress.paymentMethod=paymentMethod;saveCheckoutProgress()}
   placeButton.disabled=true;placeButton.textContent="Securing your order…";
   const orderIds=[],failures=[];
   for(const [providerId,items] of groups){
@@ -140,21 +149,28 @@ $("placeOrder").onclick=async()=>{
    try{paymentResult=await Doodhwala.supabase.rpc("customer_set_order_payment_method",{p_order_id:result.data,p_method:paymentMethod})}
    catch(error){paymentResult={error}}
    if(paymentResult?.error){failures.push(paymentResult.error);continue}
+   recordCheckoutOrder(result.data);
    orderIds.push(result.data);
    removeProviderFromCart(providerId);
+   checkoutProgress.cartFingerprint=cartFingerprint();
+   saveCheckoutProgress();
   }
   if(failures.length){
    placeButton.textContent="Retry remaining orders →";
    renderItems();
    const first=failures[0]?.message||"Some provider orders could not be completed.";
-   showError(orderIds.length?"Some orders are already safely placed. Retry the remaining ones — duplicate orders are prevented.":friendlyOrderError(first));
+   if(checkoutProgress?.orderIds?.length){showError("Some orders are already safely placed. Completed order ID(s): "+checkoutProgress.orderIds.join(", ")+". Retry the remaining orders — duplicate orders are prevented.")}
+   else showError(friendlyOrderError(first));
    return;
   }
   if(window.DoodhwalaResilience)window.DoodhwalaResilience.removeItem(CART_KEY);else try{localStorage.removeItem(CART_KEY)}catch(_){}
   checkoutKeys={};saveCheckoutKeys();
+  const completedOrderIds=[...new Set((checkoutProgress?.orderIds||orderIds).map(String))];
   $("checkoutForm").classList.add("hidden");$("success").classList.remove("hidden");
-  $("successText").textContent=(orderIds.length===1?"Order "+orderIds[0]+" has been created.":"We created "+orderIds.length+" provider orders from your cart.")+(paymentMethod==="direct_upi"?" Direct UPI selected: open your order to pay the seller; payment remains pending until the seller checks their bank/UPI app.":" Cash on Delivery selected. Pay the seller when the milk arrives.");
-  $("successOrders").innerHTML=orderIds.map(id=>'<div class="success-order"><b>Order '+escapeHtml(id)+'</b><br><span>Placed • awaiting provider acceptance</span></div>').join("");
+  $("successText").textContent=(completedOrderIds.length===1?"Order "+completedOrderIds[0]+" has been created.":"We created "+completedOrderIds.length+" provider orders from your cart.")+(paymentMethod==="direct_upi"?" Direct UPI selected: open your order to pay the seller; payment remains pending until the seller checks their bank/UPI app.":" Cash on Delivery selected. Pay the seller when the milk arrives.");
+  $("successOrders").innerHTML=completedOrderIds.map(id=>'<div class="success-order"><b>Order '+escapeHtml(id)+'</b><br><span>Placed • awaiting provider acceptance</span></div>').join("");
+  if(window.DoodhwalaResilience)window.DoodhwalaResilience.removeItem(CHECKOUT_PROGRESS_KEY);else try{localStorage.removeItem(CHECKOUT_PROGRESS_KEY)}catch(_){}
+  checkoutProgress=null;
  }catch(error){
   console.warn("Checkout submission failed",error);
   showError("We couldn't finish checkout because of a connection problem. Your cart is kept safe — please retry.");
