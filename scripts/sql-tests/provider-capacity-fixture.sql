@@ -19,7 +19,7 @@ create or replace function private.create_order_secure(
   p_items jsonb,
   p_customer_note text default null
 )
-returns uuid language sql as $ select null::uuid $;
+returns uuid language sql as 'select null::uuid';
 
 create table public.provider_profiles (
   id uuid primary key,
