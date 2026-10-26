@@ -16,8 +16,10 @@ assert.match(fn, /auth\.uid\(\)/);
 assert.match(fn, /address_not_owned/);
 assert.match(fn, /provider_order_capacity_full/);
 assert.match(fn, /provider_daily_capacity_full/);
-assert.match(migration, /revoke all on function private\.create_order_secure\(uuid,uuid,jsonb,text\) from public,anon,authenticated/i);
-assert.match(migration, /grant execute on function private\.create_order_secure\(uuid,uuid,jsonb,text\) to authenticated/i);
+assert.match(fn, /p_idempotency_key text default null/i, "migration must preserve the idempotent five-argument checkout");
+assert.match(migration, /revoke all on function private\\.create_order_secure\\(uuid,uuid,jsonb,text\\) from public,anon,authenticated,service_role/i, "legacy four-argument function must remain restricted");
+assert.match(migration, /grant execute on function private\\.create_order_secure\\(uuid,uuid,jsonb,text,text\\) to authenticated/i, "authenticated users must use the idempotent checkout");
+assert.doesNotMatch(migration, /grant execute on function private\\.create_order_secure\\(uuid,uuid,jsonb,text\\) to authenticated/i, "do not restore access to the legacy four-argument function");
 
 // The provider row lock must be acquired while reading its active/approved status,
 // before the open-order and daily-volume checks; concurrent checkouts serialize per seller.
