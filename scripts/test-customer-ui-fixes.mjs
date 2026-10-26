@@ -139,3 +139,10 @@ assert.deepEqual(createdChannels.map(channel => channel.name), [
 assert.deepEqual(removedChannels, [createdChannels[0]], "Changing customer channels must remove the previous channel through the client.");
 
 console.log("PASS: customer mobile layout, Plans Supabase calls, Orders schema compatibility, milk transitions, PWA cache, and recovery-notice contracts.");
+
+const assistantRuntime = read("customer-10x.js");
+const customerNavRuntime = read("customer-nav.js");
+assert.match(assistantRuntime, /@media\(max-width:760px\)\{\.doodhwala-10x-launcher\{right:12px;bottom:94px;width:52px;min-width:52px;height:52px/);
+assert.match(assistantRuntime, /\.doodhwala-10x-launcher \.d10-launcher-copy\{display:none\}/, "Mobile assistant launcher must not cover primary calls to action with a text pill.");
+assert.match(customerNavRuntime, /customer-10x\.js\?v=20261026\.1/);
+assert.match(read("sw.js"), /customer-10x\.js\?v=20261026\.1/);
