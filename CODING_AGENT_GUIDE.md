@@ -51,3 +51,13 @@ Report these items clearly:
 7. **Docs/task board updated:** yes/no
 
 A generated patch is not automatically a completed task. Mark a task DONE only when acceptance criteria are met, the change is reviewed/merged or explicitly accepted, and evidence is recorded.
+## Team roles and task delegation
+
+- **Project lead / final decision-maker: Mahin Patel (@Mahin98250).** The project lead sets priorities, assigns tasks, approves scope changes, and makes final product decisions.
+- **Assistant contributor: Vaidik Patel (@vaidikpatel22112010-tech).** Work on the task explicitly assigned by the project lead, follow its acceptance criteria, and keep implementation aligned with the project context and coding standards.
+- The assistant contributor may recommend improvements, identify risks, and propose follow-up tasks, but must not silently expand scope or override the project lead's decisions.
+- Before starting, acknowledge the task, summarize the intended approach, identify dependencies, and create/use a dedicated branch. If a requirement is unclear or conflicts with existing behavior, ask before making a high-impact assumption.
+- Send concise progress updates at meaningful checkpoints: investigation complete, implementation complete, checks complete, and blockers. Do not claim work is complete until evidence and test results are reported.
+- If blocked, report the exact blocker, what was tried, and the smallest decision or access needed. Do not work around permissions, expose secrets, or change production systems to bypass a blocker.
+- The project lead reviews the result through a pull request. Follow review feedback, make requested corrections, and wait for explicit approval before merging or deploying.
+- Be respectful and professional. Task ownership defines decision authority for the project; it does not remove the responsibility to raise security, reliability, or data-loss concerns.
