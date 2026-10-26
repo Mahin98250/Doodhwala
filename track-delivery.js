@@ -143,6 +143,9 @@
     if (state.channel && state.tracking?.route_id === routeId) return;
     unsubscribeRoute();
     const channel = Doodhwala.supabase.channel("delivery-route:" + routeId, { config: { private: true } })
+      .on("broadcast", { event: "eta_updated" }, () => {
+        loadTracking().catch(err => console.warn("Delivery ETA refresh failed:", err));
+      })
       .on("broadcast", { event: "location" }, packet => {
         const location = packet?.payload || packet;
         if (!location || location.route_id !== routeId || state.tracking?.route_status !== "active") return;
