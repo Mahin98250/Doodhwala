@@ -9,6 +9,7 @@ const sw = read("sw.js");
 const sqlWorkflow = read(".github/workflows/sql-migration-validation.yml");
 const staticWorkflow = read(".github/workflows/static-validation.yml");
 const assertions = read("scripts/sql-tests/nearby-search-assertions.sql");
+const loadScenario = read("scripts/load-tests/nearby-provider-search.k6.js");
 
 // The old v2 function stays intact for compatibility; v3 is additive.
 assert.match(migration, /create or replace function public\.find_nearby_providers_v3\s*\(/i);
@@ -39,6 +40,10 @@ assert.match(app, /async function loadMoreProviders\(\)/);
 assert.match(app, /new Set\(providers\.map\(provider=>String\(provider\.id\)\)\)/);
 assert.match(app, /find_nearby_providers_v2/, "legacy RPC fallback must keep the frontend usable before v3 rollout");
 assert.match(app, /p_sort:sortMode/);
+assert.match(app, /discoveryOffset<5000/);
+assert.match(loadScenario, /rest\\/v1\\/rpc\\/find_nearby_providers_v3/);
+assert.match(loadScenario, /p_limit: 25/);
+assert.match(loadScenario, /p_sort: "closest"/);
 
 // Cache-bust the updated runtime so existing PWA installs can load pagination.
 assert.ok(html.includes('/Doodhwala/app.js?v=20261026.2'));
