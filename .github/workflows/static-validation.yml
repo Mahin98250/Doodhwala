@@ -14,11 +14,17 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js pwa-register.js session-controls.js support.js network-status.js; do
+          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js pwa-register.js session-controls.js support.js network-status.js delivery-dispatch.js delivery-driver.js track-delivery.js; do
             node --check "$file"
           done
       - name: Syntax-check production readiness probe
         run: node --check scripts/production-readiness-probe.mjs
+      - name: Install Deno for Edge Function type checking
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check delivery routing Edge Function
+        run: deno check --no-lock supabase/functions/delivery-routing/index.ts
       - name: Syntax-check live page smoke test
         run: node --check scripts/live-page-smoke.mjs
       - name: Test service-worker offline route recovery
@@ -45,6 +51,8 @@ jobs:
         run: node scripts/test-discovery-pagination.mjs
       - name: Test order capacity query indexes
         run: node scripts/test-order-capacity-query-indexes.mjs
+      - name: Test smart milk delivery routing contracts
+        run: node scripts/test-smart-delivery-routing.mjs
       - name: Test staging load-test safety guards
         run: node scripts/test-staging-load-test-safety.mjs
       - name: Test staging baseline and read-only audit contracts

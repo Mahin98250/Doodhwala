@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#175a3c"><meta name="description" content="Plan a smart, time-aware milk delivery route for Doodhwala.">
+<title>Doodhwala · Smart Dispatch</title>
+<link rel="icon" href="/Doodhwala/assets/mascot.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/Doodhwala/delivery-dispatch.css?v=20261026.1">
+</head>
+<body class="delivery-dispatch-page">
+<header class="dd-header">
+<a class="dd-brand" href="/Doodhwala/"><img src="/Doodhwala/assets/mascot.png" alt=""><span><b>Doodhwala</b><small>Smart delivery operations</small></span></a>
+<div class="dd-header-actions"><a href="/Doodhwala/provider.html">Provider dashboard</a><a href="/Doodhwala/delivery-driver.html">Driver view ↗</a></div>
+</header>
+<main class="dd-main">
+<section class="dd-intro">
+<div class="dd-eyebrow">MORNING MILK RUNS · AHMEDABAD</div>
+<h1>Every doorstep, in a smarter order.</h1>
+<p>Choose an enrolled driver and eligible orders. Doodhwala will use road travel-time data to order stops, estimate arrival windows and share the assigned route securely.</p>
+</section>
+<div id="dispatchStatus" class="dd-status" role="status" aria-live="polite">Checking your account…</div>
+<section class="dd-layout">
+<div class="dd-left">
+<section class="dd-card">
+<div class="dd-card-heading"><div><span class="dd-step">01</span><h2>Assign a delivery person</h2><p>Drivers must opt in first, then the provider links them to this dairy.</p></div></div>
+<div id="driverEmpty" class="dd-empty hidden">No enrolled drivers yet. Ask your delivery person to sign in and open Driver view, then tap “Enable delivery mode”.</div>
+<div id="driverRows" class="dd-driver-list"></div>
+<div class="dd-fields">
+<label>Assigned driver<select id="driverSelect" disabled><option value="">No linked driver yet</option></select></label>
+<div class="dd-fields-inline"><label>Delivery date<input id="serviceDate" type="date"></label><label>Start time (IST)<input id="startTime" type="time" value="05:00"></label></div>
+</div>
+</section>
+<section class="dd-card">
+<div class="dd-card-heading"><div><span class="dd-step">02</span><h2>Build the route</h2><p>Ready orders with saved delivery coordinates appear here. Select up to 99 stops for one run.</p></div><button class="dd-text-button" id="refreshQueue" type="button">↻ Refresh</button></div>
+<div class="dd-select-row"><label class="dd-check"><input id="selectAllOrders" type="checkbox" checked><span>Select all available</span></label><span id="orderCount">0 stops</span></div>
+<div id="orderQueue" class="dd-order-list"><div class="dd-loading"><span class="dd-spinner"></span> Loading eligible orders…</div></div>
+<div class="dd-actions"><button id="planRoute" class="dd-primary" type="button" disabled>Optimize morning route <span>→</span></button></div>
+<p class="dd-footnote">Uses road travel duration and a nearest-neighbour + 2-opt heuristic. This is a strong route heuristic, not a proof of the mathematically shortest route or a live-traffic prediction.</p>
+</section>
+</div>
+<aside class="dd-right">
+<section class="dd-card dd-preview-card">
+<div class="dd-card-heading"><div><span class="dd-step">03</span><h2>Route preview</h2><p>Numbered stops will follow the optimized sequence.</p></div></div>
+<div id="routeMap" class="dd-map" aria-label="Optimized delivery route map"></div>
+<div id="routePreview" class="dd-route-preview"><div class="dd-preview-placeholder"><span>↗</span><b>Your route appears here</b><small>Connect the provider origin, select a driver and choose eligible stops.</small></div></div>
+</section>
+<section class="dd-note">
+<b>Before this is live</b>
+<p>Configure a trusted OSRM-compatible routing endpoint in the Edge Function secret <code>DELIVERY_ROUTING_BASE_URL</code>. No public demo router is assumed to be production infrastructure.</p>
+<p>Database changes and customer tracking stay inactive until the migrations are reviewed and applied to isolated staging.</p>
+</section>
+</aside>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+<script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+<script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/Doodhwala/delivery-dispatch.js?v=20261026.1"></script>
+<script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
+</body></html>

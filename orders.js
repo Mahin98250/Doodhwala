@@ -309,13 +309,8 @@ async function loadOrders(options={}){
   $("ordersList").querySelectorAll("[data-10x-track]").forEach(function(button){
     button.addEventListener("click",function(){
       const id=button.dataset["10xTrack"];
-      if(!window.Doodhwala10X)return;
-      window.Doodhwala10X.toast("Opening live tracking…");
-      window.Doodhwala10X.setupTracking(id,function(data){
-        window.Doodhwala10X.toast("Latest status: "+String(data?.order?.status||"unknown").replace(/_/g," "));
-      }).catch(function(){
-        window.Doodhwala10X.toast("Live tracking is not available yet.");
-      });
+      if(!id)return;
+      window.location.href="/Doodhwala/track-delivery.html?order="+encodeURIComponent(id);
     });
   });
 

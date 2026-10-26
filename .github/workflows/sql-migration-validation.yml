@@ -86,3 +86,40 @@ jobs:
       - name: Verify immutable audit, seller attribution and reference validation
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/payment-audit-assertions.sql
 
+  delivery-routing-migration:
+    name: Validate smart delivery routing SQL on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_delivery_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_delivery_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_delivery_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create isolated synthetic delivery schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/delivery-routing-fixture.sql
+      - name: Apply smart delivery routing migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026170000_doodhwala_smart_delivery_routing.sql
+      - name: Apply trusted delivery operations migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026180000_doodhwala_delivery_route_operations.sql
+      - name: Verify route lifecycle, private GPS broadcasts and customer isolation
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/delivery-routing-assertions.sql
