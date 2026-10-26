@@ -81,3 +81,34 @@
 
 /* Support inbox — clear triage controls and readable ticket details */
 .support-admin-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.support-admin-summary .metric{min-width:0}.support-admin-summary .metric b{font-size:23px}.support-admin-summary .metric span{font-size:9px}.admin-list-head>select,.admin-table td select{border:1px solid #d9e3da;background:#fbfdfb;border-radius:9px;min-height:32px;padding:0 9px;color:#26362c;font:700 9px "DM Sans",sans-serif;max-width:140px}.admin-table td [data-ticket-save]{display:block;margin-top:5px;border:1px solid #cbdccc;background:#edf6ef;color:#235d39;border-radius:8px;padding:6px 10px;font:800 8px "DM Sans",sans-serif;cursor:pointer}.admin-table td [data-ticket-save]:disabled{opacity:.55;cursor:wait}.support-ticket-detail{margin-top:7px;max-width:290px}.support-ticket-detail summary{font-size:8px;color:#2f7450;font-weight:900;cursor:pointer}.support-ticket-detail p{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:10px;background:#f7faf7;border:1px solid #e3ebe3;border-radius:9px;font-size:9px;line-height:1.6;color:#526258}.admin-table td>small{display:block;color:#87938b;font-size:7px;margin-top:4px;overflow-wrap:anywhere}.admin-status.in_progress{background:#edf4ff;color:#355e96}.admin-status.resolved{background:#e6f3e9;color:#17603f}.admin-status.open{background:#fff5dc;color:#84631d}@media(max-width:700px){.support-admin-summary{grid-template-columns:1fr 1fr}.admin-list-head>select{max-width:100%;width:100%}}
+
+/* Seller subscription billing management */
+.seller-billing-admin .seller-billing-metrics{margin:12px 0}
+.seller-billing-admin-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:12px 0}
+.seller-billing-form{display:grid;gap:11px;margin:10px 0 14px}
+.seller-billing-form label{display:grid;gap:6px;color:#4d5c51;font-size:9px;font-weight:900}
+.seller-billing-form input,.seller-billing-form select,.seller-billing-form textarea{width:100%;min-width:0;box-sizing:border-box;border:1px solid #d8e2d9;border-radius:10px;background:#fbfdfb;padding:10px 11px;color:#1c3023;font:600 10px "DM Sans",sans-serif;outline:0}
+.seller-billing-form input:focus,.seller-billing-form select:focus,.seller-billing-form textarea:focus{border-color:#8fb69a;box-shadow:0 0 0 3px rgba(47,116,80,.09)}
+.seller-billing-form textarea{resize:vertical;line-height:1.5}
+.seller-billing-form button.primary{min-height:38px;border:1px solid #1d5b3b;border-radius:10px;background:#1d5b3b;color:#fff;padding:10px 13px;font:800 10px "DM Sans",sans-serif;cursor:pointer}
+.seller-billing-form button.primary:hover{background:#16472e}.seller-billing-form button:disabled{opacity:.55;cursor:wait}
+.seller-billing-note{margin:6px 0 12px;color:#728077;font-size:9px;line-height:1.6}
+.seller-billing-create-invoice{margin:12px 0}
+.seller-billing-invoice-form{grid-template-columns:repeat(3,minmax(0,1fr));align-items:end}
+.seller-billing-invoice-form .seller-billing-notes-field{grid-column:span 2}
+.seller-billing-invoice-form button{min-height:38px}
+.seller-billing-plan-table,.seller-billing-invoice-table{min-width:690px}
+.seller-billing-table-wrap{margin-top:12px}
+.seller-billing-admin .admin-hero{margin-bottom:12px}
+.seller-billing-admin .admin-status.active{background:#e7f5eb;color:#1b6840}
+.seller-billing-admin .admin-status.paused{background:#eef1ee;color:#667168}
+.seller-billing-admin .admin-status.due{background:#fff0d7;color:#855b10}
+.seller-billing-admin .admin-status.paid{background:#e7f5eb;color:#1b6840}
+.seller-billing-admin .admin-status.void{background:#eff1ef;color:#667168}
+.seller-billing-admin .admin-list-head{align-items:center}
+.seller-billing-admin .table-scroll{overflow:auto;max-width:100%}
+.seller-billing-admin .seller-billing-invoice-table td,.seller-billing-admin .seller-billing-invoice-table th{vertical-align:top}
+@media(max-width:1050px){.seller-billing-admin-grid{grid-template-columns:1fr}}
+@media(max-width:850px){.seller-billing-invoice-form{grid-template-columns:1fr 1fr}.seller-billing-invoice-form .seller-billing-notes-field{grid-column:1/-1}}
+@media(max-width:620px){.seller-billing-admin-grid{gap:10px}.seller-billing-invoice-form{grid-template-columns:1fr}.seller-billing-invoice-form .seller-billing-notes-field{grid-column:auto}.seller-billing-admin .admin-hero{padding:16px}.seller-billing-admin .seller-billing-metrics{grid-template-columns:1fr 1fr}.seller-billing-admin .seller-billing-metrics .metric{min-width:0}.seller-billing-admin .seller-billing-metrics .metric b{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.seller-billing-admin *{transition-duration:.01ms!important;animation-duration:.01ms!important}}
