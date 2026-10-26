@@ -73,7 +73,7 @@ const queryAsset = await offlineResponse(origin + "/Doodhwala/styles.css?v=999",
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Doodhwala/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v94"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v95"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.js?v=20261022.5'), "the current seller authorization script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261022.6'), "the current seller mobile navigation styles must be explicitly precached");
@@ -83,6 +83,10 @@ assert.ok(source.includes('/Doodhwala/app.js?v=20261025.5'), "the current discov
 const unknownRoute = await offlineResponse(origin + "/Doodhwala/not-cached.html");
 assert.equal(await unknownRoute.text(), "offline recovery page", "unknown offline navigation should show the honest offline recovery page");
 assert.ok(source.includes('"/Doodhwala/offline.html"'), "offline recovery page must be included in the PWA precache");
+assert.ok(source.includes('k.startsWith("doodhwala-")'), "activation cleanup must not delete unrelated caches on the shared origin");
+assert.ok(source.includes('const CORE_ASSETS=["/Doodhwala/","/Doodhwala/index.html","/Doodhwala/offline.html"'), "offline recovery page must be required for a successful install");
+assert.ok(source.includes('/Doodhwala/customer-journey-refresh.css?v=20261025.1'), "the exact checkout customer journey stylesheet must be precached");
+assert.ok(source.includes('/Doodhwala/customer-ui-polish.css?v=20261025.3'), "the exact Plans/Orders polish stylesheet must be precached");
 const offlinePage = fs.readFileSync(new URL("../offline.html", import.meta.url), "utf8");
 assert.match(offlinePage, /Orders, sign-in, live order updates and payments need an internet connection/i, "offline page must clearly state online-only actions");
 assert.match(offlinePage, /id="retry"/, "offline page must provide a retry action");
@@ -105,7 +109,7 @@ assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261025.4'), "the s
 assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261025.4'), "the shared milk transition runtime must be precached");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v94"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v95"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "final mascot must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/experience-layer.css?v=20261023.5'), "shared experience stylesheet must be precached");
