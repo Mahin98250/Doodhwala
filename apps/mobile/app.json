@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Doodhwala",
+    "slug": "doodhwala",
+    "scheme": "doodhwala",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.doodhwala.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Doodhwala uses your location only when you ask to find milk sellers serving your area."
+      }
+    },
+    "android": {
+      "package": "in.doodhwala.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#f3f8ef"
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Doodhwala to find independent milk sellers near your delivery area."
+        }
+      ]
+    ]
+  }
+}

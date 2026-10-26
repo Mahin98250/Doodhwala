@@ -1,0 +1,29 @@
+/* Shared resilience and accessibility polish for the migrated app. */
+:root { text-size-adjust: 100%; -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
+html { scroll-padding-top: 1rem; }
+body { min-width: 320px; }
+img, picture, video, canvas, svg { max-width: 100%; }
+button, input, select, textarea { max-width: 100%; }
+button { touch-action: manipulation; }
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid #8ebc91; outline-offset: 3px; }
+:where(button, input, select, textarea):disabled { cursor: not-allowed; opacity: .62; }
+::selection { background: #d8ead3; color: #143e2a; }
+.workspace-nav { scrollbar-width: thin; scrollbar-color: #cbdcca transparent; }
+.workspace-table-wrap { overscroll-behavior-x: contain; }
+.workspace-card, .workspace-metric, .category-card, .workspace-list-row { min-width: 0; }
+.workspace-description, .workspace-notice, .workspace-table td, .workspace-table th { overflow-wrap: anywhere; }
+@media (max-width: 380px) {
+  .workspace { padding-inline: 10px; }
+  .workspace-content { padding-top: 26px; }
+  .workspace-card { padding: 14px; border-radius: 16px; }
+  .workspace-intro h1 { font-size: clamp(31px, 10vw, 38px); }
+  .workspace-metric-grid { grid-template-columns: minmax(0, 1fr); }
+  .hero h1 { font-size: clamp(36px, 10.5vw, 44px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+@media (forced-colors: active) {
+  :where(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid Highlight; }
+}

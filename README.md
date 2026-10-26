@@ -355,3 +355,10 @@ These are targets, not current measurements. Capture p50/p95/p99, error rate, th
 ## Branding asset contract
 
 `assets/mascot.png` is the shared Doodhwala mascot for customer, seller, owner/admin, account, checkout, support, legal, and offline screens. The browser favicon and PWA manifest use the same asset. When changing the mascot, update this shared asset reference and the service-worker cache revision together so installed apps refresh reliably. The current service-worker cache revision for this release is `doodhwala-v87`. Shared pages use the `resilience.js?v=20261023.5` cache-busted bootstrap URL. Runtime redirects, dynamic assistant surfaces, seller storefronts, product detail, order/support links, and regression fixtures use the renamed `/Doodhwala/` project base. The homepage and customer transaction pages link to the draft privacy, terms, cancellation/refund, seller agreement and complaints sections.
+
+
+## Next.js migration draft
+
+A Next.js App Router implementation is being built separately under apps/web on draft PR #60. The new workspace includes customer auth/account/cart/checkout/order/subscription interfaces, seller operations, owner/admin controls, customer support, and compatibility rewrites for the old route names. See apps/web/README.md for setup and route coverage.
+
+**Release status:** the legacy root app is preserved and remains the fallback. Passing automated checks does not prove live Supabase grants/RLS, Google redirects, SMS OTP, or full multi-role journeys. The preview still needs real browser/security validation. No production schema, payment configuration, auth settings or production traffic was changed.
