@@ -15,7 +15,7 @@ assert.match(product, /Product detail load failed/, "unexpected product RPC fail
 assert.match(product, /const row=Array\.isArray\(data\)\?data\[0\]:data/, "product loader must handle array and object RPC responses");
 assert.doesNotMatch(product, /\$\("addToCart"\)\.disabled=false;/, "buying must remain disabled until a valid product is loaded");
 assert.ok(html.includes('/Doodhwala/product.js?v=20261025.6'), "product page must cache-bust the guarded detail runtime");
-assert.ok(sw.includes('const CACHE="doodhwala-v94"'), "product and customer runtime releases must invalidate the old PWA cache");
+assert.ok(sw.includes('const CACHE="doodhwala-v95"'), "product and customer runtime releases must invalidate the old PWA cache");
 assert.ok(sw.includes('/Doodhwala/product.js?v=20261025.6'), "service worker must precache the guarded product runtime");
 assert.ok(html.includes('/Doodhwala/milk-transition.css?v=20261025.4'), "product page must load the milk transition styles");
 assert.ok(html.includes('/Doodhwala/milk-transition.js?v=20261025.4'), "product page must load the milk transition runtime before product loading");
