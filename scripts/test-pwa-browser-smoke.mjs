@@ -22,7 +22,7 @@ try {
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, { timeout: 15000 });
   await page.waitForFunction(async () => {
     const cache = await caches.open("doodhwala-v95");
-    return !!(await cache.match("/Doodhwala/offline.html"));
+    return !!(await cache.match("/Doodhwala/offline.html")) && !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1"));
   }, { timeout: 15000 });
 
   // Prime the exact query-string navigation while online so the test can verify
