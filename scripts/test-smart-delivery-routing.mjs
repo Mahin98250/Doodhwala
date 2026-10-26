@@ -50,7 +50,7 @@ assert.match(operations, /delete from public\.delivery_live_locations where rout
 assert.match(operations, /grant execute on function public\.delivery_get_my_tracking\(uuid\) to authenticated/i);
 
 assert.match(edge, /const MAX_STOPS = 99/);
-assert.match(edge, /body\.action === "plan_route"/, "route planning must dispatch only from the validated request body");
+assert.match(edge, /body\.action !== "plan_route"/, "unsupported actions must be rejected before route planning");
 assert.match(edge, /body\.action === "refresh_eta"/, "ETA refresh must dispatch only from the validated request body");
 assert.match(edge, /nearest-next-by-road-duration|nearest-neighbour/i);
 assert.match(edge, /bounded 2-opt/i);
