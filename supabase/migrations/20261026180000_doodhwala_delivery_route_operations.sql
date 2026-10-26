@@ -548,9 +548,11 @@ begin
     delete from public.delivery_live_locations where route_id=v_stop.route_id;
   end if;
   perform realtime.send(
+    -- This route topic is shared with customers who still have a stop on this route.
+    -- Broadcast only a route-level invalidation signal; each client reloads its own
+    -- authorized tracking RPC instead of receiving other customers' stop IDs/status/reasons.
     payload => jsonb_build_object(
-      'route_id',v_stop.route_id,'stop_id',p_stop_id,'order_id',v_stop.order_id,
-      'stop_status',p_action,'skip_reason',case when p_action='skipped' then left(btrim(coalesce(p_reason,'')),300) else null end,
+      'route_id',v_stop.route_id,
       'updated_at',now()
     ),
     event => 'stop_updated',
