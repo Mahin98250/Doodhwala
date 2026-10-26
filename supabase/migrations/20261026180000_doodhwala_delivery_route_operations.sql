@@ -268,7 +268,8 @@ begin
   if v_uid is null then raise exception 'authentication_required'; end if;
   select pp.owner_user_id into v_owner
   from public.provider_profiles pp
-  where pp.id=p_provider_id;
+  where pp.id=p_provider_id
+  for update;
   if not found or v_owner<>v_uid then raise exception 'provider_owner_required'; end if;
   if p_service_date is null or p_service_date < (now() at time zone 'Asia/Kolkata')::date then
     raise exception 'invalid_service_date';
