@@ -169,8 +169,11 @@
       if (enrollmentError) throw enrollmentError;
       if (error) throw error;
       $("driverEnrollCard").classList.toggle("hidden", Boolean(enrollment));
+      $("optOutDriver").classList.toggle("hidden", !Boolean(enrollment));
       const route = data?.route || null;
       if (!route) {
+        $("optOutDriver").disabled = false;
+        $("optOutDriver").title = "Disable delivery mode for this account.";
         stopGps(false);
         unsubscribeRoute();
         state.route = null;
@@ -186,6 +189,10 @@
         return;
       }
       state.route = route;
+      $("optOutDriver").disabled = route.status === "planned" || route.status === "active";
+      $("optOutDriver").title = $("optOutDriver").disabled
+        ? "Ask the provider to reassign this route before disabling delivery mode."
+        : "Disable delivery mode for this account.";
       if (route.status !== "active" && state.watchId !== null) stopGps(false);
       $("noDriverRoute").classList.add("hidden");
       $("driverRoutePanel").classList.remove("hidden");
@@ -376,6 +383,22 @@
       }
     });
     $("refreshDriverRoute").addEventListener("click", () => loadRoute().catch(error => setStatus(error?.message || "Route refresh failed.", "error")));
+    $("optOutDriver").addEventListener("click", async () => {
+      if ($("optOutDriver").disabled) return;
+      if (!confirm("Disable Doodhwala delivery mode on this account?")) return;
+      $("optOutDriver").disabled = true;
+      try {
+        const { error } = await Doodhwala.supabase.rpc("delivery_driver_opt_out");
+        if (error) throw error;
+        stopGps(false);
+        await loadRoute();
+        setStatus("Delivery mode disabled. Your account will no longer appear as an available driver.", "success");
+      } catch (error) {
+        setStatus(error?.message || "Could not disable delivery mode. Ask the provider to reassign any planned route first.", "error");
+      } finally {
+        $("optOutDriver").disabled = false;
+      }
+    });
     $("startDriverRoute").addEventListener("click", startRoute);
     $("resumeDriverGps").addEventListener("click", startGps);
     $("stopDriverGps").addEventListener("click", () => stopGps(true));
