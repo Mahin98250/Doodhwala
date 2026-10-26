@@ -356,7 +356,7 @@ async function loadRemoteProviders(lat=null,lng=null){
    const firstPage=rows.slice(0,DISCOVERY_PAGE_SIZE);
    providers=firstPage.map(mapRemoteProvider);
    discoveryOffset=firstPage.length;
-   discoveryHasMore=rows.length>DISCOVERY_PAGE_SIZE;
+   discoveryHasMore=rows.length>DISCOVERY_PAGE_SIZE&&discoveryOffset<5000;
   }
   window.providers=providers;dataState="ready";render();window.dispatchEvent(new Event("doodhwala:providers-updated"));
  }catch(error){
@@ -366,7 +366,7 @@ async function loadRemoteProviders(lat=null,lng=null){
  }
 }
 async function loadMoreProviders(){
- if(discoveryLoadingMore||!discoveryHasMore||discoveryUsingLegacyRpc||!window.Doodhwala?.configured)return;
+ if(discoveryLoadingMore||!discoveryHasMore||discoveryOffset>=5000||discoveryUsingLegacyRpc||!window.Doodhwala?.configured)return;
  const requestId=discoveryRequestId;
  discoveryLoadingMore=true;render();
  try{
@@ -385,7 +385,7 @@ async function loadMoreProviders(){
   const existing=new Set(providers.map(provider=>String(provider.id)));
   page.forEach(provider=>{if(!existing.has(String(provider.id))){providers.push(provider);existing.add(String(provider.id))}});
   discoveryOffset+=rows.length>DISCOVERY_PAGE_SIZE?DISCOVERY_PAGE_SIZE:Math.min(rows.length,DISCOVERY_PAGE_SIZE);
-  discoveryHasMore=rows.length>DISCOVERY_PAGE_SIZE;
+  discoveryHasMore=rows.length>DISCOVERY_PAGE_SIZE&&discoveryOffset<5000;
   window.providers=providers;
   window.dispatchEvent(new Event("doodhwala:providers-updated"));
  }catch(error){
