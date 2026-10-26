@@ -24,14 +24,14 @@ function makeElement(id) {
 }
 
 function createHarness(options = {}) {
-  const storage = new Map();
+  const storage = options.storage || new Map();
   const defaultCart = {
     "provider-1:milk-1": {
       providerId: "provider-1", productId: "milk-1", milk: "Cow milk",
       provider: "Staging seller", unitPrice: 50, qty: 2
     }
   };
-  storage.set("doodhwala-cart", JSON.stringify(options.cart || defaultCart));
+  if (!storage.has("doodhwala-cart")) storage.set("doodhwala-cart", JSON.stringify(options.cart || defaultCart));
   const elements = new Map();
   const getElement = (id) => {
     if (!elements.has(id)) elements.set(id, makeElement(id));
@@ -55,8 +55,8 @@ function createHarness(options = {}) {
   const calls = { addressUpdates: [], addressInserts: [], rpc: [] };
   let createOrderAttempts = 0;
   let idempotencySequence = 0;
-  const failedProviders = new Set();
-  const serverOrdersByIdempotencyKey = new Map();
+  const failedProviders = options.failedProviders || new Set();
+  const serverOrdersByIdempotencyKey = options.serverOrdersByIdempotencyKey || new Map();
   const supabase = {
     auth: { async getUser() { return { data: { user: { id: "staging-customer-001", email: "test@example.invalid", user_metadata: {} } }, error: null }; } },
     from(table) {
@@ -148,7 +148,7 @@ function createHarness(options = {}) {
   });
   vm.runInContext(checkoutSource, context, { filename: "checkout.js" });
 
-  return { elements, getElement, storage, localStorage, address, calls, context, serverOrdersByIdempotencyKey };
+  return { elements, getElement, storage, localStorage, address, calls, context, serverOrdersByIdempotencyKey, failedProviders };
 }
 
 async function settle() {
@@ -216,15 +216,22 @@ async function testMultiProviderPartialFailureRetainsOrderTrail() {
   const progress = JSON.parse(h.storage.get("doodhwala-checkout-progress-v1"));
   assert.deepEqual(progress.orderIds, ["staging-order-001"], "confirmed order IDs must survive partial failure");
 
-  await h.getElement("placeOrder").onclick();
-  const allOrderCalls = h.calls.rpc.filter(call => call.name === "create_order");
-  assert.deepEqual(allOrderCalls.map(call => call.args.p_provider_id), ["provider-1", "provider-2", "provider-2"], "retry should only attempt the remaining provider");
+  const retryHarness = createHarness({
+    storage: h.storage,
+    failedProviders: h.failedProviders,
+    serverOrdersByIdempotencyKey: h.serverOrdersByIdempotencyKey,
+    failProviderOnce: "provider-2"
+  });
+  await settle();
+  await retryHarness.getElement("placeOrder").onclick();
+  const allOrderCalls = [...h.calls.rpc, ...retryHarness.calls.rpc].filter(call => call.name === "create_order");
+  assert.deepEqual(allOrderCalls.map(call => call.args.p_provider_id), ["provider-1", "provider-2", "provider-2"], "retry after reload should only attempt the remaining provider");
   assert.equal(allOrderCalls.filter(call => call.args.p_provider_id === "provider-1").length, 1, "the already-placed provider must not be ordered twice");
   assert.equal(allOrderCalls[2].args.p_idempotency_key, allOrderCalls[1].args.p_idempotency_key, "the retried provider must reuse its idempotency key");
-  assert.equal(h.getElement("success").classList.contains("hidden"), false, "the second attempt should complete checkout");
-  assert.match(h.getElement("successText").textContent, /2 provider orders/, "final confirmation must include orders placed before and during retry");
-  assert.match(h.getElement("successOrders").innerHTML, /staging-order-001/);
-  assert.match(h.getElement("successOrders").innerHTML, /staging-order-002/);
+  assert.equal(retryHarness.getElement("success").classList.contains("hidden"), false, "the retry after reload should complete checkout");
+  assert.match(retryHarness.getElement("successText").textContent, /2 provider orders/, "final confirmation must include orders placed before and during retry");
+  assert.match(retryHarness.getElement("successOrders").innerHTML, /staging-order-001/);
+  assert.match(retryHarness.getElement("successOrders").innerHTML, /staging-order-002/);
   assert.equal(h.storage.has("doodhwala-cart"), false, "the remaining cart should clear only after all providers succeed");
   assert.equal(h.storage.has("doodhwala-checkout-progress-v1"), false, "completed checkout progress should be removed after success");
 }
