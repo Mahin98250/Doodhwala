@@ -82,6 +82,23 @@ try {
     assert.equal(await page.locator(".customer-bottom-nav [data-customer-nav]").count(), 6,
       "mobile navigation exposes all six destinations");
 
+    await page.locator('[data-customer-nav="explore"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-customer-nav="explore"]')?.getAttribute("aria-current") === "page",
+      { timeout: 3000 }
+    );
+    await page.locator('[data-customer-nav="saved"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-customer-nav="saved"]')?.getAttribute("aria-current") === "page",
+      { timeout: 3000 }
+    );
+    await page.locator('[data-customer-nav="home"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-customer-nav="home"]')?.getAttribute("aria-current") === "page",
+      { timeout: 3000 }
+    );
+    interactionResults.push({ check: "Explore/Saved/Home active navigation state", status: "passed" });
+
     const search = page.locator("#search");
     await search.fill("smoke-test-no-live-provider");
     assert.equal(await search.inputValue(), "smoke-test-no-live-provider", "search accepts typed input");
