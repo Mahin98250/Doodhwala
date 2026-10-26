@@ -27,6 +27,8 @@ type DeliveryOrder = {
   recipient_name?: string;
   address_line?: string;
   area_name?: string;
+  city?: string;
+  quantity_litres?: number;
   order_status?: string;
   created_at?: string;
 };
