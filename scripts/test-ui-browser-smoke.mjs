@@ -244,6 +244,111 @@ try {
   } finally {
     await interactionContext.close();
   }
+  // Use explicit local fixture rows to test actual search/filter/sort behavior
+  // without contacting Supabase or using any real provider/customer data.
+  const fixtureContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: "block"
+  });
+  const fixtureRows = [
+    {
+      provider_id: "fixture-alpha",
+      provider_name: "Alpha Dairy",
+      area_name: "Navrangpura",
+      city: "Ahmedabad",
+      milk_type: "cow",
+      rating_avg: 4.8,
+      delivery_from: "06:00",
+      delivery_to: "09:00",
+      latitude: 23.03,
+      longitude: 72.56,
+      distance_km: 2,
+      service_radius_km: 10,
+      is_serviceable: true,
+      products: [{ id: "fixture-milk-alpha", name: "Cow Milk", price_per_litre: 60, daily_available: true }]
+    },
+    {
+      provider_id: "fixture-beta",
+      provider_name: "Beta Dairy",
+      area_name: "Maninagar",
+      city: "Ahmedabad",
+      milk_type: "buffalo",
+      rating_avg: 4.9,
+      delivery_from: "06:00",
+      delivery_to: "09:00",
+      latitude: 23.00,
+      longitude: 72.60,
+      distance_km: 4,
+      service_radius_km: 10,
+      is_serviceable: true,
+      products: [{ id: "fixture-milk-beta", name: "Buffalo Milk", price_per_litre: 70, daily_available: false }]
+    }
+  ];
+  try {
+    await fixtureContext.route("**/*", route => {
+      const url = new URL(route.request().url());
+      if (url.origin !== baseOrigin) return route.abort();
+      if (url.pathname === "/Doodhwala/supabase-client.js") {
+        const body = "(function(){var rows=" + JSON.stringify(fixtureRows) + ";window.Doodhwala=window.Doodhwala||{};window.Doodhwala.configured=true;window.Doodhwala.supabase={rpc:async function(name){if(name==='find_nearby_providers_v3')return {data:rows,error:null};return {data:[],error:null};},auth:{getUser:async function(){return {data:{user:null},error:null};}}};})();";
+        return route.fulfill({ status: 200, contentType: "application/javascript", body });
+      }
+      return route.continue();
+    });
+    const fixturePage = await fixtureContext.newPage();
+    const fixtureResponse = await fixturePage.goto(base, { waitUntil: "domcontentloaded" });
+    assert.ok(fixtureResponse && fixtureResponse.ok(), "fixture-backed marketplace loads");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 10000 });
+    const initialOrder = await fixturePage.locator("#providersGrid [data-provider-card]").evaluateAll(cards => cards.map(card => card.getAttribute("data-provider-card")));
+    assert.deepEqual(initialOrder, ["fixture-alpha", "fixture-beta"], "closest sort orders the nearer fixture first");
+    await fixturePage.screenshot({ path: path.join(out, "fixture-results-390px.png"), fullPage: true });
+
+    await fixturePage.locator("#search").fill("Alpha Dairy");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 1, null, { timeout: 5000 });
+    assert.equal(await fixturePage.locator("#providersGrid [data-provider-card]").getAttribute("data-provider-card"), "fixture-alpha",
+      "search returns only the matching fixture provider");
+
+    await fixturePage.locator("#search").fill("no-such-fixture-provider");
+    await fixturePage.waitForSelector("#providersGrid .no-results h3", { timeout: 5000 });
+    assert.match(await fixturePage.locator("#providersGrid .no-results h3").innerText(), /No matching providers/i,
+      "unmatched search shows the no-results recovery state");
+    await fixturePage.screenshot({ path: path.join(out, "fixture-no-results-390px.png"), fullPage: true });
+    await fixturePage.locator("#clearDiscoverySearch").click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 5000 });
+
+    await fixturePage.locator('#chips button[data-filter="cow"]').click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 1, null, { timeout: 5000 });
+    assert.equal(await fixturePage.locator("#providersGrid [data-provider-card]").getAttribute("data-provider-card"), "fixture-alpha",
+      "Cow filter returns the cow-milk fixture only");
+    await fixturePage.locator('#chips button[data-filter="buffalo"]').click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 1, null, { timeout: 5000 });
+    assert.equal(await fixturePage.locator("#providersGrid [data-provider-card]").getAttribute("data-provider-card"), "fixture-beta",
+      "Buffalo filter returns the buffalo-milk fixture only");
+    await fixturePage.locator('#chips button[data-filter="all"]').click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 5000 });
+
+    await fixturePage.locator("#providerSort").selectOption("rating");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 10000 });
+    const ratingOrder = await fixturePage.locator("#providersGrid [data-provider-card]").evaluateAll(cards => cards.map(card => card.getAttribute("data-provider-card")));
+    assert.deepEqual(ratingOrder, ["fixture-beta", "fixture-alpha"], "rating sort puts the higher-rated fixture first");
+    await fixturePage.screenshot({ path: path.join(out, "fixture-rating-sort-390px.png"), fullPage: true });
+
+    await fixturePage.locator("#providerSort").selectOption("price");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 10000 });
+    const priceOrder = await fixturePage.locator("#providersGrid [data-provider-card]").evaluateAll(cards => cards.map(card => card.getAttribute("data-provider-card")));
+    assert.deepEqual(priceOrder, ["fixture-alpha", "fixture-beta"], "price sort puts the lower-priced fixture first");
+
+    const fixtureResults = [
+      { check: "closest sort", status: "passed", order: initialOrder },
+      { check: "search match", status: "passed", provider: "fixture-alpha" },
+      { check: "unmatched search and clear recovery", status: "passed" },
+      { check: "cow and buffalo filters", status: "passed" },
+      { check: "rating sort", status: "passed", order: ratingOrder },
+      { check: "price sort", status: "passed", order: priceOrder }
+    ];
+    fs.writeFileSync(path.join(out, "fixture-discovery-results.json"), JSON.stringify(fixtureResults, null, 2));
+  } finally {
+    await fixtureContext.close();
+  }
   console.log("UI Chromium smoke passed: five viewport sizes plus navigation, cart drawer, search, error retry, denied geolocation, auth validation and checkout-entry contracts. Evidence is in artifacts/ui.");
 } finally {
   await browser.close();
