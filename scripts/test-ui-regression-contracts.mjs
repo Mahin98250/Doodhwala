@@ -63,7 +63,7 @@ assert.ok(location.includes("navigator.geolocation.getCurrentPosition"),
   "location picker must retain its explicit permission request");
 assert.ok(location.includes("Location permission was denied."),
   "location denial must be explained to the customer");
-assert.ok(checkout.includes('$("authGate").classList.remove("hidden")'),
+assert.ok(checkoutJs.includes('$("authGate").classList.remove("hidden")'),
   "checkout must expose a sign-in gate when the user is unauthenticated");
 assert.ok(checkoutJs.includes("!Doodhwala.configured"),
   "checkout must not proceed when backend configuration is missing");
