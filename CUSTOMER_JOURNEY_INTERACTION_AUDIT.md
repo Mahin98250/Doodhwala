@@ -21,7 +21,7 @@
 
 ## Automated source-contract coverage
 
-The branch adds `scripts/test-ui-regression-contracts.mjs` to the existing `static-validation.yml` workflow. It protects shared navigation destinations/active state/cart badge, the search accessible name and input wiring, sort/filter/error/retry contracts, product/cart wiring, geolocation denial messaging, and checkout/auth safety contracts.
+The branch adds `scripts/test-ui-regression-contracts.mjs` and a focused `.github/workflows/ui-regression-contracts.yml` workflow so UI checks remain isolated from the DW-003 service-worker workflow. It protects shared navigation destinations/active state/cart badge, the search accessible name and input wiring, sort/filter/error/retry contracts, product/cart wiring, geolocation denial messaging, and checkout/auth safety contracts.
 
 These tests are **source-level assertions**, not browser automation. They can catch accidental source regressions but cannot prove layout, focus order, real network behavior, valid data rendering, authentication, or checkout behavior.
 
