@@ -25,16 +25,13 @@ function makeElement(id) {
 
 function createHarness(options = {}) {
   const storage = new Map();
-  storage.set("doodhwala-cart", JSON.stringify({
+  const defaultCart = {
     "provider-1:milk-1": {
-      providerId: "provider-1",
-      productId: "milk-1",
-      milk: "Cow milk",
-      provider: "Staging seller",
-      unitPrice: 50,
-      qty: 2
+      providerId: "provider-1", productId: "milk-1", milk: "Cow milk",
+      provider: "Staging seller", unitPrice: 50, qty: 2
     }
-  }));
+  };
+  storage.set("doodhwala-cart", JSON.stringify(options.cart || defaultCart));
   const elements = new Map();
   const getElement = (id) => {
     if (!elements.has(id)) elements.set(id, makeElement(id));
@@ -57,6 +54,8 @@ function createHarness(options = {}) {
 
   const calls = { addressUpdates: [], addressInserts: [], rpc: [] };
   let createOrderAttempts = 0;
+  const failedProviders = new Set();
+  const serverOrdersByIdempotencyKey = new Map();
   const supabase = {
     auth: { async getUser() { return { data: { user: { id: "staging-customer-001", email: "test@example.invalid", user_metadata: {} } }, error: null }; } },
     from(table) {
@@ -99,7 +98,16 @@ function createHarness(options = {}) {
       if (name === "create_order" || name === "create_order_with_promo") {
         createOrderAttempts += 1;
         if (options.failFirstRpc && createOrderAttempts === 1) throw new Error("simulated network interruption");
-        return { data: "staging-order-001", error: null };
+        const providerId = args.p_provider_id;
+        if (options.failProviderOnce === providerId && !failedProviders.has(providerId)) {
+          failedProviders.add(providerId);
+          throw new Error("simulated provider-specific network interruption");
+        }
+        const key = args.p_idempotency_key;
+        if (serverOrdersByIdempotencyKey.has(key)) return { data: serverOrdersByIdempotencyKey.get(key), error: null };
+        const orderId = "staging-order-" + String(serverOrdersByIdempotencyKey.size + 1).padStart(3, "0");
+        serverOrdersByIdempotencyKey.set(key, orderId);
+        return { data: orderId, error: null };
       }
       if (name === "customer_check_provider_direct_upi") return { data: true, error: null };
       if (name === "customer_set_order_payment_method") return { data: { order_id: args.p_order_id, payment_method: args.p_method }, error: null };
@@ -139,7 +147,7 @@ function createHarness(options = {}) {
   });
   vm.runInContext(checkoutSource, context, { filename: "checkout.js" });
 
-  return { elements, getElement, storage, localStorage, address, calls, context };
+  return { elements, getElement, storage, localStorage, address, calls, context, serverOrdersByIdempotencyKey };
 }
 
 async function settle() {
@@ -188,6 +196,38 @@ async function testAddressUpdateAndSuccessfulOrder() {
   assert.equal(h.storage.has("doodhwala-cart"), false, "cart should clear after confirmed order creation");
 }
 
+async function testMultiProviderPartialFailureRetainsOrderTrail() {
+  const cart = {
+    "provider-1:milk-1": { providerId: "provider-1", productId: "milk-1", milk: "Cow milk", provider: "Seller One", unitPrice: 50, qty: 2 },
+    "provider-2:milk-2": { providerId: "provider-2", productId: "milk-2", milk: "Buffalo milk", provider: "Seller Two", unitPrice: 60, qty: 1 }
+  };
+  const h = createHarness({ cart, failProviderOnce: "provider-2" });
+  await settle();
+
+  await h.getElement("placeOrder").onclick();
+  const firstPass = h.calls.rpc.filter(call => call.name === "create_order");
+  assert.deepEqual(firstPass.map(call => call.args.p_provider_id), ["provider-1", "provider-2"], "the first attempt should process both provider groups");
+  const remainingCart = JSON.parse(h.storage.get("doodhwala-cart"));
+  assert.equal(remainingCart["provider-1:milk-1"], undefined, "a provider order confirmed placed should be removed from the cart");
+  assert.ok(remainingCart["provider-2:milk-2"], "the failed provider cart must remain available for retry");
+  assert.match(h.getElement("checkoutState").textContent, /staging-order-001/, "partial-failure feedback must show the already-placed order ID");
+  assert.equal(h.getElement("success").classList.contains("hidden"), true, "partial completion must not pretend the entire multi-provider checkout finished");
+  const progress = JSON.parse(h.storage.get("doodhwala-checkout-progress-v1"));
+  assert.deepEqual(progress.orderIds, ["staging-order-001"], "confirmed order IDs must survive partial failure");
+
+  await h.getElement("placeOrder").onclick();
+  const allOrderCalls = h.calls.rpc.filter(call => call.name === "create_order");
+  assert.deepEqual(allOrderCalls.map(call => call.args.p_provider_id), ["provider-1", "provider-2", "provider-2"], "retry should only attempt the remaining provider");
+  assert.equal(allOrderCalls.filter(call => call.args.p_provider_id === "provider-1").length, 1, "the already-placed provider must not be ordered twice");
+  assert.equal(allOrderCalls[2].args.p_idempotency_key, allOrderCalls[1].args.p_idempotency_key, "the retried provider must reuse its idempotency key");
+  assert.equal(h.getElement("success").classList.contains("hidden"), false, "the second attempt should complete checkout");
+  assert.match(h.getElement("successText").textContent, /2 provider orders/, "final confirmation must include orders placed before and during retry");
+  assert.match(h.getElement("successOrders").innerHTML, /staging-order-001/);
+  assert.match(h.getElement("successOrders").innerHTML, /staging-order-002/);
+  assert.equal(h.storage.has("doodhwala-cart"), false, "the remaining cart should clear only after all providers succeed");
+  assert.equal(h.storage.has("doodhwala-checkout-progress-v1"), false, "completed checkout progress should be removed after success");
+}
+
 async function testRetryKeepsIdempotencyKeyAndCart() {
   const h = createHarness({ failFirstRpc: true });
   await settle();
@@ -214,4 +254,5 @@ async function testRetryKeepsIdempotencyKeyAndCart() {
 await testCheckoutFailsClosedWhenPaymentControlsMissing();
 await testAddressUpdateAndSuccessfulOrder();
 await testRetryKeepsIdempotencyKeyAndCart();
-console.log("Checkout flow simulation passed: address update, successful order, and idempotent network retry.");
+await testMultiProviderPartialFailureRetainsOrderTrail();
+console.log("Checkout flow simulation passed: address update, fail-closed readiness, idempotent network retry, and multi-provider partial-failure recovery.");
