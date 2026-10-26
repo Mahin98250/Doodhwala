@@ -159,6 +159,18 @@ try {
     await authPage.screenshot({ path: path.join(out, "auth-validation-390px.png"), fullPage: true });
     interactionResults.push({ check: "auth native validation", status: "passed" });
 
+    const productPage = await interactionContext.newPage();
+    const productResponse = await productPage.goto(new URL("product.html", base).href, { waitUntil: "domcontentloaded" });
+    assert.ok(productResponse && productResponse.ok(), "product detail route loads without demo identifiers");
+    await productPage.waitForFunction(
+      () => document.getElementById("productState")?.innerText.includes("Milk not found"),
+      { timeout: 5000 }
+    );
+    assert.equal(await productPage.locator("#addToCart").isDisabled(), true,
+      "product detail without valid identifiers cannot be added to cart");
+    await productPage.screenshot({ path: path.join(out, "product-unavailable-390px.png"), fullPage: true });
+    interactionResults.push({ check: "product unavailable state disables add-to-cart", status: "passed" });
+
     const checkoutPage = await interactionContext.newPage();
     const checkoutResponse = await checkoutPage.goto(new URL("checkout.html", base).href, { waitUntil: "domcontentloaded" });
     assert.ok(checkoutResponse && checkoutResponse.ok(), "checkout entry route loads");
