@@ -65,11 +65,11 @@ assert.ok(location.includes("Location permission was denied."),
   "location denial must be explained to the customer");
 assert.ok(checkout.includes('$("authGate").classList.remove("hidden")'),
   "checkout must expose a sign-in gate when the user is unauthenticated");
-assert.ok(checkout.includes("!Doodhwala.configured"),
+assert.ok(checkoutJs.includes("!Doodhwala.configured"),
   "checkout must not proceed when backend configuration is missing");
-assert.ok(checkout.includes('let placingOrder=false'),
+assert.ok(checkoutJs.includes('let placingOrder=false'),
   "checkout must retain its duplicate-submit guard");
-assert.ok(checkout.includes('CHECKOUT_KEYS_KEY'),
+assert.ok(checkoutJs.includes('CHECKOUT_KEYS_KEY'),
   "checkout must retain its idempotency key storage contract");
 assert.ok(auth.includes('id="email" type="email"') && auth.includes('id="password" type="password"'),
   "authentication fields must retain appropriate input types");
