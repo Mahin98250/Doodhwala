@@ -318,6 +318,22 @@ async function planRoute(apiKey: string, token: string, body: Record<string, unk
     return { error: "route_create_failed_check_driver_assignment_and_order_status", status: 409 };
   }
   if (!isUuid(routeId)) return { error: "route_create_failed", status: 502 };
+  const orderedStops = route.map((index, position) => {
+    const order = selected[index - 1];
+    return {
+      order_id: order.order_id,
+      sequence_no: position + 1,
+      recipient_name: order.recipient_name || "Milk customer",
+      address_line: order.address_line || "",
+      area_name: order.area_name || "",
+      city: order.city || "",
+      quantity_litres: order.quantity_litres || 0,
+      latitude: Number(order.latitude),
+      longitude: Number(order.longitude),
+      eta_window_start: etaStarts[position],
+      eta_window_end: etaEnds[position],
+    };
+  });
   return {
     status: 201,
     route_id: routeId,
@@ -327,6 +343,9 @@ async function planRoute(apiKey: string, token: string, body: Record<string, unk
     planned_start_at: plannedStart.toISOString(),
     routing_method: "road-duration matrix + nearest-neighbour + bounded 2-opt",
     eta_note: "Road estimates do not include live traffic; ETAs are windows and may change during the run.",
+    origin: { latitude: Number(origin.latitude), longitude: Number(origin.longitude) },
+    route_geometry: geometry,
+    ordered_stops: orderedStops,
   };
 }
 
