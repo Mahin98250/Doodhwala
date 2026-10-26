@@ -31,6 +31,7 @@
 
 ## Validation status / limits
 
-- Added source-contract regression checks in `scripts/test-pwa-offline-contracts.mjs`.
-- This is a source audit, not a browser simulation. A real offline/reconnect test with DevTools or airplane mode, including an already-open tab during service-worker update, remains required before merge.
+- Added source-contract regression checks in `scripts/test-pwa-offline-contracts.mjs` and a Chromium browser workflow in `scripts/test-pwa-browser-smoke.mjs` / `.github/workflows/pwa-browser-evidence.yml`.
+- The Chromium test seeds a v94 cache and an unrelated origin cache, verifies activation removes only the old Doodhwala cache, checks the exact versioned CSS URL, loads a query-string route before disconnecting, tests cached offline navigation and the dedicated fallback page, then reconnects. The latest run is in progress: [PWA offline browser evidence](https://github.com/Mahin98250/Doodhwala/actions/runs/40365348997); do not mark these checks passed until that run completes successfully.
+- Manual testing is still required for an already-open tab during service-worker update, physical Android/iOS behavior, and the full customer route matrix before merge.
 - Suggested browser matrix: 320px and 390px mobile widths plus desktop; clear site data, load each customer route online once, go offline, reload each route, test query-string navigation, restore connection, and verify the reconnect message and fresh content after manual refresh.
