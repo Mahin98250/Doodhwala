@@ -11,6 +11,11 @@ alter table public.delivery_route_runs
   add column if not exists stop_service_seconds integer not null default 60
     check (stop_service_seconds between 15 and 300);
 
+alter table public.delivery_route_stops add column if not exists skip_reason text;
+alter table public.delivery_route_stops drop constraint if exists delivery_route_stops_skip_reason_check;
+alter table public.delivery_route_stops add constraint delivery_route_stops_skip_reason_check
+  check (skip_reason is null or length(skip_reason) <= 300);
+
 create table if not exists public.delivery_driver_enrollments (
   driver_user_id uuid primary key references public.profiles(id) on delete cascade,
   is_active boolean not null default true,
@@ -385,6 +390,12 @@ begin
     return jsonb_build_object('route_id',v_route.id,'status','active','started_at',v_route.started_at);
   end if;
   if v_route.status<>'planned' then raise exception 'route_not_startable'; end if;
+  if v_route.planned_start_at is not null and now()<v_route.planned_start_at-interval '30 minutes' then
+    raise exception 'route_start_too_early';
+  end if;
+  if v_route.planned_start_at is not null and now()>v_route.planned_start_at+interval '6 hours' then
+    raise exception 'route_start_window_expired';
+  end if;
   if not exists(select 1 from public.delivery_route_stops s where s.route_id=p_route_id and s.status='pending') then
     raise exception 'route_has_no_pending_stops';
   end if;
@@ -500,7 +511,7 @@ begin
     where id=p_stop_id;
   else
     if v_stop.status not in ('pending','arrived') then raise exception 'stop_not_skippable'; end if;
-    update public.delivery_route_stops set status='skipped',updated_at=now()
+    update public.delivery_route_stops set status='skipped',skip_reason=left(btrim(p_reason),300),updated_at=now()
     where id=p_stop_id;
   end if;
 
@@ -512,6 +523,16 @@ begin
     where id=v_stop.route_id;
     delete from public.delivery_live_locations where route_id=v_stop.route_id;
   end if;
+  perform realtime.send(
+    payload => jsonb_build_object(
+      'route_id',v_stop.route_id,'stop_id',p_stop_id,'order_id',v_stop.order_id,
+      'stop_status',p_action,'skip_reason',case when p_action='skipped' then left(btrim(coalesce(p_reason,'')),300) else null end,
+      'updated_at',now()
+    ),
+    event => 'stop_updated',
+    topic => 'delivery-route:'||v_stop.route_id::text,
+    private => true
+  );
   return jsonb_build_object(
     'route_id',v_stop.route_id,'stop_id',p_stop_id,'action',p_action,
     'route_status',(select r.status from public.delivery_route_runs r where r.id=v_stop.route_id)
@@ -638,16 +659,24 @@ begin
   select * into v_route
   from public.delivery_route_runs r
   where r.driver_user_id=v_uid
-    and r.service_date=(now() at time zone 'Asia/Kolkata')::date
-    and r.status in ('planned','active')
-  order by case r.status when 'active' then 0 else 1 end,r.created_at desc
+    and (
+      r.status='active'
+      or (r.status='planned' and r.service_date >= (now() at time zone 'Asia/Kolkata')::date)
+      or (r.status='completed' and r.service_date=(now() at time zone 'Asia/Kolkata')::date)
+    )
+  order by
+    case when r.status='active' then 0
+         when r.status='planned' and r.service_date=(now() at time zone 'Asia/Kolkata')::date then 1
+         when r.status='completed' then 2
+         else 3 end,
+    r.service_date asc,r.created_at desc
   limit 1;
   if not found then return jsonb_build_object('route',null); end if;
 
   select coalesce(jsonb_agg(jsonb_build_object(
     'stop_id',s.id,'order_id',o.id,'sequence_no',s.sequence_no,'stop_status',s.status,
     'order_status',o.status,'eta',s.estimated_arrival_at,'eta_window_start',s.eta_window_start,
-    'eta_window_end',s.eta_window_end,'recipient_name',o.delivery_recipient_name,
+    'eta_window_end',s.eta_window_end,'skip_reason',s.skip_reason,'recipient_name',o.delivery_recipient_name,
     'recipient_phone',o.delivery_phone,'address_line',o.delivery_address_line,
     'area_name',o.delivery_area_name,'city',o.delivery_city,'pin_code',o.delivery_pin_code,
     'latitude',o.delivery_latitude,'longitude',o.delivery_longitude,
@@ -702,17 +731,19 @@ begin
   end if;
   select * into v_route from public.delivery_route_runs r where r.id=v_stop.route_id;
   select * into v_location from public.delivery_live_locations l where l.route_id=v_route.id;
-  v_has_location:=found and v_route.status='active' and v_location.updated_at>now()-interval '2 minutes';
+  v_has_location:=found and v_route.status='active'
+    and v_stop.status in ('pending','arrived')
+    and v_location.updated_at>now()-interval '2 minutes';
 
   return jsonb_build_object(
     'available',true,'order_id',p_order_id,'order_status',v_order.status,
     'route_id',v_route.id,'route_status',v_route.status,'stop_number',v_stop.sequence_no,
     'eta',v_stop.estimated_arrival_at,'eta_window_start',v_stop.eta_window_start,
-    'eta_window_end',v_stop.eta_window_end,'stop_status',v_stop.status,
+    'eta_window_end',v_stop.eta_window_end,'stop_status',v_stop.status,'skip_reason',v_stop.skip_reason,
     'destination',jsonb_build_object('latitude',v_order.delivery_latitude,'longitude',v_order.delivery_longitude,
       'address_line',v_order.delivery_address_line,'area_name',v_order.delivery_area_name,'city',v_order.delivery_city),
     'location_stale',not v_has_location,
-    'last_location_at',case when found then v_location.updated_at else null end,
+    'last_location_at',case when v_has_location then v_location.updated_at else null end,
     'location',case when v_has_location then jsonb_build_object(
       'latitude',v_location.latitude,'longitude',v_location.longitude,
       'accuracy_m',v_location.accuracy_m,'heading_deg',v_location.heading_deg,
