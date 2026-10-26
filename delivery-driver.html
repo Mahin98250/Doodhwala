@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#175a3c"><meta name="description" content="Doodhwala delivery partner route and live navigation.">
+<title>Doodhwala · Driver route</title>
+<link rel="icon" href="/Doodhwala/assets/mascot.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="/Doodhwala/delivery-driver.css?v=20261026.1">
+</head>
+<body class="driver-page">
+<header class="driver-header"><a class="driver-brand" href="/Doodhwala/"><img src="/Doodhwala/assets/mascot.png" alt=""><span><b>Doodhwala</b><small>Driver workspace</small></span></a><div class="driver-header-actions"><a href="/Doodhwala/delivery-dispatch.html">Smart dispatch</a><button id="refreshDriverRoute" type="button">↻ Refresh</button></div></header>
+<main class="driver-main">
+<section class="driver-hero"><div><span class="driver-eyebrow">YOUR MORNING RUN</span><h1>Every stop, one by one.</h1><p>Follow the numbered route, mark each doorstep correctly, and share GPS only while delivering on an active route.</p></div><div id="driverStatusChip" class="driver-chip">Checking account…</div></section>
+<div id="driverStatus" class="driver-status" role="status" aria-live="polite">Checking your account…</div>
+<section id="driverEnrollCard" class="driver-panel driver-enroll hidden"><div class="driver-panel-icon">↗</div><div><h2>Enable delivery mode</h2><p>Opt in to let a Doodhwala provider link you to a delivery route. Your location is never collected until you explicitly start/resume live sharing on an active route.</p><button id="enrollDriver" class="driver-primary" type="button">Enable delivery mode</button></div></section>
+<section id="noDriverRoute" class="driver-panel driver-empty hidden"><div class="driver-empty-icon">⌖</div><h2>No route assigned yet</h2><p>Ask your Doodhwala provider to link your enrolled driver account and assign a morning route. When a route is ready, refresh this page.</p></section>
+<section id="driverRoutePanel" class="driver-layout hidden">
+<div class="driver-route-left">
+<section class="driver-panel">
+<div class="driver-route-head"><div><span class="driver-eyebrow">ROUTE OVERVIEW</span><h2 id="driverRouteTitle">Today's delivery route</h2><p id="driverRouteSub">Stops load here when a provider assigns the route.</p></div><span id="driverRouteState" class="driver-route-state">Planned</span></div>
+<div class="driver-kpis" id="driverKpis"></div>
+<div class="driver-route-actions"><button id="startDriverRoute" class="driver-primary" type="button">Start route & share live location</button><button id="resumeDriverGps" class="driver-secondary hidden" type="button">Resume live location</button><button id="stopDriverGps" class="driver-secondary hidden" type="button">Stop GPS sharing</button></div>
+<div id="gpsStatus" class="driver-gps-status">GPS not sharing. Your location stays off until you start the active route.</div>
+</section>
+<section class="driver-panel">
+<div class="driver-panel-heading"><div><span class="driver-eyebrow">DELIVERY SEQUENCE</span><h2>Next doorstep first</h2></div><span id="remainingStops" class="driver-count">0 stops left</span></div>
+<div id="driverStops" class="driver-stops"></div>
+</section>
+</div>
+<aside class="driver-route-right">
+<section class="driver-panel"><div class="driver-panel-heading"><div><span class="driver-eyebrow">ROAD MAP</span><h2>Route navigation</h2></div><span class="driver-map-legend"><i></i> Numbered stops</span></div><div id="driverMap" class="driver-map" aria-label="Map of delivery route"></div><p class="driver-map-note">Keep this page open during the run for best GPS results. Background browsers may pause location updates.</p></section>
+<section class="driver-privacy"><b>Location privacy</b><p>Only the assigned active route shares location. Sharing stops when you turn it off, the route finishes, or the page is hidden. Customers see your live marker and their own delivery progress—not other customers’ details.</p></section>
+</aside>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+<script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+<script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/Doodhwala/delivery-driver.js?v=20261026.1"></script>
+</body></html>
