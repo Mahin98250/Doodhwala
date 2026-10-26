@@ -1,4 +1,4 @@
-do $$
+do $test$
 declare
   v_rls_count integer;
 begin
@@ -31,7 +31,7 @@ begin
   if not exists(select 1 from pg_policies where schemaname='realtime' and tablename='messages' and policyname='Delivery participants can receive private route broadcasts') then
     raise exception 'private_route_broadcast_policy_missing';
   end if;
-end $$;
+end $test$;
 
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',false);
 select public.delivery_driver_enroll();
@@ -41,7 +41,7 @@ select public.delivery_provider_link_driver(
   '00000000-0000-4000-8000-000000000003'
 );
 
-do $$
+do $test$
 declare v_drivers jsonb; v_planning jsonb;
 begin
   v_drivers:=public.delivery_list_enrolled_drivers('10000000-0000-4000-8000-000000000001');
@@ -49,7 +49,7 @@ begin
   v_planning:=public.delivery_get_route_planning_data('10000000-0000-4000-8000-000000000001',49);
   if jsonb_array_length(v_planning->'orders')<>2 then raise exception 'eligible_delivery_queue_missing_stops'; end if;
   if v_planning->'origin'->>'latitude'<>'23.0200' then raise exception 'route_origin_missing'; end if;
-end $$;
+end $test$;
 
 create temporary table delivery_test_context(route_id uuid);
 insert into delivery_test_context(route_id)
@@ -89,7 +89,7 @@ select public.delivery_update_remaining_etas(
   array[now()+interval '22 minutes',now()+interval '34 minutes']::timestamptz[]
 );
 
-do $
+do $test$
 declare v_route jsonb;
 begin
   v_route:=public.delivery_get_my_active_route();
@@ -115,7 +115,7 @@ begin
   exception when others then
     if sqlerrm<>'previous_route_stop_not_completed' then raise; end if;
   end;
-end $$;
+end $test$;
 
 select public.delivery_mark_route_stop_action(
  (select id from public.delivery_route_stops where route_id=(select route_id from delivery_test_context) and sequence_no=1),
@@ -131,7 +131,7 @@ select public.delivery_mark_route_stop_action(
 );
 
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false);
-do $$
+do $test$
 declare v_tracking jsonb;
 begin
   v_tracking:=public.delivery_get_my_tracking('20000000-0000-4000-8000-000000000001');
@@ -147,10 +147,10 @@ begin
   exception when others then
     if sqlerrm<>'order_not_owned_or_missing' then raise; end if;
   end;
-end $$;
+end $test$;
 
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000004',false);
-do $
+do $test$
 declare v_tracking jsonb;
 begin
   v_tracking:=public.delivery_get_my_tracking('20000000-0000-4000-8000-000000000002');
@@ -163,6 +163,6 @@ begin
   exception when others then
     if sqlerrm<>'order_not_owned_or_missing' then raise; end if;
   end;
-end $;
+end $test$;
 
 select 'PASS: consent, provider/driver assignment, planning, route lifecycle, private GPS broadcast, stop order and customer isolation' as result;
