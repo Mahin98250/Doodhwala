@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
+// All database RPCs use the caller's end-user JWT; this function never elevates to service-role access.
+
 const SUPABASE_URL = (Deno.env.get("SUPABASE_URL") || "").replace(/\/+$/, "");
 const ROUTING_BASE_URL = (Deno.env.get("DELIVERY_ROUTING_BASE_URL") || "").replace(/\/+$/, "");
 const PUBLISHABLE_KEYS = (() => {
@@ -460,16 +462,14 @@ async function main(req: Request): Promise<Response> {
   if (!body) return json({ error: "invalid_or_oversized_json" }, 400, origin);
   if (body.action === "refresh_eta") {
     const result = await refreshEta(apiKey, token, body.route_id);
-    const status = Number(result.status || 200);
-    delete result.status;
-    return json(result, status, origin);
+    const { status, ...payload } = result;
+    return json(payload, Number(status || 200), origin);
   }
   if (body.action !== "plan_route") return json({ error: "unsupported_action" }, 400, origin);
 
   const result = await planRoute(apiKey, token, body);
-  const status = Number(result.status || 400);
-  delete result.status;
-  return json(result, status, origin);
+  const { status, ...payload } = result;
+  return json(payload, Number(status || 400), origin);
 }
 
 Deno.serve(main);
