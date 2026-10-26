@@ -15,7 +15,7 @@ const ALLOWED_ORIGINS = new Set([
   ...(Deno.env.get("DELIVERY_ALLOWED_ORIGINS") || "").split(",").map(value => value.trim()).filter(Boolean),
 ]);
 const MAX_BODY_BYTES = 20_000;
-const MAX_STOPS = 49;
+const MAX_STOPS = 99;
 const RATE_LIMIT_PER_MINUTE = 30;
 const rateBuckets = new Map<string, { start: number; count: number }>();
 
@@ -204,7 +204,7 @@ async function planRoute(apiKey: string, token: string, body: Record<string, unk
   if (!isUuid(providerId) || !isUuid(driverId)) return { error: "invalid_provider_or_driver", status: 400 };
   if (!Array.isArray(rawOrderIds) || rawOrderIds.length < 1 || rawOrderIds.length > MAX_STOPS
     || rawOrderIds.some(id => !isUuid(id)) || new Set(rawOrderIds).size !== rawOrderIds.length) {
-    return { error: "select_between_1_and_49_unique_orders", status: 400 };
+    return { error: "select_between_1_and_99_unique_orders", status: 400 };
   }
   if (typeof serviceDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(serviceDate)
     || typeof startTime !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) {
