@@ -90,12 +90,15 @@
   }
   function renderTimeline(tracking) {
     const routeReady = tracking.available && ["planned","active","completed"].includes(tracking.route_status);
+    const skipped = tracking.stop_status === "skipped";
+    const delivered = tracking.order_status === "delivered" || tracking.stop_status === "delivered";
     const steps = [
       { label: "Order placed", active: true, done: true },
       { label: "Preparing your milk", active: ["preparing","ready","out_for_delivery","delivered"].includes(tracking.order_status), done: ["ready","out_for_delivery","delivered"].includes(tracking.order_status) },
       { label: routeReady ? "Driver route assigned" : "Waiting for driver route", active: routeReady, done: tracking.route_status === "active" || tracking.route_status === "completed" },
       { label: "Out for delivery", active: tracking.route_status === "active" || tracking.order_status === "out_for_delivery", done: tracking.route_status === "active" || tracking.order_status === "delivered" },
-      { label: "Delivered to your doorstep", active: tracking.order_status === "delivered" || tracking.stop_status === "delivered", done: tracking.order_status === "delivered" || tracking.stop_status === "delivered" }
+      { label: skipped ? "Delivery attempt skipped" : "Delivered to your doorstep", active: delivered || skipped, done: delivered || skipped },
+      ...(skipped ? [{ label: "Contact your provider to reschedule", active: true, done: false }] : [])
     ];
     $("trackingTimeline").innerHTML = steps.map((step, index) =>
       '<div class="tracking-step ' + (step.active ? "active " : "") + (step.done ? "done" : "") + '">' +
@@ -106,12 +109,16 @@
   function render(tracking) {
     state.tracking = tracking;
     $("trackingContent").classList.remove("hidden");
-    $("trackingMapTitle").textContent = tracking.order_status === "delivered" ? "Delivery completed" : statusText(tracking.order_status);
+    $("trackingMapTitle").textContent = tracking.stop_status === "skipped" ? "Delivery attempt skipped" :
+      (tracking.order_status === "delivered" || tracking.stop_status === "delivered" ? "Delivery completed" : statusText(tracking.order_status));
     $("trackingOrderSummary").innerHTML =
       '<div class="tracking-summary-row"><span>Order</span><b>' + esc(tracking.order_id.slice(0,8).toUpperCase()) + '</b></div>' +
-      '<div class="tracking-summary-row"><span>Status</span><b>' + esc(statusText(tracking.order_status)) + '</b></div>' +
+      '<div class="tracking-summary-row"><span>Status</span><b>' + esc(tracking.stop_status === "skipped" ? "Delivery attempt skipped" : statusText(tracking.order_status)) + '</b></div>' +
       '<div class="tracking-summary-row"><span>Your address</span><b>' + esc([tracking.destination?.address_line,tracking.destination?.area_name,tracking.destination?.city].filter(Boolean).join(", ") || "Saved delivery address") + '</b></div>';
-    if (tracking.available && tracking.eta_window_start && tracking.eta_window_end && tracking.order_status !== "delivered") {
+    if (tracking.stop_status === "skipped") {
+      $("trackingEta").textContent = "Delivery needs rescheduling";
+      $("trackingEtaNote").textContent = "The route stop was skipped" + (tracking.skip_reason ? ": " + tracking.skip_reason : ". Contact your provider to arrange a new delivery.");
+    } else if (tracking.available && tracking.eta_window_start && tracking.eta_window_end && tracking.order_status !== "delivered") {
       $("trackingEta").textContent = formatTime(tracking.eta_window_start) + "–" + formatTime(tracking.eta_window_end);
       $("trackingEtaNote").textContent = "Road-time estimate; traffic and doorstep delays may change this window.";
     } else if (tracking.order_status === "delivered" || tracking.stop_status === "delivered") {
@@ -121,13 +128,19 @@
       $("trackingEta").textContent = "Arrival time pending";
       $("trackingEtaNote").textContent = "Your provider has not assigned this order to a route yet. This page will show the ETA when the route is planned.";
     }
-    $("trackingStopBadge").textContent = tracking.available
-      ? "Your stop · #" + tracking.stop_number + (tracking.route_status === "planned" ? " · route planned" : tracking.route_status === "active" ? " · driver on route" : " · route complete")
-      : "Stop number pending";
+    $("trackingStopBadge").textContent = tracking.stop_status === "skipped"
+      ? "Your stop · #" + tracking.stop_number + " · skipped; reschedule needed"
+      : tracking.available
+        ? "Your stop · #" + tracking.stop_number + (tracking.route_status === "planned" ? " · route planned" : tracking.route_status === "active" ? " · driver on route" : " · route complete")
+        : "Stop number pending";
     renderTimeline(tracking);
     showDestination(tracking.destination);
     if (tracking.location && !tracking.location_stale) showDriver(tracking.location);
-    else clearDriver(tracking.route_status === "completed" ? "This delivery route is complete; live location sharing has stopped." : "Live location appears after the driver starts the route and shares a fresh GPS fix.");
+    else clearDriver(tracking.stop_status === "skipped"
+      ? "Live driver location is hidden for a skipped delivery. Contact your provider to arrange a new drop."
+      : tracking.route_status === "completed"
+        ? "This delivery route is complete; live location sharing has stopped."
+        : "Live location appears after the driver starts the route and shares a fresh GPS fix.");
     if (!tracking.available) setStatus(tracking.message || "Your order has not been added to a driver route yet.", "success");
     else setStatus("Tracking is limited to this order and its assigned route. Your stop number and arrival window update when dispatch changes.", "success");
   }
@@ -154,6 +167,12 @@
       .on("broadcast", { event: "location_stopped" }, packet => {
         const event = packet?.payload || packet;
         if (event?.route_id === routeId) clearDriver("Driver live-location sharing is paused. The last marker has been cleared.");
+      })
+      .on("broadcast", { event: "stop_updated" }, packet => {
+        const event = packet?.payload || packet;
+        if (event?.route_id === routeId && event?.order_id === orderId) {
+          loadTracking().catch(err => console.warn("Delivery stop update could not be loaded:", err));
+        }
       })
       .on("postgres_changes", {
         event: "*", schema: "public", table: "order_status_events", filter: "order_id=eq." + orderId
