@@ -14,7 +14,7 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js pwa-register.js session-controls.js support.js network-status.js; do
+          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-billing.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js pwa-register.js session-controls.js support.js network-status.js; do
             node --check "$file"
           done
       - name: Syntax-check production readiness probe
@@ -31,6 +31,10 @@ jobs:
         run: node scripts/test-doodhwala-pay.mjs
       - name: Test Doodhwala Pay event ledger and state machine
         run: node scripts/test-doodhwala-pay-state.mjs
+      - name: Test provider monthly billing ledger and access controls
+        run: node scripts/test-provider-monthly-billing.mjs
+      - name: Test seller and owner billing UI contracts
+        run: node scripts/test-provider-billing-ui.mjs
       - name: Simulate customer checkout and network retry
         run: node scripts/test-checkout-flow.mjs
       - name: Test direct seller UPI and COD contracts

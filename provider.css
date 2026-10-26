@@ -119,3 +119,53 @@
 
 /* Help link replaces internal 10X operations branding with a customer-first support route. */
 .provider-help-link{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 16px 10px;padding:12px 14px;border:1px solid #dce8df;border-radius:12px;color:#175a3c;background:#f5faf6;text-decoration:none;font-size:13px;font-weight:800;transition:background .18s ease,border-color .18s ease}.provider-help-link:hover{background:#eaf5ec;border-color:#b9d8c1}.provider-help-link:focus-visible{outline:3px solid #8bc49a;outline-offset:3px}@media(max-width:900px){.provider-help-link{margin:8px 12px 12px}}
+
+/* Seller subscription billing — responsive owner/customer separated ledger UI */
+.provider-billing-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:12px 0 16px}
+.provider-billing-stat{min-width:0;padding:19px;border:1px solid #e1e9e0;border-radius:18px;background:linear-gradient(150deg,#fff,#f7fbf7);box-shadow:0 8px 24px rgba(22,55,34,.035)}
+.provider-billing-stat small{display:block;color:#718078;font-size:9px;font-weight:900;letter-spacing:.1em}
+.provider-billing-stat b{display:block;margin-top:8px;font:800 25px Manrope,sans-serif;letter-spacing:-.04em;color:#173b29;overflow-wrap:anywhere}
+.provider-billing-stat span{display:block;margin-top:5px;color:#748179;font-size:10px;line-height:1.5}
+.provider-billing-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px;align-items:start}
+.provider-billing-payee{display:grid;gap:13px}
+.provider-billing-payee>p{margin:0;color:#647369;font-size:12px;line-height:1.6}
+.provider-billing-payee-row,.provider-billing-upi-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid #e4ebe3;border-radius:13px;background:#fbfdfb}
+.provider-billing-payee-row small,.provider-billing-upi-row small{display:block;margin-bottom:5px;color:#7c8980;font-size:8px;font-weight:900;letter-spacing:.1em}
+.provider-billing-payee-row b,.provider-billing-upi-row b{display:block;min-width:0;overflow-wrap:anywhere;color:#1e3929;font-size:13px}
+.provider-billing-payee-row button,.provider-billing-upi-row button{flex:0 0 auto}
+.provider-billing-note{display:block;margin-top:13px;color:#65736a;font-size:10px;line-height:1.6}
+.provider-billing-alert{display:flex;align-items:flex-start;gap:9px;padding:12px;border:1px solid #d7e7d9;border-radius:13px;background:#f1f8f2;color:#45624d}
+.provider-billing-alert>span{font-size:16px}.provider-billing-alert b{display:block;font-size:11px}.provider-billing-alert p{margin:4px 0 0;font-size:10px;line-height:1.5}
+.provider-billing-invoices{display:grid;gap:11px}
+.provider-billing-invoice{padding:15px;border:1px solid #e2eae1;border-radius:17px;background:#fff;box-shadow:0 5px 18px rgba(22,55,34,.025)}
+.provider-billing-invoice.is-due{border-color:#e9dfc9;background:linear-gradient(160deg,#fffefa,#fff)}
+.provider-billing-invoice.is-paid{border-color:#dbe9de}
+.provider-billing-invoice-top{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.provider-billing-invoice-top h4{margin:5px 0 0;font:800 13px Manrope,sans-serif;overflow-wrap:anywhere}
+.provider-billing-status{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:6px 9px;font-size:8px;font-weight:900;white-space:nowrap}
+.provider-billing-status.due{background:#fff0d7;color:#855b10}.provider-billing-status.paid{background:#e7f5eb;color:#1b6840}.provider-billing-status.void{background:#eff1ef;color:#667168}
+.provider-billing-amount{margin-top:14px;font:800 30px Manrope,sans-serif;letter-spacing:-.05em;color:#1b3827}
+.provider-billing-dates{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.provider-billing-dates>div{padding:10px;border-radius:11px;background:#f7faf7;border:1px solid #e7eee6}
+.provider-billing-dates small{display:block;color:#7b887f;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.provider-billing-dates b{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#34483a}
+.provider-billing-invoice-note{margin:10px 0 0;font-size:10px;color:#6e7b72;line-height:1.5;overflow-wrap:anywhere}
+.provider-billing-invoice-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.provider-billing-invoice-actions .provider-primary,.provider-billing-invoice-actions .secondary{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:9px 12px;border-radius:10px;text-decoration:none;font-size:10px}
+.provider-billing-smallprint{margin:9px 0 0;color:#77847b;font-size:9px;line-height:1.55}
+.provider-billing-payment-history{margin-top:13px;padding-top:11px;border-top:1px solid #e8eee7}
+.provider-billing-payment-history>b{display:block;margin-bottom:8px;font-size:10px}
+.provider-billing-payment-row{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center;padding:8px 0;border-bottom:1px dashed #e5ebe4}
+.provider-billing-payment-row span{font-size:10px;overflow-wrap:anywhere;text-transform:capitalize;color:#56665b}
+.provider-billing-payment-row b{font-size:10px}
+.provider-billing-payment-row small{grid-column:1/-1;color:#7d8981;font-size:8px}
+.provider-billing-confirmed{margin:12px 0 0;color:#236841;font-size:10px;font-weight:800}
+.provider-billing-empty{display:grid;justify-items:start;gap:7px;padding:22px;border:1px dashed #d6e4d7;border-radius:15px;background:#fbfdfb}
+.provider-billing-empty>span{display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:#edf7ef;color:#216941;font-weight:900}
+.provider-billing-empty>b{font:800 12px Manrope,sans-serif;color:#243d2d}
+.provider-billing-empty>p{margin:0;color:#6c7b70;font-size:10px;line-height:1.6}
+@media(max-width:1000px){.provider-billing-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.provider-billing-summary{grid-template-columns:1fr 1fr;gap:8px}.provider-billing-stat{padding:14px;border-radius:15px}.provider-billing-stat:first-child{grid-column:1/-1}.provider-billing-stat b{font-size:22px}.provider-billing-dates{grid-template-columns:1fr}.provider-billing-invoice-top{align-items:flex-start}.provider-billing-invoice{padding:13px}.provider-billing-payee-row,.provider-billing-upi-row{align-items:flex-start}.provider-billing-payee-row button,.provider-billing-upi-row button{padding:8px;font-size:9px}.provider-billing-invoice-actions>*{flex:1}}
+@media(max-width:440px){.provider-billing-summary{grid-template-columns:1fr}.provider-billing-stat:first-child{grid-column:auto}.provider-billing-payee-row,.provider-billing-upi-row{display:grid;grid-template-columns:minmax(0,1fr) auto}.provider-billing-payee-row button,.provider-billing-upi-row button{max-width:105px;white-space:normal}}
+@media(prefers-reduced-motion:reduce){.provider-billing-invoice,.provider-billing-stat{transition:none}}
+@media(max-width:760px){.provider-mobile-nav{display:flex;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;gap:4px;padding:6px 8px;scroll-snap-type:x proximity}.provider-mobile-nav::-webkit-scrollbar{display:none}.provider-mobile-nav button{flex:0 0 58px;min-width:58px;scroll-snap-align:start}}
