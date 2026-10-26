@@ -119,5 +119,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/delivery-routing-fixture.sql
       - name: Apply smart delivery routing migration in disposable PostgreSQL
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026170000_doodhwala_smart_delivery_routing.sql
-      - name: Verify route RLS, indexes and revoked direct writes
+      - name: Apply trusted delivery operations migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026180000_doodhwala_delivery_route_operations.sql
+      - name: Verify route lifecycle, private GPS broadcasts and customer isolation
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/delivery-routing-assertions.sql
