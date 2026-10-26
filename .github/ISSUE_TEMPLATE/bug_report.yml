@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible bug with expected and actual behavior
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What is broken?
+      description: Describe the problem in plain language.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - P0 - blocks release or risks data/security
+        - P1 - major user journey broken
+        - P2 - normal functional issue
+        - P3 - visual polish or minor issue
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device, browser, and environment
+      placeholder: "Android / Chrome / staging or production"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Add screenshots, logs with secrets removed, and relevant route. Never attach customer personal data or credentials.
+    validations:
+      required: false
