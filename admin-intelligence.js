@@ -180,7 +180,7 @@
     const ensure=()=>{
       if(typeof section==="undefined"||section!=="overview"||document.getElementById("adminApp")?.classList.contains("hidden"))return;
       if(!document.getElementById("adminIntelSlot")){
-        const slot=document.createElement("div");slot.id="adminIntelSlot";content.appendChild(slot);
+        const slot=document.createElement("div");slot.id="adminIntelSlot";slot.className="admin-intel-section";content.appendChild(slot);
       }
       refresh(false);
     };
