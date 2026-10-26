@@ -100,6 +100,9 @@ Useful starting points currently present in the repository:
 - `PROJECT_CONTEXT.md` — architecture and durable session handoff.
 - `TASK_BOARD.md` — shared task ownership, checkboxes, acceptance criteria, and work log.
 - `CODING_AGENT_GUIDE.md` — required workflow and guardrails for every human or coding agent.
+- `CONTRIBUTING.md` — contributor onboarding and branch/PR process.
+- `.github/ISSUE_TEMPLATE/task.yml` and `bug_report.yml` — structured task and bug intake.
+- `.github/PULL_REQUEST_TEMPLATE.md` — review and verification checklist.
 - `SUPABASE_SETUP.md` — Supabase configuration and setup.
 - `SECURITY.md` — security guidance and reporting expectations.
 - `app.js` — main customer-side JavaScript.
@@ -135,7 +138,7 @@ When the connection drops or a new person/assistant resumes:
 
 | Date | Update | Evidence / status |
 |---|---|---|
-| 2026-10-26 | Added shared team task board and coding-agent workflow guide. | Documentation branch `docs/team-collaboration-system`; pending review/merge. |
+| 2026-10-26 | Expanded team collaboration workflow with issue templates, PR checklist, contribution guide, and seven starter task issues. | [PR #72](https://github.com/Mahin98250/Doodhwala/pull/72); starter issues [#73–#79](https://github.com/Mahin98250/Doodhwala/issues/73). Documentation-only changes; pending review/merge. |
 | 2026-10-23 | Merged premium UI polish and connectivity feedback in PR #31; refreshed offline precache to cache revision v82. | Main commit `5ef002602443bd0e782bbe349862a26cb489c77f`; post-merge static validation run `39902752389` passed; GitHub Pages build/deploy workflow `39902752033` passed. Visual live-page/mobile testing remains pending because the public page could not be retrieved in that session. Live Supabase payment migrations remain unapplied. |
 | 2026-10-23 | Created the original project context and handoff. | Commit `7e3195b75fb3761a56350c7718c2404adf83fb59`; documentation only. |
 
