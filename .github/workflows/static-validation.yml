@@ -43,6 +43,8 @@ jobs:
         run: node scripts/test-nearby-provider-search-scalability.mjs
       - name: Test order capacity query indexes
         run: node scripts/test-order-capacity-query-indexes.mjs
+      - name: Test atomic provider capacity enforcement
+        run: node scripts/test-atomic-provider-capacity.mjs
       - name: Test staging load-test safety guards
         run: node scripts/test-staging-load-test-safety.mjs
       - name: Test staging baseline and read-only audit contracts
