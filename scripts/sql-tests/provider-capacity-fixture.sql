@@ -4,11 +4,22 @@ do $$
 begin
   if not exists (select 1 from pg_roles where rolname='anon') then execute 'create role anon nologin'; end if;
   if not exists (select 1 from pg_roles where rolname='authenticated') then execute 'create role authenticated nologin'; end if;
+  if not exists (select 1 from pg_roles where rolname='service_role') then execute 'create role service_role nologin'; end if;
 end $$;
 
 create schema if not exists auth;
 create schema if not exists private;
 create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+
+-- Model the legacy four-argument function that prior migrations revoke from client roles.
+-- The capacity migration must not accidentally restore client access to this overload.
+create or replace function private.create_order_secure(
+  p_provider_id uuid,
+  p_address_id uuid,
+  p_items jsonb,
+  p_customer_note text default null
+)
+returns uuid language sql as $ select null::uuid $;
 
 create table public.provider_profiles (
   id uuid primary key,
