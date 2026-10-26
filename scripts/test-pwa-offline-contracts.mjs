@@ -36,6 +36,7 @@ assert.doesNotMatch(sw, /keys\.filter\(k=>k!==CACHE\)/,
 assert.match(sw, /self\.skipWaiting\(\)/, "new worker activates promptly");
 assert.match(sw, /self\.clients\.claim\(\)/, "new worker claims controlled clients");
 assert.match(sw, /const exact=await caches\.match\(event\.request\)/, "offline fallback checks exact request first");
+assert.match(sw, /event\.waitUntil\(cacheUpdate\)/, "successful network responses keep their cache write alive until completion");
 assert.match(sw, /const offline=await caches\.match\(new URL\("\/Doodhwala\/offline\.html"/,
   "navigation fallback prefers the dedicated offline page");
 
