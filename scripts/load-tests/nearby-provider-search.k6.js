@@ -43,11 +43,14 @@ export const options = {
 
 export default function () {
   const response = http.post(
-    baseUrl + "/rest/v1/rpc/find_nearby_providers_v2",
+    baseUrl + "/rest/v1/rpc/find_nearby_providers_v3",
     JSON.stringify({
       p_latitude: latitude,
       p_longitude: longitude,
       p_max_km: 20,
+      p_sort: "closest",
+      p_limit: 25,
+      p_offset: 0,
     }),
     {
       headers: {
@@ -56,7 +59,7 @@ export default function () {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      tags: { endpoint: "find_nearby_providers_v2", workload: "read_only" },
+      tags: { endpoint: "find_nearby_providers_v3", workload: "read_only" },
       timeout: "10s",
     },
   );
