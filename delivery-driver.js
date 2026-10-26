@@ -17,6 +17,13 @@
     $("driverStatus").className = "driver-status" + (kind ? " " + kind : "");
   }
   function setChip(value) { $("driverStatusChip").textContent = value; }
+  function todayInIndia() {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit"
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return values.year + "-" + values.month + "-" + values.day;
+  }
   function formatTime(value) {
     if (!value) return "ETA pending";
     try { return new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" }).format(new Date(value)); }
@@ -120,6 +127,7 @@
         '<div class="driver-stop-number">' + esc(stop.sequence_no) + '</div><div class="driver-stop-content">' +
         '<div class="driver-stop-top"><b>' + esc(stop.recipient_name || "Milk customer") + '</b><span>' + esc(status) + '</span></div>' +
         '<div class="driver-stop-address">' + esc(addr || "Delivery address is not available") + '</div>' +
+        (stop.skip_reason ? '<div class="driver-stop-address">Skip reason: ' + esc(stop.skip_reason) + '</div>' : '') +
         '<div class="driver-stop-meta"><span>ETA · ' + esc(formatRange(stop)) + '</span><span>' + esc(stop.quantity_litres || 0) + ' L milk</span></div>' +
         '<div class="driver-stop-actions">' + (phone ? '<a href="tel:' + esc(phone) + '">Call customer</a>' : '') + actions + '</div>' +
         '</div></article>';
@@ -131,16 +139,19 @@
   function renderRoute() {
     const route = state.route;
     if (!route) return;
-    $("driverRouteTitle").textContent = route.service_date === new Date().toISOString().slice(0,10) ? "Today's delivery route" : "Delivery route · " + route.service_date;
+    $("driverRouteTitle").textContent = route.service_date === todayInIndia() ? "Today's delivery route" : "Delivery route · " + route.service_date;
     renderKpis();
     renderStops();
     drawRoute();
     if (route.status === "active") {
       setChip(state.watchId ? "GPS LIVE" : "ROUTE ACTIVE");
       if (!state.watchId) setGpsStatus("Route is active, but GPS is not sharing. Tap Resume live location to restart sharing.", false);
-    } else {
+    } else if (route.status === "planned") {
       setChip("ROUTE PLANNED");
       setGpsStatus("GPS is off. Start the route when you are ready to deliver.", false);
+    } else {
+      setChip("ROUTE COMPLETED");
+      setGpsStatus("This route is complete. Location sharing has stopped and the last live marker was cleared.", false);
     }
   }
   function setGpsStatus(message, live) {
@@ -175,6 +186,7 @@
         return;
       }
       state.route = route;
+      if (route.status !== "active" && state.watchId !== null) stopGps(false);
       $("noDriverRoute").classList.add("hidden");
       $("driverRoutePanel").classList.remove("hidden");
       renderRoute();
@@ -183,6 +195,15 @@
     } finally {
       state.loading = false;
     }
+  }
+  async function refreshRouteEtas(routeId) {
+    const { data, error } = await Doodhwala.supabase.functions.invoke("delivery-routing", {
+      body: { action: "refresh_eta", route_id: routeId }
+    });
+    if (error || data?.error) {
+      throw new Error(data?.error || error?.message || "ETA refresh unavailable");
+    }
+    return data;
   }
   async function actOnStop(button) {
     const action = button.dataset.stopAction;
@@ -200,6 +221,11 @@
       });
       if (error) throw error;
       await loadRoute();
+      if (state.route?.status === "active") {
+        try { await refreshRouteEtas(state.route.id); } catch (etaError) {
+          console.warn("Immediate ETA refresh deferred:", etaError);
+        }
+      }
       setStatus(action === "delivered" ? "Delivery marked complete." : action === "arrived" ? "Arrival recorded. Confirm delivery after handing over the milk." : "Stop skipped with a reason; continue to the next stop.", "success");
     } catch (error) {
       setStatus(error?.message || "Could not update this stop. Refresh and try again.", "error");
@@ -270,19 +296,12 @@
         if (error) throw error;
         if (now - state.lastEtaRefreshAt >= 60_000) {
           state.lastEtaRefreshAt = now;
-          Doodhwala.supabase.functions.invoke("delivery-routing", {
-            body: { action: "refresh_eta", route_id: state.route.id }
-          }).then(({ data, error: etaError }) => {
-            if (etaError || data?.error) {
-              const reason = data?.error || etaError?.message || "ETA refresh unavailable";
-              setGpsStatus("GPS is live. ETA refresh is waiting: " + reason + ".", true);
-              return;
-            }
+          refreshRouteEtas(state.route.id).then(data => {
             if (Number(data?.updated_stops || 0) > 0) {
               setGpsStatus("Live GPS active · refreshed arrival windows for " + data.updated_stops + " remaining stops.", true);
             }
           }).catch(error => {
-            setGpsStatus("GPS is live. ETA refresh will retry: " + (error?.message || "routing service unavailable") + ".", true);
+            setGpsStatus("GPS is live. ETA refresh is waiting: " + (error?.message || "routing service unavailable") + ".", true);
           });
         }
       } catch (error) {
