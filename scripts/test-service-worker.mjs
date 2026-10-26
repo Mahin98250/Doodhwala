@@ -105,7 +105,7 @@ assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261025.4'), "the s
 assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261025.4'), "the shared milk transition runtime must be precached");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v94"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v95"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "final mascot must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/experience-layer.css?v=20261023.5'), "shared experience stylesheet must be precached");
