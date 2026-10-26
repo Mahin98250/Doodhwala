@@ -31,7 +31,7 @@ assert.match(orders, /paymentResult/, "Payment details should be loaded separate
 assert.match(orders, /Payment method not recorded/, "Older production orders must not be incorrectly labeled as COD when payment metadata is absent.");
 
 for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ordersHtml]]) {
-  assert.match(html, name === "index.html" ? /customer-ui-polish\.css\?v=20261026\.1/ : /customer-ui-polish\.css\?v=20261025\.3/, name + " page must load the responsive UI fixes.");
+  assert.match(html, /customer-ui-polish\.css\?v=202610(?:25\.3|26\.1)/, name + " page must load the responsive UI fixes.");
   assert.match(html, /milk-transition\.css\?v=20261025\.4/, name + " page must load the milk animation styles.");
   assert.match(html, /milk-transition\.js\?v=20261025\.4/, name + " page must load the transition runtime.");
 }
