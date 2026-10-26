@@ -148,7 +148,7 @@ function renderChecklist(){
  $("checklist").innerHTML=items.map((x,i)=>'<button class="check-row '+(x[1]?"done":"")+'" data-check-view="'+x[3]+'"><span>'+(x[1]?"✓":i+1)+'</span><div><b>'+x[0]+'</b><small>'+(x[1]?"Complete":x[2])+'</small></div></button>').join("");
  $("checklist").querySelectorAll("[data-check-view]").forEach(b=>b.onclick=()=>showView(b.dataset.checkView))
 }
-function showView(view){document.querySelectorAll(".provider-view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="orders")loadProviderOrders();if(view==="route")loadProviderRoute(routeDate);if(view==="subscriptions")loadProviderSubscriptions()}
+function showView(view){document.querySelectorAll(".provider-view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="orders")loadProviderOrders();if(view==="route")loadProviderRoute(routeDate);if(view==="subscriptions")loadProviderSubscriptions();if(view==="billing")window.loadProviderBilling?.()}
 async function setupProviderSubscriptionRealtime(user){
  if(!window.Doodhwala?.configured||!user||window.__doodhwalaProviderSubscriptionChannel)return;
  const refresh=function(){
@@ -579,6 +579,7 @@ document.addEventListener("visibilitychange",function(){
    loadProviderRoute(routeDate).catch(function(err){console.warn("Provider route resume refresh failed",err)});
    if(document.getElementById("view-subscriptions")?.classList.contains("active"))loadProviderSubscriptions().catch(function(err){console.warn("Provider subscription resume refresh failed",err)});
    if(document.getElementById("view-orders")?.classList.contains("active"))loadProviderOrders().catch(function(err){console.warn("Provider order resume refresh failed",err)});
+   if(document.getElementById("view-billing")?.classList.contains("active"))window.loadProviderBilling?.().catch(function(err){console.warn("Provider billing resume refresh failed",err)});
  }
 });
 window.addEventListener("keydown",e=>{if(e.key==="Escape"){const modal=document.querySelector(".product-modal");if(modal)modal.remove()}});

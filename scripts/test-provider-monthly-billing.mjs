@@ -3,10 +3,12 @@ import fs from "node:fs";
 
 const schema = fs.readFileSync(new URL("../supabase/migrations/20261026120000_doodhwala_provider_monthly_billing.sql", import.meta.url), "utf8");
 const rpcs = fs.readFileSync(new URL("../supabase/migrations/20261026121000_doodhwala_provider_billing_rpcs.sql", import.meta.url), "utf8");
+const referenceGuard = fs.readFileSync(new URL("../supabase/migrations/20261026124000_doodhwala_provider_billing_reference_unique.sql", import.meta.url), "utf8");
 
 assert.match(schema, /create table if not exists public\.provider_subscription_invoices/i);
 assert.match(schema, /create table if not exists public\.provider_subscription_payments/i);
-assert.match(schema, /unique\(method,reference\)/i, "duplicate payment references must be rejected");
+assert.match(schema, /unique\(method,reference\)/i, "references are initially unique within a method");
+assert.match(referenceGuard, /create unique index if not exists provider_subscription_payments_reference_unique_idx[\s\S]*?\(reference\)/i, "a UPI/bank reference cannot be reused under a different method");
 assert.match(schema, /enable row level security/i, "billing tables must use RLS");
 assert.match(schema, /provider_subscription_invoice_owner_read[\s\S]*?p\.owner_user_id=\(select auth\.uid\(\)\)/i, "providers may read only their own invoices");
 assert.match(schema, /provider_subscription_payment_owner_read[\s\S]*?p\.owner_user_id=\(select auth\.uid\(\)\)/i, "providers may read only their own payment records");
