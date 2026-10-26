@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project context and handoff
+    url: https://github.com/Mahin98250/Doodhwala/blob/main/PROJECT_CONTEXT.md
+    about: Read the architecture, product direction, and current verification boundaries.
+  - name: Team task board
+    url: https://github.com/Mahin98250/Doodhwala/blob/main/TASK_BOARD.md
+    about: Check existing task IDs and ownership before opening a duplicate task.
