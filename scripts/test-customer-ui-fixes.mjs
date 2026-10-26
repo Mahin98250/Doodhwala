@@ -31,7 +31,7 @@ assert.match(orders, /paymentResult/, "Payment details should be loaded separate
 assert.match(orders, /Payment method not recorded/, "Older production orders must not be incorrectly labeled as COD when payment metadata is absent.");
 
 for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ordersHtml]]) {
-  assert.match(html, /customer-ui-polish\.css\?v=20261025\.3/, name + " page must load the responsive UI fixes.");
+  assert.match(html, /customer-ui-polish\.css\?v=20261026\.1/, name + " page must load the responsive UI fixes.");
   assert.match(html, /milk-transition\.css\?v=20261025\.4/, name + " page must load the milk animation styles.");
   assert.match(html, /milk-transition\.js\?v=20261025\.4/, name + " page must load the transition runtime.");
 }
@@ -57,7 +57,7 @@ assert.match(transitionCss, /prefers-reduced-motion/);
 assert.match(mobileCss, /grid-template-areas/);
 assert.match(mobileCss, /@media\(max-width:390px\)/);
 assert.match(worker, /doodhwala-v93/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
-assert.match(worker, /customer-ui-polish\.css\?v=20261025\.3/);
+assert.match(worker, /customer-ui-polish\.css\?v=20261026\.1/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
 assert.match(worker, /milk-transition\.js\?v=20261025\.4/);
 assert.match(resilience, /aboveCustomerNav/);
