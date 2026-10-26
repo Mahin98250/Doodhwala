@@ -846,7 +846,9 @@ using (
         or exists(
           select 1 from public.delivery_route_stops s
           join public.orders o on o.id=s.order_id
-          where s.route_id=r.id and o.customer_id=(select auth.uid())
+          where s.route_id=r.id
+            and o.customer_id=(select auth.uid())
+            and s.status in ('pending','arrived')
         )
       )
   )
