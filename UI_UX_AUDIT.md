@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-26
 **Scope:** Public customer-facing Doodhwala UI, source inspection of `index.html`, `styles.css`, `app.js`, and `customer-nav.js`.
-**Verification boundary:** Source review is paired with a Chromium viewport smoke workflow at 320, 390, 768, 1024 and 1440 CSS px. It checks horizontal overflow, responsive bottom-nav visibility, search accessible name and uncaught page errors, and uploads screenshots/results. The latest post-sync run **passed**: [UI browser viewport evidence](https://github.com/Mahin98250/Doodhwala/actions/runs/40365597970); screenshots and JSON results were uploaded as an artifact. This does not replace manual route-by-route, keyboard, touch-target or screen-reader checks.
+**Verification boundary:** Chromium viewport smoke passed at 320, 390, 768, 1024 and 1440 CSS px, checking overflow, responsive bottom-nav visibility, search accessible name and uncaught page errors. A follow-on interaction smoke also passed Plans/Orders navigation, cart drawer open/close, search typing, blocked-backend retry, geolocation-denied recovery, native auth validation and checkout required fields. Latest evidence: [UI browser run](https://github.com/Mahin98250/Doodhwala/actions/runs/40368859351) and [screenshots/results artifact](https://github.com/Mahin98250/Doodhwala/actions/runs/40368859351/artifacts/12671956472). External APIs/CDNs were blocked, and auth.js was stubbed to prevent localhost from redirecting to production. This does not replace physical-device, full provider-form, keyboard, touch-target or screen-reader checks.
 
 ## Finding UX-001 — Mobile bottom-navigation labels are too small
 
@@ -22,7 +22,7 @@ The following are test cases to execute in a browser; they are not represented a
 | Area | Route / viewport | Steps | Expected behavior | Severity if failing | Status |
 |---|---|---|---|---|---|
 | Primary navigation | `/`, desktop ≥1024px | Activate Home, Providers, Plans, Orders, Saved | Correct section/route opens; active state follows destination | High | Needs browser verification |
-| Bottom navigation | `/`, mobile 320–390px | Tap all six items; repeat with cart empty and populated | Targets are tappable, labels readable, active state and cart badge update | Medium | Label-size fix in branch; automated Chromium viewport smoke passed; physical-device verification pending |
+| Bottom navigation | `/`, mobile 320–390px | Tap all six items; repeat with cart empty and populated | Targets are tappable, labels readable, active state and cart badge update | Medium | Label-size fix in branch; automated Chromium viewport and selected interaction smoke passed; physical-device verification pending |
 | Search and filters | `/`, mobile + desktop | Search known provider, then unmatched query; switch milk filters and sort | Results match query/filter; no-results state is clear and recoverable | High | Needs browser verification |
 | Location selection | `/`, mobile + desktop | Open location picker; deny location permission; try manual location selection | Permission denial is explained; user can recover without a dead end | High | Needs browser verification |
 | Cart and checkout | `/checkout.html`, mobile + desktop | Open empty cart, add item, change quantity, submit invalid/incomplete checkout | Empty state is actionable; totals update; validation errors are clear | Critical if order/payment can be incorrect | Needs browser verification |
@@ -34,7 +34,7 @@ The following are test cases to execute in a browser; they are not represented a
 
 ## Screenshots and browser evidence
 
-The `UI browser viewport evidence` workflow captures `home-320px.png`, `home-390px.png`, `home-768px.png`, `home-1024px.png`, `home-1440px.png`, and `viewport-results.json` as the `doodhwala-ui-browser-evidence` artifact. Latest post-sync run: https://github.com/Mahin98250/Doodhwala/actions/runs/40365597970. These are after-change screenshots; no before-change baseline was captured. Physical-device and route-specific screenshots remain follow-up verification.
+The `UI browser viewport evidence` workflow captures `home-320px.png`, `home-390px.png`, `home-768px.png`, `home-1024px.png`, `home-1440px.png`, `location-denied-390px.png`, `auth-validation-390px.png`, `checkout-entry-390px.png`, and JSON results in the `doodhwala-ui-browser-evidence` artifact. Latest run: https://github.com/Mahin98250/Doodhwala/actions/runs/40368859351. These are after-change screenshots; no before-change baseline was captured. Physical-device and full route-specific screenshots remain follow-up verification.
 
 ## Release note
 
