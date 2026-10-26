@@ -12,7 +12,7 @@ try {
   for (const width of [320, 390, 768, 1024, 1440]) {
     const page = await browser.newPage({ viewport: { width, height: width <= 390 ? 844 : width === 768 ? 1024 : 900 } });
     // Keep this test isolated from live services/customer data; exercise the static UI shell only.
-    await page.route(/^https?:\\/\\/(?!127\\.0\\.0\\.1:4173)/, route => route.abort());
+    await page.route("**/*", route => { const url = new URL(route.request().url()); if (url.hostname !== "127.0.0.1" || url.port !== "4173") return route.abort(); return route.continue(); });
     const errors = [];
     page.on("pageerror", error => errors.push(error.message));
     const response = await page.goto(base, { waitUntil: "domcontentloaded" });
