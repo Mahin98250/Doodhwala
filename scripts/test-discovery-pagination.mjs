@@ -41,7 +41,7 @@ assert.match(app, /new Set\(providers\.map\(provider=>String\(provider\.id\)\)\)
 assert.match(app, /find_nearby_providers_v2/, "legacy RPC fallback must keep the frontend usable before v3 rollout");
 assert.match(app, /p_sort:sortMode/);
 assert.match(app, /discoveryOffset<5000/);
-assert.match(loadScenario, /rest\\/v1\\/rpc\\/find_nearby_providers_v3/);
+assert.ok(loadScenario.includes("/rest/v1/rpc/find_nearby_providers_v3"));
 assert.match(loadScenario, /p_limit: 25/);
 assert.match(loadScenario, /p_sort: "closest"/);
 
