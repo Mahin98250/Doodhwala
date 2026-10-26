@@ -81,3 +81,36 @@ body.plans-page,body.orders-page{min-height:100vh;min-height:100svh;display:flex
 /* Keep the small milk-transfer loader out of the way of the customer header. */
 .home-page .dw-milk-loading{top:calc(72px + env(safe-area-inset-top,0px));left:auto;right:12px;transform:none}
 @media(max-width:760px){.home-page .dw-milk-loading{top:calc(154px + env(safe-area-inset-top,0px));left:12px;right:12px;max-width:max-content}}
+
+
+/* Mobile home header: keep the brand/location row clean and align every action. */
+@media(max-width:760px){
+  .home-page .app main>header{
+    grid-template-columns:minmax(0,1fr) auto auto auto!important;
+    grid-template-areas:
+      "brand brand location location"
+      "search search search search"
+      "help bell auth bag"!important;
+    column-gap:10px!important;
+    row-gap:10px!important;
+    padding:12px 14px 14px!important;
+    align-items:center!important;
+  }
+  .home-page .app main>header .mobile-logo{grid-area:brand;justify-self:start;min-width:0}
+  .home-page .app main>header .location-top{grid-area:location;width:clamp(132px,42vw,190px);max-width:190px;justify-self:end}
+  .home-page .app main>header .search{grid-area:search;margin:0!important;width:100%;height:46px;min-height:46px;border-radius:15px}
+  .home-page .app main>header .auth-link:not(#authLink){grid-area:help;justify-self:start;font-size:11px}
+  .home-page .app main>header #authLink{grid-area:auth;justify-self:end;font-size:11px}
+  .home-page .app main>header .cart{grid-area:bag;justify-self:end;min-height:40px;padding:8px 13px;border-radius:14px}
+  .home-page .app main>header .d10x-bell{grid-area:bell;justify-self:center;width:38px;height:38px;margin:0;border-radius:12px}
+  .home-page .app main>header .d10x-bell svg{width:18px;height:18px}
+}
+@media(max-width:420px){
+  .home-page .app main>header{column-gap:7px!important;padding-inline:12px!important}
+  .home-page .app main>header .mobile-logo img{width:32px;height:32px}
+  .home-page .app main>header .mobile-logo b{font-size:13px}
+  .home-page .app main>header .location-top{width:136px;min-height:40px;padding:6px 8px}
+  .home-page .app main>header .auth-link:not(#authLink){font-size:10px}
+  .home-page .app main>header #authLink{font-size:10px}
+  .home-page .app main>header .cart{font-size:11px;padding:8px 10px}
+}
