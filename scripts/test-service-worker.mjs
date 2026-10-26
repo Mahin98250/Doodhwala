@@ -52,12 +52,16 @@ vm.runInNewContext(source, {
 
 async function offlineResponse(url, mode = "navigate") {
   let responsePromise;
+  const lifetimePromises = [];
   handlers.get("fetch")({
     request: { method: "GET", url, mode },
+    waitUntil(promise) { lifetimePromises.push(promise); },
     respondWith(promise) { responsePromise = promise; }
   });
   assert.ok(responsePromise, "fetch handler must provide a response");
-  return await responsePromise;
+  const response = await responsePromise;
+  await Promise.all(lifetimePromises);
+  return response;
 }
 
 const legalRoute = await offlineResponse(origin + "/Doodhwala/legal.html#privacy");
