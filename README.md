@@ -79,6 +79,10 @@ Provider signup → identity/business verification → service area → milk cat
 ### Doodhwala operations
 Provider moderation → verification → service-area management → disputes/support → marketplace analytics → fraud/safety controls
 
+## Scalability roadmap
+
+The system inventory, staged rollout, load-balancing decision gates, observability, caching, database and load-test strategy are documented in [`docs/scalability/SCALABILITY_MASTER_PLAN.md`](docs/scalability/SCALABILITY_MASTER_PLAN.md). Capacity targets must be proven with isolated staging tests; production is never used for synthetic load.
+
 ## Recommended backend direction
 
 Supabase is a strong next step for the MVP because it can cover:
