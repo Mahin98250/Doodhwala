@@ -104,6 +104,9 @@ assert.match(docs, /No production migration, live GPS session, route provider bi
 
 assert.ok(schema.includes("s.status in ('pending','arrived')"), "finished customers must not query route GPS");
 assert.ok(operations.includes("event => 'stop_updated'"), "stop actions must broadcast status updates");
+const stopBroadcast = operations.slice(operations.indexOf("event => 'stop_updated'") - 500, operations.indexOf("event => 'stop_updated'"));
+assert.doesNotMatch(stopBroadcast, /'order_id'|'stop_id'|'skip_reason'|'stop_status'/, "shared route broadcasts must not expose individual customer stop details");
+assert.match(trackingJs, /if \(event\?\.route_id === routeId\) \{/, "customer must reload its own tracking after a route-level stop invalidation");
 assert.ok(operations.includes("skip_reason=left(btrim(p_reason),300)"), "skip reason must be persisted");
 assert.ok(operations.includes("s.status in ('pending','arrived')"), "finished customer stops must not receive route broadcasts");
 assert.ok(driverJs.includes("delivery_driver_opt_out"), "drivers need a consent opt-out");
