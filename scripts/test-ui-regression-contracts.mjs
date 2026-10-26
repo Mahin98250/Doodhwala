@@ -27,6 +27,8 @@ for (const [key, label] of [
 
 assert.ok(nav.includes('addEventListener("click"'), "navigation buttons must retain click handlers");
 assert.ok(nav.includes('setAttribute("aria-current"'), "active destination must expose aria-current");
+assert.ok(nav.includes('addEventListener("doodhwala:view-changed"'), "shared navigation must update active state for in-page view changes");
+assert.ok(app.includes('new CustomEvent("doodhwala:view-changed"'), "home view changes must notify shared navigation");
 assert.ok(nav.includes('updateCartBadge(nav)'), "cart badge must be refreshed");
 assert.ok(nav.includes('addEventListener("storage"'), "cart badge must react to cross-tab storage changes");
 assert.ok(nav.includes('addEventListener("doodhwala:cart-updated"'), "cart badge must react to cart updates");
