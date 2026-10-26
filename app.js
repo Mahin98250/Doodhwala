@@ -323,7 +323,7 @@ async function loadRemoteProviders(lat=null,lng=null){
  try{
   if(!window.Doodhwala?.configured){dataState="error";providers=[];render();return}
   dataState="loading";providers=[];render();
-  let data,error;
+  let data,error,usedLegacyRpc=false;
   const result=await window.Doodhwala.supabase.rpc("find_nearby_providers_v3",{
    p_latitude:discoveryCoordinates.latitude,
    p_longitude:discoveryCoordinates.longitude,
@@ -342,12 +342,13 @@ async function loadRemoteProviders(lat=null,lng=null){
     p_max_km:20
    });
    if(legacy.error)throw legacy.error;
-   data=legacy.data;error=null;discoveryUsingLegacyRpc=true;
+   data=legacy.data;error=null;usedLegacyRpc=true;
   }else{data=result.data;error=result.error}
   if(error)throw error;
   if(requestId!==discoveryRequestId)return;
+  discoveryUsingLegacyRpc=usedLegacyRpc;
   const rows=Array.isArray(data)?data:[];
-  if(discoveryUsingLegacyRpc){
+  if(usedLegacyRpc){
    providers=rows.map(mapRemoteProvider);
    discoveryOffset=providers.length;
    discoveryHasMore=false;
