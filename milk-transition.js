@@ -52,7 +52,9 @@
     try{target=new URL(url,w.location.href)}catch(_){w.location.href=url;return;}
     if(target.origin!==w.location.origin){w.location.href=target.href;return;}
     showTransition("Pouring fresh milk");
-    timer=w.setTimeout(function(){w.location.assign(target.href);},850);
+    var reduceMotion=false;
+    try{reduceMotion=!!(w.matchMedia&&w.matchMedia("(prefers-reduced-motion: reduce)").matches)}catch(_){}
+    timer=w.setTimeout(function(){w.location.assign(target.href);},reduceMotion?0:260);
   }
   w.DoodhwalaMilkTransition={showTransition:showTransition,hideTransition:hideTransition,showLoading:showLoading,hideLoading:hideLoading,navigate:navigate};
   d.addEventListener("click",function(event){
