@@ -14,9 +14,9 @@ create table if not exists public.user_notifications (
 );
 
 create index if not exists user_notifications_user_created_idx
-  on public.user_notifications(user_id, created_at desc);
+  on public.user_notifications(user_id, created_at desc, id desc);
 create index if not exists user_notifications_unread_idx
-  on public.user_notifications(user_id, created_at desc)
+  on public.user_notifications(user_id, created_at desc, id desc)
   where read_at is null;
 
 alter table public.user_notifications enable row level security;
@@ -107,9 +107,12 @@ create trigger order_status_events_notify
 
 revoke all on function public.create_order_status_notifications() from public, anon, authenticated;
 
+drop function if exists public.get_my_notifications(integer, timestamptz);
+
 create or replace function public.get_my_notifications(
   p_limit integer default 50,
-  p_before timestamptz default null
+  p_before timestamptz default null,
+  p_before_id uuid default null
 )
 returns jsonb
 language plpgsql
@@ -126,14 +129,18 @@ begin
     raise exception 'authentication_required' using errcode = '28000';
   end if;
 
-  select coalesce(jsonb_agg(to_jsonb(n) order by n.created_at desc), '[]'::jsonb)
+  select coalesce(jsonb_agg(to_jsonb(n) order by n.created_at desc, n.id desc), '[]'::jsonb)
     into v_items
     from (
       select id, title, body, category, related_order_id, created_at, read_at
         from public.user_notifications
        where user_id = v_uid
-         and (p_before is null or created_at < p_before)
-       order by created_at desc
+         and (
+           p_before is null
+           or (p_before_id is null and created_at < p_before)
+           or (p_before_id is not null and (created_at, id) < (p_before, p_before_id))
+         )
+       order by created_at desc, id desc
        limit greatest(1, least(coalesce(p_limit, 50), 100))
     ) n;
 
@@ -202,8 +209,8 @@ begin
 end
 $function$;
 
-revoke all on function public.get_my_notifications(integer, timestamptz) from public, anon, authenticated;
-grant execute on function public.get_my_notifications(integer, timestamptz) to authenticated;
+revoke all on function public.get_my_notifications(integer, timestamptz, uuid) from public, anon, authenticated;
+grant execute on function public.get_my_notifications(integer, timestamptz, uuid) to authenticated;
 
 revoke all on function public.mark_my_notification_read(uuid) from public, anon, authenticated;
 grant execute on function public.mark_my_notification_read(uuid) to authenticated;
