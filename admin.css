@@ -81,3 +81,21 @@
 
 /* Support inbox — clear triage controls and readable ticket details */
 .support-admin-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.support-admin-summary .metric{min-width:0}.support-admin-summary .metric b{font-size:23px}.support-admin-summary .metric span{font-size:9px}.admin-list-head>select,.admin-table td select{border:1px solid #d9e3da;background:#fbfdfb;border-radius:9px;min-height:32px;padding:0 9px;color:#26362c;font:700 9px "DM Sans",sans-serif;max-width:140px}.admin-table td [data-ticket-save]{display:block;margin-top:5px;border:1px solid #cbdccc;background:#edf6ef;color:#235d39;border-radius:8px;padding:6px 10px;font:800 8px "DM Sans",sans-serif;cursor:pointer}.admin-table td [data-ticket-save]:disabled{opacity:.55;cursor:wait}.support-ticket-detail{margin-top:7px;max-width:290px}.support-ticket-detail summary{font-size:8px;color:#2f7450;font-weight:900;cursor:pointer}.support-ticket-detail p{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;padding:10px;background:#f7faf7;border:1px solid #e3ebe3;border-radius:9px;font-size:9px;line-height:1.6;color:#526258}.admin-table td>small{display:block;color:#87938b;font-size:7px;margin-top:4px;overflow-wrap:anywhere}.admin-status.in_progress{background:#edf4ff;color:#355e96}.admin-status.resolved{background:#e6f3e9;color:#17603f}.admin-status.open{background:#fff5dc;color:#84631d}@media(max-width:700px){.support-admin-summary{grid-template-columns:1fr 1fr}.admin-list-head>select{max-width:100%;width:100%}}
+
+/* Owner-only account-deletion request triage */
+.privacy-admin-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.privacy-admin-summary .metric{min-width:0}
+.privacy-admin-summary .metric b{font-size:24px}
+.privacy-admin-warning{margin:12px 0;border-left:3px solid #c58c29;background:#fff8e9;color:#73541c;line-height:1.65}
+.privacy-request-table{min-width:1050px}
+.privacy-request-table td{vertical-align:top;max-width:270px}
+.privacy-request-table code{font-size:10px;overflow-wrap:anywhere;white-space:normal;color:#506256}
+.privacy-request-table td small{display:block;margin-top:5px;color:#87938b;font-size:9px}
+.privacy-request-note{max-width:230px;max-height:120px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;line-height:1.6;color:#596b5d}
+.privacy-request-table select,.privacy-request-table textarea{display:block;width:100%;min-width:155px;margin-bottom:7px;border:1px solid #d7e1d7;border-radius:8px;padding:8px;background:#fbfdfb;color:#24362a;font:600 11px/1.45 system-ui}
+.privacy-request-table textarea{resize:vertical;min-height:54px;font-weight:500}
+.privacy-request-table [data-deletion-save]{border:1px solid #bcd3bf;background:#e9f5eb;color:#1e5b35;border-radius:9px;padding:9px 12px;font:800 10px system-ui;cursor:pointer;white-space:nowrap}
+.privacy-request-table [data-deletion-save]:disabled{opacity:.55;cursor:wait}
+.admin-status.under_review{background:#e9f1ff;color:#345d94}
+.admin-status.blocked_open_orders{background:#fff4dc;color:#7b5a1d}
+@media(max-width:700px){.privacy-admin-summary{grid-template-columns:1fr 1fr}.privacy-admin-summary .metric:last-child{grid-column:1/-1}}

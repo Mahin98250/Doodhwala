@@ -39,7 +39,7 @@ assert.doesNotMatch(customer, /Doodhwala 10X|DOODHWALA 10X/, "old customer-facin
 assert.doesNotMatch(provider, /DOODHWALA 10X/, "old seller heading should be absent");
 
 const workflow = read(".github/workflows/static-validation.yml");
-assert.ok(workflow.includes("support.js network-status.js; do"), "new shared JS must be included in the syntax-check file loop");
+assert.ok(workflow.includes("support.js network-status.js account-deletion.js; do"), "new shared JS must be included in the syntax-check file loop");
 assert.ok(workflow.includes('node --check "$file"'), "syntax-check loop must execute node --check for every listed file");
 assert.ok(workflow.includes("Test premium experience and connection feedback"), "new contract test must run in CI");
 

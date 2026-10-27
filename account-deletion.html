@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#175a3c">
+  <meta name="description" content="Manage your Doodhwala account deletion request and privacy choices.">
+  <title>Doodhwala — Account deletion</title>
+  <link rel="icon" href="/Doodhwala/assets/mascot.png">
+  <link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5">
+  <link rel="stylesheet" href="/Doodhwala/account-deletion.css?v=20261027.1">
+</head>
+<body class="account-deletion-page">
+  <main class="deletion-shell">
+    <header class="deletion-top">
+      <a class="deletion-brand" href="/Doodhwala/">
+        <img src="/Doodhwala/assets/mascot.png" alt="">
+        <span><strong>Doodhwala</strong><small>Local milk, nearby.</small></span>
+      </a>
+      <a class="deletion-back" href="/Doodhwala/">Back to marketplace</a>
+    </header>
+
+    <section class="deletion-hero">
+      <span class="deletion-eyebrow">PRIVACY &amp; ACCOUNT</span>
+      <h1>Account deletion</h1>
+      <p>Use this page to submit and track an authenticated request to delete your Doodhwala account.</p>
+    </section>
+
+    <section class="deletion-notice" role="status" aria-live="polite">
+      <strong>Important: submitting a request is not the same as deletion.</strong>
+      <p>This request-intake feature is being completed. Your account and personal data are not erased when you submit this form. Do not treat your account as deleted until the request status explicitly says “Completed”. Open orders, provider obligations, and legally required transaction records need a reviewed retention process.</p>
+    </section>
+
+    <section class="deletion-panel" aria-labelledby="deletionAccountHeading">
+      <div class="deletion-panel-heading">
+        <span class="deletion-step">01</span>
+        <div>
+          <h2 id="deletionAccountHeading">Your account</h2>
+          <p id="deletionAuthHint">Checking your sign-in status…</p>
+        </div>
+      </div>
+      <div id="deletionSignedOut" class="deletion-signed-out" hidden>
+        <p>Sign in to prove ownership before submitting a request. You can return to this page after authentication.</p>
+        <a class="deletion-primary-link" id="deletionSignIn" href="/Doodhwala/auth.html?return=%2FDoodhwala%2Faccount-deletion.html">Sign in securely</a>
+      </div>
+      <div id="deletionSignedIn" hidden>
+        <div class="deletion-account-card">
+          <span class="deletion-avatar" aria-hidden="true">●</span>
+          <div><small>Signed-in account</small><strong id="deletionAccountLabel">Account verified</strong></div>
+          <span class="deletion-session-badge">Authenticated</span>
+        </div>
+        <div id="deletionStatus" class="deletion-status" role="status" aria-live="polite">Loading request status…</div>
+      </div>
+      <p id="deletionError" class="deletion-error" role="alert" hidden></p>
+    </section>
+
+    <section id="deletionRequestSection" class="deletion-panel" aria-labelledby="deletionRequestHeading" hidden>
+      <div class="deletion-panel-heading">
+        <span class="deletion-step">02</span>
+        <div>
+          <h2 id="deletionRequestHeading">Request account deletion</h2>
+          <p>Confirm the action and optionally explain anything the support team should know.</p>
+        </div>
+      </div>
+      <form id="deletionRequestForm" class="deletion-form">
+        <label for="deletionReason">Optional note</label>
+        <textarea id="deletionReason" rows="3" maxlength="500" placeholder="Optional: tell us why you are requesting deletion. Do not include passwords, OTPs or payment secrets."></textarea>
+        <label for="deletionConfirm">Type <code>DELETE MY ACCOUNT</code> to confirm</label>
+        <input id="deletionConfirm" name="deletionConfirm" autocomplete="off" required maxlength="40" placeholder="DELETE MY ACCOUNT">
+        <label class="deletion-checkbox"><input id="deletionAcknowledge" type="checkbox" required><span>I understand this submits a request and does not immediately erase my account or order history.</span></label>
+        <button id="deletionSubmit" class="deletion-primary" type="submit">Submit deletion request</button>
+      </form>
+    </section>
+
+    <section id="deletionRequestStatusSection" class="deletion-panel" aria-labelledby="deletionStatusHeading" hidden>
+      <div class="deletion-panel-heading">
+        <span class="deletion-step">02</span>
+        <div>
+          <h2 id="deletionStatusHeading">Your request</h2>
+          <p>Keep this reference for support follow-up.</p>
+        </div>
+      </div>
+      <dl class="deletion-details">
+        <div><dt>Reference</dt><dd id="deletionRequestId">—</dd></div>
+        <div><dt>Status</dt><dd id="deletionRequestState">—</dd></div>
+        <div><dt>Submitted</dt><dd id="deletionRequestedAt">—</dd></div>
+      </dl>
+      <p id="deletionStatusNote" class="deletion-status-note"></p>
+      <button id="deletionCancel" class="deletion-secondary" type="button" hidden>Cancel pending request</button>
+      <button id="deletionRefresh" class="deletion-secondary" type="button">Refresh status</button>
+    </section>
+
+    <section class="deletion-next-steps">
+      <h2>What happens next?</h2>
+      <ol>
+        <li>We check that the request belongs to your signed-in account.</li>
+        <li>The deletion process must account for open orders, provider commitments, and legally required records.</li>
+        <li>This page will show the backend request status. Final deletion/anonymisation is not enabled by this intake feature yet.</li>
+      </ol>
+    </section>
+
+    <footer class="deletion-footer">
+      <a href="/Doodhwala/legal.html#privacy">Privacy draft</a>
+      <a href="/Doodhwala/legal.html#data-rights">Data rights</a>
+      <a href="/Doodhwala/support.html">Help &amp; support</a>
+      <span>Legal policies remain drafts pending professional review.</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+  <script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+  <script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+  <script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+  <script src="/Doodhwala/account-deletion.js?v=20261027.1"></script>
+  <script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
+</body>
+</html>
