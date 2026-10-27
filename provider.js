@@ -384,7 +384,108 @@ function refreshOrderDeadlines(){
    el.classList.toggle("urgent",d.urgent);
  });
 }
-function orderActions(order){if(order.payment_method==="selection_pending")return '<span class="payment-choice-pending">Waiting for customer payment choice…</span>';const s=order.status;const actions=[];if(s==="placed"){actions.push(["accepted","Accept order","primary-action"],["rejected","Decline","danger-action"])}else if(s==="accepted"){actions.push(["preparing","Start packing","primary-action"],["cancelled","Cancel","danger-action"])}else if(s==="preparing"){actions.push(["ready","Mark ready","primary-action"],["cancelled","Cancel","danger-action"])}else if(s==="ready"){actions.push(["out_for_delivery","Out for delivery","primary-action"],["cancelled","Cancel","danger-action"])}else if(s==="out_for_delivery"){actions.push(["delivered","Mark delivered","primary-action"])}return actions.map(a=>'<button class="'+a[2]+'" data-order-status="'+a[0]+'" data-order-id="'+order.id+'">'+a[1]+"</button>").join("")}
+function orderProgressMarkup(status,reason){
+ if(status==="rejected"||status==="cancelled"){
+  const title=status==="rejected"?"Order declined":"Order cancelled";
+  return '<div class="order-progress-terminal" role="status"><b>'+title+'</b>'+(reason?'<span>'+escapeHtml(reason)+'</span>':"")+'</div>';
+ }
+ const steps=[["placed","New"],["accepted","Accepted"],["preparing","Packing"],["ready","Ready"],["out_for_delivery","On route"],["delivered","Delivered"]];
+ const current=steps.findIndex(function(step){return step[0]===status});
+ return '<ol class="order-progress" aria-label="Order progress">'+steps.map(function(step,index){
+  const state=index<current?"done":index===current?"current":"upcoming";
+  return '<li class="order-progress-step '+state+'"'+(index===current?' aria-current="step"':"")+'><span class="order-progress-dot" aria-hidden="true">'+(index<current?"✓":String(index+1))+'</span><b>'+step[1]+'</b></li>';
+ }).join("")+'</ol>';
+}
+function orderActions(order){
+ if(order.payment_method==="selection_pending")return '<span class="payment-choice-pending">Waiting for customer payment choice…</span>';
+ const actions=[],s=order.status;
+ if(s==="placed")actions.push(["accepted","Accept order","primary-action"],["rejected","Decline order","danger-action"]);
+ else if(s==="accepted")actions.push(["preparing","Start packing","primary-action"],["cancelled","Cancel order","danger-action"]);
+ else if(s==="preparing")actions.push(["ready","Mark ready","primary-action"],["cancelled","Cancel order","danger-action"]);
+ else if(s==="ready")actions.push(["out_for_delivery","Start delivery","primary-action"],["cancelled","Cancel order","danger-action"]);
+ else if(s==="out_for_delivery")actions.push(["delivered","Mark delivered","primary-action"]);
+ return actions.map(function(action){return '<button type="button" class="'+action[2]+'" data-order-status="'+action[0]+'" data-order-id="'+escapeHtml(order.id)+'" aria-label="'+action[1]+' for order '+escapeHtml(order.id)+'">'+action[1]+'</button>'}).join("");
+}
+function providerOrderStatusError(message){
+ const value=String(message||"");
+ if(value.includes("invalid_order_status_transition"))return "This order has already changed. Refresh to see its latest status.";
+ if(value.includes("reason_required"))return "Please add a short reason before continuing.";
+ if(value.includes("acceptance_window_expired"))return "The response time has passed. Refresh the queue to see the latest status.";
+ if(value.includes("provider_not_approved"))return "Your seller profile still needs approval before orders can be managed.";
+ if(value.includes("order_not_found"))return "This order is no longer available. Refresh the queue.";
+ return "We couldn’t update this order. Refresh the queue and try again.";
+}
+let orderReasonReturnFocus=null;
+function closeOrderReasonDialog(){
+ const modal=document.querySelector(".order-reason-modal");
+ if(!modal)return;
+ modal.remove();
+ document.removeEventListener("keydown",handleOrderReasonKeydown);
+ const trigger=orderReasonReturnFocus;orderReasonReturnFocus=null;
+ if(trigger&&trigger.isConnected)trigger.focus();
+}
+function handleOrderReasonKeydown(event){if(event.key==="Escape")closeOrderReasonDialog()}
+function openOrderReasonDialog(button,status){
+ closeOrderReasonDialog();
+ const rejecting=status==="rejected",modal=document.createElement("div");
+ orderReasonReturnFocus=button;
+ modal.className="order-reason-modal";
+ modal.innerHTML='<section class="order-reason-card" role="dialog" aria-modal="true" aria-labelledby="orderReasonTitle" aria-describedby="orderReasonDescription"><div class="order-reason-head"><div><span class="eyebrow">ORDER UPDATE</span><h2 id="orderReasonTitle">'+(rejecting?"Decline this order?":"Cancel this order?")+'</h2><p id="orderReasonDescription">'+(rejecting?"Tell the customer why you can’t accept this order.":"Explain why this accepted order needs to be cancelled.")+'</p></div><button type="button" class="order-reason-close" data-order-reason-close aria-label="Close dialog">×</button></div><label class="order-reason-label" for="orderReasonText">Reason for the customer <span>Required</span><textarea id="orderReasonText" maxlength="300" rows="4" placeholder="'+(rejecting?"For example, milk is unavailable today.":"For example, an unexpected delivery issue.")+'"></textarea></label><div class="order-reason-foot"><span>Keep it short and helpful.</span><span id="orderReasonLength">0 / 300</span></div><p id="orderReasonError" class="order-reason-error" role="alert"></p><div class="order-reason-actions"><button type="button" class="secondary" data-order-reason-close>Keep order</button><button type="button" id="submitOrderReason" class="danger-action">'+(rejecting?"Decline order":"Cancel order")+'</button></div></section>';
+ document.body.append(modal);
+ modal.querySelectorAll("[data-order-reason-close]").forEach(function(closeButton){closeButton.onclick=closeOrderReasonDialog});
+ modal.addEventListener("click",function(event){if(event.target===modal)closeOrderReasonDialog()});
+ document.addEventListener("keydown",handleOrderReasonKeydown);
+ const field=modal.querySelector("#orderReasonText"),counter=modal.querySelector("#orderReasonLength"),error=modal.querySelector("#orderReasonError"),submit=modal.querySelector("#submitOrderReason");
+ field.addEventListener("input",function(){counter.textContent=field.value.length+" / 300";error.textContent=""});
+ field.focus();
+ submit.onclick=async function(){
+  const reason=field.value.trim().slice(0,300);
+  if(!reason){error.textContent="Add a short reason so the customer knows what happened.";field.focus();return}
+  submit.disabled=true;submit.textContent=rejecting?"Declining…":"Cancelling…";
+  const ok=await submitProviderOrderStatus(button,status,reason,{modal:modal,submitButton:submit,errorElement:error});
+  if(!ok&&document.body.contains(modal)){submit.disabled=false;submit.textContent=rejecting?"Decline order":"Cancel order"}
+ };
+}
+async function submitProviderOrderStatus(button,status,reason,dialog){
+ const card=button.closest(".provider-order");
+ if(card)card.querySelectorAll("[data-order-status]").forEach(function(action){action.disabled=true});
+ if(dialog?.submitButton)dialog.submitButton.disabled=true;
+ let confirmed=false;
+ try{
+  const result=await Doodhwala.supabase.rpc("provider_update_order_status",{p_order_id:button.dataset.orderId,p_new_status:status,p_reason:reason||null});
+  if(result.error){
+   console.warn("Provider order status update rejected",result.error);
+   const message=providerOrderStatusError(result.error.message);
+   if(dialog?.errorElement)dialog.errorElement.textContent=message;else toast(message);
+   try{await loadProviderOrders()}catch(refreshError){console.warn("Could not refresh provider orders after rejection",refreshError)}
+   return false;
+  }
+  confirmed=true;
+  if(dialog?.modal)closeOrderReasonDialog();
+  const success=({accepted:"Order accepted",preparing:"Order moved to packing",ready:"Order ready for delivery",out_for_delivery:"Order marked out for delivery",delivered:"Order marked delivered",rejected:"Order declined",cancelled:"Order cancelled"})[status]||"Order updated";
+  toast(success);
+  try{await loadProviderOrders()}catch(refreshError){console.warn("Order updated but refresh failed",refreshError);toast("Order updated. Tap Refresh to reload the queue.")}
+  return true;
+ }catch(error){
+  console.warn("Provider order status update failed",error);
+  const message=confirmed?"Order updated. Tap Refresh to reload the queue.":"We couldn’t confirm this change. Refresh the queue before retrying.";
+  if(dialog?.errorElement)dialog.errorElement.textContent=message;else toast(message);
+  return false;
+ }finally{
+  if(card&&card.isConnected)card.querySelectorAll("[data-order-status]").forEach(function(action){action.disabled=false});
+  if(dialog?.submitButton&&dialog.submitButton.isConnected)dialog.submitButton.disabled=false;
+ }
+}
+function updateOrderFilterCounts(orders){
+ const filter=$("orderFilter");if(!filter)return;
+ const active=orders.filter(function(order){return ["placed","accepted","preparing","ready","out_for_delivery"].includes(order.status)}).length;
+ const counts={all:orders.length,action:orders.filter(function(order){return order.status==="placed"}).length,active:active,completed:orders.filter(function(order){return ["delivered","rejected","cancelled"].includes(order.status)}).length};
+ Array.from(filter.options).forEach(function(option){
+  if(!option.dataset.baseLabel)option.dataset.baseLabel=option.textContent.replace(/\s+\(\d+\)$/,"");
+  option.textContent=option.dataset.baseLabel+" ("+(counts[option.value]??0)+")";
+ });
+}
+
 function renderOrderKpis(orders){
  const k=$("providerOrderKpis");if(!k)return;
  const action=orders.filter(o=>o.status==="placed").length;
@@ -451,6 +552,7 @@ await setupProviderOrderRealtime(user)
  const result=await Doodhwala.supabase.from("orders").select("id,status,status_reason,subtotal,delivery_fee,total,customer_note,created_at,acceptance_deadline_at,estimated_delivery_min_minutes,estimated_delivery_max_minutes,promised_delivery_at,late_after_at,delivery_recipient_name,delivery_phone,delivery_address_line,delivery_area_name,delivery_city,delivery_pin_code,payment_method,payment_status,payment_reference,payment_confirmed_at,order_items(product_name_snapshot,quantity,unit_price,line_total)").eq("provider_id",profile.data.id).order("created_at",{ascending:false}).limit(50);
  if(result.error){state.textContent=result.error.message;list.innerHTML="";return}
  const orders=result.data||[];
+ updateOrderFilterCounts(orders);
  const previousIds=window.__providerKnownOrderIds;
  const currentIds=new Set(orders.map(function(order){return String(order.id)}));
  if(previousIds){
@@ -483,28 +585,17 @@ await setupProviderOrderRealtime(user)
         :orderTime(o.promised_delivery_at))+
       '</b></div>'
     :"";
-  const paymentLabel=({unpaid:"Waiting for customer payment choice",payment_pending_verification:"UPI payment awaiting seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Cash due on delivery",paid_cod:"Cash collection confirmed",unpaid:"Waiting for customer payment choice"})[o.payment_status]||String(o.payment_status||"Payment status unavailable").replace(/_/g," ");const paymentPanel='<div class="provider-payment-panel"><b>Payment · '+escapeHtml(o.payment_method==="direct_upi"?"Direct seller UPI":"Cash on Delivery")+'</b><span>'+escapeHtml(paymentLabel)+'</span>'+(o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="secondary" data-confirm-direct-upi="'+escapeHtml(o.id)+'">Confirm receipt in bank app</button>':"")+(o.payment_method==="cod"&&o.payment_status==="cash_on_delivery"&&o.status==="delivered"?'<button class="secondary" data-confirm-cod="'+escapeHtml(o.id)+'">Confirm cash collected</button>':"")+'</div>';return '<article class="provider-order"><div class="provider-order-head"><div><div class="provider-order-id">Order '+escapeHtml(o.id)+'</div><div class="provider-order-time">'+escapeHtml(orderTime(o.created_at))+'</div></div><div class="order-head-status"><span class="order-status '+escapeHtml(o.status)+'">'+escapeHtml(orderStatusLabel(o.status))+'</span>'+(deadline?'<span class="order-deadline'+(deadline.urgent?' urgent':'')+'" data-order-deadline data-order-created="'+escapeHtml(o.acceptance_deadline_at||o.created_at)+'" data-order-timeout="'+escapeHtml(profile.data.acceptance_timeout_minutes)+'">'+escapeHtml(deadline.label)+'</span>':"")+'</div></div><div class="provider-order-grid"><div class="order-panel"><small>Customer</small><b>'+escapeHtml(o.delivery_recipient_name||"Customer")+'</b><span>'+escapeHtml(o.delivery_phone||"No phone")+'</span></div><div class="order-panel"><small>Delivery</small><b>'+escapeHtml(o.delivery_address_line||"Address unavailable")+'</b><span>'+escapeHtml([o.delivery_area_name,o.delivery_city,o.delivery_pin_code].filter(Boolean).join(", "))+'</span></div></div><div class="order-items">'+(o.order_items||[]).map(function(i){return '<div class="order-item"><span>'+escapeHtml(i.product_name_snapshot)+' × '+i.quantity+'</span><b>'+orderMoney(i.line_total)+'</b></div>'}).join("")+'</div>'+promise+paymentPanel+'<div class="provider-order-head" style="margin-top:14px"><b>Total '+orderMoney(o.total)+'</b><span>'+escapeHtml(o.customer_note||"No customer note")+'</span></div><div class="order-actions">'+orderActions(o)+'</div></article>'
+  const paymentLabel=({unpaid:"Waiting for customer payment choice",payment_pending_verification:"UPI payment awaiting seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Cash due on delivery",paid_cod:"Cash collection confirmed",unpaid:"Waiting for customer payment choice"})[o.payment_status]||String(o.payment_status||"Payment status unavailable").replace(/_/g," ");const paymentPanel='<div class="provider-payment-panel"><b>Payment · '+escapeHtml(o.payment_method==="direct_upi"?"Direct seller UPI":"Cash on Delivery")+'</b><span>'+escapeHtml(paymentLabel)+'</span>'+(o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="secondary" data-confirm-direct-upi="'+escapeHtml(o.id)+'">Confirm receipt in bank app</button>':"")+(o.payment_method==="cod"&&o.payment_status==="cash_on_delivery"&&o.status==="delivered"?'<button class="secondary" data-confirm-cod="'+escapeHtml(o.id)+'">Confirm cash collected</button>':"")+'</div>';return '<article class="provider-order"><div class="provider-order-head"><div><div class="provider-order-id">Order '+escapeHtml(o.id)+'</div><div class="provider-order-time">'+escapeHtml(orderTime(o.created_at))+'</div></div><div class="order-head-status"><span class="order-status '+escapeHtml(o.status)+'">'+escapeHtml(orderStatusLabel(o.status))+'</span>'+(deadline?'<span class="order-deadline'+(deadline.urgent?' urgent':'')+'" data-order-deadline data-order-created="'+escapeHtml(o.acceptance_deadline_at||o.created_at)+'" data-order-timeout="'+escapeHtml(profile.data.acceptance_timeout_minutes)+'">'+escapeHtml(deadline.label)+'</span>':"")+'</div></div>'+orderProgressMarkup(o.status,o.status_reason)+'<div class="provider-order-grid"><div class="order-panel"><small>Customer</small><b>'+escapeHtml(o.delivery_recipient_name||"Customer")+'</b><span>'+escapeHtml(o.delivery_phone||"No phone")+'</span></div><div class="order-panel"><small>Delivery</small><b>'+escapeHtml(o.delivery_address_line||"Address unavailable")+'</b><span>'+escapeHtml([o.delivery_area_name,o.delivery_city,o.delivery_pin_code].filter(Boolean).join(", "))+'</span></div></div><div class="order-items">'+(o.order_items||[]).map(function(i){return '<div class="order-item"><span>'+escapeHtml(i.product_name_snapshot)+' × '+i.quantity+'</span><b>'+orderMoney(i.line_total)+'</b></div>'}).join("")+'</div>'+promise+paymentPanel+'<div class="provider-order-head" style="margin-top:14px"><b>Total '+orderMoney(o.total)+'</b><span>'+escapeHtml(o.customer_note||"No customer note")+'</span></div><div class="order-actions">'+orderActions(o)+'</div></article>'
 }).join("");
  list.querySelectorAll("[data-confirm-direct-upi]").forEach(function(button){button.onclick=async function(){const ref=(prompt("Enter the UPI transaction reference / UTR from your bank or UPI app (6–120 letters/numbers, /, _ or -; never enter a PIN or OTP):")||"").trim().slice(0,120);if(!/^[A-Za-z0-9/_-]{6,120}$/.test(ref)){toast("A valid transaction reference is required. Nothing was confirmed.");return}if(!confirm("Confirm only after personally checking your bank/UPI app and verifying this exact amount was received. This is a seller attestation, not an independent bank verification."))return;button.disabled=true;const r=await Doodhwala.supabase.rpc("provider_confirm_direct_upi_payment",{p_order_id:button.dataset.confirmDirectUpi,p_reference:ref});if(r.error){const message=String(r.error.message||"");toast(message.includes("payment_reference_already_used")?"This transaction reference is already recorded for another order. Check the bank statement and enter the correct reference.":(message||"Could not confirm receipt"));button.disabled=false;return}toast("Seller attestation recorded with the transaction reference; bank settlement is not independently verified.");loadProviderOrders()}});list.querySelectorAll("[data-confirm-cod]").forEach(function(button){button.onclick=async function(){if(!confirm("Confirm you collected the full cash amount for this delivered order?"))return;button.disabled=true;const r=await Doodhwala.supabase.rpc("provider_confirm_cod_collected",{p_order_id:button.dataset.confirmCod});if(r.error){toast(r.error.message||"Could not confirm cash");button.disabled=false;return}toast("Cash collection recorded.");loadProviderOrders()}});
  list.querySelectorAll("[data-order-status]").forEach(function(button){
-  button.onclick=async function(){
-    button.disabled=true;
-    const status=button.dataset.orderStatus;
-    let reason=null;
-    if(status==="rejected"||status==="cancelled"){
-      reason=(prompt(status==="rejected"?"Why are you declining this order?":"Why are you cancelling this order?")||"").trim().slice(0,300);
-      if(!reason){button.disabled=false;toast("A reason is required.");return}
-    }
-    const result=await Doodhwala.supabase.rpc("provider_update_order_status",{p_order_id:button.dataset.orderId,p_new_status:status,p_reason:reason});
-    if(result.error){
-      const msg=String(result.error.message||"");
-      const friendly=msg.includes("invalid_order_status_transition")?"This order has already changed. Refresh the queue.":msg.includes("reason_required")?"Add a reason before continuing.":msg.includes("acceptance_window_expired")?"The acceptance window has expired. Refresh the queue.":msg;
-      toast(friendly);button.disabled=false;loadProviderOrders();return;
-    }
-    toast(status==="delivered"?"Order marked delivered":"Order updated");
-    loadProviderOrders();
-  }
-})
+  button.onclick=function(){
+   const status=button.dataset.orderStatus;
+   if(status==="rejected"||status==="cancelled"){openOrderReasonDialog(button,status);return}
+   submitProviderOrderStatus(button,status,null).catch(function(error){console.warn("Order status action failed",error);toast("We couldn’t update this order. Refresh the queue and try again.")});
+  };
+ });
+
 }
 $("refreshSubscriptions")?.addEventListener("click",loadProviderSubscriptions);
 $("orderFilter")?.addEventListener("change",loadProviderOrders);

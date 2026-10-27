@@ -63,9 +63,9 @@ if(localFiles.has("/provider.css")){
   if(!providerCssText.includes("height:calc(70px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile navigation must respect device safe-area inset");
   if(!providerCssText.includes("grid-template-columns:repeat(7,minmax(0,1fr))")) errors.push("provider.css -> all seven seller navigation destinations must remain visible on mobile");
   const providerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
-  if(!providerHtml.includes('/Doodhwala/provider.css?v=20261022.6')) errors.push("provider.html -> seller mobile CSS cache version stale");
+  if(!providerHtml.includes('/Doodhwala/provider.css?v=20261027.1')) errors.push("provider.html -> seller mobile CSS cache version stale");
   const providerSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!providerSw.includes('/Doodhwala/provider.css?v=20261022.6')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
+  if(!providerSw.includes('/Doodhwala/provider.css?v=20261027.1')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
 }else errors.push("required seller mobile stylesheet missing /provider.css");
 
 const sessionControlsPath=path.join(root,"session-controls.js");
@@ -129,14 +129,14 @@ if(fs.existsSync(providerHtmlPath)){
   if(!providerHtml.includes('data-view="subscriptions"')) errors.push("provider.html -> subscriptions navigation missing");
   if(!providerHtml.includes('id="view-subscriptions"')) errors.push("provider.html -> subscriptions view missing");
   if(!providerHtml.includes("provider.js?v=")) errors.push("provider.html -> provider bundle cache bust missing");
-  if(!providerHtml.includes("/Doodhwala/provider.js?v=20261022.5")) errors.push("provider.html -> provider feed runtime cache version stale");
+  if(!providerHtml.includes("/Doodhwala/provider.js?v=20261027.1")) errors.push("provider.html -> provider feed runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Doodhwala/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
-  if(!swText.includes("/Doodhwala/provider.js?v=20261022.5")) errors.push("sw.js -> latest provider feed runtime missing from precache");
+  if(!swText.includes("/Doodhwala/provider.js?v=20261027.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Doodhwala/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v94"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v95"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -176,7 +176,7 @@ const adminHtmlPath=path.join(root,"admin.html");
 if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v94"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes('const CACHE="doodhwala-v95"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
@@ -237,7 +237,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v94"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v95"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 

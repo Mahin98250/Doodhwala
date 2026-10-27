@@ -16,7 +16,8 @@ Doodhwala helps customers discover independent local milk sellers, compare milk 
 **Core marketplace rule:** This is for independent/local milk sellers, not a catalogue for large packaged-dairy brands. Never present demo listings as real businesses.
 
 **Product principles**
-- Make everyday customer and seller tasks quick and dependable.
+- Make everyday customer and seller tasks quick and dependable; prefer a few obvious actions over complex menus or dense dashboards.
+- Make the customer journey and seller's daily milk route easy to use on a phone, with clear loading, empty, error, and confirmation states.
 - Mobile-first, responsive UI; desktop should also feel intentionally designed.
 - Be transparent about demo data, verification, order state, payment state, and limitations.
 - Protect customer/provider data with server-side authorization and database policies.
