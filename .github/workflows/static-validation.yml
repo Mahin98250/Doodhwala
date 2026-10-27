@@ -23,6 +23,8 @@ jobs:
         run: node --check scripts/live-page-smoke.mjs
       - name: Test service-worker offline route recovery
         run: node scripts/test-service-worker.mjs
+      - name: Test PWA offline source contracts
+        run: node scripts/test-pwa-offline-contracts.mjs
       - name: Test resilience recovery behavior
         run: node scripts/test-resilience.mjs
       - name: Test client error-report version contracts
