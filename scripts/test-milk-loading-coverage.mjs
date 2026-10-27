@@ -8,8 +8,8 @@ const runtimes = [
   { path: "product.js", label: "product detail", loading: 'showLoading("Loading this milk…")' },
   { path: "checkout.js", label: "checkout", loading: 'showLoading("Preparing your checkout…")' }
 ];
-const transitionCss = "/Doodhwala/milk-transition.css?v=20261025.4";
-const transitionJs = "/Doodhwala/milk-transition.js?v=20261025.4";
+const transitionCss = "/Doodhwala/milk-transition.css?v=20261027.5";
+const transitionJs = "/Doodhwala/milk-transition.js?v=20261027.5";
 const sw = read("sw.js");
 
 for (const page of pages) {
@@ -29,11 +29,11 @@ for (const runtime of runtimes) {
   assert.ok(source.includes("finally{"), runtime.label + " must hide the loading indicator on success and error.");
 }
 
-assert.ok(read("store.html").includes("/Doodhwala/store.js?v=20261025.4"), "Storefront must use the current runtime URL.");
+assert.ok(read("store.html").includes("/Doodhwala/store.js?v=20261027.5"), "Storefront must use the current runtime URL.");
 assert.ok(read("product.html").includes("/Doodhwala/product.js?v=20261025.6"), "Product page must use the current runtime URL.");
 assert.ok(read("checkout.html").includes("/Doodhwala/checkout.js?v=20261025.3"), "Checkout must use the current runtime URL.");
 for (const asset of [
-  "/Doodhwala/store.js?v=20261025.4",
+  "/Doodhwala/store.js?v=20261027.5",
   "/Doodhwala/product.js?v=20261025.6",
   "/Doodhwala/checkout.js?v=20261025.3"
 ]) assert.ok(sw.includes(asset), "PWA precache must reference " + asset);
@@ -51,3 +51,16 @@ assert.match(motionCss, /@keyframes dw-milk-surface-source/, "The source liquid 
 assert.match(motionCss, /prefers-reduced-motion/, "The liquid animation must respect reduced-motion settings.");
 
 console.log("PASS: realistic milk-pour animation and loading coverage across provider storefront, product details, and checkout.");
+
+assert.match(motionCss, /@view-transition \\{ navigation: auto; \\}/, "Cross-document navigation should use the native View Transitions API when supported.");
+assert.match(motionCss, /@keyframes dw-page-in/, "Incoming pages should use a smooth depth-and-fade entrance.");
+assert.match(motionCss, /@keyframes dw-page-out/, "Outgoing pages should use a subtle departure motion.");
+assert.match(motionJs, /reduceMotion\\?0:260/, "Navigation should avoid a long blocking overlay and respect reduced motion.");
+assert.match(motionCss, /prefers-reduced-motion: reduce/, "Native page transitions should disable motion when the user requests reduced motion.");
+assert.match(read("sw.js"), /const CACHE="doodhwala-v100"/, "PWA cache revision should refresh the updated transition assets.");
+for (const page of ["index.html","auth.html","checkout.html","orders.html","plans.html","product.html","provider.html","store.html","support.html","notifications.html","legal.html","admin.html"]) {
+  const html = read(page);
+  assert.ok(html.includes("/Doodhwala/milk-transition.css?v=20261027.5"), page + " must load the current transition CSS.");
+  assert.ok(html.includes("/Doodhwala/milk-transition.js?v=20261027.5"), page + " must load the current transition runtime.");
+}
+console.log("PASS: premium cross-page motion, reduced-motion behavior, fast navigation, and cache-version contracts.");
