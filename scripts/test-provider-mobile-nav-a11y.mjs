@@ -9,11 +9,10 @@ const handler=js.slice(start,end);
 assert.match(handler,/b\.closest\("\.provider-mobile-nav"\)/,"mobile nav state must be scoped to mobile navigation");
 assert.match(handler,/setAttribute\("aria-current","page"\)/,"active destination must be announced");
 assert.match(handler,/removeAttribute\("aria-current"\)/,"inactive destination must not remain current");
-const ns=html.indexOf('<nav class="provider-mobile-nav">');
+const ns=html.indexOf('<nav class="provider-mobile-nav" aria-label="Seller sections">');
 const ne=html.indexOf("</nav>",ns);
-assert.ok(ns>=0&&ne>ns,"mobile navigation must exist");
+assert.ok(ns>=0&&ne>ns,"mobile navigation must have an accessible name");
 const nav=html.slice(ns,ne);
-assert.match(nav,/aria-label="[^"]+"/,"mobile navigation must have an accessible name");
 const buttons=[...nav.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
 assert.equal(buttons.length,7,"keep all seven existing destinations available");
 for(const [,attrs,body] of buttons){
