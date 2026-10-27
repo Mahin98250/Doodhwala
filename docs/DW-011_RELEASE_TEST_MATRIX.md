@@ -3,7 +3,8 @@
 **Owner:** Vaidik Patel (@vaidikpatel22112010-tech)  
 **Parent feature scope:** [DW-010 / #93](https://github.com/Mahin98250/Doodhwala/issues/93)  
 **QA task:** [DW-011 / #94](https://github.com/Mahin98250/Doodhwala/issues/94)  
-**Prepared against main:** `fa41464ba69b320b0ae345ad9f01ffb3cc050722` (2026-10-27 repository tree snapshot)  
+**Inventory baseline:** main tree `fa41464ba69b320b0ae345ad9f01ffb3cc050722`  
+**Initial matrix commit tested by CI:** `5f08d08e463531cce04dda247324ee5f310f1ade`  
 **Status:** Inventory prepared; full authenticated backend E2E is **BLOCKED** pending an isolated staging project and project-lead confirmation of a test-ready target. This is a plan/evidence ledger, not a claim that the entire product has passed.
 
 ## Status and evidence rules
@@ -37,6 +38,11 @@
 - `.github/workflows/staging-scalability-load-test.yml` — must remain blocked until an isolated staging target and explicit environment safeguards are verified.
 - UI evidence already exists in draft PR [#88](https://github.com/Mahin98250/Doodhwala/pull/88) and PWA evidence in draft PR [#90](https://github.com/Mahin98250/Doodhwala/pull/90). Those narrow browser tests are not a substitute for authenticated feature E2E.
 
+### CI evidence on the matrix branch
+- **PASS — Static validation** on commit `5f08d08e463531cce04dda247324ee5f310f1ade`: [run 40474626708](https://github.com/Mahin98250/Doodhwala/actions/runs/40474626708). The workflow's source/contract checks passed, including auth contracts, cross-account/provider isolation contracts, checkout/retry, discovery/pagination, payment contracts, resilience, support/legal contracts, service-worker checks, and site validation. This is not authenticated Supabase E2E.
+- **PASS — SQL migration validation** on the same commit using disposable PostgreSQL synthetic schemas: [run 40474626467](https://github.com/Mahin98250/Doodhwala/actions/runs/40474626467). This validates the workflow's isolated migration/fixture assertions only; it does not certify the deployed Supabase schema.
+- These runs are the exact evidence for the initial matrix commit. They do not cover unmerged changes in feature PRs or unblock the missing isolated Supabase staging project.
+
 ### Safe baseline commands (repository checkout / CI)
 Run from a clean checkout of the tested SHA. First inspect workflow definitions and script preconditions; do not run any script whose target may default to production.
 - `node scripts/validate-site.mjs`
@@ -55,7 +61,7 @@ Run from a clean checkout of the tested SHA. First inspect workflow definitions 
 - `node scripts/test-staging-baseline.mjs`
 - `node scripts/test-staging-load-test-safety.mjs`
 - SQL fixture tests only through the existing disposable-PostgreSQL workflow. Do not copy their commands to a production connection.
-- The above are candidate commands from the existing inventory; **they have not all been executed for this matrix commit**. Record actual workflow/run links before changing any status to PASS.
+- The commands above are existing inventory/candidate entry points. Many source-contract scripts were executed by the passing static workflow above, and the SQL fixtures were executed by the passing disposable-PostgreSQL workflow. Rows remain NOT RUN/BLOCKED where a feature PR delta, real authenticated integration, device check or required environment was not covered. Add fresh run links for each feature commit as those PRs become testable.
 
 ## Phase 0 — Inventory and prerequisites
 
