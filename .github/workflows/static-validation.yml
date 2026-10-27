@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install minimal browser test runtime
+      - name: Install minimal browser test runtime outside the repository
         run: |
-          npm install --no-save --no-package-lock playwright
-          npx playwright install --with-deps chromium
+          mkdir -p "$RUNNER_TEMP/doodhwala-browser-tests"
+          npm install --prefix "$RUNNER_TEMP/doodhwala-browser-tests" --no-save --no-package-lock playwright
+          "$RUNNER_TEMP/doodhwala-browser-tests/node_modules/.bin/playwright" install --with-deps chromium
       - name: Run browser smoke for customer order tracking and seller dashboard
+        env:
+          NODE_PATH: ${{ runner.temp }}/doodhwala-browser-tests/node_modules
         run: node scripts/browser-smoke.mjs
       - name: Validate JavaScript syntax
         run: |
