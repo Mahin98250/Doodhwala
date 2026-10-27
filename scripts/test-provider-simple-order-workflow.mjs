@@ -60,7 +60,7 @@ assert.match(actual.placed, /Accept order/, "New orders must offer the primary n
 assert.match(actual.placed, /Decline order/, "New orders must offer a clearly named decline action.");
 assert.match(actual.delivered, /Delivered/, "Delivered orders must reach the final progress stage.");
 
-assert.ok(html.includes("provider.css?v=20261027.1"), "Seller page must load the latest order workflow CSS.");
+assert.ok(html.includes("provider.css?v=20261027.2"), "Seller page must load the latest order workflow CSS.");
 assert.ok(html.includes("provider.js?v=20261027.1"), "Seller page must load the latest order workflow JavaScript.");
 assert.match(css, /\.order-progress\{/, "Order progress must have its own layout.");
 assert.match(css, /\.order-reason-modal\{/, "Reason dialog must have a dedicated overlay.");
