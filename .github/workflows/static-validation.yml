@@ -18,7 +18,7 @@ jobs:
           "$RUNNER_TEMP/doodhwala-browser-tests/node_modules/.bin/playwright" install --with-deps chromium
       - name: Run browser smoke for customer order tracking and seller dashboard
         env:
-          NODE_PATH: ${{ runner.temp }}/doodhwala-browser-tests/node_modules
+          PLAYWRIGHT_PACKAGE: ${{ runner.temp }}/doodhwala-browser-tests/node_modules/playwright
         run: node scripts/browser-smoke.mjs
       - name: Validate JavaScript syntax
         run: |
