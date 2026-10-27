@@ -14,7 +14,7 @@ function between(startMarker, endMarker) {
   return plans.slice(start, end).trim();
 }
 
-const localDate = between("function localDateIso(", "\nfunction tomorrow()");
+const localDate = between("function localDateIso(", "\nfunction tomorrow(");
 const addDays = between("function addDays(", "\nfunction selectedDays()");
 const selectedDays = between("function selectedDays(){", "\nfunction deliveryCount()");
 const deliveryCount = between("function deliveryCount(){", "\nfunction renderSchedulePreview()");
