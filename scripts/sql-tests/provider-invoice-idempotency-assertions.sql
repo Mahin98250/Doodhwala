@@ -13,7 +13,7 @@ values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'Standard Monthly', 200000, true
 select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', false);
 select set_config('request.jwt.claim.admin', 'true', false);
 
-do $$
+do $billing_test$
 declare
   v_first uuid;
   v_second uuid;
@@ -166,6 +166,6 @@ begin
     raise exception 'missing_user_subject_with_admin_claim_was_not_rejected';
   end if;
 end
-  $;
+  $billing_test$;
 
 select 'provider invoice monthly idempotency checks passed' as result;
