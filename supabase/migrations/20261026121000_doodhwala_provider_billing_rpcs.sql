@@ -27,7 +27,7 @@ create or replace function public.admin_upsert_provider_billing_plan(
 ) returns uuid language plpgsql security definer set search_path='' as $$
 declare v_id uuid;
 begin
- if auth.uid() is null or not private.is_current_user_admin() then raise exception 'admin_access_required'; end if;
+ if auth.uid() is null or not coalesce(private.is_current_user_admin(), false) then raise exception 'admin_access_required'; end if;
  if length(trim(coalesce(p_name,'')))<2 or length(trim(p_name))>80 then raise exception 'invalid_plan_name'; end if;
  if p_amount_paise is null or p_amount_paise<=0 then raise exception 'invalid_plan_amount'; end if;
  if p_plan_id is null then
@@ -51,7 +51,7 @@ create or replace function public.admin_create_provider_subscription_invoice(
 ) returns uuid language plpgsql security definer set search_path='' as $$
 declare v_plan public.provider_billing_plans%rowtype; v_id uuid;
 begin
- if auth.uid() is null or not private.is_current_user_admin() then raise exception 'admin_access_required'; end if;
+ if auth.uid() is null or not coalesce(private.is_current_user_admin(), false) then raise exception 'admin_access_required'; end if;
  if p_period_start is null or p_period_end is null or p_due_date is null or p_period_end<p_period_start then raise exception 'invalid_billing_period'; end if;
  if length(trim(coalesce(p_invoice_number,'')))<3 or length(trim(p_invoice_number))>80 then raise exception 'invalid_invoice_number'; end if;
  if not exists(select 1 from public.provider_profiles p where p.id=p_provider_id) then raise exception 'provider_not_found'; end if;
@@ -71,7 +71,7 @@ create or replace function public.admin_record_provider_subscription_payment(
 ) returns uuid language plpgsql security definer set search_path='' as $$
 declare v_invoice public.provider_subscription_invoices%rowtype; v_payment_id uuid;
 begin
- if auth.uid() is null or not private.is_current_user_admin() then raise exception 'admin_access_required'; end if;
+ if auth.uid() is null or not coalesce(private.is_current_user_admin(), false) then raise exception 'admin_access_required'; end if;
  if p_amount_paise is null or p_amount_paise<=0 then raise exception 'invalid_payment_amount'; end if;
  if p_method not in ('manual_upi','bank_transfer','cash') then raise exception 'invalid_payment_method'; end if;
  if length(trim(coalesce(p_reference,'')))<3 or length(trim(p_reference))>120 then raise exception 'payment_reference_required'; end if;
@@ -93,7 +93,7 @@ grant execute on function public.admin_record_provider_subscription_payment(uuid
 create or replace function public.admin_set_provider_billing_settings(p_payee_name text,p_upi_id text,p_instructions text default null)
 returns boolean language plpgsql security definer set search_path='' as $$
 begin
- if auth.uid() is null or not private.is_current_user_admin() then raise exception 'admin_access_required'; end if;
+ if auth.uid() is null or not coalesce(private.is_current_user_admin(), false) then raise exception 'admin_access_required'; end if;
  if length(trim(coalesce(p_payee_name,'')))<2 or length(trim(p_payee_name))>120 then raise exception 'invalid_payee_name'; end if;
  if length(trim(coalesce(p_upi_id,'')))<3 or length(trim(p_upi_id))>255 or p_upi_id !~ '^[A-Za-z0-9._-]{2,200}@[A-Za-z0-9.-]{2,100}$' then raise exception 'invalid_upi_id'; end if;
  insert into public.provider_billing_settings(singleton,payee_name,upi_id,instructions,updated_by,updated_at)
