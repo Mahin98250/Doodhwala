@@ -400,6 +400,39 @@ async function loadSupportTicketsSection(statusFilter="all"){
    catch(error){toast(error.message||"Could not update ticket","error");button.disabled=false;button.textContent="Save"}
  });
 }
+async function loadPrivacyRequestsSection(){
+ const rows=await adminRpc("admin_list_account_deletion_requests",{p_limit:100});
+ const active=Array.isArray(rows)?rows:[];
+ const pending=active.filter(r=>r.status==="pending").length;
+ const review=active.filter(r=>r.status==="under_review").length;
+ const blocked=active.filter(r=>r.status==="blocked_open_orders").length;
+ const summary='<div class="privacy-admin-summary"><div class="metric"><small>PENDING</small><b>'+pending+'</b><span>New requests</span></div><div class="metric"><small>UNDER REVIEW</small><b>'+review+'</b><span>Being reviewed</span></div><div class="metric"><small>BLOCKED</small><b>'+blocked+'</b><span>Open orders or obligations</span></div></div>';
+ const note='<div class="admin-note privacy-admin-warning"><b>Important:</b> triage does not delete an account. The current RPC deliberately cannot mark a request completed. Do not promise deletion until the separate deletion/anonymisation and retention workflow is implemented and verified.</div>';
+ const tableHtml=active.length
+  ?'<div class="admin-table-wrap"><table class="admin-table privacy-request-table"><thead><tr><th>Requested</th><th>Account reference</th><th>Status</th><th>Customer note</th><th>Owner review</th><th>Save</th></tr></thead><tbody>'+active.map(r=>'<tr><td>'+esc(dateTime(r.requested_at))+'</td><td><code>'+esc(String(r.user_id||"deleted account reference unavailable"))+'</code><small>Request '+esc(String(r.id||"").slice(0,8))+'</small></td><td><span class="admin-status '+esc(r.status)+'">'+esc(r.status)+'</span></td><td><div class="privacy-request-note">'+esc(r.reason||"No note supplied")+'</div></td><td><select data-deletion-status="'+esc(r.id)+'" aria-label="Review status for request '+esc(String(r.id||"").slice(0,8))+'"><option value="under_review" '+(r.status==="under_review"?"selected":"")+'>Under review</option><option value="blocked_open_orders" '+(r.status==="blocked_open_orders"?"selected":"")+'>Blocked by open orders</option></select><textarea data-deletion-notes="'+esc(r.id)+'" maxlength="1000" rows="2" aria-label="Owner review note for request '+esc(String(r.id||"").slice(0,8))+'" placeholder="Internal review note">'+esc(r.review_notes||"")+'</textarea></td><td><button type="button" data-deletion-save="'+esc(r.id)+'">Save review</button></td></tr>').join("")+'</tbody></table></div>'
+  :'<div class="empty-admin">No active account deletion requests.</div>';
+ $("adminContent").innerHTML='<div class="admin-section"><div class="admin-list-head"><div><span class="eyebrow">PRIVACY OPERATIONS</span><h2>Account deletion requests</h2><p>Private owner-only triage queue. User IDs are shown as references, not email addresses.</p></div><button id="refreshPrivacyRequests" type="button">↻ Refresh</button></div>'+summary+note+'<article class="admin-card">'+tableHtml+'</article></div>';
+ const refresh=$("refreshPrivacyRequests");
+ if(refresh)refresh.onclick=()=>loadPrivacyRequestsSection().catch(err=>toast(err.message||"Unable to refresh privacy requests","error"));
+ $("adminContent").querySelectorAll("[data-deletion-save]").forEach(button=>{
+  button.onclick=async()=>{
+   if(button.disabled)return;
+   const id=button.dataset.deletionSave;
+   const select=$("adminContent").querySelector('[data-deletion-status="'+CSS.escape(id)+'"]');
+   const notes=$("adminContent").querySelector('[data-deletion-notes="'+CSS.escape(id)+'"]');
+   if(!select)return;
+   button.disabled=true;button.textContent="Saving…";
+   try{
+    await adminRpc("admin_update_account_deletion_request",{p_request_id:id,p_status:select.value,p_review_notes:notes?notes.value:null});
+    toast("Privacy request review saved.");
+    await loadPrivacyRequestsSection();
+   }catch(error){
+    toast(error.message||"Could not save review status","error");
+    button.disabled=false;button.textContent="Save review";
+   }
+  };
+ });
+}
 async function loadSection(next){
  currentDetail=null;
  section=next;
@@ -409,6 +442,7 @@ async function loadSection(next){
   if(section==="overview"){await loadOverview();return}
   if(section==="orders"){await loadOrdersSection();return;}
   if(section==="support"){await loadSupportTicketsSection();return;}
+  if(section==="privacy"){await loadPrivacyRequestsSection();return;}
   if(section==="providers"){await loadProvidersSection();return}
   if(section==="customers"){cache.customers=await adminRpc("admin_list_customers",{p_limit:150});table("Customers",[["Customer",r=>"<button data-customer='"+esc(r.id)+"'>"+esc(r.full_name||"—")+"</button>"],["Email",r=>esc(r.email||"—")],["Phone",r=>esc(r.phone||"—")],["Orders",r=>r.order_count],["Active plans",r=>r.active_plan_count],["Joined",r=>dateText(r.created_at)]],cache.customers);$("adminContent").querySelectorAll("[data-customer]").forEach(b=>b.onclick=()=>showCustomerDetail(b.dataset.customer));return}
   if(section==="subscriptions"){cache.subscriptions=await adminRpc("admin_list_subscriptions",{p_limit:150});table("Subscriptions",[["Customer",r=>esc(r.customer_name||"—")],["Provider",r=>esc(r.provider_name||"—")],["Milk",r=>esc(r.product_name||"—")],["Status",r=>'<span class="admin-status '+esc(r.status)+'">'+esc(r.status)+'</span>'],["Qty",r=>Number(r.quantity_litres||0)+" L"],["Period",r=>dateText(r.start_date)+" → "+dateText(r.end_date)],["Deliveries",r=>r.delivery_count],["Action",r=>'<button data-subscription="'+esc(r.id)+'">View</button>']],cache.subscriptions);$("adminContent").querySelectorAll("[data-subscription]").forEach(b=>b.onclick=()=>showSubscriptionDetail(b.dataset.subscription));return}
@@ -514,7 +548,7 @@ if($("adminMore"))$("adminMore").onclick=function(){
  const existing=$("adminMoreMenu");if(existing){existing.remove();return}
  const menu=document.createElement("div");menu.id="adminMoreMenu";
  menu.style.cssText="position:fixed;z-index:10001;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));width:min(250px,calc(100vw - 24px));padding:10px;border:1px solid #d7dfd8;border-radius:16px;background:#fff;box-shadow:0 14px 36px rgba(13,37,23,.22);display:grid;gap:5px";
- [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
+ [["Search records","search"],["Support inbox","support"],["Privacy requests","privacy"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
  const button=document.createElement("button");button.type="button";button.textContent=item[0];
  button.style.cssText="padding:12px;border:0;border-radius:10px;background:#f5f8f5;color:#17251c;text-align:left;font:700 13px system-ui;cursor:pointer";
  button.onclick=()=>{menu.remove();if(item[1]==="search"){const input=$("adminSearch");if(input){input.focus();input.select()}}else navTo(item[1])};
