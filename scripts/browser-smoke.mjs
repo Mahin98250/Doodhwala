@@ -13,7 +13,7 @@ const files = new Set([
   "supabase-client.js","direct-upi-checkout.js","customer-nav.js","customer-10x.js",
   "session-controls.js","pwa-register.js","network-status.js","provider.html",
   "provider.css","provider.js","provider-10x.js","provider-location.js","provider-location.css",
-  "provider-location.css","provider-journey.js","provider-nav.js","assets/mascot.png",
+  "provider-location.css","milk-transition.js","provider-journey.js","provider-nav.js","assets/mascot.png",
   "manifest.webmanifest","sw.js","admin.html"
 ]);
 const mime = file => file.endsWith(".html") ? "text/html; charset=utf-8"
@@ -49,8 +49,28 @@ try {
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   const pageErrors = [];
+  const localHttpFailures = [];
   page.on("pageerror", error => pageErrors.push(error.message));
-  page.on("console", message => { if (message.type() === "error") pageErrors.push("console: " + message.text()); });
+  page.on("response", response => {
+    const url = new URL(response.url());
+    if (url.hostname === "127.0.0.1" && response.status() >= 400) {
+      localHttpFailures.push(response.status() + " " + url.pathname);
+    }
+  });
+  // This synthetic browser test never calls backend features. Keep error telemetry local
+  // and deterministic rather than sending a test-runner incident to the configured project.
+  await page.route("https://hmiboyfcvtfawrwujslg.supabase.co/functions/v1/client-error-report", async route => {
+    await route.fulfill({
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": `http://127.0.0.1:${port}`,
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "content-type, apikey, authorization, x-client-info",
+        "Access-Control-Max-Age": "600"
+      },
+      body: ""
+    });
+  });
 
   const customerResponse = await page.goto(`http://127.0.0.1:${port}/Doodhwala/orders.html`, { waitUntil: "domcontentloaded" });
   assert.equal(customerResponse.status(), 200, "orders page should load");
@@ -86,7 +106,8 @@ try {
   assert.ok(await page.locator("#firstMilkPrice").isVisible(), "first product price field is visible");
   const sellerOverflow = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
   assert.ok(sellerOverflow.scroll <= sellerOverflow.viewport + 1, "seller onboarding should not overflow horizontally on mobile");
-  assert.deepEqual(pageErrors, [], "browser should not report uncaught page/console errors during the smoke flow");
+  assert.deepEqual(pageErrors, [], "browser should not report uncaught JavaScript errors during the smoke flow");
+  assert.deepEqual(localHttpFailures, [], "all browser-requested local page assets should load successfully");
 
   console.log("PASS: mobile Chromium smoke — customer orders page, keyboard focus, responsive width, seller onboarding form and three-step navigation.");
   console.log("LIMIT: synthetic local-only browser flow; no account authentication, Supabase requests, real orders, payments or production mutation.");
