@@ -61,7 +61,7 @@ begin
 end
 $function$;
 
-revoke all on function public.admin_update_account_deletion_request(uuid, text, text) from public, anon;
+revoke all on function public.admin_update_account_deletion_request(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.admin_update_account_deletion_request(uuid, text, text) to authenticated;
 
 create or replace function public.admin_list_account_deletion_requests(p_limit integer default 50)
@@ -92,5 +92,5 @@ begin
 end
 $function$;
 
-revoke all on function public.admin_list_account_deletion_requests(integer) from public, anon;
+revoke all on function public.admin_list_account_deletion_requests(integer) from public, anon, authenticated;
 grant execute on function public.admin_list_account_deletion_requests(integer) to authenticated;
