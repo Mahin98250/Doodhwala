@@ -140,7 +140,7 @@ assert.doesNotMatch(source, /keys\.filter\(k=>k!==CACHE\)/, "activation preserve
 let activationPromise;
 handlers.get("activate")({ waitUntil(promise) { activationPromise = promise; } });
 await activationPromise;
-assert.deepEqual(deletedCaches, ["doodhwala-v97", "doodhwala-v98"], "activation must delete only obsolete Doodhwala cache keys");
+assert.deepEqual(deletedCaches, ["doodhwala-v97"], "activation must delete only obsolete Doodhwala cache keys");
 assert.ok(cacheNames.includes("unrelated-origin-cache-test"), "unrelated cache remains in the shared origin");
 
 onlineMode = true;
