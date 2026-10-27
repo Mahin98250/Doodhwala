@@ -43,5 +43,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/account-deletion-request-fixture.sql
       - name: Apply account deletion request migration to disposable PostgreSQL
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261027100000_doodhwala_account_deletion_request_intake.sql
-      - name: Verify request idempotency, account scoping, cancellation and admin authorization
+      - name: Apply owner triage migration to disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261027103000_doodhwala_account_deletion_admin_triage.sql
+      - name: Verify request idempotency, account scoping, cancellation, admin authorization and guarded triage
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/account-deletion-request-assertions.sql
