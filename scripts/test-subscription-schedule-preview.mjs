@@ -62,16 +62,17 @@ const counted = runInNewContext(base + "\n({ count: deliveryCount(), nextDay: ad
 assert.equal(counted.count, 4, "A Monday-to-Sunday window should count only the four selected weekdays.");
 assert.equal(counted.nextDay, "2026-11-01", "Month-end plan dates must advance by a local calendar day.");
 
+const activeButtons = [{ dataset: { day: "1" } }, { dataset: { day: "3" } }];
 const previewEnv = {
   ...env,
-  elements: undefined,
+  activeButtons,
   document: {
     getElementById(id) { return elements[id] || null; },
-    querySelectorAll(selector) { return selector === ".day-button.active" ? [{ dataset: { day: "1" } }, { dataset: { day: "3" } }] : []; }
+    querySelectorAll(selector) { return selector === ".day-button.active" ? activeButtons : []; }
   }
 };
 const previewResult = runInNewContext(
-  base + "\nrenderSchedulePreview(); const first={count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent,html:document.getElementById('schedulePreviewDays').innerHTML}; document.getElementById('planEnd').value='2026-10-25'; renderSchedulePreview(); ({first,invalid:{count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent,html:document.getElementById('schedulePreviewDays').innerHTML}})",
+  base + "\nrenderSchedulePreview(); const first={count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent,html:document.getElementById('schedulePreviewDays').innerHTML}; document.getElementById('planEnd').value='2026-10-25'; renderSchedulePreview(); const invalid={count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent,html:document.getElementById('schedulePreviewDays').innerHTML}; document.getElementById('planEnd').value='2026-10-31'; activeButtons.splice(1,1); renderSchedulePreview(); ({first,invalid,single:{count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent}})",
   previewEnv
 );
 assert.equal(previewResult.first.count, "2 deliveries", "The first-week preview must count its selected weekdays inside the plan range.");
@@ -82,5 +83,7 @@ assert.match(previewResult.first.html, /Plan ended/, "Dates after the plan end m
 assert.equal(previewResult.invalid.count, "Dates needed", "An invalid date range must not advertise deliveries.");
 assert.equal(previewResult.invalid.html, "", "An invalid date range must clear the previous preview.");
 assert.match(previewResult.invalid.hint, /Choose a valid start and end date/, "An invalid date range must explain what to fix.");
+assert.equal(previewResult.single.count, "1 delivery", "A single scheduled day must use correct singular wording.");
+assert.match(previewResult.single.hint, /1 planned delivery,/, "The first-week description must use valid singular wording.");
 
 console.log("PASS: subscription schedule count, month-end dates, seven-day preview, end-date guard, estimate and PWA precache contracts.");
