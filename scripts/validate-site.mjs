@@ -216,7 +216,7 @@ else{
   for(const contract of ["unhandledrejection","network_failure","storage_parse_error","retryRead","showRecoveryNotice","client-error-report","doodhwala-error-report-queue-v1","persistPending","response.status >= 500"])
     if(!resilienceText.includes(contract)) errors.push("resilience.js -> missing reliability contract "+contract);
 }
-if(fs.existsSync(path.join(root,"auth.js"))&&!fs.readFileSync(path.join(root,"auth.js"),"utf8").includes('new URL(value,PRODUCTION_ORIGIN+"/auth/")')) errors.push("auth.js -> safe relative return-path normalization missing");
+if(fs.existsSync(path.join(root,"auth.js"))&&!fs.readFileSync(path.join(root,"auth.js"),"utf8").includes('new URL(value,PRODUCTION_ORIGIN+"/")')) errors.push("auth.js -> safe relative return-path normalization missing");
 if(fs.existsSync(path.join(root,"checkout.js"))&&fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes('let cart=JSON.parse(localStorage.getItem(CART_KEY)')) errors.push("checkout.js -> unguarded cart storage parse");
 if(fs.existsSync(path.join(root,"provider.js"))&&fs.readFileSync(path.join(root,"provider.js"),"utf8").includes('JSON.parse(localStorage.getItem(STORAGE_KEY)')) errors.push("provider.js -> unguarded provider storage parse");
 if(fs.existsSync(path.join(root,"checkout.js"))&&!fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes("readObjectStorage")) errors.push("checkout.js -> safe cart storage recovery missing");
