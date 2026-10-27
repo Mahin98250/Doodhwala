@@ -54,7 +54,7 @@
     showTransition("Pouring fresh milk");
     var reduceMotion=false;
     try{reduceMotion=!!(w.matchMedia&&w.matchMedia("(prefers-reduced-motion: reduce)").matches)}catch(_){}
-    timer=w.setTimeout(function(){w.location.assign(target.href);},reduceMotion?0:760);
+    timer=w.setTimeout(function(){w.location.assign(target.href);},reduceMotion?0:980);
   }
   w.DoodhwalaMilkTransition={showTransition:showTransition,hideTransition:hideTransition,showLoading:showLoading,hideLoading:hideLoading,navigate:navigate};
   d.addEventListener("click",function(event){
