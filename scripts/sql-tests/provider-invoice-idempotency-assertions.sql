@@ -21,6 +21,7 @@ declare
   v_invoice_number text;
   v_bad_period_rejected boolean := false;
   v_duplicate_rejected boolean := false;
+  v_non_admin_rejected boolean := false;
 begin
   v_first := public.admin_create_provider_subscription_invoice(
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -109,13 +110,15 @@ begin
     );
   exception when others then
     if sqlerrm = 'admin_access_required' then
-      return;
+      v_non_admin_rejected := true;
     else
       raise;
     end if;
   end;
 
-  raise exception 'non_admin_invoice_creation_was_not_rejected';
+  if not v_non_admin_rejected then
+    raise exception 'non_admin_invoice_creation_was_not_rejected';
+  end if;
 end
 $$;
 
