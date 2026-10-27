@@ -17,12 +17,6 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run browser smoke for customer order tracking and seller dashboard
         run: node scripts/browser-smoke.mjs
-      - name: Install minimal browser test runtime
-        run: |
-          npm install --no-save --no-package-lock playwright
-          npx playwright install --with-deps chromium
-      - name: Run browser smoke for customer order tracking and seller dashboard
-        run: node scripts/browser-smoke.mjs
       - name: Validate JavaScript syntax
         run: |
           set -e
