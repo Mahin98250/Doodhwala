@@ -46,7 +46,7 @@ assert.ok(nav.includes('if(key==="plans"){go(BASE+"plans/");return}'), "Mobile P
 assert.ok(nav.includes('if(key==="orders"){go(BASE+"orders/");return}'), "Mobile Orders navigation must target the clean route without duplicating the project path.");
 assert.match(app, /DoodhwalaMilkTransition\.navigate\(url\)/, "Desktop customer navigation must use the milk transition.");
 assert.ok(home.includes("customer-ui-polish.css?v=20261026.1"), "Home page must load the latest mobile header polish.");
-assert.ok(home.indexOf("milk-transition.js?v=20261027.5") < home.indexOf("app.js?v=20261027.1"), "Milk transition runtime must be available before the home app requests data.");
+assert.ok(home.indexOf("milk-transition.js?v=20261027.6") < home.indexOf("app.js?v=20261027.1"), "Milk transition runtime must be available before the home app requests data.");
 assert.match(ordersHtml, /customer-10x\.js\?v=20261023\.4" data-doodhwala-10x="1"/, "Orders page must use one current customer 10X runtime without injecting a duplicate.");
 assert.match(worker, /doodhwala-v100/, "PWA cache must change when the home runtime changes.");
 assert.match(transitionJs, /showLoading/);
