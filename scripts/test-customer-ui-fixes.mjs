@@ -32,8 +32,8 @@ assert.match(orders, /Payment method not recorded/, "Older production orders mus
 
 for (const [name, html] of [["home", home], ["plans", plansHtml], ["orders", ordersHtml]]) {
   assert.match(html, /customer-ui-polish\.css\?v=202610(?:25\.3|26\.1)/, name + " page must load the responsive UI fixes.");
-  assert.match(html, /milk-transition\.css\?v=20261025\.4/, name + " page must load the milk animation styles.");
-  assert.match(html, /milk-transition\.js\?v=20261025\.4/, name + " page must load the transition runtime.");
+  assert.match(html, /milk-transition\.css\?v=20261027\.5/, name + " page must load the milk animation styles.");
+  assert.match(html, /milk-transition\.js\?v=20261027\.5/, name + " page must load the transition runtime.");
 }
 assert.match(nav, /function go\(url\).*DoodhwalaMilkTransition/, "Bottom navigation must use the milk transition helper.");
 assert.match(app, /showLoading\("Finding fresh milk nearby…?"\)/, "Home provider data loading should display the milk animation.");
@@ -65,7 +65,7 @@ assert.match(mobileCss, /@media\(max-width:390px\)/);
 assert.match(worker, /doodhwala-v100/, "Service worker cache must be bumped so installed PWAs refresh stale assets.");
 assert.match(worker, /customer-ui-polish\.css\?v=20261026\.1/);
 assert.match(worker, /customer-journey-refresh\.css\?v=20261025\.3/, "PWA must cache the styles required by Plans and Orders.");
-assert.match(worker, /milk-transition\.js\?v=20261025\.4/);
+assert.match(worker, /milk-transition\.js\?v=20261027\.5/);
 assert.match(resilience, /aboveCustomerNav/);
 assert.ok(resilience.includes('^\\/$'), "Root-hosted Home page errors must place recovery notices above the bottom navigation.");
 assert.match(resilience, /APP_VERSION = "20261025\.3"/);
