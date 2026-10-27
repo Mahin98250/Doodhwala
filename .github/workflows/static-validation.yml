@@ -85,6 +85,8 @@ jobs:
         run: node scripts/test-auth-contracts.mjs
       - name: Test seller order progression and decision dialogs
         run: node scripts/test-provider-simple-order-workflow.mjs
+      - name: Test seller mobile navigation accessibility
+        run: node scripts/test-provider-mobile-nav-a11y.mjs
       - name: Test consolidated RLS policy contracts
         run: node scripts/test-policy-consolidation.mjs
       - name: Test private admin allowlist RLS
