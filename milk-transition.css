@@ -103,3 +103,51 @@
 .dw-milk-stream-core { stroke-width: 5.8; }
 .dw-milk-transition.is-visible .dw-milk-transition-card { transition-delay: 35ms; }
 @media (prefers-reduced-motion: reduce) { .dw-milk-transition-card { will-change: auto; } }
+
+
+/* Final motion polish: liquid sheen, gentle bottle anticipation, and a soft landing. */
+.dw-milk-transition {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.94) 0%, rgba(241,249,239,.96) 42%, rgba(222,239,221,.98) 100%);
+  isolation: isolate;
+}
+.dw-milk-transition::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(112deg, transparent 28%, rgba(255,255,255,.42) 46%, transparent 62%);
+  transform: translateX(-32%);
+}
+.dw-milk-transition.is-visible::after {
+  animation: dw-milk-sheen 920ms cubic-bezier(.22,.61,.36,1) 1 both;
+}
+.dw-milk-transition-card {
+  border-color: rgba(255,255,255,.98);
+  background: linear-gradient(155deg, rgba(255,255,255,.98), rgba(250,253,249,.94));
+  transform: translateY(13px) scale(.965);
+  transition: transform 520ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease, box-shadow 520ms ease;
+}
+.dw-milk-transition.is-visible .dw-milk-transition-card {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 32px 92px rgba(20,58,35,.16), 0 8px 22px rgba(20,58,35,.07), inset 0 1px 0 #fff;
+}
+.dw-milk-brand-mark { animation: dw-milk-mark-arrive 540ms cubic-bezier(.2,.8,.2,1) both; }
+.dw-milk-transition.is-visible .dw-milk-source { animation-name: dw-milk-tip; }
+.dw-milk-transition.is-visible .dw-milk-target { animation-name: dw-milk-receive; }
+.dw-milk-stream-glint { stroke-dasharray: 3 16; }
+@keyframes dw-milk-sheen {
+  0% { opacity: 0; transform: translateX(-32%); }
+  24% { opacity: .72; }
+  100% { opacity: 0; transform: translateX(32%); }
+}
+@keyframes dw-milk-mark-arrive {
+  0% { opacity: 0; transform: translateY(5px) scale(.88); }
+  72% { opacity: 1; transform: translateY(-1px) scale(1.035); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dw-milk-transition.is-visible::after, .dw-milk-brand-mark { animation: none !important; }
+  .dw-milk-transition::after { display: none; }
+}
