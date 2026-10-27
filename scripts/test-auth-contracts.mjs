@@ -18,13 +18,13 @@ function resolveReturnPath(search) {
 }
 
 assert.equal(
-  resolveReturnPath("?return=%2FDoodhwala%2Forders.html%3Fview%3Dactive"),
-  "/Doodhwala/orders.html?view=active",
+  resolveReturnPath("?return=%2FDoodhwala%2Forders%2F%3Fview%3Dactive"),
+  "/Doodhwala/orders/?view=active",
   "valid same-site paths must preserve their intended destination and query"
 );
 assert.equal(
-  resolveReturnPath("?return=./provider.html"),
-  "/Doodhwala/provider.html",
+  resolveReturnPath("?return=./provider/"),
+  "/Doodhwala/provider/",
   "relative provider return paths must resolve inside the GitHub Pages project"
 );
 assert.equal(
@@ -38,7 +38,7 @@ assert.equal(
   "encoded traversal outside the project base must be rejected"
 );
 assert.equal(
-  resolveReturnPath("?return=%2FDoodhwala%2Fauth.html"),
+  resolveReturnPath("?return=%2FDoodhwala%2Fauth%2F"),
   "/Doodhwala/",
   "auth must not redirect back to itself"
 );

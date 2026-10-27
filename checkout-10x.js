@@ -1,7 +1,7 @@
 /* Doodhwala checkout 10X: live promo preview + atomic promo checkout without replacing core checkout.js. */
 (function(){
   const api=window.Doodhwala?.supabase;
-  if(!api||!location.pathname.endsWith("checkout.html"))return;
+  if(!api||!location.pathname.endsWith("/Doodhwala/checkout/"))return;
   const CART_KEY="doodhwala-cart";
   const KEY_STORE="doodhwala-promo-checkout-keys-v1";
   let cart={};try{cart=JSON.parse(localStorage.getItem(CART_KEY)||"{}")}catch(_){}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#175a3c">
+  <meta name="description" content="View order updates from your local milk provider on Doodhwala.">
+  <title>Doodhwala — Notifications</title>
+  <link rel="icon" href="/Doodhwala/assets/mascot.png">
+  <link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5">
+  <link rel="stylesheet" href="/Doodhwala/notifications.css?v=20261027.1">
+</head>
+<body class="notifications-page">
+  <main class="notifications-shell">
+    <header class="notifications-top">
+      <a class="notifications-brand" href="/Doodhwala/">
+        <img src="/Doodhwala/assets/mascot.png" alt="">
+        <span><strong>Doodhwala</strong><small>Local milk, nearby.</small></span>
+      </a>
+      <nav aria-label="Quick links">
+        <a href="/Doodhwala/orders/">My orders</a>
+        <a href="/Doodhwala/">Marketplace</a>
+      </nav>
+    </header>
+
+    <section class="notifications-hero">
+      <div class="notifications-hero-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      </div>
+      <div>
+        <span class="notifications-eyebrow">YOUR ORDER UPDATES</span>
+        <h1>Notifications</h1>
+        <p>See order status changes and new-order alerts in one place.</p>
+      </div>
+    </section>
+
+    <section id="notificationsSignedOut" class="notifications-panel" hidden>
+      <div class="notifications-empty-icon">↗</div>
+      <h2>Sign in to view updates</h2>
+      <p>Your notifications are private to your signed-in account.</p>
+      <a class="notifications-primary-link" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fnotifications%2F">Sign in securely</a>
+    </section>
+
+    <section id="notificationsSignedIn" hidden>
+      <div class="notifications-toolbar">
+        <div><strong id="notificationsUnreadCount">0 unread</strong><span id="notificationsAccountLabel">Signed in</span></div>
+        <div class="notifications-actions">
+          <button id="notificationsRefresh" type="button">↻ Refresh</button>
+          <button id="notificationsMarkAll" type="button" disabled>Mark all read</button>
+        </div>
+      </div>
+      <p id="notificationsStatus" class="notifications-status" role="status" aria-live="polite">Loading your notifications…</p>
+      <div id="notificationsList" class="notifications-list" aria-live="polite"></div>
+      <button id="notificationsLoadMore" class="notifications-load-more" type="button" hidden>Load older updates</button>
+    </section>
+
+    <p id="notificationsError" class="notifications-error" role="alert" hidden></p>
+
+    <footer class="notifications-footer">
+      <a href="/Doodhwala/support/">Help &amp; support</a>
+      
+      <a href="/Doodhwala/legal/#privacy">Privacy draft</a>
+      <span>In-app notifications only. Push notifications are not configured.</span>
+    </footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+  <script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+  <script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+  <script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+  <script src="/Doodhwala/notifications.js?v=20261027.1"></script>
+  <script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
+</body>
+</html>

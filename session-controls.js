@@ -95,7 +95,7 @@
       render(session) {
         const signedIn = Boolean(session && session.user);
         link.textContent = signedIn ? "Sign out" : "Sign in";
-        link.href = signedIn ? "#sign-out" : BASE + "auth.html";
+        link.href = signedIn ? "#sign-out" : BASE + "/Doodhwala/auth/";
         link.setAttribute("aria-label", signedIn ? "Sign out of Doodhwala" : "Sign in to Doodhwala");
         link.title = signedIn ? "Sign out of your account on this device" : "Sign in to Doodhwala";
         link.classList.toggle("is-signed-in", signedIn);

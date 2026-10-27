@@ -109,7 +109,7 @@
     status.classList.toggle("is-live",!!active&&realtimeConnected);
     title.textContent=active?"Order #"+String(active.id).slice(0,8).toUpperCase():(snapshot?.orders?.length?"No active delivery":"No orders yet");
     meta.textContent=active?orderStatusLabel(active.status)+" · "+(active.provider_profiles?.display_name||"Local provider")+deliveryEta(active.promised_delivery_at):(snapshot?.orders?.length?"Latest activity is available in Order Centre.":"Your first delivery status will appear here.");
-    action.href=active?BASE+"orders.html":(snapshot?.orders?.length?BASE+"orders.html":BASE+"?view=providers");
+    action.href=active?BASE+"/Doodhwala/orders/":(snapshot?.orders?.length?BASE+"/Doodhwala/orders/":BASE+"?view=providers");
     action.innerHTML=(active?"Track current order":snapshot?.orders?.length?"View order history":"Browse local sellers")+' <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
   }
 
@@ -186,12 +186,12 @@
       '<button class="d10x-btn secondary" id="d10xAlerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg> Alerts</button></div></div>'+
       '<div id="d10xProgress">'+progress+'</div></div>';
     hero.insertAdjacentElement("afterend",section);
-    document.getElementById("d10xOpenOrders").onclick=()=>location.href=BASE+"orders.html";
+    document.getElementById("d10xOpenOrders").onclick=()=>location.href=BASE+"/Doodhwala/orders/";
     document.getElementById("d10xAlerts").onclick=openAlerts;
     document.getElementById("d10xTrack")?.addEventListener("click",()=>{
       const orderId=String(window.doodhwalaCurrentOrderId||"");
       if(orderId&&window.Doodhwala10X?.openPanel)window.Doodhwala10X.openPanel("tracking");
-      else location.href=BASE+"orders.html";
+      else location.href=BASE+"/Doodhwala/orders/";
     });
     document.getElementById("d10xReorder")?.addEventListener("click",async function(){
       this.disabled=true;const oldText=this.textContent;this.textContent="Adding…";
@@ -236,7 +236,7 @@
   }
 
   async function mount(){
-    if(location.pathname.endsWith("auth.html")||location.pathname.endsWith("provider.html")||location.pathname.endsWith("admin.html"))return;
+    if(location.pathname.endsWith("/Doodhwala/auth/")||location.pathname.endsWith("/Doodhwala/provider/")||location.pathname.endsWith("/Doodhwala/admin/"))return;
     const user=await currentUser().catch(()=>null);
     mountBell();
     if(!user)return;

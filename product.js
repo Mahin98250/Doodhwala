@@ -53,13 +53,13 @@ function render(){
  $("buyTotal").textContent=priceValid?money(unitPrice*qty):"Unavailable";
  $("quantity").textContent=String(qty);
  $("providerLink").textContent=store.provider_name||"Local seller";
- $("providerLink").href="/Doodhwala/store.html?provider="+encodeURIComponent(store.provider_id);
- $("productBack").href="/Doodhwala/store.html?provider="+encodeURIComponent(store.provider_id);
+ $("providerLink").href="/Doodhwala/store/?provider="+encodeURIComponent(store.provider_id);
+ $("productBack").href="/Doodhwala/store/?provider="+encodeURIComponent(store.provider_id);
  $("detailProvider").textContent=store.provider_name||"Local provider";
  $("detailType").textContent=product.milk_type||"Milk";
  $("detailWindow").textContent=store.delivery_from&&store.delivery_to?String(store.delivery_from).slice(0,5)+"–"+String(store.delivery_to).slice(0,5):"Local route";
  $("detailRadius").textContent=(store.service_radius_km||5)+" km";
- $("planLink").href="/Doodhwala/plans.html?provider="+encodeURIComponent(store.provider_id)+"&product="+encodeURIComponent(product.id);
+ $("planLink").href="/Doodhwala/plans/?provider="+encodeURIComponent(store.provider_id)+"&product="+encodeURIComponent(product.id);
  const addButton=$("addToCart");
  addButton.disabled=!priceValid||store.is_serviceable===false;
  addButton.textContent=!priceValid?"Price unavailable":store.is_serviceable===false?"Unavailable here":"Add to cart";
@@ -87,13 +87,13 @@ async function load(){
    store=row;
    const products=Array.isArray(store.products)?store.products:[];
    product=products.find(p=>p&&String(p.id)===String(productId))||null;
-   if(!product){setState("Product not available","This milk is no longer active or in stock.",["/Doodhwala/store.html?provider="+encodeURIComponent(providerId),"Back to provider →"]);return}
+   if(!product){setState("Product not available","This milk is no longer active or in stock.",["/Doodhwala/store/?provider="+encodeURIComponent(providerId),"Back to provider →"]);return}
    $("minus").disabled=false;
    $("plus").disabled=false;
    render();
  }catch(error){
    console.error("Product detail load failed",error);
-   setState("Could not load this product","Check your connection and try again. No order or cart changes were made.",["/Doodhwala/product.html?provider="+encodeURIComponent(providerId)+"&product="+encodeURIComponent(productId),"Try again →"]);
+   setState("Could not load this product","Check your connection and try again. No order or cart changes were made.",["/Doodhwala/product/?provider="+encodeURIComponent(providerId)+"&product="+encodeURIComponent(productId),"Try again →"]);
  }finally{
    milkTransition?.hideLoading();
  }

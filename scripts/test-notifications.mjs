@@ -25,9 +25,9 @@ assert.match(migration, /grant execute on function public\.get_my_notifications\
 assert.match(migration, /Push delivery is not configured/i, "database documentation must not imply push delivery exists");
 
 assert.match(html, /id="notificationsList"/i, "notification list container must exist");
-assert.match(home, /href="\/Doodhwala\/notifications\.html"/i, "customer header must link to order notifications");
-assert.match(orders, /href="\/Doodhwala\/notifications\.html"/i, "order history must link to order notifications");
-assert.match(provider, /href="\/Doodhwala\/notifications\.html"/i, "provider dashboard must link to order notifications");
+assert.match(home, /href="\/Doodhwala\/notifications\/"/i, "customer header must link to order notifications");
+assert.match(orders, /href="\/Doodhwala\/notifications\/"/i, "order history must link to order notifications");
+assert.match(provider, /href="\/Doodhwala\/notifications\/"/i, "provider dashboard must link to order notifications");
 assert.match(html, /id="notificationsMarkAll"/i, "mark-all-read control must exist");
 assert.match(html, /id="notificationsLoadMore"/i, "pagination control must exist");
 assert.match(html, /Sign in to view updates/i, "signed-out state must be explained");
