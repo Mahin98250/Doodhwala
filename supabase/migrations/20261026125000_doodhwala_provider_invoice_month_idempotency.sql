@@ -66,7 +66,7 @@ declare
   v_existing public.provider_subscription_invoices%rowtype;
   v_id uuid;
 begin
-  if auth.uid() is null or not private.is_current_user_admin() then
+  if auth.uid() is null or not coalesce(private.is_current_user_admin(), false) then
     raise exception 'admin_access_required';
   end if;
 
