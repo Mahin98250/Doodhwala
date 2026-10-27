@@ -75,8 +75,7 @@
     cancel.disabled = false;
     cancel.textContent = "Cancel pending request";
     if (request.status === "cancelled") {
-      requestSection.hidden = false;
-      requestStatusSection.hidden = true;
+      showRequestForm();
       $("deletionStatus").textContent = "Your previous request was cancelled. You may submit a new request.";
     }
   }
