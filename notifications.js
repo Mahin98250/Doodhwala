@@ -41,7 +41,7 @@
         '<div class="notification-copy"><h2>'+(unread?'<span class="notification-unread-dot" aria-label="Unread"></span>':"")+esc(item.title)+'</h2>'+
         '<p>'+esc(item.body)+'</p><time datetime="'+esc(item.created_at)+'">'+esc(formatDate(item.created_at))+'</time></div>'+
         '<div class="notification-actions">'+(unread?'<button type="button" data-notification-read="'+esc(item.id)+'">Mark read</button>':"")+
-        '<a href="/Doodhwala/orders.html">View orders</a></div></article>';
+        '<a href="/Doodhwala/orders/">View orders</a></div></article>';
     }).join("");
     list.querySelectorAll("[data-notification-read]").forEach(button => {
       button.addEventListener("click", () => markRead(button.dataset.notificationRead, button));
