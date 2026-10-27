@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { chromium } from "playwright";
+import { createRequire } from "node:module";
+const require = createRequire(new URL(import.meta.url));
+const { chromium } = require(process.env.PLAYWRIGHT_PACKAGE || "playwright");
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
