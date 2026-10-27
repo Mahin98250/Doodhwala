@@ -23,6 +23,7 @@ declare
   v_duplicate_rejected boolean := false;
   v_non_admin_rejected boolean := false;
   v_null_admin_rejected boolean := false;
+  v_unauthenticated_rejected boolean := false;
 begin
   v_first := public.admin_create_provider_subscription_invoice(
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -141,7 +142,30 @@ begin
   if not v_null_admin_rejected then
     raise exception 'null_admin_result_did_not_fail_closed';
   end if;
+
+  -- A forged admin claim without a user subject must not pass the auth.uid()
+  -- guard. This protects against anonymous/malformed JWT claim contexts.
+  perform set_config('request.jwt.claim.sub', '', false);
+  perform set_config('request.jwt.claim.admin', 'true', false);
+  begin
+    perform public.admin_create_provider_subscription_invoice(
+      'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      date '2027-01-01', date '2027-01-31', date '2027-02-07',
+      'DW-2027-01-UNAUTHENTICATED', 'must be rejected without auth.uid()'
+    );
+  exception when others then
+    if sqlerrm = 'admin_access_required' then
+      v_unauthenticated_rejected := true;
+    else
+      raise;
+    end if;
+  end;
+
+  if not v_unauthenticated_rejected then
+    raise exception 'missing_user_subject_with_admin_claim_was_not_rejected';
+  end if;
 end
-  $$;
+  $;
 
 select 'provider invoice monthly idempotency checks passed' as result;
