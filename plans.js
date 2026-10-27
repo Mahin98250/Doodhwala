@@ -25,8 +25,8 @@ function renderSchedulePreview(){
   items.push({iso,day:new Intl.DateTimeFormat("en-IN",{weekday:"short"}).format(d),date:new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short"}).format(d),deliver,within});
  }
  const deliveries=items.filter(x=>x.deliver).length;
- count.textContent=deliveries+" delivery"+(deliveries===1?"":"ies");
- hint.textContent=deliveries?("First week: "+deliveries+" planned delivery"+(deliveries===1?"":"ies")+", "+money(deliveries*quantity*price)+" estimated value."): "No deliveries in this first-week window. Check your selected days and end date.";
+ count.textContent=deliveries+" "+(deliveries===1?"delivery":"deliveries");
+ hint.textContent=deliveries?("First week: "+deliveries+" planned "+(deliveries===1?"delivery":"deliveries")+", "+money(deliveries*quantity*price)+" estimated value."): "No deliveries in this first-week window. Check your selected days and end date.";
  host.innerHTML=items.map(x=>'<div class="schedule-preview-day '+(x.deliver?"is-delivery":"")+(x.within?"":" is-ended")+'"><span>'+esc(x.day)+'</span><b>'+esc(x.date)+'</b><small>'+(x.deliver?'Milk delivery · '+esc(quantity)+' L':x.within?'No delivery':'Plan ended')+'</small><i aria-hidden="true">'+(x.deliver?'✓':'—')+'</i></div>').join("");
 }
 function updatePreview(){const n=deliveryCount(),q=Number($("planQuantity").value||0),price=Number(product?.price_per_litre||0);$("deliveryCount").textContent=n;$("planEstimate").textContent=money(n*q*price);$("planEnd").min=$("planStart").value||tomorrow();renderSchedulePreview()}
