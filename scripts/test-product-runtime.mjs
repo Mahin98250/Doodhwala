@@ -17,8 +17,8 @@ assert.doesNotMatch(product, /\$\("addToCart"\)\.disabled=false;/, "buying must 
 assert.ok(html.includes('/Doodhwala/product.js?v=20261025.6'), "product page must cache-bust the guarded detail runtime");
 assert.ok(sw.includes('const CACHE="doodhwala-v100"'), "product and customer runtime releases must invalidate the old PWA cache");
 assert.ok(sw.includes('/Doodhwala/product.js?v=20261025.6'), "service worker must precache the guarded product runtime");
-assert.ok(html.includes('/Doodhwala/milk-transition.css?v=20261025.4'), "product page must load the milk transition styles");
-assert.ok(html.includes('/Doodhwala/milk-transition.js?v=20261025.4'), "product page must load the milk transition runtime before product loading");
+assert.ok(html.includes('/Doodhwala/milk-transition.css?v=20261027.5'), "product page must load the milk transition styles");
+assert.ok(html.includes('/Doodhwala/milk-transition.js?v=20261027.5'), "product page must load the milk transition runtime before product loading");
 assert.ok(product.includes('milkTransition?.showLoading("Loading this milk…")'), "product load must show a milk-themed loading state");
 assert.match(product, /finally\{\s*milkTransition\?\.hideLoading\(\);\s*\}/, "product load must hide the loader even when requests fail");
 
