@@ -207,16 +207,16 @@ begin
 end
 $function$;
 
-revoke all on function public.request_account_deletion(text, text) from public, anon;
+revoke all on function public.request_account_deletion(text, text) from public, anon, authenticated;
 grant execute on function public.request_account_deletion(text, text) to authenticated;
 
-revoke all on function public.get_my_account_deletion_request() from public, anon;
+revoke all on function public.get_my_account_deletion_request() from public, anon, authenticated;
 grant execute on function public.get_my_account_deletion_request() to authenticated;
 
-revoke all on function public.cancel_account_deletion_request(uuid) from public, anon;
+revoke all on function public.cancel_account_deletion_request(uuid) from public, anon, authenticated;
 grant execute on function public.cancel_account_deletion_request(uuid) to authenticated;
 
-revoke all on function public.admin_list_account_deletion_requests(integer) from public, anon;
+revoke all on function public.admin_list_account_deletion_requests(integer) from public, anon, authenticated;
 grant execute on function public.admin_list_account_deletion_requests(integer) to authenticated;
 
 comment on table private.account_deletion_requests is
