@@ -59,7 +59,7 @@ begin
   end if;
 
   perform set_config('request.jwt.claim.sub','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',false);
-  v_result := public.get_my_notifications(20,null);
+  v_result := public.get_my_notifications(20,null,null);
   if jsonb_array_length(v_result->'items') <> 3
      or (v_result->>'unread_count')::integer <> 3 then
     raise exception 'customer_notification_list_or_unread_count_incorrect';
@@ -93,7 +93,7 @@ begin
     raise exception 'mark_all_read_count_incorrect';
   end if;
 
-  v_result := public.get_my_notifications(20,null);
+  v_result := public.get_my_notifications(20,null,null);
   if (v_result->>'unread_count')::integer <> 0 then
     raise exception 'unread_count_not_zero_after_mark_all_read';
   end if;
