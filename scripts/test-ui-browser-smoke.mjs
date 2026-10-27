@@ -1,0 +1,355 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { chromium } from "playwright";
+
+const base = process.env.DOODHWALA_BASE_URL || "http://127.0.0.1:4173/Doodhwala/";
+const out = process.env.EVIDENCE_DIR || "artifacts/ui";
+fs.mkdirSync(out, { recursive: true });
+const browser = await chromium.launch({ headless: true });
+const results = [];
+try {
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    const page = await browser.newPage({ viewport: { width, height: width <= 390 ? 844 : width === 768 ? 1024 : 900 } });
+    // Keep this test isolated from live services/customer data; exercise the static UI shell only.
+    await page.route("**/*", route => { const url = new URL(route.request().url()); if (url.hostname !== "127.0.0.1" || url.port !== "4173") return route.abort(); return route.continue(); });
+    const errors = [];
+    page.on("pageerror", error => errors.push(error.message));
+    const response = await page.goto(base, { waitUntil: "domcontentloaded" });
+    assert.ok(response && response.ok(), `home route returns HTTP success at ${width}px`);
+    await page.waitForSelector(".customer-bottom-nav", { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(350);
+    const evidence = await page.evaluate(() => {
+      const nav = document.querySelector(".customer-bottom-nav");
+      const search = document.querySelector("#search");
+      const rects = [...document.querySelectorAll("body *")].filter(el => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && getComputedStyle(el).position !== "fixed" &&
+          (r.left < -1 || r.right > window.innerWidth + 1);
+      }).slice(0, 12).map(el => ({ tag: el.tagName, id: el.id, className: String(el.className || "").slice(0, 90),
+        left: Math.round(el.getBoundingClientRect().left), right: Math.round(el.getBoundingClientRect().right) }));
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        documentWidth: document.documentElement.scrollWidth,
+        horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
+        overflowElements: rects,
+        bottomNavExists: !!nav,
+        bottomNavVisible: !!nav && getComputedStyle(nav).display !== "none" && nav.getBoundingClientRect().height > 0,
+        navLabels: nav ? [...nav.querySelectorAll(".customer-nav-item span")].map(el => getComputedStyle(el).fontSize) : [],
+        searchAccessibleName: search?.getAttribute("aria-label") || search?.getAttribute("aria-labelledby") || "",
+      };
+    });
+    await page.screenshot({ path: path.join(out, `home-${width}px.png`), fullPage: true });
+    results.push({ viewport: width, ...evidence, pageErrors: errors });
+    if (width <= 760) assert.ok(evidence.bottomNavVisible, `mobile bottom navigation is visible at ${width}px`);
+    if (width > 760) assert.ok(!evidence.bottomNavVisible, `mobile bottom navigation is hidden at ${width}px`);
+    assert.equal(evidence.searchAccessibleName, "Search milk, provider or area", `search has accessible name at ${width}px`);
+    assert.deepEqual(errors, [], `no uncaught page errors at ${width}px`);
+    await page.close();
+  }
+  fs.writeFileSync(path.join(out, "viewport-results.json"), JSON.stringify(results, null, 2));
+  const overflow = results.filter(r => r.horizontalOverflow);
+  if (overflow.length) {
+    console.error("HORIZONTAL_OVERFLOW_FINDINGS", JSON.stringify(overflow.map(r => ({ viewport:r.viewport, documentWidth:r.documentWidth, elements:r.overflowElements })), null, 2));
+    throw new Error(`Horizontal overflow detected at viewport(s): ${overflow.map(r => r.viewport).join(", ")}px; see viewport-results.json and screenshots.`);
+  }
+  // Route interaction checks use a separate context with service workers disabled.
+  // External APIs/CDNs are blocked; auth.js is stubbed because it intentionally
+  // redirects localhost to production. No live account or order action is used.
+  const interactionContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: "block"
+  });
+  const baseOrigin = new URL(base).origin;
+  const interactionResults = [];
+  try {
+    await interactionContext.route("**/*", route => {
+      const url = new URL(route.request().url());
+      if (url.origin !== baseOrigin) return route.abort();
+      if (url.pathname === "/Doodhwala/auth.js") {
+        return route.fulfill({
+          status: 200,
+          contentType: "application/javascript",
+          body: "/* auth runtime disabled in isolated browser smoke */"
+        });
+      }
+      return route.continue();
+    });
+    const page = await interactionContext.newPage();
+    const homeResponse = await page.goto(base, { waitUntil: "domcontentloaded" });
+    assert.ok(homeResponse && homeResponse.ok(), "interactive smoke home route loads");
+    await page.waitForSelector(".customer-bottom-nav", { timeout: 8000 });
+    assert.equal(await page.locator(".customer-bottom-nav [data-customer-nav]").count(), 6,
+      "mobile navigation exposes all six destinations");
+
+    await page.locator('[data-customer-nav="explore"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-customer-nav="explore"]')?.getAttribute("aria-current") === "page",
+      { timeout: 3000 }
+    );
+    await page.locator('[data-customer-nav="saved"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-customer-nav="saved"]')?.getAttribute("aria-current") === "page",
+      { timeout: 3000 }
+    );
+    await page.locator('[data-customer-nav="home"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-customer-nav="home"]')?.getAttribute("aria-current") === "page",
+      { timeout: 3000 }
+    );
+    interactionResults.push({ check: "Explore/Saved/Home active navigation state", status: "passed" });
+
+    const search = page.locator("#search");
+    await search.fill("smoke-test-no-live-provider");
+    assert.equal(await search.inputValue(), "smoke-test-no-live-provider", "search accepts typed input");
+    assert.equal(await search.getAttribute("aria-label"), "Search milk, provider or area",
+      "search remains programmatically named during interaction");
+
+    await page.locator('[data-customer-nav="cart"]').click();
+    await page.waitForFunction(() => document.body.classList.contains("drawer-open"), { timeout: 3000 });
+    await page.locator("#closeCart").click();
+    await page.waitForFunction(() => !document.body.classList.contains("drawer-open"), { timeout: 3000 });
+    interactionResults.push({ check: "cart drawer open/close", status: "passed" });
+
+    await page.locator('[data-customer-nav="plans"]').click();
+    await page.waitForFunction(() => location.pathname.endsWith("/plans.html"), { timeout: 10000 });
+    assert.match(await page.title(), /Milk Plans/i, "Plans navigation reaches the Plans route");
+    interactionResults.push({ check: "Plans navigation", status: "passed" });
+
+    await page.goto(base, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector(".customer-bottom-nav", { timeout: 8000 });
+    await page.locator('[data-customer-nav="orders"]').click();
+    await page.waitForFunction(() => location.pathname.endsWith("/orders.html"), { timeout: 10000 });
+    assert.match(await page.title(), /Orders/i, "Orders navigation reaches the Orders route");
+    interactionResults.push({ check: "Orders navigation", status: "passed" });
+
+    await page.goto(base, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector(".customer-bottom-nav", { timeout: 8000 });
+    await page.waitForSelector("#retryProviders", { timeout: 8000 });
+    assert.ok(await page.locator("#retryProviders").isVisible(),
+      "offline/blocked backend state presents a visible recovery action");
+    await page.locator("#retryProviders").click();
+    await page.waitForSelector("#retryProviders", { timeout: 8000 });
+    interactionResults.push({ check: "marketplace error and retry", status: "passed" });
+
+    const cdp = await interactionContext.newCDPSession(page);
+    await cdp.send("Browser.setPermission", {
+      permission: { name: "geolocation" },
+      setting: "denied",
+      origin: baseOrigin
+    });
+    await page.locator("#locationHero").click();
+    await page.locator("#locationUseMe").click();
+    await page.waitForFunction(
+      () => document.getElementById("locationState")?.textContent.includes("Location permission was denied."),
+      { timeout: 5000 }
+    );
+    assert.match(await page.locator("#locationState").innerText(), /Location permission was denied/i,
+      "location denial is explained and recoverable");
+    await page.screenshot({ path: path.join(out, "location-denied-390px.png"), fullPage: true });
+    interactionResults.push({ check: "geolocation denial recovery message", status: "passed" });
+    await cdp.detach();
+
+    const authPage = await interactionContext.newPage();
+    const authResponse = await authPage.goto(new URL("auth.html", base).href, { waitUntil: "domcontentloaded" });
+    assert.ok(authResponse && authResponse.ok(), "auth form loads in isolated test context");
+    const initialValidity = await authPage.locator("#authForm").evaluate(form => ({
+      formValid: form.checkValidity(),
+      emailRequired: form.querySelector("#email").required,
+      emailMissing: form.querySelector("#email").validity.valueMissing,
+      passwordRequired: form.querySelector("#password").required,
+      passwordMissing: form.querySelector("#password").validity.valueMissing
+    }));
+    assert.equal(initialValidity.formValid, false, "blank auth form is rejected by native validation");
+    assert.equal(initialValidity.emailRequired, true);
+    assert.equal(initialValidity.emailMissing, true);
+    assert.equal(initialValidity.passwordRequired, true);
+    assert.equal(initialValidity.passwordMissing, true);
+    await authPage.locator("#email").fill("not-an-email");
+    await authPage.locator("#password").fill("short");
+    const invalidValidity = await authPage.locator("#authForm").evaluate(form => ({
+      emailTypeMismatch: form.querySelector("#email").validity.typeMismatch,
+      passwordTooShort: form.querySelector("#password").validity.tooShort
+    }));
+    assert.equal(invalidValidity.emailTypeMismatch, true, "malformed email is rejected");
+    assert.equal(invalidValidity.passwordTooShort, true, "short password is rejected");
+    await authPage.screenshot({ path: path.join(out, "auth-validation-390px.png"), fullPage: true });
+    interactionResults.push({ check: "auth native validation", status: "passed" });
+
+    const productPage = await interactionContext.newPage();
+    const productResponse = await productPage.goto(new URL("product.html", base).href, { waitUntil: "domcontentloaded" });
+    assert.ok(productResponse && productResponse.ok(), "product detail route loads without demo identifiers");
+    await productPage.waitForFunction(
+      () => document.getElementById("productState")?.innerText.includes("Milk not found"),
+      { timeout: 5000 }
+    );
+    assert.equal(await productPage.locator("#addToCart").isDisabled(), true,
+      "product detail without valid identifiers cannot be added to cart");
+    await productPage.screenshot({ path: path.join(out, "product-unavailable-390px.png"), fullPage: true });
+    interactionResults.push({ check: "product unavailable state disables add-to-cart", status: "passed" });
+
+    const checkoutPage = await interactionContext.newPage();
+    const checkoutResponse = await checkoutPage.goto(new URL("checkout.html", base).href, { waitUntil: "domcontentloaded" });
+    assert.ok(checkoutResponse && checkoutResponse.ok(), "checkout entry route loads");
+    const requiredAddressFields = await checkoutPage.evaluate(() =>
+      ["recipient", "addressPhone", "addressLine", "addressArea", "addressCity", "addressPin"]
+        .map(id => ({ id, required: !!document.getElementById(id)?.required }))
+    );
+    assert.ok(requiredAddressFields.every(field => field.required),
+      "checkout address fields retain required validation");
+    assert.equal(await checkoutPage.locator("#checkoutState").count(), 1,
+      "checkout exposes its status/recovery region");
+    await checkoutPage.screenshot({ path: path.join(out, "checkout-entry-390px.png"), fullPage: true });
+    interactionResults.push({ check: "checkout entry and required address fields", status: "passed" });
+
+    // Exercise common customer routes at mobile and desktop widths, using only
+    // local HTML and blocking external services. The auth runtime remains stubbed.
+    const routeLayouts = [
+      { path: "/Doodhwala/checkout.html", title: /Checkout/i, slug: "checkout" },
+      { path: "/Doodhwala/plans.html", title: /Milk Plans/i, slug: "plans" },
+      { path: "/Doodhwala/orders.html", title: /Orders/i, slug: "orders" },
+      { path: "/Doodhwala/auth.html", title: /Sign in/i, slug: "auth" },
+      { path: "/Doodhwala/product.html", title: /Milk/i, slug: "product" },
+      { path: "/Doodhwala/support.html", title: /Support/i, slug: "support" }
+    ];
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      for (const routeCase of routeLayouts) {
+        const routeUrl = new URL(routeCase.path, baseOrigin).href;
+        const response = await page.goto(routeUrl, { waitUntil: "domcontentloaded" });
+        assert.ok(response && response.ok(), "route layout loads: " + routeCase.path + " at " + width + "px");
+        assert.match(await page.title(), routeCase.title, "route title is correct: " + routeCase.path);
+        const layout = await page.evaluate(() => ({
+          width: innerWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          horizontalOverflow: document.documentElement.scrollWidth > innerWidth
+        }));
+        assert.equal(layout.horizontalOverflow, false,
+          "no horizontal overflow on " + routeCase.path + " at " + width + "px: " + JSON.stringify(layout));
+        await page.screenshot({
+          path: path.join(out, `route-${routeCase.slug}-${width}px.png`),
+          fullPage: true
+        });
+        interactionResults.push({
+          check: "customer route layout",
+          path: routeCase.path,
+          viewport: width,
+          status: "passed",
+          ...layout
+        });
+      }
+    }
+
+    fs.writeFileSync(path.join(out, "interaction-results.json"), JSON.stringify(interactionResults, null, 2));
+  } finally {
+    await interactionContext.close();
+  }
+  // Use explicit local fixture rows to test actual search/filter/sort behavior
+  // without contacting Supabase or using any real provider/customer data.
+  const fixtureContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: "block"
+  });
+  const fixtureRows = [
+    {
+      provider_id: "fixture-alpha",
+      provider_name: "Alpha Dairy",
+      area_name: "Navrangpura",
+      city: "Ahmedabad",
+      milk_type: "cow",
+      rating_avg: 4.8,
+      delivery_from: "06:00",
+      delivery_to: "09:00",
+      latitude: 23.03,
+      longitude: 72.56,
+      distance_km: 2,
+      service_radius_km: 10,
+      is_serviceable: true,
+      products: [{ id: "fixture-milk-alpha", name: "Cow Milk", price_per_litre: 60, daily_available: true }]
+    },
+    {
+      provider_id: "fixture-beta",
+      provider_name: "Beta Dairy",
+      area_name: "Maninagar",
+      city: "Ahmedabad",
+      milk_type: "buffalo",
+      rating_avg: 4.9,
+      delivery_from: "06:00",
+      delivery_to: "09:00",
+      latitude: 23.00,
+      longitude: 72.60,
+      distance_km: 4,
+      service_radius_km: 10,
+      is_serviceable: true,
+      products: [{ id: "fixture-milk-beta", name: "Buffalo Milk", price_per_litre: 70, daily_available: false }]
+    }
+  ];
+  try {
+    await fixtureContext.route("**/*", route => {
+      const url = new URL(route.request().url());
+      if (url.origin !== baseOrigin) return route.abort();
+      if (url.pathname === "/Doodhwala/supabase-client.js") {
+        const body = "(function(){var rows=" + JSON.stringify(fixtureRows) + ";window.Doodhwala=window.Doodhwala||{};window.Doodhwala.configured=true;window.Doodhwala.supabase={rpc:async function(name){if(name==='find_nearby_providers_v3')return {data:rows,error:null};return {data:[],error:null};},auth:{getUser:async function(){return {data:{user:null},error:null};}}};})();";
+        return route.fulfill({ status: 200, contentType: "application/javascript", body });
+      }
+      return route.continue();
+    });
+    const fixturePage = await fixtureContext.newPage();
+    const fixtureResponse = await fixturePage.goto(base, { waitUntil: "domcontentloaded" });
+    assert.ok(fixtureResponse && fixtureResponse.ok(), "fixture-backed marketplace loads");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 10000 });
+    const initialOrder = await fixturePage.locator("#providersGrid [data-provider-card]").evaluateAll(cards => cards.map(card => card.getAttribute("data-provider-card")));
+    assert.deepEqual(initialOrder, ["fixture-alpha", "fixture-beta"], "closest sort orders the nearer fixture first");
+    await fixturePage.screenshot({ path: path.join(out, "fixture-results-390px.png"), fullPage: true });
+
+    await fixturePage.locator("#search").fill("Alpha Dairy");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 1, null, { timeout: 5000 });
+    assert.equal(await fixturePage.locator("#providersGrid [data-provider-card]").getAttribute("data-provider-card"), "fixture-alpha",
+      "search returns only the matching fixture provider");
+
+    await fixturePage.locator("#search").fill("no-such-fixture-provider");
+    await fixturePage.waitForSelector("#providersGrid .no-results h3", { timeout: 5000 });
+    assert.match(await fixturePage.locator("#providersGrid .no-results h3").innerText(), /No matching providers/i,
+      "unmatched search shows the no-results recovery state");
+    await fixturePage.screenshot({ path: path.join(out, "fixture-no-results-390px.png"), fullPage: true });
+    await fixturePage.locator("#clearDiscoverySearch").click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 5000 });
+
+    await fixturePage.locator('#chips button[data-filter="cow"]').click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 1, null, { timeout: 5000 });
+    assert.equal(await fixturePage.locator("#providersGrid [data-provider-card]").getAttribute("data-provider-card"), "fixture-alpha",
+      "Cow filter returns the cow-milk fixture only");
+    await fixturePage.locator('#chips button[data-filter="buffalo"]').click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 1, null, { timeout: 5000 });
+    assert.equal(await fixturePage.locator("#providersGrid [data-provider-card]").getAttribute("data-provider-card"), "fixture-beta",
+      "Buffalo filter returns the buffalo-milk fixture only");
+    await fixturePage.locator('#chips button[data-filter="all"]').click();
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 5000 });
+
+    await fixturePage.locator("#providerSort").selectOption("rating");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 10000 });
+    const ratingOrder = await fixturePage.locator("#providersGrid [data-provider-card]").evaluateAll(cards => cards.map(card => card.getAttribute("data-provider-card")));
+    assert.deepEqual(ratingOrder, ["fixture-beta", "fixture-alpha"], "rating sort puts the higher-rated fixture first");
+    await fixturePage.screenshot({ path: path.join(out, "fixture-rating-sort-390px.png"), fullPage: true });
+
+    await fixturePage.locator("#providerSort").selectOption("price");
+    await fixturePage.waitForFunction(() => document.querySelectorAll("#providersGrid [data-provider-card]").length === 2, null, { timeout: 10000 });
+    const priceOrder = await fixturePage.locator("#providersGrid [data-provider-card]").evaluateAll(cards => cards.map(card => card.getAttribute("data-provider-card")));
+    assert.deepEqual(priceOrder, ["fixture-alpha", "fixture-beta"], "price sort puts the lower-priced fixture first");
+
+    const fixtureResults = [
+      { check: "closest sort", status: "passed", order: initialOrder },
+      { check: "search match", status: "passed", provider: "fixture-alpha" },
+      { check: "unmatched search and clear recovery", status: "passed" },
+      { check: "cow and buffalo filters", status: "passed" },
+      { check: "rating sort", status: "passed", order: ratingOrder },
+      { check: "price sort", status: "passed", order: priceOrder }
+    ];
+    fs.writeFileSync(path.join(out, "fixture-discovery-results.json"), JSON.stringify(fixtureResults, null, 2));
+  } finally {
+    await fixtureContext.close();
+  }
+  console.log("UI Chromium smoke passed: five viewport sizes plus navigation, cart drawer, search, error retry, denied geolocation, auth validation and checkout-entry contracts. Evidence is in artifacts/ui.");
+} finally {
+  await browser.close();
+}
