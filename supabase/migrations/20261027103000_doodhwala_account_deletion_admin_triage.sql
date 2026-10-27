@@ -63,3 +63,34 @@ $function$;
 
 revoke all on function public.admin_update_account_deletion_request(uuid, text, text) from public, anon;
 grant execute on function public.admin_update_account_deletion_request(uuid, text, text) to authenticated;
+
+create or replace function public.admin_list_account_deletion_requests(p_limit integer default 50)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $function$
+declare
+  v_result jsonb;
+begin
+  if auth.uid() is null or not coalesce(private.is_current_user_admin(), false) then
+    raise exception 'admin_access_required' using errcode = '42501';
+  end if;
+
+  select coalesce(jsonb_agg(to_jsonb(q) order by q.requested_at asc), '[]'::jsonb)
+    into v_result
+    from (
+      select id, user_id, status, reason, review_notes, requested_at, updated_at, completed_at
+        from private.account_deletion_requests
+       where status in ('pending', 'under_review', 'blocked_open_orders')
+       order by requested_at asc
+       limit greatest(1, least(coalesce(p_limit, 50), 200))
+    ) q;
+
+  return v_result;
+end
+$function$;
+
+revoke all on function public.admin_list_account_deletion_requests(integer) from public, anon;
+grant execute on function public.admin_list_account_deletion_requests(integer) to authenticated;
