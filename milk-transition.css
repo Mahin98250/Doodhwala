@@ -151,3 +151,71 @@
   .dw-milk-transition.is-visible::after, .dw-milk-brand-mark { animation: none !important; }
   .dw-milk-transition::after { display: none; }
 }
+
+
+/* Clean, product-grade transition scene: minimal chrome, physically paced liquid. */
+.dw-milk-transition {
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background: rgba(246, 250, 246, .97);
+  -webkit-backdrop-filter: blur(12px) saturate(112%);
+  backdrop-filter: blur(12px) saturate(112%);
+}
+.dw-milk-transition::before {
+  inset: 0;
+  border-radius: 0;
+  clip-path: none;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(255,255,255,.98) 0%, rgba(242,248,241,.68) 42%, transparent 72%);
+}
+.dw-milk-transition::after { display: none; }
+.dw-milk-transition-card {
+  width: min(320px, 100%);
+  padding: 22px 18px 19px;
+  border: 1px solid rgba(32, 82, 49, .08);
+  border-radius: 24px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 18px 54px rgba(24,62,43,.09), 0 2px 8px rgba(24,62,43,.035);
+  transform: translateY(8px) scale(.985);
+  transition: transform 340ms cubic-bezier(.2,.75,.25,1), opacity 240ms ease;
+}
+.dw-milk-transition.is-visible .dw-milk-transition-card {
+  box-shadow: 0 18px 54px rgba(24,62,43,.09), 0 2px 8px rgba(24,62,43,.035);
+}
+.dw-milk-brand-mark {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 3px;
+  border-radius: 11px;
+  box-shadow: none;
+  animation: none;
+}
+.dw-milk-scene--transition { --dw-pour-duration: 1.55s; }
+.dw-milk-scene { width: min(250px, 100%); }
+.dw-milk-transition-card .dw-milk-title {
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -.015em;
+}
+.dw-milk-transition-card small {
+  margin-top: 5px;
+  color: #7b8b7f;
+  font-size: 11px;
+}
+.dw-milk-stream-shadow { stroke: #b5d9c0; stroke-width: 7.5; opacity: .28; }
+.dw-milk-stream-core { stroke: #fff; stroke-width: 4.5; }
+.dw-milk-stream-glint { stroke-width: .9; opacity: .65; }
+.dw-milk-pour i { box-shadow: none; }
+.dw-milk-loading {
+  border-color: rgba(32,82,49,.08);
+  box-shadow: 0 5px 18px rgba(24,62,43,.08);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+@media (max-width: 420px) {
+  .dw-milk-transition { padding-left: 16px; padding-right: 16px; }
+  .dw-milk-transition-card { width: min(300px,100%); padding: 18px 14px 16px; }
+  .dw-milk-transition-card .dw-milk-scene { transform: scale(.9); margin-top: -4px; margin-bottom: -7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dw-milk-transition-card { transform: none; }
+}
