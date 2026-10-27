@@ -166,14 +166,29 @@ function renderRating(o){
     '</div></div>';
 }
 
+function renderOrderProgress(status,events){
+  const steps=[["placed","Order placed"],["accepted","Accepted by seller"],["preparing","Milk being packed"],["ready","Ready for delivery"],["out_for_delivery","Out for delivery"],["delivered","Delivered"]];
+  if(status==="rejected"||status==="cancelled"){
+    const terminalEvent=(events||[]).slice().reverse().find(function(event){return event.to_status===status});
+    const reason=terminalEvent?.reason?'<p class="customer-progress-reason">'+esc(terminalEvent.reason)+'</p>':"";
+    return '<section class="customer-order-progress is-terminal" aria-label="Order status"><div class="customer-progress-terminal-icon" aria-hidden="true">×</div><div class="customer-progress-terminal-copy"><b>'+(status==="rejected"?"This order was declined":"This order was cancelled")+'</b><span>'+(status==="rejected"?"The seller could not accept this order.":"No further delivery steps are scheduled for this order.")+'</span>'+reason+'</div></section>';
+  }
+  const current=steps.findIndex(function(step){return step[0]===status});
+  if(current<0)return '<div class="customer-order-progress-unknown" role="status">'+esc(statusLabel(status))+'</div>';
+  const label=current===5?"Your milk has arrived":current===4?"Your milk is on its way":current===0?"Waiting for the seller to respond":current===1?"The seller has accepted your order":current===2?"The seller is packing your milk":"Your order is ready for delivery";
+  return '<section class="customer-order-progress" aria-label="Order progress"><div class="customer-progress-heading"><b>Where your order is</b><span>Step '+(current+1)+' of '+steps.length+'</span></div><p class="customer-progress-summary">'+label+'</p><ol class="customer-progress-steps">'+steps.map(function(step,index){
+    const stage=index<current?"done":index===current?"current":"upcoming";
+    return '<li class="customer-progress-step '+stage+'"'+(index===current?' aria-current="step"':"")+'><span class="customer-progress-dot" aria-hidden="true">'+(index<current?"✓":String(index+1))+'</span><span>'+step[1]+'</span></li>';
+  }).join("")+'</ol></section>';
+}
 function renderTimeline(events){
-  if(!events.length)return '<div class="order-timeline"></div>';
-  return '<div class="order-timeline">'+events.map(function(e){
+  if(!events.length)return "";
+  return '<details class="order-timeline"><summary>Order updates <span>'+events.length+'</span></summary><div class="order-timeline-events">'+events.map(function(e){
     const reason=e.reason?" · "+esc(e.reason):"";
     return '<div class="timeline-row"><span class="timeline-dot"></span><div><b>'+
       esc(statusLabel(e.to_status))+'</b><small>'+esc(when(e.created_at))+reason+
       '</small></div></div>';
-  }).join("")+'</div>';
+  }).join("")+'</div></details>';
 }
 
 function paymentStatusLabel(o){const map={unpaid:"Payment not selected",payment_pending_verification:"UPI payment pending seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Pay seller on delivery",paid_cod:"Cash collection confirmed",payment_failed:"Payment failed",refund_or_reversal_review:"Payment issue needs review"};return map[o.payment_status]||"Payment status unavailable"}
@@ -200,6 +215,7 @@ function renderOrderCard(o,events){
       '</div><div class="order-meta">Order '+esc(o.id)+" · "+esc(when(o.created_at))+
       '</div></div><span class="customer-status '+esc(o.status)+'">'+esc(statusLabel(o.status))+
       '</span></div>'+
+    renderOrderProgress(o.status,events)+
     '<div class="customer-items">'+itemHtml+'</div>'+
     '<div class="customer-total"><span>Total</span><b>'+money(o.total)+'</b></div>'+
     '<div class="customer-address"><b>Delivery</b><br>'+
