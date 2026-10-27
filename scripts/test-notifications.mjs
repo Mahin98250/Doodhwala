@@ -20,8 +20,8 @@ assert.match(migration, /get_my_notifications/i, "authenticated users need a not
 assert.match(migration, /mark_my_notification_read/i, "users need a scoped mark-read RPC");
 assert.match(migration, /mark_all_my_notifications_read/i, "users need a mark-all-read RPC");
 assert.match(migration, /n\.user_id = v_uid/i, "read actions must be scoped to the current user");
-assert.match(migration, /revoke all on function public\.get_my_notifications\(integer, timestamptz\) from public, anon, authenticated/i, "notification list RPC must reset grants");
-assert.match(migration, /grant execute on function public\.get_my_notifications\(integer, timestamptz\) to authenticated/i, "authenticated role must be explicitly allowed to call list RPC");
+assert.match(migration, /revoke all on function public\.get_my_notifications\(integer, timestamptz, uuid\) from public, anon, authenticated/i, "notification list RPC must reset grants");
+assert.match(migration, /grant execute on function public\.get_my_notifications\(integer, timestamptz, uuid\) to authenticated/i, "authenticated role must be explicitly allowed to call list RPC");
 assert.match(migration, /Push delivery is not configured/i, "database documentation must not imply push delivery exists");
 
 assert.match(html, /id="notificationsList"/i, "notification list container must exist");
@@ -42,4 +42,7 @@ assert.match(client, /rpc\("mark_all_my_notifications_read"/i, "client must mark
 assert.doesNotMatch(client, /\.from\(["']user_notifications/i, "client must not read the notification table directly");
 assert.doesNotMatch(client, /innerHTML\s*=\s*[^;]*item\.(title|body)/i, "untrusted notification text must not be inserted without escaping");
 
+assert.ok(client.includes("p_before_id: append ? state.oldestId : null"), "client pagination must send the timestamp + id cursor");
+assert.ok(migration.includes("(created_at, id) < (p_before, p_before_id)"), "database pagination must tie-break equal timestamps by notification ID");
+assert.match(migration, /order by created_at desc, id desc/i, "notification list ordering must be deterministic");
 console.log("In-app notification contracts passed: private ledger, order-event alerts, user scoping, explicit grants, honest push status and responsive UI.");
