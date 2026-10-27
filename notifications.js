@@ -2,7 +2,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const PAGE_SIZE = 30;
-  const state = { user: null, items: [], unreadCount: 0, oldest: null, hasMore: false, busy: false };
+  const state = { user: null, items: [], unreadCount: 0, oldest: null, oldestId: null, hasMore: false, busy: false };
   const client = () => window.Doodhwala?.supabase;
 
   function esc(value) {
@@ -53,7 +53,8 @@
     status(append ? "Loading older updates…" : "Loading your notifications…");
     const { data, error } = await db.rpc("get_my_notifications", {
       p_limit: PAGE_SIZE,
-      p_before: append ? state.oldest : null
+      p_before: append ? state.oldest : null,
+      p_before_id: append ? state.oldestId : null
     });
     if (error) throw error;
     const page = Array.isArray(data?.items) ? data.items : [];
@@ -65,6 +66,7 @@
       state.items = page;
     }
     state.oldest = state.items.length ? state.items[state.items.length - 1].created_at : null;
+    state.oldestId = state.items.length ? state.items[state.items.length - 1].id : null;
     state.hasMore = page.length === PAGE_SIZE;
     render();
     status(state.items.length ? "Showing the newest order updates first." : "No order updates yet.");
@@ -120,7 +122,7 @@
     finally { state.busy = false; render(); }
   });
   $("notificationsLoadMore").addEventListener("click", async () => {
-    if (state.busy || !state.hasMore || !state.oldest) return;
+    if (state.busy || !state.hasMore || !state.oldest || !state.oldestId) return;
     state.busy = true; $("notificationsLoadMore").disabled = true; clearError();
     try { await loadPage({ append: true }); }
     catch (error) { setError(error?.message || "Could not load older notifications."); }
