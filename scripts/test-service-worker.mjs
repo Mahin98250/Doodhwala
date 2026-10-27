@@ -85,7 +85,9 @@ const queryAsset = await offlineResponse(origin + "/Doodhwala/styles.css?v=999",
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Doodhwala/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v98"'), "service worker cache revision must remain current");
+assert.ok(source.includes('const CACHE="doodhwala-v99"'), "service worker cache revision must remain current");
+assert.ok(source.includes('"/Doodhwala/auth/"'), "clean auth route must be included in the PWA precache");
+assert.ok(source.includes('"/Doodhwala/plans/"'), "clean plans route must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.js?v=20261027.1'), "the current seller authorization script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261027.2'), "the current seller mobile navigation styles must be explicitly precached");
