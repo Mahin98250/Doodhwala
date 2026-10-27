@@ -63,7 +63,7 @@
 }
 .dw-milk-transition {
   background: radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.78),rgba(235,245,232,.94) 70%);
-  transition: opacity 180ms cubic-bezier(.22,.61,.36,1);
+  transition: opacity 260ms cubic-bezier(.22,.61,.36,1);
 }
 .dw-milk-transition::before {
   content: "";
@@ -74,7 +74,7 @@
   clip-path: ellipse(72% 56% at 50% 50%);
   transform: scale(.92);
   opacity: 0;
-  transition: transform 280ms cubic-bezier(.16,1,.3,1),opacity 160ms ease;
+  transition: transform 520ms cubic-bezier(.16,1,.3,1),opacity 320ms ease;
 }
 .dw-milk-transition.is-visible::before { opacity: 1; transform: scale(1); }
 .dw-milk-transition-card {
@@ -82,15 +82,24 @@
   z-index: 1;
   transform: translateY(9px) scale(.975);
   opacity: 0;
-  transition: transform 260ms cubic-bezier(.16,1,.3,1),opacity 180ms ease;
-  box-shadow: 0 28px 90px rgba(20,58,35,.13),0 4px 16px rgba(20,58,35,.06),inset 0 1px 0 #fff;
+  transition: transform 460ms cubic-bezier(.16,1,.3,1),opacity 300ms ease;
+  box-shadow: 0 34px 100px rgba(20,58,35,.17),0 8px 24px rgba(20,58,35,.08),inset 0 1px 0 #fff;
 }
 .dw-milk-transition.is-visible .dw-milk-transition-card { transform: translateY(0) scale(1); opacity: 1; }
 .dw-milk-brand-mark { box-shadow: 0 6px 18px rgba(22,77,50,.2),0 0 0 5px rgba(22,77,50,.055); }
-.dw-milk-scene--transition { --dw-pour-duration: .62s; }
+.dw-milk-scene--transition { --dw-pour-duration: .94s; }
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
   ::view-transition-old(root),::view-transition-new(root) { animation: none!important; }
   .dw-milk-transition::before,.dw-milk-transition-card { transition: none!important; }
   .dw-milk-transition.is-visible .dw-milk-transition-card { transform: none; opacity: 1; }
 }
+
+/* Refined milk transition: slower liquid choreography and a softer glass-card arrival. */
+.dw-milk-transition { background: radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.88),rgba(231,243,228,.96) 68%,rgba(222,238,220,.96)); }
+.dw-milk-transition-card { will-change: transform, opacity; }
+.dw-milk-scene--transition { --dw-pour-duration: .94s; }
+.dw-milk-stream-shadow { stroke-width: 10; opacity: .24; }
+.dw-milk-stream-core { stroke-width: 5.8; }
+.dw-milk-transition.is-visible .dw-milk-transition-card { transition-delay: 35ms; }
+@media (prefers-reduced-motion: reduce) { .dw-milk-transition-card { will-change: auto; } }
