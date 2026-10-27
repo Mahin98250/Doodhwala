@@ -9,7 +9,7 @@ function dateText(v){return new Intl.DateTimeFormat("en-IN",{day:"numeric",month
 function dateTime(v){return new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(v))}
 function localDateIso(d=new Date()){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function tomorrow(){const d=new Date();d.setDate(d.getDate()+1);return localDateIso(d)}
-function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return localDateIso(d)}
 function selectedDays(){return [...document.querySelectorAll(".day-button.active")].map(b=>Number(b.dataset.day))}
 function deliveryCount(){const a=$("planStart").value,b=$("planEnd").value,days=selectedDays();if(!a||!b||b<a)return 0;let n=0,d=new Date(a+"T00:00:00"),end=new Date(b+"T00:00:00");while(d<=end){const iso=d.getDay()===0?7:d.getDay();if(days.includes(iso))n++;d.setDate(d.getDate()+1)}return n}
 function renderSchedulePreview(){
@@ -262,9 +262,24 @@ function planCard(p,deliveries,idx){
  const upcoming=deliveries.find(d=>d.status==="scheduled"||d.status==="materialized"),days=(p.days_of_week||[]).map(d=>dayNames[d-1]).join(" · "),count=deliveries.length,estimate=count*Number(p.quantity_litres)*Number(p.price_per_litre);
  const visible=deliveries.slice(0,8),pauseText=p.status==="paused"&&p.paused_until?" · until "+dateText(p.paused_until):"";
  const addressText=p.addresses?.label||p.addresses?.address_line||"Saved address";
- return '<article class="subscription-card"><div class="subscription-head"><div><div class="subscription-name">'+esc(p.milk_products?.name||"Milk plan")+'</div><div class="subscription-meta">'+esc(p.provider_profiles?.display_name||"Local provider")+' · '+esc(p.provider_profiles?.area_name||p.provider_profiles?.city||"Nearby")+'</div></div><span class="subscription-status '+esc(p.status)+'">'+esc(p.status)+esc(pauseText)+'</span></div><div class="subscription-stats"><div><small>QUANTITY</small><b>'+p.quantity_litres+' L / day</b></div><div><small>TIME</small><b>'+String(p.delivery_time).slice(0,5)+'</b></div><div><small>DAYS</small><b>'+esc(days)+'</b></div><div><small>EST. PLAN</small><b>'+money(estimate)+'</b></div></div>'+(upcoming?'<div class="next-delivery"><b>Next delivery</b> · '+dateTime(upcoming.scheduled_for)+' · '+p.quantity_litres+' L'+(upcoming.status==="scheduled"?'<span> · Scheduled</span>':'<span> · Order created</span>')+'</div>':"")+renderPlanWeek(p,deliveries)+'<div class="plan-address-line"><span>Deliver to</span><b>'+esc(addressText)+'</b></div><div class="subscription-actions">'+(p.status==="active"||p.status==="paused"?'<button data-plan-action="edit" data-id="'+p.id+'">Edit plan</button>':"")+(p.status==="active"?'<button data-plan-action="pause" data-id="'+p.id+'">Pause</button>':p.status==="paused"?'<button data-plan-action="resume" data-id="'+p.id+'">Resume</button>':"")+(p.status==="active"||p.status==="paused"?'<button class="danger" data-plan-action="cancel" data-id="'+p.id+'">Cancel</button>':"")+'</div>'+(visible.length?'<div class="delivery-list">'+visible.map(d=>'<div class="delivery-row"><span>'+dateText(d.delivery_date)+' · '+p.quantity_litres+' L</span><b>'+esc(d.status)+'</b>'+(d.status==="scheduled"?'<button data-skip="'+d.id+'">Skip</button>':"")+'</div>').join("")+'</div>':"")+'</article>';
+ return '<article class="subscription-card"><div class="subscription-head"><div><div class="subscription-name">'+esc(p.milk_products?.name||"Milk plan")+'</div><div class="subscription-meta">'+esc(p.provider_profiles?.display_name||"Local provider")+' · '+esc(p.provider_profiles?.area_name||p.provider_profiles?.city||"Nearby")+'</div></div><span class="subscription-status '+esc(p.status)+'">'+esc(p.status)+esc(pauseText)+'</span></div><div class="subscription-stats"><div><small>QUANTITY</small><b>'+p.quantity_litres+' L / day</b></div><div><small>TIME</small><b>'+String(p.delivery_time).slice(0,5)+'</b></div><div><small>DAYS</small><b>'+esc(days)+'</b></div><div><small>EST. PLAN</small><b>'+money(estimate)+'</b></div></div>'+(upcoming?'<div class="next-delivery"><b>Next delivery</b> · '+dateTime(upcoming.scheduled_for)+' · '+p.quantity_litres+' L'+(upcoming.status==="scheduled"?'<span> · Scheduled</span>':'<span> · Order created</span>')+'</div>':"")+renderPlanWeek(p,deliveries)+'<div class="plan-address-line"><span>Deliver to</span><b>'+esc(addressText)+'</b></div><div class="subscription-actions">'+(p.status==="active"||p.status==="paused"?'<button data-plan-action="edit" data-id="'+p.id+'">Edit plan</button>':"")+(p.status==="active"?'<button data-plan-action="pause" data-id="'+p.id+'">Pause</button>':p.status==="paused"?'<button data-plan-action="resume" data-id="'+p.id+'">Resume</button>':"")+(p.status==="active"||p.status==="paused"?'<button class="danger" data-plan-action="cancel" data-id="'+p.id+'">Cancel</button>':"")+'</div>'+(visible.length?'<div class="delivery-list"><div class="delivery-list-heading">Upcoming deliveries <span>Changes may be blocked near the cutoff</span></div>'+visible.map(d=>'<div class="delivery-row"><span>'+dateText(d.delivery_date)+' · '+p.quantity_litres+' L</span><b>'+esc(d.status)+'</b>'+(d.status==="scheduled"?'<button aria-label="Skip delivery on '+esc(dateText(d.delivery_date))+'" data-skip="'+d.id+'">Skip</button>':"")+'</div>').join("")+'</div>':"")+'</article>';
 }
-function closePlanModal(){document.querySelector(".plan-modal")?.remove()}
+function closePlanModal(){const modal=document.querySelector(".plan-modal");if(!modal)return;modal.remove();document.removeEventListener("keydown",handlePlanModalKey)}
+function handlePlanModalKey(e){if(e.key==="Escape")closePlanModal()}
+function openActionModal({eyebrow="CONFIRM CHANGE",title,description,kind="confirm",confirmLabel="Confirm",onConfirm}){
+ closePlanModal();
+ const modal=document.createElement("div");modal.className="plan-modal";modal.setAttribute("role","presentation");
+ const pauseField=kind==="pause"?'<label class="plan-modal-date">Pause until (optional)<input id="pauseUntilDate" type="date" min="'+localDateIso()+'"><small>Leave blank to pause until you choose Resume.</small></label>':"";
+ modal.innerHTML='<section class="plan-modal-card plan-action-card" role="dialog" aria-modal="true" aria-labelledby="planActionTitle" aria-describedby="planActionDescription"><div class="plan-modal-head"><div><span class="eyebrow">'+esc(eyebrow)+'</span><h2 id="planActionTitle">'+esc(title)+'</h2><p id="planActionDescription">'+esc(description)+'</p></div><button type="button" data-close aria-label="Close dialog">×</button></div>'+pauseField+'<div class="plan-modal-note">We’ll check the delivery cutoff before applying your change. If a delivery is too close, it will stay unchanged.</div><div class="plan-modal-actions"><button class="secondary" type="button" data-close>Keep plan</button><button class="primary" id="confirmPlanAction" type="button">'+esc(confirmLabel)+'</button></div><div id="planActionError" class="plan-error" role="alert"></div></section>';
+ document.body.append(modal);modal.querySelectorAll("[data-close]").forEach(b=>b.onclick=closePlanModal);
+ modal.addEventListener("click",e=>{if(e.target===modal)closePlanModal()});document.addEventListener("keydown",handlePlanModalKey);
+ const confirm=modal.querySelector("#confirmPlanAction");confirm.focus();confirm.onclick=async()=>{const err=modal.querySelector("#planActionError");err.textContent="";confirm.disabled=true;confirm.textContent="Please wait…";
+  try{await onConfirm({modal,until:modal.querySelector("#pauseUntilDate")?.value||null,err});}
+  catch(error){console.warn("Plan confirmation action failed",error);err.textContent="We couldn’t confirm this change. Refresh your plans and check the current status before trying again.";}
+  finally{if(document.body.contains(modal)){confirm.disabled=false;confirm.textContent=confirmLabel}}
+ };
+ return modal;
+}
 function openPlanEditor(plan){
  closePlanModal();
  const options=addresses.map(a=>'<option value="'+a.id+'" '+(a.id===plan.address_id?"selected":"")+'>'+esc(a.label||"Address")+' · '+esc(a.address_line)+', '+esc(a.area_name||a.city)+'</option>').join("");
@@ -292,13 +307,13 @@ function openPlanEditor(plan){
  };
 }
 async function pausePlan(id){
- const until=prompt("Pause until which date? Use YYYY-MM-DD. Leave empty to pause until you resume it.");
- const value=(until||"").trim()||null;
- if(value&&(!/^\d{4}-\d{2}-\d{2}$/.test(value)||value<localIsoDateForPlans())){alert("Enter today or a future date.");return}
- const r=await sup().rpc("pause_milk_subscription",{p_subscription_id:id,p_until_date:value});
- if(r.error){alert(niceError(r.error.message));return}await loadPlans();
+ openActionModal({eyebrow:"PAUSE MILK PLAN",title:"Pause deliveries?",description:"Your recurring deliveries will stop while this plan is paused. Choose an end date, or leave it blank to resume manually.",kind:"pause",confirmLabel:"Pause deliveries",onConfirm:async({until,err})=>{
+  if(until&&(!/^\d{4}-\d{2}-\d{2}$/.test(until)||until<localDateIso())){err.textContent="Choose today or a future date.";return}
+  const r=await sup().rpc("pause_milk_subscription",{p_subscription_id:id,p_until_date:until});
+  if(r.error){err.textContent=niceError(r.error.message);return}
+  closePlanModal();const refreshed=await loadPlans();if(refreshed===false)$("plansState").textContent="Plan paused, but the list needs refreshing.";else $("plansState").textContent=until?"Plan paused until "+dateText(until)+".":"Plan paused. Resume it whenever you’re ready.";
+ }});
 }
-function localIsoDateForPlans(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return y+"-"+m+"-"+day}
 async function planAction(action,id){
  try{
   if(action==="edit"){
@@ -307,26 +322,22 @@ async function planAction(action,id){
    openPlanEditor(r.data);return
   }
   if(action==="pause"){await pausePlan(id);return}
-  const fn=action==="resume"?"resume_milk_subscription":"cancel_milk_subscription";
-  const r=await sup().rpc(fn,{p_subscription_id:id});
-  if(r.error){alert(niceError(r.error.message));return}
-  const refreshed=await loadPlans();
-  if(refreshed===false)$("plansState").textContent="Your change was sent, but the plan list needs refreshing.";
- }catch(error){
-  console.warn("Milk plan action failed",error);
-  alert("We couldn’t confirm this change. Refresh your plans and check the current status before trying again.");
- }
+  if(action==="resume"){
+   openActionModal({eyebrow:"RESUME MILK PLAN",title:"Resume deliveries?",description:"Your saved delivery days and quantity will start again. The delivery cutoff still applies to the next delivery.",confirmLabel:"Resume plan",onConfirm:async({err})=>{
+    const r=await sup().rpc("resume_milk_subscription",{p_subscription_id:id});if(r.error){err.textContent=niceError(r.error.message);return}closePlanModal();const refreshed=await loadPlans();if(refreshed===false)$("plansState").textContent="Plan resumed, but the list needs refreshing.";else $("plansState").textContent="Your milk plan is active again.";
+   }});return;
+  }
+  if(action==="cancel"){
+   openActionModal({eyebrow:"CANCEL MILK PLAN",title:"Cancel this plan?",description:"Future recurring deliveries will stop. This may not be reversible, so check your plan details before confirming.",confirmLabel:"Cancel plan",onConfirm:async({err})=>{
+    const r=await sup().rpc("cancel_milk_subscription",{p_subscription_id:id});if(r.error){err.textContent=niceError(r.error.message);return}closePlanModal();const refreshed=await loadPlans();if(refreshed===false)$("plansState").textContent="Plan cancelled, but the list needs refreshing.";else $("plansState").textContent="Your milk plan has been cancelled.";
+   }});return;
+  }
+ }catch(error){console.warn("Milk plan action failed",error);alert("We couldn’t confirm this change. Refresh your plans and check the current status before trying again.");}
 }
 async function skipDelivery(id){
- try{
-  const r=await sup().rpc("skip_milk_delivery",{p_delivery_id:id,p_reason:"Customer skipped"});
-  if(r.error){alert(niceError(r.error.message));return}
-  const refreshed=await loadPlans();
-  if(refreshed===false)$("plansState").textContent="Delivery updated, but the list needs refreshing.";
- }catch(error){
-  console.warn("Milk delivery skip could not be confirmed",error);
-  alert("We couldn’t confirm whether this delivery was skipped. Refresh your plans before retrying.");
- }
+ openActionModal({eyebrow:"UPCOMING DELIVERY",title:"Skip this delivery?",description:"Only this scheduled delivery will be skipped. Other delivery days in your plan stay the same.",confirmLabel:"Skip delivery",onConfirm:async({err})=>{
+  const r=await sup().rpc("skip_milk_delivery",{p_delivery_id:id,p_reason:"Customer skipped"});if(r.error){err.textContent=niceError(r.error.message);return}closePlanModal();const refreshed=await loadPlans();if(refreshed===false)$("plansState").textContent="Delivery updated, but the list needs refreshing.";else $("plansState").textContent="This delivery was skipped.";
+ }});
 }
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&user)loadPlans().catch(function(err){console.warn("Plans foreground refresh failed",err)})});
 $("planForm").onsubmit=createPlan;$("planQuantity").onchange=updatePreview;$("planStart").onchange=function(){if(!$("planEnd").value||$("planEnd").value<=$("planStart").value)$("planEnd").value=addDays($("planStart").value,29);updatePreview()};$("planEnd").onchange=updatePreview;$("refreshPlans").onclick=loadContext;setDays();updatePreview();loadContext();
