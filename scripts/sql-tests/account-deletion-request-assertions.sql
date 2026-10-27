@@ -5,7 +5,7 @@ insert into auth.users(id) values
   ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
 
 -- The normal browser role must have no direct request-table privileges.
-do $$
+do $assertions$
 begin
   if has_table_privilege('authenticated', 'private.account_deletion_requests', 'SELECT')
      or has_table_privilege('authenticated', 'private.account_deletion_requests', 'INSERT')
@@ -13,10 +13,10 @@ begin
     raise exception 'browser_role_has_direct_deletion_queue_access';
   end if;
 end
- $$;
+ $assertions$;
 
 -- RPC execution grants are explicit: anonymous callers must not inherit execute.
-do $$
+do $assertions$
 begin
   if has_function_privilege('anon', 'public.request_account_deletion(text,text)', 'EXECUTE')
      or has_function_privilege('anon', 'public.get_my_account_deletion_request()', 'EXECUTE')
@@ -33,12 +33,12 @@ begin
     raise exception 'authenticated_role_missing_explicit_deletion_rpc_execute';
   end if;
 end
- $$;
+ $assertions$;
 
 select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', false);
 select set_config('request.jwt.claim.admin', 'false', false);
 
-do $$
+do $assertions$
 declare
   v_first jsonb;
   v_retry jsonb;
@@ -208,6 +208,6 @@ begin
     raise exception 'admin_triage_allowed_false_completion';
   end if;
 end
-$$;
+$assertions$;
 
 select 'account deletion request intake checks passed' as result;
