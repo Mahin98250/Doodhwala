@@ -84,3 +84,40 @@ jobs:
       - name: Verify immutable audit, seller attribution and reference validation
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/payment-audit-assertions.sql
 
+
+
+  provider-invoice-idempotency:
+    name: Validate provider monthly invoice idempotency on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_invoice_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_invoice_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_invoice_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create isolated synthetic provider billing schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-fixture.sql
+      - name: Apply provider invoice idempotency migration in disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql
+      - name: Verify provider/month uniqueness, safe retry, period validation and admin guard
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-assertions.sql
