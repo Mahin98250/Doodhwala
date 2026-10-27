@@ -23,7 +23,10 @@ returns boolean
 language sql
 stable
 as $$
-  select coalesce(current_setting('request.jwt.claim.admin', true), 'false') = 'true'
+  select case
+    when current_setting('request.jwt.claim.admin', true) = 'null' then null::boolean
+    else coalesce(current_setting('request.jwt.claim.admin', true), 'false') = 'true'
+  end
 $$;
 
 create table public.provider_profiles (
