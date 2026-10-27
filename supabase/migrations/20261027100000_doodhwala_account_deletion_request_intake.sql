@@ -22,6 +22,8 @@ revoke all on private.account_deletion_requests from public, anon, authenticated
 
 create index if not exists account_deletion_requests_status_date_idx
   on private.account_deletion_requests(status, requested_at desc);
+create index if not exists account_deletion_requests_user_date_idx
+  on private.account_deletion_requests(user_id, requested_at desc);
 
 create unique index if not exists account_deletion_requests_one_active_per_user_idx
   on private.account_deletion_requests(user_id)
