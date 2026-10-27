@@ -6,6 +6,9 @@ const migration = read("supabase/migrations/20261027110000_doodhwala_in_app_orde
 const html = read("notifications.html");
 const css = read("notifications.css");
 const client = read("notifications.js");
+const home = read("index.html");
+const orders = read("orders.html");
+const provider = read("provider.html");
 
 assert.match(migration, /create table if not exists public\.user_notifications/i, "notification ledger must exist");
 assert.match(migration, /enable row level security/i, "notification ledger must enable RLS");
@@ -22,6 +25,9 @@ assert.match(migration, /grant execute on function public\.get_my_notifications\
 assert.match(migration, /Push delivery is not configured/i, "database documentation must not imply push delivery exists");
 
 assert.match(html, /id="notificationsList"/i, "notification list container must exist");
+assert.match(home, /href="\/Doodhwala\/notifications\.html"/i, "customer header must link to order notifications");
+assert.match(orders, /href="\/Doodhwala\/notifications\.html"/i, "order history must link to order notifications");
+assert.match(provider, /href="\/Doodhwala\/notifications\.html"/i, "provider dashboard must link to order notifications");
 assert.match(html, /id="notificationsMarkAll"/i, "mark-all-read control must exist");
 assert.match(html, /id="notificationsLoadMore"/i, "pagination control must exist");
 assert.match(html, /Sign in to view updates/i, "signed-out state must be explained");
