@@ -34,7 +34,7 @@ for (const source of [
 ]) {
   assert.ok(provider.includes(source), "Provider order workflow must include: " + source);
 }
-assert.match(provider, /setTimeout\(refreshOrderDeadlines,1000\)/, "Existing acceptance deadline countdown must remain active.");
+assert.match(provider, /setInterval\(refreshOrderDeadlines,1000\)/, "Existing acceptance deadline countdown must remain active.");
 
 const escapeStart = provider.indexOf("function escapeHtml(");
 const escapeEnd = provider.indexOf("\n", escapeStart);
