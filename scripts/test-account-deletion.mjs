@@ -27,7 +27,7 @@ assert.match(migration, /pending request is not proof that account data has been
 assert.match(html, /id="deletionRequestForm"/i, "public web deletion resource must have a request form");
 assert.match(html, /id="deletionSignIn"/i, "signed-out users need an authentication path");
 assert.match(html, /DELETE MY ACCOUNT/i, "page must explain its explicit confirmation phrase");
-assert.match(html, /does not erase your account/i, "page must clearly distinguish request intake from completed deletion");
+assert.match(html, /account and personal data are not erased when you submit this form/i, "page must clearly distinguish request intake from completed deletion");
 assert.match(html, /Final deletion\/anonymisation is not enabled by this intake feature yet/i, "page must disclose unfinished final deletion processing");
 assert.match(html, /supabase-client\.js/i, "page must use the shared configured Supabase client");
 assert.match(css, /@media\s*\(max-width:\s*540px\)/i, "page needs a mobile layout");
