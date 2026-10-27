@@ -71,6 +71,7 @@ const previewEnv = {
     querySelectorAll(selector) { return selector === ".day-button.active" ? activeButtons : []; }
   }
 };
+elements.planEnd.value = "2026-10-28";
 const previewResult = runInNewContext(
   base + "\nrenderSchedulePreview(); const first={count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent,html:document.getElementById('schedulePreviewDays').innerHTML}; document.getElementById('planEnd').value='2026-10-25'; renderSchedulePreview(); const invalid={count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent,html:document.getElementById('schedulePreviewDays').innerHTML}; document.getElementById('planEnd').value='2026-10-31'; activeButtons.splice(1,1); renderSchedulePreview(); ({first,invalid,single:{count:document.getElementById('schedulePreviewCount').textContent,hint:document.getElementById('schedulePreviewHint').textContent}})",
   previewEnv
