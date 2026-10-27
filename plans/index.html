@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#175a3c">
+<meta name="description" content="Doodhwala recurring milk plans.">
+<title>Doodhwala — Milk Plans</title>
+<link rel="icon" href="/Doodhwala/assets/mascot.png">
+<link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5"><link rel="stylesheet" href="/Doodhwala/experience-layer.css?v=20261023.5">
+<link rel="stylesheet" href="/Doodhwala/plans.css"><link rel="stylesheet" href="/Doodhwala/subscription-schedule-preview.css?v=20261027.2"><link rel="stylesheet" href="/Doodhwala/customer-journey-refresh.css?v=20261025.3">
+<link rel="stylesheet" href="/Doodhwala/customer-ui-polish.css?v=20261025.3"><link rel="stylesheet" href="/Doodhwala/milk-transition.css?v=20261025.4"></head>
+<body class="plans-page">
+<header class="plans-top">
+<a href="/Doodhwala/" class="plans-brand"><img src="/Doodhwala/assets/mascot.png" alt=""><div><b>Doodhwala</b><small>Local milk, nearby.</small></div></a>
+<a href="/Doodhwala/" class="back-shop">← Shop milk</a>
+</header>
+<main class="plans-main">
+<div class="plans-heading"><div><span class="eyebrow">DAILY MILK PLANS</span><h1>Set it once. Get milk every day.</h1><p id="plansState">Checking your account…</p></div><button class="secondary" id="refreshPlans">↻ Refresh</button></div>
+
+<section id="plansGate" class="plans-card hidden">
+<div class="plan-icon">↻</div><h2>Sign in to create a daily plan</h2>
+<p>Your recurring deliveries, address and schedule stay private to your Doodhwala account.</p>
+<a class="primary" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fplans.html">Sign in / Create account →</a>
+</section>
+
+<section id="createPlan" class="plans-card hidden">
+<div class="card-head"><div><span class="eyebrow">NEW PLAN</span><h2 id="planProductTitle">Daily milk subscription</h2><p id="planProviderMeta" class="muted-copy"></p></div><span class="plan-badge">30 DAYS</span></div>
+<form id="planForm">
+<div class="plan-product-summary"><div class="plan-product-icon"><svg viewBox="0 0 64 66" aria-hidden="true"><rect x="4" y="4" width="56" height="58" rx="16" fill="#f7fbf7" stroke="#d8e7db"/><path d="M26 12h12v7l5 7v24c0 3-2 5-5 5H26c-3 0-5-2-5-5V26l5-7Z" fill="#fff" stroke="#17603f" stroke-width="1.7"/><path d="M32 32c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10Z" fill="#17603f"/></svg></div><div><b id="planProductName">Milk</b><small id="planPrice">₹0 / L</small></div></div>
+<div class="plan-grid">
+<label>Daily quantity<select id="planQuantity"><option value="0.5">500 ml</option><option value="1" selected>1 litre</option><option value="1.5">1.5 litres</option><option value="2">2 litres</option><option value="3">3 litres</option><option value="4">4 litres</option><option value="5">5 litres</option></select></label>
+<label>Delivery time<input id="planTime" type="time" required></label>
+<label>Start date<input id="planStart" type="date" required></label>
+<label>End date<input id="planEnd" type="date" required></label>
+<label class="wide">Delivery address<select id="planAddress" required></select></label>
+</div>
+<div class="day-picker"><div class="day-head"><b>Delivery days</b><span>Choose the days this milk should arrive.</span></div><div id="dayButtons" class="days"></div></div>
+<div class="schedule-preview" id="schedulePreview" aria-live="polite"><div class="schedule-preview-head"><div><span class="eyebrow">YOUR FIRST WEEK</span><h3>Delivery schedule preview</h3></div><span id="schedulePreviewCount" class="schedule-preview-count">0 deliveries</span></div><p id="schedulePreviewHint">Choose your dates and delivery days to preview your routine.</p><div id="schedulePreviewDays" class="schedule-preview-days"></div></div>
+<label class="plan-note">Delivery note<textarea id="planNote" rows="2" placeholder="Gate instructions, preferred drop spot, etc."></textarea></label>
+<div class="plan-preview"><div><small>DELIVERIES IN PLAN</small><b id="deliveryCount">0</b></div><div><small>ESTIMATED VALUE</small><b id="planEstimate">₹0</b></div><div><small>PRICE POLICY</small><b>Locked</b></div></div>
+<p class="plan-help">Your selected price is locked into this plan. You can pause, resume, skip an individual delivery before the cutoff, or cancel the plan later.</p>
+<button class="primary plan-submit" id="createPlanButton" type="submit">Start daily milk plan →</button>
+<div id="planError" class="plan-error" role="alert"></div>
+</form>
+</section>
+
+<section id="myPlans" class="hidden">
+<div class="section-heading"><div><span class="eyebrow">YOUR ROUTINES</span><h2>Active milk plans</h2></div></div>
+<div id="plansList" class="plans-list"></div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script><script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+<script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+<script src="/Doodhwala/milk-transition.js?v=20261025.4"></script><script src="/Doodhwala/plans.js?v=20261027.3"></script>
+<script src="/Doodhwala/customer-nav.js?v=20261025.3"></script><script src="/Doodhwala/session-controls.js?v=20261011.1"></script><script src="/Doodhwala/pwa-register.js?v=20261022.4"></script><footer class="site-legal-footer" aria-label="Legal and support links"><span>© 2026 Doodhwala · Independent local milk marketplace</span><nav aria-label="Legal links"><a href="/Doodhwala/legal/#privacy">Privacy</a><a href="/Doodhwala/legal/#terms">Terms</a><a href="/Doodhwala/legal/#cancellations">Cancellations &amp; refunds</a><a href="/Doodhwala/legal/#seller">Seller agreement</a><a href="/Doodhwala/legal/#grievance">Complaints</a></nav><small>Legal pages are drafts pending review. Customer support contact is not yet available.</small></footer><script src="/Doodhwala/network-status.js?v=20261023.1"></script></body></html>
