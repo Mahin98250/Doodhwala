@@ -22,9 +22,9 @@ const preview = between("function renderSchedulePreview(){", "\nfunction updateP
 assert.match(addDays, /return localDateIso\(d\)/, "Date-only plan arithmetic must preserve the local calendar date.");
 assert.doesNotMatch(addDays, /toISOString/, "Date-only arithmetic must not round-trip through UTC.");
 assert.ok(html.includes('subscription-schedule-preview.css?v=20261027.2'), "Plan page must load the current preview stylesheet.");
-assert.ok(html.includes('plans.js?v=20261027.2'), "Plan page must load the current schedule runtime.");
+assert.ok(html.includes('plans.js?v=20261027.3'), "Plan page must load the current schedule runtime.");
 assert.ok(sw.includes('const CACHE="doodhwala-v98"'), "PWA cache must be bumped with the subscription calendar release.");
-assert.ok(sw.includes('/Doodhwala/plans.js?v=20261027.2'), "The current plan runtime must be precached.");
+assert.ok(sw.includes('/Doodhwala/plans.js?v=20261027.3'), "The current plan runtime must be precached.");
 assert.ok(sw.includes('/Doodhwala/subscription-schedule-preview.css?v=20261027.2'), "The calendar styles must be precached.");
 
 const base = [
