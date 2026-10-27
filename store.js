@@ -81,7 +81,7 @@ function render(){
  $("productCount").textContent=products.length+" product"+(products.length===1?"":"s");
  $("productGrid").innerHTML=products.length?products.map(p=>{
    const daily=p.daily_available;
-   return '<article class="product-card"><a class="product-icon" href="/Doodhwala/product.html?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'" aria-label="View '+esc(p.name)+'">'+milkEmoji(p.milk_type)+'</a><div><h3>'+esc(p.name)+'</h3><div class="product-type">'+esc(p.milk_type||"milk")+' · '+esc(p.unit_label||"1 L")+'</div><div class="product-price">'+money(p.price_per_litre)+' <span class="product-unit">/ L</span></div><div class="product-actions">'+(store.is_serviceable===false?'<button class="secondary" type="button" disabled>Outside zone</button>':'<button class="primary" type="button" data-add="'+esc(p.id)+'">Add</button>')+'<a class="secondary" href="/Doodhwala/product.html?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'">Details</a></div>'+(daily?'<div style="font-size:8px;color:#17603f;margin-top:7px;font-weight:800">↻ Available for daily plan</div>':"")+'</div></article>'
+   return '<article class="product-card"><a class="product-icon" href="/Doodhwala/product/?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'" aria-label="View '+esc(p.name)+'">'+milkEmoji(p.milk_type)+'</a><div><h3>'+esc(p.name)+'</h3><div class="product-type">'+esc(p.milk_type||"milk")+' · '+esc(p.unit_label||"1 L")+'</div><div class="product-price">'+money(p.price_per_litre)+' <span class="product-unit">/ L</span></div><div class="product-actions">'+(store.is_serviceable===false?'<button class="secondary" type="button" disabled>Outside zone</button>':'<button class="primary" type="button" data-add="'+esc(p.id)+'">Add</button>')+'<a class="secondary" href="/Doodhwala/product/?provider='+encodeURIComponent(store.provider_id)+'&product='+encodeURIComponent(p.id)+'">Details</a></div>'+(daily?'<div style="font-size:8px;color:#17603f;margin-top:7px;font-weight:800">↻ Available for daily plan</div>':"")+'</div></article>'
  }).join(""):'<div class="market-empty"><div class="market-empty-icon">'+milkEmoji(store.milk_type)+'</div><h3>No milk products are live yet.</h3><p>This provider has not published an active in-stock product.</p></div>';
  $("productGrid").querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const p=products.find(x=>x.id===b.dataset.add);if(p)addProduct(p)});
  serviceText();
@@ -106,7 +106,7 @@ async function load(){
   render();
  }catch(error){
   console.warn("Provider storefront load failed",error);
-  $("storeState").innerHTML='<div class="market-empty"><h3>Could not load this provider</h3><p>'+esc(error?.message||"Check your connection and try again.")+'</p><a class="primary" href="/Doodhwala/store.html?provider='+encodeURIComponent(PROVIDER_ID)+'">Try again →</a></div>';
+  $("storeState").innerHTML='<div class="market-empty"><h3>Could not load this provider</h3><p>'+esc(error?.message||"Check your connection and try again.")+'</p><a class="primary" href="/Doodhwala/store/?provider='+encodeURIComponent(PROVIDER_ID)+'">Try again →</a></div>';
  }finally{
   milkTransition?.hideLoading();
  }
