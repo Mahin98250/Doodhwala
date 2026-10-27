@@ -22,4 +22,14 @@ assert.match(rpcs, /private\.is_current_user_admin\(\)/i, "admin writes must enf
 assert.match(rpcs, /admin_set_provider_billing_settings/i, "owner can configure Doodhwala UPI instructions");
 assert.doesNotMatch(rpcs, /update public\.orders/i, "seller subscription payment must never update customer order status");
 assert.doesNotMatch(rpcs, /update public\.payment_transactions/i, "seller subscription payment must not alter customer payment ledger");
-console.log("Provider billing contract checks passed: separate ledgers, RLS, admin-only billing writes, server-priced invoices, amount/reference guards.");
+
+const invoiceIdempotency = fs.readFileSync(new URL("../supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql", import.meta.url), "utf8");
+assert.match(invoiceIdempotency, /provider_subscription_invoices_calendar_month_check/i, "monthly billing periods must be full calendar months");
+assert.match(invoiceIdempotency, /provider_subscription_invoices_provider_month_unique[\s\S]*?unique\s*\(provider_id,\s*period_start\)/i, "database must enforce one invoice per provider/month");
+assert.match(invoiceIdempotency, /on conflict\s*\(provider_id,\s*period_start\)\s*do nothing/i, "concurrent invoice creation must not create a duplicate");
+assert.match(invoiceIdempotency, /provider_month_invoice_retry_required/i, "a missing conflict winner must return an explicit retryable failure");
+assert.match(invoiceIdempotency, /provider_month_invoice_period_conflict/i, "conflicting invoice period inputs must be rejected");
+assert.match(invoiceIdempotency, /not private\.is_current_user_admin\(\)/i, "invoice creation must retain its server-side admin authorization");
+assert.match(invoiceIdempotency, /revoke all on function public\.admin_create_provider_subscription_invoice[\s\S]*?from public, anon, authenticated/i, "invoice RPC must not be executable by anonymous or arbitrary authenticated users");
+
+console.log("Provider billing contract checks passed: separate ledgers, RLS, admin-only billing writes, server-priced invoices, amount/reference guards, calendar-month invoice idempotency.");
