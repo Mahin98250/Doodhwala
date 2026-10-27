@@ -91,7 +91,7 @@ assert.ok(source.includes('/Doodhwala/provider.js?v=20261027.1'), "the current s
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261027.2'), "the current seller mobile navigation styles must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/styles.css?v=20261023.5'), "the current discovery styles must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/app.js?v=20261026.2'), "the current discovery runtime must be explicitly precached");
-assert.ok(source.includes('/Doodhwala/plans.js?v=20261027.2'), "the latest customer plan runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/plans.js?v=20261027.3'), "the latest customer plan runtime must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/subscription-schedule-preview.css?v=20261027.2'), "the first-week plan calendar styles must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Doodhwala/not-cached.html");
@@ -109,7 +109,7 @@ assert.ok(installPromise, "service worker install handler must register its comp
 await installPromise;
 assert.equal(skipWaitingCalls, 1, "optional asset failures must not block service worker activation");
 assert.ok(cache.has(origin + "/Doodhwala/index.html"), "core offline shell must be cached before activation");
-assert.ok(cache.has(origin + "/Doodhwala/plans.js?v=20261027.2"), "the new customer plan runtime must be installed into the PWA cache");
+assert.ok(cache.has(origin + "/Doodhwala/plans.js?v=20261027.3"), "the new customer plan runtime must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/subscription-schedule-preview.css?v=20261027.2"), "the customer plan calendar stylesheet must be installed into the PWA cache");
 assert.ok(installWarnings.some(args => String(args[0]).includes("optional offline asset")), "optional cache failures must be reported for diagnosis");
 
