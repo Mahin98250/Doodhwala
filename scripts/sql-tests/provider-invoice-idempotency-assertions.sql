@@ -22,6 +22,7 @@ declare
   v_bad_period_rejected boolean := false;
   v_duplicate_rejected boolean := false;
   v_non_admin_rejected boolean := false;
+  v_null_admin_rejected boolean := false;
 begin
   v_first := public.admin_create_provider_subscription_invoice(
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -119,7 +120,28 @@ begin
   if not v_non_admin_rejected then
     raise exception 'non_admin_invoice_creation_was_not_rejected';
   end if;
+
+  -- An unexpected NULL result from the admin helper must also fail closed.
+  perform set_config('request.jwt.claim.admin', 'null', false);
+  begin
+    perform public.admin_create_provider_subscription_invoice(
+      'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      date '2026-12-01', date '2026-12-31', date '2027-01-07',
+      'DW-2026-12-NULLADMIN', 'should be rejected'
+    );
+  exception when others then
+    if sqlerrm = 'admin_access_required' then
+      v_null_admin_rejected := true;
+    else
+      raise;
+    end if;
+  end;
+
+  if not v_null_admin_rejected then
+    raise exception 'null_admin_result_did_not_fail_closed';
+  end if;
 end
-$$;
+$;
 
 select 'provider invoice monthly idempotency checks passed' as result;
