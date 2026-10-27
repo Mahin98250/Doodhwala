@@ -5,7 +5,7 @@
 **QA task:** [DW-011 / #94](https://github.com/Mahin98250/Doodhwala/issues/94)  
 **Inventory baseline:** main tree `fa41464ba69b320b0ae345ad9f01ffb3cc050722`  
 **Initial matrix commit tested by CI:** `5f08d08e463531cce04dda247324ee5f310f1ade`  
-**Status:** Inventory prepared; full authenticated backend E2E is **BLOCKED** pending an isolated staging project and project-lead confirmation of a test-ready target. This is a plan/evidence ledger, not a claim that the entire product has passed.
+**Status as of 2026-10-27:** DW-011 inventory/matrix PR #105 is merged. Current `main` CI and GitHub Pages deployment checks pass on `3c102f69a7922346340253823730c9dbcf3900b6`; the latest static, disposable-PostgreSQL, notification-contract, PWA offline-browser, and Pages build/deploy runs are green. Full authenticated backend E2E remains **BLOCKED** pending an isolated staging project and project-lead confirmation of a test-ready target. This is an evidence ledger, not a claim that the entire product has passed.
 
 ## Status and evidence rules
 
@@ -37,6 +37,18 @@
 - `.github/workflows/production-readiness-probe.yml` and `.github/workflows/production-reporting-smoke.yml` — read-only/production reporting probes only; do not use them to create test orders or run load.
 - `.github/workflows/staging-scalability-load-test.yml` — must remain blocked until an isolated staging target and explicit environment safeguards are verified.
 - UI evidence already exists in draft PR [#88](https://github.com/Mahin98250/Doodhwala/pull/88) and PWA evidence in draft PR [#90](https://github.com/Mahin98250/Doodhwala/pull/90). Those narrow browser tests are not a substitute for authenticated feature E2E.
+
+### Latest main CI and deployment evidence — 2026-10-27
+
+Latest observed main commit: `3c102f69a7922346340253823730c9dbcf3900b6` (route fix). The following GitHub Actions runs completed successfully on that exact commit:
+
+- **PASS — Static validation:** [run 40490032917](https://github.com/Mahin98250/Doodhwala/actions/runs/40490032917).
+- **PASS — SQL migration validation:** [run 40490033166](https://github.com/Mahin98250/Doodhwala/actions/runs/40490033166), including disposable-PostgreSQL nearby-search and payment-audit fixture checks.
+- **PASS — In-app notification validation:** [run 40490033062](https://github.com/Mahin98250/Doodhwala/actions/runs/40490033062), including notification UI contracts and disposable-PostgreSQL migration assertions.
+- **PASS — PWA offline browser evidence:** [run 40490032811](https://github.com/Mahin98250/Doodhwala/actions/runs/40490032811).
+- **PASS — GitHub Pages build/deployment job:** [run 40490031833](https://github.com/Mahin98250/Doodhwala/actions/runs/40490031833).
+
+These results establish that the listed CI checks and Pages deployment job passed on the observed main commit. They do **not** establish that authenticated Supabase Auth/RLS/Realtime/RPC flows, payment processing, backup/restore, load testing, or physical Android/iOS behavior passed. The live-page smoke workflow is scheduled/dispatch-only and was not among these latest five runs. Manual/device and staging-only rows below must remain BLOCKED or NOT RUN until there is evidence from the appropriate safe environment.
 
 ### CI evidence on the matrix branch
 - **PASS — Static validation** on commit `5f08d08e463531cce04dda247324ee5f310f1ade`: [run 40474626708](https://github.com/Mahin98250/Doodhwala/actions/runs/40474626708). The workflow's source/contract checks passed, including auth contracts, cross-account/provider isolation contracts, checkout/retry, discovery/pagination, payment contracts, resilience, support/legal contracts, service-worker checks, and site validation. This is not authenticated Supabase E2E.
