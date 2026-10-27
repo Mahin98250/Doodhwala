@@ -13,10 +13,10 @@ begin
     raise exception 'browser_role_has_direct_deletion_queue_access';
   end if;
 end
-$;
+ $$;
 
 -- RPC execution grants are explicit: anonymous callers must not inherit execute.
-do $
+do $$
 begin
   if has_function_privilege('anon', 'public.request_account_deletion(text,text)', 'EXECUTE')
      or has_function_privilege('anon', 'public.get_my_account_deletion_request()', 'EXECUTE')
@@ -33,7 +33,7 @@ begin
     raise exception 'authenticated_role_missing_explicit_deletion_rpc_execute';
   end if;
 end
-$;
+ $$;
 
 select set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', false);
 select set_config('request.jwt.claim.admin', 'false', false);
