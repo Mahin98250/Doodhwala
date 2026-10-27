@@ -7,7 +7,7 @@ import path from "node:path";
 const root = process.cwd();
 const port = Number(process.env.BROWSER_SMOKE_PORT || 4173);
 const files = new Set([
-  "index.html","orders.html","orders.js","orders.css","styles.css",
+  "index.html","orders.html","orders.js","orders.css","styles.css","customer-market-10x.js","checkout-10x.js",
   "experience-layer.css","customer-journey-refresh.css","direct-upi-checkout.css",
   "customer-ui-polish.css","milk-transition.css","resilience.js","supabase-config.js",
   "supabase-client.js","direct-upi-checkout.js","customer-nav.js","customer-10x.js",
