@@ -7,7 +7,7 @@ const html = read("account-deletion.html");
 const css = read("account-deletion.css");
 const client = read("account-deletion.js");
 const legal = read("legal.html");
-const customerPages = ["index.html", "auth.html", "checkout.html", "orders.html", "plans.html", "store.html", "product.html", "provider.html"];
+const customerPages = ["index.html", "auth.html", "checkout.html", "orders.html", "plans.html", "store.html", "product.html", "provider.html", "support.html"];
 
 assert.match(migration, /create table if not exists private\.account_deletion_requests/i, "deletion requests must be stored in the private schema");
 assert.match(migration, /enable row level security/i, "private request table must have RLS enabled");
