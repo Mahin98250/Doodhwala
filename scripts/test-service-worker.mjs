@@ -90,7 +90,8 @@ assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current passw
 assert.ok(source.includes('/Doodhwala/provider.js?v=20261027.1'), "the current seller authorization script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261027.2'), "the current seller mobile navigation styles must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/styles.css?v=20261023.5'), "the current discovery styles must be explicitly precached");
-assert.ok(source.includes('/Doodhwala/app.js?v=20261026.2'), "the current discovery runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/app.js?v=20261027.1'), "the current discovery runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/customer-nav.js?v=20261027.1'), "the clean-route navigation runtime must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/plans.js?v=20261027.3'), "the latest customer plan runtime must be explicitly precached");
 assert.ok(source.includes('"/Doodhwala/notifications.html"'), "the notification route must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/notifications.css?v=20261027.1'), "the notification stylesheet must be explicitly precached");

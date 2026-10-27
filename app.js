@@ -234,7 +234,7 @@ function clearComparison(closeDialog=false){
 }
 function navigateHomeView(destination){
  if(destination==="plans"||destination==="orders"){
-  const url="/Doodhwala/"+(destination==="plans"?"/Doodhwala/plans/":"/Doodhwala/orders/");
+  const url="/Doodhwala/"+(destination==="plans"?"plans/":"orders/");
   if(window.DoodhwalaMilkTransition&&typeof window.DoodhwalaMilkTransition.navigate==="function")window.DoodhwalaMilkTransition.navigate(url);
   else window.location.href=url;
   return;

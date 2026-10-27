@@ -27,9 +27,9 @@ assert.match(css, /@media\(max-width:760px\)[\s\S]*?\.compare-overlay\{align-ite
 assert.match(sw, /const CACHE="doodhwala-v99"/, "PWA cache revision must advance for the discovery and customer fixes");
 assert.ok(sw.includes('/Doodhwala/styles.css?v=20261023.5'), "PWA must precache the current stylesheet");
 assert.ok(sw.includes('/Doodhwala/assets/mascot.png'), "PWA must precache the final mascot logo");
-assert.ok(sw.includes('/Doodhwala/app.js?v=20261026.2'), "PWA must precache the current runtime");
+assert.ok(sw.includes('/Doodhwala/app.js?v=20261027.1'), "PWA must precache the current runtime");
 assert.ok(html.includes('/Doodhwala/styles.css?v=20261023.5'), "homepage must request the current stylesheet");
-assert.ok(html.includes('/Doodhwala/app.js?v=20261026.2'), "homepage must request the current app version");
+assert.ok(html.includes('/Doodhwala/app.js?v=20261027.1'), "homepage must request the current app version");
 
 console.log("Customer discovery enhancements passed: delivery-only filter, escaped seller comparison, responsive modal, and PWA cache contracts.");
 
