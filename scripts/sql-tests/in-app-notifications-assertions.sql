@@ -52,7 +52,7 @@ begin
      or has_function_privilege('anon','public.mark_all_my_notifications_read()','EXECUTE') then
     raise exception 'anonymous_role_has_notification_rpc_execute';
   end if;
-  if not has_function_privilege('authenticated','public.get_my_notifications(integer,timestamptz)','EXECUTE')
+  if not has_function_privilege('authenticated','public.get_my_notifications(integer,timestamptz,uuid)','EXECUTE')
      or not has_function_privilege('authenticated','public.mark_my_notification_read(uuid)','EXECUTE')
      or not has_function_privilege('authenticated','public.mark_all_my_notifications_read()','EXECUTE') then
     raise exception 'authenticated_role_missing_notification_rpc_execute';
