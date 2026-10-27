@@ -39,11 +39,11 @@ assert.match(nav, /function go\(url\).*DoodhwalaMilkTransition/, "Bottom navigat
 assert.match(app, /showLoading\("Finding fresh milk nearby…?"\)/, "Home provider data loading should display the milk animation.");
 assert.match(app, /milkTransition\?\.hideLoading\(\)/, "Home provider data loading must always clear the loader.");
 assert.match(app, /destination==="plans"\|\|destination==="orders"/, "Desktop sidebar must navigate to Plans and Orders.");
-assert.match(app, /const url="\\/Doodhwala\\/"\+\(destination==="plans"\?"plans\\/":"orders\\/"\)/, "Desktop Plans/Orders links must stay inside the GitHub Pages project path.");
-assert.doesNotMatch(app, /"\\/Doodhwala\\/"\+\(destination==="plans"\?"\\/Doodhwala\\/plans\\/"/, "Desktop navigation must not duplicate the project path.");
-assert.match(nav, /function getPage\(\)\{const pathname=location\.pathname\.toLowerCase\(\)/, "Bottom navigation must classify directory routes using the full pathname.");
-assert.match(nav, /if\(key==="plans"\)\{go\(BASE\+"plans\/"\)/, "Mobile Plans navigation must target the clean route without duplicating the project path.");
-assert.match(nav, /if\(key==="orders"\)\{go\(BASE\+"orders\/"\)/, "Mobile Orders navigation must target the clean route without duplicating the project path.");
+assert.ok(app.includes('const url="/Doodhwala/"+(destination==="plans"?"plans/":"orders/");'), "Desktop Plans/Orders links must stay inside the GitHub Pages project path.");
+assert.ok(!app.includes('const url="/Doodhwala/"+(destination==="plans"?"/Doodhwala/plans/":"'), "Desktop navigation must not duplicate the project path.");
+assert.ok(nav.includes("function getPage(){const pathname=location.pathname.toLowerCase()"), "Bottom navigation must classify directory routes using the full pathname.");
+assert.ok(nav.includes('if(key==="plans"){go(BASE+"plans/");return}'), "Mobile Plans navigation must target the clean route without duplicating the project path.");
+assert.ok(nav.includes('if(key==="orders"){go(BASE+"orders/");return}'), "Mobile Orders navigation must target the clean route without duplicating the project path.");
 assert.match(app, /DoodhwalaMilkTransition\.navigate\(url\)/, "Desktop customer navigation must use the milk transition.");
 assert.ok(home.includes("customer-ui-polish.css?v=20261026.1"), "Home page must load the latest mobile header polish.");
 assert.ok(home.indexOf("milk-transition.js?v=20261025.4") < home.indexOf("app.js?v=20261027.1"), "Milk transition runtime must be available before the home app requests data.");
