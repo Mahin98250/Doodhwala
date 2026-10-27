@@ -149,3 +149,16 @@
 .order-reason-actions .danger-action{border:1px solid #a33d3d;background:#a33d3d;color:#fff}
 @media(max-width:700px){.order-progress{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:12px;margin-top:13px}.order-progress-step>b{font-size:10px}.order-reason-card{padding:18px;border-radius:18px}.order-reason-actions{grid-template-columns:1fr}.order-reason-actions button{width:100%;min-height:46px}}
 @media(prefers-reduced-motion:reduce){.order-reason-modal *,.order-progress *{animation:none!important;transition:none!important}}
+
+/* Mobile seller header: keep store status, sign-out, and profile controls on one row. */
+@media(max-width:760px){
+  .provider-topbar{min-width:0;gap:8px;padding:8px 12px;overflow:visible}
+  .provider-mobile-brand{min-width:0;gap:6px;margin-right:auto}
+  .provider-mobile-brand img{width:28px;height:28px;flex:0 0 28px}
+  .provider-mobile-brand b{font-size:12px;white-space:nowrap}
+  .provider-top-actions{min-width:0;flex:0 0 auto;gap:5px}
+  .provider-top-actions .provider-auth-link{display:none}
+  .provider-top-actions .provider-store-toggle{padding:7px 8px;font-size:8px;line-height:1.1}
+  .provider-top-actions .provider-top-signout{padding:7px 8px;font-size:9px;line-height:1.1}
+  .provider-top-actions #mobileProfile{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--green);font-size:17px}
+}
