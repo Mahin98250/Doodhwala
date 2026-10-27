@@ -67,7 +67,7 @@ assert.match(css, /\.order-reason-modal\{/, "Reason dialog must have a dedicated
 assert.match(css, /@media\(max-width:700px\)/, "Order progress/dialog must adapt to mobile.");
 assert.match(css, /prefers-reduced-motion:reduce/, "New seller workflow styles must respect reduced motion.");
 assert.match(css, /focus-visible/, "Keyboard focus must be visible.");
-assert.match(worker, /doodhwala-v95/, "PWA cache version must change with updated seller assets.");
+assert.match(worker, /doodhwala-v96/, "PWA cache version must change with updated seller assets.");
 assert.ok(worker.includes("/Doodhwala/provider.css?v=20261027.1"), "PWA must cache the versioned seller stylesheet.");
 assert.ok(worker.includes("/Doodhwala/provider.js?v=20261027.1"), "PWA must cache the versioned seller runtime.");
 assert.match(workflow, /node scripts\/test-provider-simple-order-workflow\.mjs/, "New order workflow regression tests must run in static CI.");
