@@ -7,11 +7,29 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
 function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function dateText(v){return new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",year:"numeric"}).format(new Date(v+"T00:00:00"))}
 function dateTime(v){return new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(v))}
-function tomorrow(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().slice(0,10)}
+function localDateIso(d=new Date()){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function tomorrow(){const d=new Date();d.setDate(d.getDate()+1);return localDateIso(d)}
 function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
 function selectedDays(){return [...document.querySelectorAll(".day-button.active")].map(b=>Number(b.dataset.day))}
 function deliveryCount(){const a=$("planStart").value,b=$("planEnd").value,days=selectedDays();if(!a||!b||b<a)return 0;let n=0,d=new Date(a+"T00:00:00"),end=new Date(b+"T00:00:00");while(d<=end){const iso=d.getDay()===0?7:d.getDay();if(days.includes(iso))n++;d.setDate(d.getDate()+1)}return n}
-function updatePreview(){const n=deliveryCount(),q=Number($("planQuantity").value||0),price=Number(product?.price_per_litre||0);$("deliveryCount").textContent=n;$("planEstimate").textContent=money(n*q*price);$("planEnd").min=$("planStart").value||tomorrow()}
+function renderSchedulePreview(){
+ const host=$("schedulePreviewDays"),hint=$("schedulePreviewHint"),count=$("schedulePreviewCount");
+ if(!host||!hint||!count)return;
+ const start=$("planStart").value,end=$("planEnd").value,days=selectedDays(),quantity=Number($("planQuantity").value||0),price=Number(product?.price_per_litre||0);
+ if(!start||!end||end<start){host.innerHTML="";hint.textContent="Choose a valid start and end date to preview deliveries.";count.textContent="Dates needed";return}
+ const base=new Date(start+"T00:00:00"),last=new Date(end+"T00:00:00");
+ const items=[];
+ for(let i=0;i<7;i++){
+  const d=new Date(base);d.setDate(d.getDate()+i);
+  const iso=localDateIso(d),weekday=d.getDay()===0?7:d.getDay(),within=d<=last,deliver=within&&days.includes(weekday);
+  items.push({iso,day:new Intl.DateTimeFormat("en-IN",{weekday:"short"}).format(d),date:new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short"}).format(d),deliver,within});
+ }
+ const deliveries=items.filter(x=>x.deliver).length;
+ count.textContent=deliveries+" delivery"+(deliveries===1?"":"ies");
+ hint.textContent=deliveries?("First week: "+deliveries+" planned delivery"+(deliveries===1?"":"ies")+", "+money(deliveries*quantity*price)+" estimated value."): "No deliveries in this first-week window. Check your selected days and end date.";
+ host.innerHTML=items.map(x=>'<div class="schedule-preview-day '+(x.deliver?"is-delivery":"")+(x.within?"":" is-ended")+'"><span>'+esc(x.day)+'</span><b>'+esc(x.date)+'</b><small>'+(x.deliver?'Milk delivery · '+esc(quantity)+' L':x.within?'No delivery':'Plan ended')+'</small><i aria-hidden="true">'+(x.deliver?'✓':'—')+'</i></div>').join("");
+}
+function updatePreview(){const n=deliveryCount(),q=Number($("planQuantity").value||0),price=Number(product?.price_per_litre||0);$("deliveryCount").textContent=n;$("planEstimate").textContent=money(n*q*price);$("planEnd").min=$("planStart").value||tomorrow();renderSchedulePreview()}
 function setDays(){ $("dayButtons").innerHTML=dayNames.map((x,i)=>'<button type="button" class="day-button active" data-day="'+(i+1)+'">'+x+'</button>').join("");document.querySelectorAll(".day-button").forEach(b=>b.onclick=()=>{b.classList.toggle("active");if(!selectedDays().length)b.classList.add("active");updatePreview()})}
 function showError(v){$("planError").textContent=v||""}
 function niceError(v){const m=String(v||"");const map={delivery_time_outside_provider_window:"Choose a time inside this provider's delivery window.",subscription_product_unavailable:"This milk is not currently available for daily plans.",address_not_owned:"Choose one of your saved delivery addresses.",same_day_delivery_time_has_passed:"That time has already passed today. Choose tomorrow or a later date.",plan_has_no_delivery_days:"Choose at least one delivery day.",start_date_in_past:"Choose today or a future start date.",authentication_required:"Please sign in again.",subscription_change_cutoff_passed:"Your next delivery is too close to change this plan. Try again before the cutoff.",new_delivery_time_too_soon:"That delivery time is too close to now. Choose a later time.",subscription_not_editable:"This plan can no longer be edited.",pause_date_in_past:"Choose today or a future pause date.",no_subscription_changes:"Choose at least one change."};return map[m]||m.replace(/^.*?:/,"").replace(/_/g," ")||"Could not update the plan."}
@@ -295,4 +313,4 @@ async function skipDelivery(id){
  }
 }
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&user)loadPlans().catch(function(err){console.warn("Plans foreground refresh failed",err)})});
-$("planForm").onsubmit=createPlan;$("planQuantity").onchange=updatePreview;$("planStart").onchange=function(){if(!$("planEnd").value||$("planEnd").value<=$("planStart").value)$("planEnd").value=addDays($("planStart").value,29);updatePreview()};$("planEnd").onchange=updatePreview;$("refreshPlans").onclick=loadContext;setDays();loadContext();
+$("planForm").onsubmit=createPlan;$("planQuantity").onchange=updatePreview;$("planStart").onchange=function(){if(!$("planEnd").value||$("planEnd").value<=$("planStart").value)$("planEnd").value=addDays($("planStart").value,29);updatePreview()};$("planEnd").onchange=updatePreview;$("refreshPlans").onclick=loadContext;setDays();updatePreview();loadContext();
