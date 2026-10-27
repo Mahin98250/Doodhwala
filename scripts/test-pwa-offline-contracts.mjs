@@ -5,7 +5,7 @@ const sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 const offline = fs.readFileSync(new URL("../offline.html", import.meta.url), "utf8");
 const networkStatus = fs.readFileSync(new URL("../network-status.js", import.meta.url), "utf8");
 
-assert.match(sw, /const CACHE="doodhwala-v98"/, "keep the current monotonic cache revision");
+assert.match(sw, /const CACHE="doodhwala-v99"/, "keep the current monotonic cache revision");
 for (const asset of [
   "/Doodhwala/customer-journey-refresh.css?v=20261025.1",
   "/Doodhwala/customer-ui-polish.css?v=20261025.3",
