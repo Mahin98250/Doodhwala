@@ -7,7 +7,7 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&l
 function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function dateText(v){return new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",year:"numeric"}).format(new Date(v+"T00:00:00"))}
 function dateTime(v){return new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(v))}
-function tomorrow(){const d=new Date();d.setDate(d.getDate()+1);return localIsoDateForPlans(d)}
+function tomorrow(date=new Date()){const d=new Date(date);d.setDate(d.getDate()+1);return localIsoDateForPlans(d)}
 function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return localIsoDateForPlans(d)}
 function selectedDays(){return [...document.querySelectorAll(".day-button.active")].map(b=>Number(b.dataset.day))}
 function deliveryCount(){const a=$("planStart").value,b=$("planEnd").value,days=selectedDays();if(!a||!b||b<a)return 0;let n=0,d=new Date(a+"T00:00:00"),end=new Date(b+"T00:00:00");while(d<=end){const iso=d.getDay()===0?7:d.getDay();if(days.includes(iso))n++;d.setDate(d.getDate()+1)}return n}
