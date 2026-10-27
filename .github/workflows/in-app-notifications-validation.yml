@@ -1,0 +1,59 @@
+name: In-app notification validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notification-sql:
+    name: Validate notification migration on disposable PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_notifications_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_notifications_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_notifications_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create synthetic order and auth schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/in-app-notifications-fixture.sql
+      - name: Apply notification migration to disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261027110000_doodhwala_in_app_order_notifications.sql
+      - name: Verify status alerts, role isolation, read actions and pagination
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/in-app-notifications-assertions.sql
+
+  notification-static:
+    name: Validate notification UI contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax-check notification client
+        run: node --check notifications.js
+      - name: Test notification UI and security contracts
+        run: node scripts/test-notifications.mjs
+      - name: Validate local site assets and routes
+        run: node scripts/validate-site.mjs
