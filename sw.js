@@ -16,7 +16,7 @@ self.addEventListener("fetch",event=>{
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin)return;
   event.respondWith(
-    fetch(event.request).then(response=>{
+    fetch(event.request).then(async response=>{
       if(response.ok){
         // Do not report a network response until its cache write has settled; query-string
         // URLs must be available immediately if the connection drops after this response.
