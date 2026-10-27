@@ -97,7 +97,7 @@ begin
   end if;
 
   return new;
-end
+end;
 $function$;
 
 drop trigger if exists order_status_events_notify on public.order_status_events;
@@ -149,7 +149,7 @@ begin
    where user_id = v_uid and read_at is null;
 
   return jsonb_build_object('items', v_items, 'unread_count', v_unread_count);
-end
+end;
 $function$;
 
 create or replace function public.mark_my_notification_read(p_notification_id uuid)
@@ -183,7 +183,7 @@ begin
     'read_at', v_notification.read_at,
     'related_order_id', v_notification.related_order_id
   );
-end
+end;
 $function$;
 
 create or replace function public.mark_all_my_notifications_read()
@@ -206,7 +206,7 @@ begin
   get diagnostics v_updated = row_count;
 
   return jsonb_build_object('updated_count', v_updated);
-end
+end;
 $function$;
 
 revoke all on function public.get_my_notifications(integer, timestamptz, uuid) from public, anon, authenticated;
