@@ -136,7 +136,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes("/Doodhwala/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Doodhwala/provider.js?v=20261027.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Doodhwala/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v99"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v100"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -176,7 +176,7 @@ const adminHtmlPath=path.join(root,"admin.html");
 if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v99"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes('const CACHE="doodhwala-v100"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
@@ -237,7 +237,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v99"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v100"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
@@ -283,10 +283,10 @@ if(!storeHtml.includes('/Doodhwala/store.js?v=20261025.4')) errors.push("store.h
 if(!productSw.includes('/Doodhwala/store.js?v=20261025.4')) errors.push("sw.js -> provider storefront runtime missing from offline precache");
 for(const file of ["/store.html","/product.html","/checkout.html"]){
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
-  if(!html.includes('/Doodhwala/milk-transition.css?v=20261025.4')) errors.push(file+" -> milk transition stylesheet missing");
-  if(!html.includes('/Doodhwala/milk-transition.js?v=20261025.4')) errors.push(file+" -> milk transition runtime missing");
+  if(!html.includes('/Doodhwala/milk-transition.css?v=20261027.5')) errors.push(file+" -> milk transition stylesheet missing");
+  if(!html.includes('/Doodhwala/milk-transition.js?v=20261027.5')) errors.push(file+" -> milk transition runtime missing");
 }
-if(!productSw.includes('/Doodhwala/milk-transition.css?v=20261025.4')||!productSw.includes('/Doodhwala/milk-transition.js?v=20261025.4')) errors.push("sw.js -> milk transition assets missing from PWA precache");
+if(!productSw.includes('/Doodhwala/milk-transition.css?v=20261027.5')||!productSw.includes('/Doodhwala/milk-transition.js?v=20261027.5')) errors.push("sw.js -> milk transition assets missing from PWA precache");
 for(const file of ["/index.html","/auth.html","/checkout.html","/orders.html","/plans.html","/store.html","/product.html","/provider.html","/admin.html"]){
   if(!localFiles.has(file)) continue;
   const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
