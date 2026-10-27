@@ -142,6 +142,6 @@ begin
     raise exception 'null_admin_result_did_not_fail_closed';
   end if;
 end
-$;
+  $$;
 
 select 'provider invoice monthly idempotency checks passed' as result;
