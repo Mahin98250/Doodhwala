@@ -12,7 +12,7 @@ const files = new Set([
   "customer-ui-polish.css","milk-transition.css","resilience.js","supabase-config.js",
   "supabase-client.js","direct-upi-checkout.js","customer-nav.js","customer-10x.js",
   "session-controls.js","pwa-register.js","network-status.js","provider.html",
-  "provider.css","provider.js","provider-10x.js","provider-location.js",
+  "provider.css","provider.js","provider-10x.js","provider-location.js","provider-location.css",
   "provider-location.css","provider-journey.js","provider-nav.js","assets/mascot.png",
   "manifest.webmanifest","sw.js","admin.html"
 ]);
