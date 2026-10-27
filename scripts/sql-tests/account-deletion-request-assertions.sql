@@ -30,6 +30,9 @@ declare
   v_cross_user_cancel_rejected boolean := false;
   v_non_admin_rejected boolean := false;
   v_null_admin_rejected boolean := false;
+  v_triage jsonb;
+  v_non_admin_triage_rejected boolean := false;
+  v_complete_status_rejected boolean := false;
 begin
   begin
     perform public.request_account_deletion('delete me', null);
@@ -134,6 +137,55 @@ begin
   v_status := public.admin_list_account_deletion_requests(50);
   if jsonb_array_length(v_status) <> 1 then
     raise exception 'admin_queue_should_show_one_active_request';
+  end if;
+
+  -- Owner can triage active requests and add a bounded review note.
+  v_triage := public.admin_update_account_deletion_request(
+    (v_second_after_cancel->>'id')::uuid,
+    'under_review',
+    'Synthetic QA review note'
+  );
+  if v_triage->>'status' <> 'under_review'
+     or v_triage->>'review_notes' <> 'Synthetic QA review note'
+     or coalesce((v_triage->>'account_deleted')::boolean, true) is not false then
+    raise exception 'admin_triage_did_not_update_status_safely';
+  end if;
+
+  -- Triage RPC must not be usable by a non-admin.
+  perform set_config('request.jwt.claim.admin', 'false', false);
+  begin
+    perform public.admin_update_account_deletion_request(
+      (v_second_after_cancel->>'id')::uuid,
+      'blocked_open_orders',
+      'should not be saved'
+    );
+  exception when others then
+    if sqlerrm = 'admin_access_required' then
+      v_non_admin_triage_rejected := true;
+    else
+      raise;
+    end if;
+  end;
+  if not v_non_admin_triage_rejected then
+    raise exception 'non_admin_triage_was_not_rejected';
+  end if;
+
+  perform set_config('request.jwt.claim.admin', 'true', false);
+  begin
+    perform public.admin_update_account_deletion_request(
+      (v_second_after_cancel->>'id')::uuid,
+      'completed',
+      'should not be saved'
+    );
+  exception when others then
+    if sqlerrm = 'unsupported_deletion_review_status' then
+      v_complete_status_rejected := true;
+    else
+      raise;
+    end if;
+  end;
+  if not v_complete_status_rejected then
+    raise exception 'admin_triage_allowed_false_completion';
   end if;
 end
 $$;
