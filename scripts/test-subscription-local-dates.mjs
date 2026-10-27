@@ -13,7 +13,7 @@ assert.ok(tomorrowHelper, "tomorrow must use local calendar arithmetic and allow
 assert.ok(addDaysHelper, "subscription end date must use local calendar arithmetic");
 assert.match(plans, /\$\("planStart"\)\.min=localDateIso\(\)/i, "start date must not allow past dates in the UI");
 assert.match(plans, /delivery_skip_cutoff_passed:"The skip deadline for this delivery has passed/i, "skip cutoff errors need a clear customer-facing explanation");
-assert.match(html, /plans\.js\?v=20261027\.2/i, "current plan runtime must remain cache-busted at the deployed version");
+assert.match(html, /plans\.js\?v=20261027\.3/i, "current plan runtime must remain cache-busted at the deployed version");
 
 const executable = [
   localDateHelper,
