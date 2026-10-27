@@ -42,6 +42,23 @@ assert.doesNotMatch(client, /\.from\(["']account_deletion_requests/i, "client mu
 assert.doesNotMatch(client, /innerHTML\s*=/i, "request IDs/status values must not be inserted as untrusted HTML");
 
 assert.match(legal, /href="\/Doodhwala\/account-deletion\.html"/i, "legal data-rights section must link to the deletion resource");
+
+const adminHtml = read("admin.html");
+const adminJs = read("admin.js");
+const adminCss = read("admin.css");
+const triageMigration = read("supabase/migrations/20261027103000_doodhwala_account_deletion_admin_triage.sql");
+const sw = read("sw.js");
+assert.match(adminHtml, /data-section="privacy"/i, "owner navigation must expose privacy request triage");
+assert.match(adminHtml, /admin\.js\?v=20261027\.1/i, "owner bundle must use its refreshed cache version");
+assert.match(adminJs, /admin_list_account_deletion_requests/i, "owner UI must read requests through the guarded RPC");
+assert.match(adminJs, /admin_update_account_deletion_request/i, "owner UI must save review status through the guarded RPC");
+assert.match(adminJs, /triage does not delete an account/i, "owner UI must disclose triage does not perform deletion");
+assert.match(triageMigration, /p_status not in \('under_review', 'blocked_open_orders'\)/i, "owner triage must not mark deletion completed or cancel on behalf of the user");
+assert.match(triageMigration, /not coalesce\(private\.is_current_user_admin\(\), false\)/i, "owner triage must fail closed");
+assert.match(adminCss, /privacy-admin-summary/i, "owner privacy queue needs responsive styling");
+assert.match(sw, /const CACHE="doodhwala-v95"/i, "PWA cache must be bumped for owner privacy triage");
+assert.match(sw, /admin\.js\?v=20261027\.1/i, "latest owner bundle must be precached");
+
 for (const file of customerPages) {
   assert.match(read(file), /href="\/Doodhwala\/account-deletion\.html">Account deletion<\/a>/i, file + " must expose the account deletion resource");
 }
