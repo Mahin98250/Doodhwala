@@ -148,7 +148,7 @@ function renderChecklist(){
  $("checklist").innerHTML=items.map((x,i)=>'<button class="check-row '+(x[1]?"done":"")+'" data-check-view="'+x[3]+'"><span>'+(x[1]?"✓":i+1)+'</span><div><b>'+x[0]+'</b><small>'+(x[1]?"Complete":x[2])+'</small></div></button>').join("");
  $("checklist").querySelectorAll("[data-check-view]").forEach(b=>b.onclick=()=>showView(b.dataset.checkView))
 }
-function showView(view){document.querySelectorAll(".provider-view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="orders")loadProviderOrders();if(view==="route")loadProviderRoute(routeDate);if(view==="subscriptions")loadProviderSubscriptions()}
+function showView(view){document.querySelectorAll(".provider-view").forEach(v=>v.classList.toggle("active",v.id==="view-"+view));document.querySelectorAll("[data-view]").forEach(b=>{const active=b.dataset.view===view;b.classList.toggle("active",active);if(b.closest(".provider-mobile-nav")){if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")}});if(view==="orders")loadProviderOrders();if(view==="route")loadProviderRoute(routeDate);if(view==="subscriptions")loadProviderSubscriptions()}
 async function setupProviderSubscriptionRealtime(user){
  if(!window.Doodhwala?.configured||!user||window.__doodhwalaProviderSubscriptionChannel)return;
  const refresh=function(){

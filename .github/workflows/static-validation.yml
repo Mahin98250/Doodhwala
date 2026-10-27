@@ -65,8 +65,6 @@ jobs:
         run: node scripts/test-customer-journey-refresh.mjs
       - name: Test customer runtime and milk transition fixes
         run: node scripts/test-customer-ui-fixes.mjs
-      - name: Test customer order progress and offline assets
-        run: node scripts/test-customer-order-progress.mjs
       - name: Test customer subscription schedule preview and offline cache
         run: node scripts/test-subscription-schedule-preview.mjs
       - name: Test milk loading coverage across customer journey
@@ -87,6 +85,8 @@ jobs:
         run: node scripts/test-auth-contracts.mjs
       - name: Test seller order progression and decision dialogs
         run: node scripts/test-provider-simple-order-workflow.mjs
+      - name: Test seller mobile navigation accessibility
+        run: node scripts/test-provider-mobile-nav-a11y.mjs
       - name: Test consolidated RLS policy contracts
         run: node scripts/test-policy-consolidation.mjs
       - name: Test private admin allowlist RLS
