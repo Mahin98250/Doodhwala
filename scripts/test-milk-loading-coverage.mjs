@@ -52,10 +52,10 @@ assert.match(motionCss, /prefers-reduced-motion/, "The liquid animation must res
 
 console.log("PASS: realistic milk-pour animation and loading coverage across provider storefront, product details, and checkout.");
 
-assert.match(motionCss, /@view-transition \\{ navigation: auto; \\}/, "Cross-document navigation should use the native View Transitions API when supported.");
+assert.ok(motionCss.includes("@view-transition { navigation: auto; }"), "Cross-document navigation should use the native View Transitions API when supported.");
 assert.match(motionCss, /@keyframes dw-page-in/, "Incoming pages should use a smooth depth-and-fade entrance.");
 assert.match(motionCss, /@keyframes dw-page-out/, "Outgoing pages should use a subtle departure motion.");
-assert.match(motionJs, /reduceMotion\\?0:260/, "Navigation should avoid a long blocking overlay and respect reduced motion.");
+assert.ok(motionJs.includes("reduceMotion?0:260"), "Navigation should avoid a long blocking overlay and respect reduced motion.");
 assert.match(motionCss, /prefers-reduced-motion: reduce/, "Native page transitions should disable motion when the user requests reduced motion.");
 assert.match(read("sw.js"), /const CACHE="doodhwala-v100"/, "PWA cache revision should refresh the updated transition assets.");
 for (const page of ["index.html","auth.html","checkout.html","orders.html","plans.html","product.html","provider.html","store.html","support.html","notifications.html","legal.html","admin.html"]) {
