@@ -1,0 +1,47 @@
+name: Account deletion request SQL validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deletion-request-migration:
+    name: Validate account deletion request intake on disposable PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_deletion_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_deletion_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_deletion_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create synthetic auth schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/account-deletion-request-fixture.sql
+      - name: Apply account deletion request migration to disposable PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261027100000_doodhwala_account_deletion_request_intake.sql
+      - name: Verify request idempotency, account scoping, cancellation and admin authorization
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/account-deletion-request-assertions.sql
