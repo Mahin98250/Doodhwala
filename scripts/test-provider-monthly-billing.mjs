@@ -4,6 +4,7 @@ import fs from "node:fs";
 const schema = fs.readFileSync(new URL("../supabase/migrations/20261026120000_doodhwala_provider_monthly_billing.sql", import.meta.url), "utf8");
 const rpcs = fs.readFileSync(new URL("../supabase/migrations/20261026121000_doodhwala_provider_billing_rpcs.sql", import.meta.url), "utf8");
 const referenceGuard = fs.readFileSync(new URL("../supabase/migrations/20261026124000_doodhwala_provider_billing_reference_unique.sql", import.meta.url), "utf8");
+const adminSettings = fs.readFileSync(new URL("../supabase/migrations/20261026123000_doodhwala_admin_get_provider_billing_settings.sql", import.meta.url), "utf8");
 
 assert.match(schema, /create table if not exists public\.provider_subscription_invoices/i);
 assert.match(schema, /create table if not exists public\.provider_subscription_payments/i);
@@ -19,6 +20,9 @@ assert.match(rpcs, /v_plan\.amount_paise/i, "invoice uses server-side plan price
 assert.match(rpcs, /admin_record_provider_subscription_payment/i, "admin reconciliation endpoint is required");
 assert.match(rpcs, /p_amount_paise<>v_invoice\.amount_paise/i, "partial or wrong amount cannot mark an invoice paid");
 assert.match(rpcs, /private\.is_current_user_admin\(\)/i, "admin writes must enforce the private admin allowlist");
+assert.doesNotMatch(rpcs, /not private\.is_current_user_admin\(\)/i, "admin checks must not accidentally authorize NULL helper results");
+assert.match(rpcs, /not coalesce\(private\.is_current_user_admin\(\), false\)/i, "billing admin RPCs must fail closed when the helper returns false or NULL");
+assert.match(adminSettings, /not coalesce\(private\.is_current_user_admin\(\), false\)/i, "billing settings admin RPC must fail closed when the helper returns false or NULL");
 assert.match(rpcs, /admin_set_provider_billing_settings/i, "owner can configure Doodhwala UPI instructions");
 assert.doesNotMatch(rpcs, /update public\.orders/i, "seller subscription payment must never update customer order status");
 assert.doesNotMatch(rpcs, /update public\.payment_transactions/i, "seller subscription payment must not alter customer payment ledger");
