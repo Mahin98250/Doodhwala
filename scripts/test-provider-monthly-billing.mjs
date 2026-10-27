@@ -29,7 +29,7 @@ assert.match(invoiceIdempotency, /provider_subscription_invoices_provider_month_
 assert.match(invoiceIdempotency, /on conflict\s*\(provider_id,\s*period_start\)\s*do nothing/i, "concurrent invoice creation must not create a duplicate");
 assert.match(invoiceIdempotency, /provider_month_invoice_retry_required/i, "a missing conflict winner must return an explicit retryable failure");
 assert.match(invoiceIdempotency, /provider_month_invoice_period_conflict/i, "conflicting invoice period inputs must be rejected");
-assert.match(invoiceIdempotency, /not private\.is_current_user_admin\(\)/i, "invoice creation must retain its server-side admin authorization");
+assert.match(invoiceIdempotency, /not coalesce\(private\.is_current_user_admin\(\),\s*false\)/i, "invoice creation must fail closed when the admin helper returns false or null");
 assert.match(invoiceIdempotency, /revoke all on function public\.admin_create_provider_subscription_invoice[\s\S]*?from public, anon, authenticated/i, "invoice RPC must not be executable by anonymous or arbitrary authenticated users");
 
 console.log("Provider billing contract checks passed: separate ledgers, RLS, admin-only billing writes, server-priced invoices, amount/reference guards, calendar-month invoice idempotency.");
