@@ -24,6 +24,9 @@ declare
   v_cross_user_rejected boolean := false;
   v_unread integer;
   v_marked jsonb;
+  v_page_one jsonb;
+  v_page_two jsonb;
+  v_distinct_page_ids integer;
 begin
   if (select count(*) from public.user_notifications
        where user_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') <> 3 then
@@ -44,7 +47,7 @@ begin
     raise exception 'browser_role_has_direct_notification_table_access';
   end if;
 
-  if has_function_privilege('anon','public.get_my_notifications(integer,timestamptz)','EXECUTE')
+  if has_function_privilege('anon','public.get_my_notifications(integer,timestamptz,uuid)','EXECUTE')
      or has_function_privilege('anon','public.mark_my_notification_read(uuid)','EXECUTE')
      or has_function_privilege('anon','public.mark_all_my_notifications_read()','EXECUTE') then
     raise exception 'anonymous_role_has_notification_rpc_execute';
@@ -96,9 +99,33 @@ begin
   end if;
 
   -- Pagination is bounded by the requested limit.
-  v_result := public.get_my_notifications(1,null);
+  v_result := public.get_my_notifications(1,null,null);
   if jsonb_array_length(v_result->'items') <> 1 then
     raise exception 'notification_page_limit_not_respected';
+  end if;
+
+  -- All three fixture notifications share a transaction timestamp. A timestamp-only
+  -- cursor would skip rows tied with the page boundary; the UUID tie-breaker must not.
+  v_page_one := public.get_my_notifications(2,null,null);
+  if jsonb_array_length(v_page_one->'items') <> 2 then
+    raise exception 'first_notification_cursor_page_size_incorrect';
+  end if;
+  v_page_two := public.get_my_notifications(
+    2,
+    (v_page_one->'items'->1->>'created_at')::timestamptz,
+    (v_page_one->'items'->1->>'id')::uuid
+  );
+  if jsonb_array_length(v_page_two->'items') <> 1 then
+    raise exception 'equal_timestamp_notification_was_skipped';
+  end if;
+  select count(distinct notification_id) into v_distinct_page_ids
+    from (
+      select value->>'id' as notification_id from jsonb_array_elements(v_page_one->'items')
+      union all
+      select value->>'id' as notification_id from jsonb_array_elements(v_page_two->'items')
+    ) as pages;
+  if v_distinct_page_ids <> 3 then
+    raise exception 'notification_cursor_pages_did_not_return_each_row_once';
   end if;
 end
 $$;
