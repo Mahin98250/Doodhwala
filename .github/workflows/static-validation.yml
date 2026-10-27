@@ -79,6 +79,8 @@ jobs:
         run: node scripts/test-legal-contracts.mjs
       - name: Test customer support centre and owner ticket triage
         run: node scripts/test-support-center.mjs
+      - name: Test subscription local-date boundaries and cutoff errors
+        run: node scripts/test-subscription-local-dates.mjs
       - name: Test auth return paths and password recovery
         run: node scripts/test-auth-contracts.mjs
       - name: Test consolidated RLS policy contracts
