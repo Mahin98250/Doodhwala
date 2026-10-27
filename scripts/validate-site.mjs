@@ -16,7 +16,7 @@ walk(root);
 function resolveSitePath(urlPath){
   const clean=urlPath.split(/[?#]/)[0];
   if(clean==="/Doodhwala/"||clean==="/Doodhwala") return "/index.html";
-  if(clean.startsWith("/Doodhwala/")) return clean.slice("/Doodhwala".length);
+  if(clean.startsWith("/Doodhwala/")) { const local=clean.slice("/Doodhwala".length); return local.endsWith("/") ? local+"index.html" : local; }
   return clean;
 }
 
@@ -296,6 +296,18 @@ for(const [file,expected] of [["/checkout.html","return=%2FDoodhwala%2Fcheckout.
   if(localFiles.has(file)){
     const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
     if(!html.includes(expected)) errors.push(file+" -> sign-in must return to its original page");
+  }
+}
+
+
+const cleanRoutes=["auth","plans","orders","provider","notifications","support","checkout","legal","product","store","admin","offline"];
+for(const route of cleanRoutes){
+  if(!localFiles.has("/"+route+"/index.html")) errors.push("clean route missing /"+route+"/index.html");
+}
+for(const file of htmlFiles){
+  const html=fs.readFileSync(path.join(root,file.slice(1)),"utf8");
+  for(const route of cleanRoutes){
+    if(html.includes("/Doodhwala/"+route+".html")) errors.push(file+" -> legacy .html route reference remains for "+route);
   }
 }
 
