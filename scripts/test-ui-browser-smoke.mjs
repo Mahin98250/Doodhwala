@@ -18,8 +18,11 @@ try {
       if (url.origin !== new URL(base).origin) return route.abort();
       return route.continue();
     });
+    const appResponsePromise = page.waitForResponse(response => new URL(response.url()).pathname === "/Doodhwala/app.js");
     const response = await page.goto(base, { waitUntil: "domcontentloaded" });
     assert.ok(response?.ok(), `home route loads at ${width}px`);
+    const appResponse = await appResponsePromise;
+    assert.ok(appResponse.ok(), `app.js responds successfully (${appResponse.status()}) at ${width}px`);
     await page.waitForTimeout(500);
     const state = await page.evaluate(() => {
       const nav = document.querySelector(".customer-bottom-nav");
