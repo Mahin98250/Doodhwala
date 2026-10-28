@@ -61,7 +61,8 @@ if(localFiles.has("/provider.css")){
   const providerCssText=fs.readFileSync(providerCssPath,"utf8");
   if(!providerCssText.includes("padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile content must clear the safe-area-aware bottom navigation");
   if(!providerCssText.includes("height:calc(70px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile navigation must respect device safe-area inset");
-  if(!providerCssText.includes("grid-template-columns:repeat(8,minmax(0,1fr))")) errors.push("provider.css -> all eight seller navigation destinations must remain visible on mobile");
+  if(!providerCssText.includes(".provider-mobile-nav{display:flex;overflow-x:auto;overscroll-behavior-x:contain}")) errors.push("provider.css -> eight seller navigation destinations must remain horizontally scrollable on mobile");
+  if(!providerCssText.includes(".provider-mobile-nav button{flex:1 0 58px;min-width:58px}")) errors.push("provider.css -> mobile navigation buttons must preserve a usable 58px minimum width");
   const providerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
   if(!providerHtml.includes('/Doodhwala/provider.css?v=20261028.2')) errors.push("provider.html -> seller mobile CSS cache version stale");
   const providerSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
