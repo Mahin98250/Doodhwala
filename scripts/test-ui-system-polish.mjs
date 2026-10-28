@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const root = new URL("../", import.meta.url);
-const sharedHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.2";
+const sharedHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.1";
 const homeHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.2";
 const customerHref = "/Doodhwala/customer-ui-stability.css?v=20261028.1";
 const pages = [
