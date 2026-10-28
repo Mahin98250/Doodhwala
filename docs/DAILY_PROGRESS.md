@@ -4,6 +4,24 @@
 
 **Rule:** Keep older entries for history. Correct mistakes by adding a dated correction rather than silently deleting prior evidence.
 
+
+## 2026-10-28 — Current-head UI CI triage
+
+### Verified on exact PR #118 head
+- PR #118 remains open and unmerged on `ui/clean-glass-foundation`, head `3b1fb699569527a86f65d4ea418d870a533af7d1`.
+- Static validation: PASS — run [40669037265](https://github.com/Mahin98250/Doodhwala/actions/runs/40669037265).
+- SQL migration validation: PASS — run [40669037163](https://github.com/Mahin98250/Doodhwala/actions/runs/40669037163).
+- In-app notification validation: PASS — run [40669037257](https://github.com/Mahin98250/Doodhwala/actions/runs/40669037257).
+- PWA offline browser evidence: FAIL — run [40669037348](https://github.com/Mahin98250/Doodhwala/actions/runs/40669037348), job `offline-browser-smoke`, assertion at `scripts/test-pwa-browser-smoke.mjs:131`: “auth must include the final shared clean UI layer”.
+- Read-only source inspection confirms both `auth.html` and `auth/index.html` currently contain a stylesheet link to `clean-ui.css?v=20261028.1`. The failure therefore needs route/runtime evidence before changing the test or cache behavior; do not mark the PWA gate green or assume a root cause yet.
+
+### Next actions
+1. Investigate why the browser smoke sees no matching stylesheet link on the auth route despite the current source markup; capture the resolved URL and live DOM stylesheet hrefs in test evidence before applying a fix.
+2. Re-run the PWA browser smoke on the updated exact PR #118 head; require all four relevant checks green before requesting merge.
+3. Continue the whole-app route/viewport review after the PWA gate is green. No merge or deployment authorized by this triage.
+
+**Handoff owner:** Mahin + ChatGPT for PR #118 implementation/debugging; Vaidik remains read-only reviewer while PR #118 owns shared UI/service-worker files.
+
 ## 2026-10-28 — Collaboration system initialized
 
 ### Completed
