@@ -5,7 +5,7 @@ const sw = fs.readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 const offline = fs.readFileSync(new URL("../offline.html", import.meta.url), "utf8");
 const networkStatus = fs.readFileSync(new URL("../network-status.js", import.meta.url), "utf8");
 
-assert.match(sw, /const CACHE="doodhwala-v107"/, "keep the current monotonic cache revision");
+assert.match(sw, /const CACHE="doodhwala-v108"/, "keep the current monotonic cache revision");
 for(const route of ["/Doodhwala/auth/","/Doodhwala/plans/","/Doodhwala/orders/","/Doodhwala/provider/","/Doodhwala/notifications/","/Doodhwala/support/","/Doodhwala/checkout/","/Doodhwala/legal/","/Doodhwala/product/","/Doodhwala/store/","/Doodhwala/admin/","/Doodhwala/offline/"]) assert.ok(sw.includes(`"${route}"`), `clean route ${route} must be precached`);
 for (const asset of [
   "/Doodhwala/customer-journey-refresh.css?v=20261025.1",
@@ -14,7 +14,7 @@ for (const asset of [
   "/Doodhwala/assets/mascot.png",
   "/Doodhwala/splash-screen.css?v=20261028.2",
   "/Doodhwala/splash-screen.js?v=20261028.2",
-  "/Doodhwala/doodhwala-ui-system.css?v=20261028.1",
+  "/Doodhwala/doodhwala-ui-system.css?v=20261028.2",
   "/Doodhwala/customer-ui-stability.css?v=20261028.1"
 ]) {
   assert.ok(sw.includes(asset), "exact customer-facing URL must be precached: " + asset);
