@@ -1,7 +1,7 @@
 # Doodhwala Team Task Board
 
 > Shared source of truth for Mahin, teammates, and coding agents. Keep this file current in the same PR as task-related changes.
-> Last updated: 2026-10-27
+> Last updated: 2026-10-28
 > Rule: a checkbox is only checked after the change is merged (or explicitly accepted) and the stated verification is recorded. A coding agent must not mark work done merely because it generated code.
 
 ## How to use this board
@@ -19,11 +19,18 @@
 
 ### P0 — Reliability and release safety
 
+- [ ] **DW-012 — Manual seller-payment checkout safety** (part of [Issue #93](https://github.com/Mahin98250/Doodhwala/issues/93))
+  **Owner:** Arena agent · **Status:** IN PROGRESS · **Branch:** `arena/5499bfda-doodhwala` · **Area:** Customer checkout / payments
+  **Goal:** Prepare the existing customer-to-seller manual UPI/COD flow for safe staging without introducing a gateway or a second seller-billing ledger.
+  **Scope:** Make order creation and payment choice one retry-safe transaction; preserve uncertain checkout attempts and guard concurrent current-version tabs; disable unsafe legacy/promo order entry points; add isolated regression coverage. Seller monthly billing remains in [PR #71](https://github.com/Mahin98250/Doodhwala/pull/71) and is not duplicated here.
+  **Done when:** A reviewed staging build demonstrates retry and role-isolation scenarios with no duplicate or half-created orders; promo entry points are inaccessible to browser roles; payment status remains seller-attested; migration and rollback are reviewed. No production deployment or real payment is authorized by this task.
+  **Evidence:** Mocked checkout/retry and static contracts passed locally; synthetic Chromium checkout (390px/1440px) and PWA offline smoke passed with external requests blocked. The proposed migrations and SQL assertions passed on disposable PostgreSQL 16.14 and PGlite with synthetic schemas. The repository's `psql` concurrency and inherited-grant/definer preflight scripts also passed locally on PostgreSQL 16.14. A limited stub-admin ledger-separation check against PR #71 head `18fc968` passed on PGlite and PostgreSQL 16.14. The PostgreSQL and browser checks passed locally; their proposed GitHub Actions integration has not been published or run on this branch because the connected GitHub App lacks workflow write permission. A 2026-10-28 read-only Supabase metadata check found the proposed atomic RPC absent on both the visible staging and production projects; existing order grants differ. See [manual pilot plan](docs/MANUAL_CONFIRMATION_PILOT.md). No staging E2E, real-money or physical-device verification yet.
+
 - [ ] **DW-001 — End-to-end order journey audit** ([Issue #73](https://github.com/Mahin98250/Doodhwala/issues/73))  
   **Owner:** Mahin Patel (@Mahin98250) · **Status:** IN PROGRESS (offline preflight; full staging blocked) · **Area:** QA / Customer + Provider  
   **Goal:** Verify customer checkout → provider queue → provider status updates → customer tracking in an isolated staging project.  
   **Done when:** Evidence records the same staging order ID across both roles; status survives reload/reconnect; no duplicate order on retry; mobile flow is checked. Never create synthetic test orders in production. Offline multi-provider partial-failure/retry regression coverage is implemented in [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80); this does not replace staging acceptance.  
-  **Depends on:** Authorized staging project and test accounts. Full staging remains blocked because no isolated test project is provisioned; do not incur unapproved charges or write test orders to production.  
+  **Depends on:** Owner confirmation that the visible separate staging project is the authorized test target, synthetic accounts, test window and cost/backup checks. Full staging E2E remains blocked until those are approved; do not incur unapproved charges or write test orders to production.
   **Branch:** `qa/dw-001-order-retry-recovery`  
   **Evidence:** [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80) · [Static validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741459) · [SQL migration validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741596).
 
@@ -40,6 +47,12 @@
   **Evidence:** PR/Issue: add link · Checks: not run.
 
 ### P0 — Complete remaining product features and release validation
+
+- [ ] **DW-013 — Alternative seller plans and sponsored in-app promotion** (part of [Issue #93](https://github.com/Mahin98250/Doodhwala/issues/93))
+  **Owner:** Arena agent · **Status:** BLOCKED on billing integration and approved terms · **Branch:** `arena/5499bfda-doodhwala` · **Area:** Seller billing / discovery
+  **Goal:** After reviewed billing integration, offer one ₹2,000/month normal listing or one ₹3,500/month total listing with a text-only “Recommended by Doodhwala · Sponsored” seller-card promotion and a neutral invitation to view the seller's details. Do not add a banner, hidden paid re-ranking, a second billing ledger or an additional ₹3,500 charge.
+  **Blocked by:** Conflicting [PR #71](https://github.com/Mahin98250/Doodhwala/pull/71), its silent same-month cross-plan invoice reuse, real-role/security and migration reconciliation, owner approval of tax, billing, campaign limits and plan-change/expiry terms, and an audited reversal/refund procedure. No seller plan or paid promotion is active. The session branch started from `3c102f6`; on 2026-10-28 `main` had advanced to `ad49f2c` with overlapping UI and service-worker changes. Review and reconcile both lines of work before any merge; neither has been overwritten here.
+  **Evidence:** A [pricing preview](seller-plans.html), seller/admin billing interfaces and sponsored seller-card rendering now exist on this branch. Their server-side rollout and sponsorship draft, cross-plan fix and inactive-price fixture remain under [`supabase/deferred/`](supabase/deferred/), not automatic migrations; flags default off. The [synthetic integration runner](scripts/sql-tests/test-pr71-plan-integration.sh) passed locally on PostgreSQL 16.14 using the checksum-pinned PR #71 source fixture. It tests plan conflict, disabled defaults, scoped reads, manually recorded premium eligibility, explicit admin approval, expiry/void/price drift, grant checks and event logging. Mocked Chromium covered the preview and billing flow at 390px and 1440px; no external requests or real payments. Admin authorization is stubbed. The new tests are not yet wired into published GitHub Actions; workflow updates require GitHub App permission. The 2026-10-28 read-only staging check found older billing objects, no plan/invoice rows and no provider/month uniqueness; production lacks the inspected billing tables. Nothing has been deployed or approved for real-money use. See the [pilot plan](docs/MANUAL_CONFIRMATION_PILOT.md).
 
 - [ ] **DW-010 — Complete remaining Doodhwala product features** ([Issue #93](https://github.com/Mahin98250/Doodhwala/issues/93))  
   **Owner:** Mahin Patel (@Mahin98250) · **Status:** IN PROGRESS (feature inventory published; focused implementation work started) · **Area:** Product / Customer + Provider + Admin + Backend  
@@ -100,6 +113,7 @@ Copy this template and give each task a unique ID:
 Add newest entries first. Link to the PR/commit and report checks honestly.
 | Date | Task | Person / agent | Summary | Verification / evidence |
 |---|---|---|---|---|
+| 2026-10-28 | DW-013 seller plans and sponsored preview | Arena agent | Added ₹2,000/₹3,500 alternative pricing preview, default-off seller/admin billing screens, and a disclosed seller-card component using a deferred server eligibility draft. Reused the PR #71 ledger rather than introducing another one. | Mocked Chromium at 390px/1440px and disposable PostgreSQL 16.14 passed; real Supabase auth, bank reconciliation, staging deployment, terms and reversals remain unverified. No staging/production writes or real payments. |
 | 2026-10-27 | DW-010 feature completion program | Mahin + coding agents | Created a full feature-completion epic covering identity, discovery, checkout/orders, subscriptions, seller/admin operations, provider billing, delivery/GPS, notifications, support/privacy, PWA, mobile-store readiness and safety gates. | [Issue #93](https://github.com/Mahin98250/Doodhwala/issues/93). This is an inventory/implementation gate, not a claim that all items are complete. |
 | 2026-10-27 | DW-011 final test ownership | Vaidik Patel (@vaidikpatel22112010-tech) | Assigned the full-product regression/E2E/security/accessibility/device/load validation task; prepare the test matrix now, run final end-to-end coverage as feature areas become ready, and record evidence honestly. | [Issue #94](https://github.com/Mahin98250/Doodhwala/issues/94). Physical-device tests and authenticated staging journeys remain unverified until actual evidence is recorded. |
 | 2026-10-27 | Provider billing idempotency hardening | Mahin + coding agents | Added a calendar-month boundary/one-provider-month invoice constraint, retry-safe invoice RPC behavior, static contract checks, disposable PostgreSQL fixture/assertions, and a CI job on the existing billing PR branch. | [PR #71](https://github.com/Mahin98250/Doodhwala/pull/71), branch `feat/provider-monthly-billing`, latest commit `9dd71574810966c1023caa48fe65de6f6f130eca`. A dedicated disposable-PostgreSQL workflow is now running for this exact commit; do not mark it passed until the run finishes. |

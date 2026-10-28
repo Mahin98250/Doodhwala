@@ -14,18 +14,19 @@ const ne=html.indexOf("</nav>",ns);
 assert.ok(ns>=0&&ne>ns,"mobile navigation must have an accessible name");
 const nav=html.slice(ns,ne);
 const buttons=[...nav.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
-assert.equal(buttons.length,7,"keep all seven existing destinations available");
+assert.equal(buttons.length,8,"keep the seven existing destinations and add seller billing");
 for(const [,attrs,body] of buttons){
  assert.match(attrs,/data-view="[^"]+"/,"destination must declare its view");
  assert.match(body,/<small>[^<]+<\/small>/,"destination must have a visible label");
  assert.match(body,/<svg[^>]*aria-hidden="true"/,"decorative icons must be hidden from assistive tech");
 }
+assert.match(nav,/data-view="billing"/,"seller billing must be reachable on mobile");
 assert.match(css,/\.provider-mobile-nav button\.active\{[^}]*color:var\(--green\)[^}]*font-weight:800/,"active destination must remain visually distinct");
 
 assert.ok(css.includes("@media(max-width:760px){\n  .provider-topbar{min-width:0;gap:8px;padding:8px 12px;overflow:visible}"),"mobile header must use a compact single-row layout");
 assert.ok(css.includes(".provider-top-actions .provider-auth-link{display:none}"),"hide redundant account link on mobile while preserving the profile control");
 assert.ok(css.includes(".provider-top-actions .provider-store-toggle{padding:7px 8px;font-size:8px;line-height:1.1}"),"store availability control must stay compact on mobile");
 assert.ok(css.includes(".provider-top-actions .provider-top-signout{padding:7px 8px;font-size:9px;line-height:1.1}"),"sign-out must remain accessible in the mobile header");
-assert.ok(html.includes("provider.css?v=20261027.2"),"mobile CSS change must use a fresh cache-busting version");
-assert.ok(read("sw.js").includes('const CACHE="doodhwala-v99"'),"service worker cache must be bumped for the mobile fix");
+assert.ok(html.includes("provider.css?v=20261028.2"),"mobile CSS change must use a fresh cache-busting version");
+assert.ok(read("sw.js").includes('const CACHE="doodhwala-v101"'),"service worker cache must be bumped for the mobile fix");
 console.log("Provider mobile navigation and compact header accessibility contracts passed.");

@@ -1,32 +1,43 @@
 # Staging baseline and migration reconciliation
 
-**Status: staging project not yet provisioned or validated.** This document is the first execution gate for the scalability roadmap. Do not run synthetic checkout/load tests against production.
+**Status: a separate staging project is visible, but it has not been approved or validated for this pilot.** This document is the first execution gate for the scalability roadmap. Do not run synthetic checkout/load tests against production.
 
-## Known current state (read-only audit, 2026-10-24)
+## Current connection check (read-only, 2026-10-28)
+
+- The connected account lists `Doodhwala Staging` (`jbcekiaiyxcatueixeqh`, `ap-northeast-2`) and production `Doodhwala` (`hmiboyfcvtfawrwujslg`, `ap-south-1`); both were reported `ACTIVE_HEALTHY` with PostgreSQL 17. The staging region differs from production, so do not treat its latency as a production capacity measurement.
+- Staging has the separate seller billing plans/invoices/payments tables and invoice RPC, but the plan and invoice tables each had **zero rows**. Catalog inspection found no unique provider/month index or constraint; the current invoice RPC inserts a new invoice rather than providing same-month retry idempotency. The proposed atomic order/payment-choice RPC is absent. Migration history includes the earlier billing migrations, but not the PR #71 provider-month idempotency migration. This is metadata, not proof that the billing UI or authorization works.
+- Production has the direct-seller payment settings table, customer-payment audit table, payment-choice RPC and seller-attestation RPC. It does **not** have the inspected seller billing tables, seller invoice RPC or proposed atomic checkout RPC. Direct-payment migration names were recorded on 2026-10-27, so the 2026-10-24 snapshot below is historical. Schema presence does not prove UPI setup, settlement or payment readiness.
+- An authenticated role retains execute on the existing public order creator and private idempotent creator in both projects. Production also has the authenticated promo order path. The public creator has service-role execute in both projects. These observed grants do not establish all exposed paths or actual consumers; audit wrappers, table grants, inherited roles and scheduled/service-role jobs before the proposed revocations. No grants were changed.
+- Supabase reported its services healthy; Realtime details reported `db_connected: false` and `replication_connected: false` on both projects. This does not establish whether Realtime is functional or whether the service was idle; test it separately in approved staging.
+- The existence of staging does not by itself authorize test writes, extra costs, migrations or production access. The owner must confirm it as the intended test target, approve the test window and synthetic accounts, and verify costs, backups and rollback. No migrations, records, plans or settings were changed in this check.
+
+## Historical production state (read-only audit, 2026-10-24)
 
 - Supabase production project: `hmiboyfcvtfawrwujslg` (`Doodhwala`, `ap-south-1`).
 - Connected database engine: PostgreSQL 17.
-- Live migration history contains 57 entries and currently ends at `20261013164921` (`doodhwala_revoke_provider_direct_writes`).
-- The production project currently has only the `client-error-report` Edge Function deployed. The `doodhwala-pay` function is not deployed.
+- At that audit, live migration history contained 57 entries and ended at `20261013164921` (`doodhwala_revoke_provider_direct_writes`).
+- At that audit, production had only the `client-error-report` Edge Function deployed; `doodhwala-pay` was not deployed. Edge Function deployment was not rechecked on 2026-10-28.
 - Repository `main` contains newer migrations after the production history, including nearby search / order-capacity changes and payment foundations. A repository migration file is not proof that it was applied to a database.
 - The most recent disposable PostgreSQL CI run passed for the repository's synthetic nearby-search and payment-audit fixtures. This is not a complete staging end-to-end test.
 
 
-## Current no-cost blocker (checked 2026-10-25)
+## Historical no-cost blocker (checked 2026-10-25)
 
-- The existing Supabase Free organization has reached its limit of two active free projects (Learner's Guide and Doodhwala). A new `Doodhwala Staging` project was not created.
+The following describes the earlier attempt, not the current project inventory. A `Doodhwala Staging` project is visible in the 2026-10-28 read-only check above; its creation history and current costs were not inspected.
+
+- At the time, the existing Supabase Free organization had reached its limit of two active free projects (Learner's Guide and Doodhwala). A new `Doodhwala Staging` project was not created.
 - A development branch quote returned `$0.01344/hour` (about `$9.81` for 30 days of continuous use at that quoted rate). It was not created because the user has not approved additional charges.
 - Do not delete, pause, or repurpose either existing project merely to free a slot. Do not upgrade the plan or create paid compute/branches without explicit approval.
-- Until a zero-cost isolated staging environment is available, continue with disposable PostgreSQL CI fixtures, static contracts, migration-manifest review, and local-only checks. These tests are useful but **do not replace** full Supabase Auth/RLS/Realtime/end-to-end testing or prove live capacity.
-- Phase 1 remains **blocked for full staging acceptance** until a separate test project is available. Production remains off-limits for synthetic load or test-order writes.
+- Disposable PostgreSQL CI fixtures, static contracts and local-only checks are useful but **do not replace** full Supabase Auth/RLS/Realtime/end-to-end testing or prove live capacity.
+- Phase 1 remains **blocked for full staging acceptance** until the visible project is confirmed as an authorized, test-ready target and the required tests are run. Production remains off-limits for synthetic load or test-order writes.
 
-## Provision staging first
+## Confirm staging first
 
-### Current blocker — no staging environment exists yet
+### Current blocker — test authorization and readiness
 
-The attempt to create `Doodhwala Staging` was rejected because the organization/user already reached the free-project limit. No new project was created. A development branch was quoted at a nonzero hourly cost and was not created because the budget rule is **no additional charges without approval**. Until a free slot or separately approved budget is available, continue with repository tests and disposable PostgreSQL CI only; do not point staging variables at production and do not claim a measured staging baseline.
+The earlier attempt to create staging was rejected because the free-project limit was reached. A separate `Doodhwala Staging` project is now visible, but its cost, owner authorization for this pilot, synthetic accounts, test window, backup/restore and application configuration still need confirmation. Do not point staging variables at production or claim a measured staging baseline.
 
-Use a separate Supabase project in the same organization as Doodhwala, preferably in `ap-south-1` to match the production region and reduce regional differences in test results. Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging.
+Confirm that this separate Supabase project is appropriate for testing. It is in `ap-northeast-2`, not production's `ap-south-1`, so measure regional effects separately. Use synthetic users, providers, products, addresses and orders only after approval. Never copy production customer PII into staging.
 
 Before creating a project, confirm the organization and inspect the quoted cost. Do not accept a nonzero project/compute charge without explicit approval. Use separate staging URL and publishable key; never copy a service-role key into browser code or repository files.
 
@@ -34,7 +45,6 @@ Suggested GitHub Actions secrets/environment variables for a staging-only load w
 - `STAGING_PROJECT_REF` (exact 20-character ref; must not equal the production project ref)
 - `STAGING_SUPABASE_URL`
 - `STAGING_SUPABASE_ANON_KEY`
-- `STAGING_PROJECT_REF` (must not equal the production project ref)
 
 Do not add real secret values to this repository, README, logs or pull requests. Set them in GitHub Actions Environment secrets after staging is provisioned. Restrict the environment to maintainers and require an explicit staging confirmation input for any load test.
 
@@ -47,7 +57,7 @@ A separate read-only catalog query was captured in [`supabase/audit/production-s
 - `public.find_nearby_providers_v2` is present in production, although the observed migration-history snapshot does not show the exact repository migration version `20261023120000`.
 - The provider latitude/longitude and active-product indexes are present.
 - The two repository order-capacity indexes (`orders_provider_open_capacity_idx` and `orders_provider_daily_litres_idx`) are absent by those exact names in the observed catalog.
-- `payment_transactions` and `order_payment_events` are absent from the observed catalog.
+- `payment_transactions` and `order_payment_events` were absent from the 2026-10-24 catalog. The later 2026-10-28 metadata check found `order_payment_events` present; it did not recheck `payment_transactions`.
 
 This is concrete evidence of **migration-history/schema mismatch**: some real schema objects exist without matching the exact repo migration history, while others added in Git are not present in production. The finding is why we must compare the actual schema and migration history, inspect definitions and privileges, then recreate and test the sequence in staging. Do not blindly replay files, rename timestamps to force a match, or apply any of these migrations in production based on this report.
 
@@ -82,7 +92,7 @@ Run `scripts/staging-schema-audit.sql` only after connecting your SQL client to 
 ## First acceptance gates
 
 - [ ] Organization and project cost confirmed.
-- [ ] Separate staging project created and healthy.
+- [ ] Visible staging project confirmed by the owner as the approved, healthy test target.
 - [ ] Staging project ref and URL saved as GitHub repository variables, anon key saved as a repository secret (not committed).
 - [ ] Repository migration history reconciled against staging.
 - [ ] RLS, function grants, payment gates and order-capacity constraints reviewed.

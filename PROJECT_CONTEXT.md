@@ -2,7 +2,8 @@
 
 > **Purpose:** This is the durable handoff document for anyone (including AI assistants) continuing work on Doodhwala. Read this before making changes. Update it in the same pull request/commit whenever project direction, implementation status, or important decisions change.
 
-**Last updated:** 2026-10-26  
+**Last updated:** 2026-10-28
+
 **Repository:** https://github.com/Mahin98250/Doodhwala  
 **Default branch:** `main`  
 **Product:** Doodhwala — a local-first marketplace connecting customers with independent neighbourhood milk sellers.
@@ -54,7 +55,9 @@ The repository contains two distinct payment layers. **Direct seller UPI + COD M
 
 Do not claim automated gateway verification or independently verified payment success until a real provider/acquirer or supported bank/PSP integration, server-side secrets, verified signed webhooks, replay protection, reconciliation, failure handling, refunds, and required reviews/tests are implemented. For direct UPI, only a seller may attest after checking their own bank/UPI app; label this as seller-confirmed, not bank-verified. Never collect card numbers, CVV, UPI PINs, OTPs, or banking passwords. Never trust a client redirect alone as proof of payment.
 
-The connected Doodhwala Supabase project was audited read-only on 2026-10-23: payment migrations beginning `20261022120000` were not present in deployed migration history; `provider_payment_settings`, `payment_transactions`, `payment_provider_events`, the direct-UPI RPCs, and the `doodhwala-pay` deployed function were absent. The payment foundation's original `public.providers` foreign key also did not match the current schema and has been corrected in the branch. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md) before attempting payment migration deployment. These source changes do not certify live-money readiness.
+**Owner-selected seller fees:** a normal in-app listing is ₹2,000/month; a listing with a recommended tag and in-app advertising is ₹3,500/month **total**, not an add-on. The two are alternatives. The owner requested text saying “Recommended by Doodhwala”; the initial design places it on the seller card with an adjacent Sponsored disclosure and a neutral invitation to view seller details, without banners or hidden paid re-ranking. The seller pays Doodhwala separately; it is never deducted from the customer's milk order. This branch now has a [pricing preview](seller-plans.html), seller/admin billing interfaces adapted to PR #71, a disclosed sponsored-card renderer and a default-off server draft tested only with mocks and disposable PostgreSQL. PR #71 itself is not merged, deferred SQL is not deployed, and the plans and advertising benefits are not active. Tax, billing and plan-change rules remain undecided. The manual-confirmation pilot and release blockers are in [docs/MANUAL_CONFIRMATION_PILOT.md](docs/MANUAL_CONFIRMATION_PILOT.md).
+
+The 2026-10-23 read-only production audit found the direct-payment foundation absent at that time. A later read-only check on 2026-10-28 found direct-seller settings, the payment audit table, payment-choice and seller-attestation RPCs on production; its history lists direct-payment migrations dated 2026-10-27. The proposed atomic checkout RPC and inspected seller-billing tables were absent. A separate `Doodhwala Staging` project is visible and has an older billing schema, but no plan/invoice rows or provider/month uniqueness. Staging use and end-to-end tests remain unapproved/unverified. See [staging baseline](docs/STAGING_BASELINE.md), [pilot plan](docs/MANUAL_CONFIRMATION_PILOT.md) and [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md) before any migration. Schema presence does not certify live-money readiness.
 
 ### Release verification
 The repository README includes a P0 end-to-end checklist for customer checkout → provider order queue → provider status changes → customer tracking. Static builds do not prove real authentication, RLS, Realtime, permissions, location, or physical-device behavior. Use an authorized staging project and test accounts; do not create synthetic orders in production.
@@ -89,8 +92,8 @@ These items are direction and proposed next work, not claims that changes have a
 - [ ] Keep mobile interactions easy to use with one hand; maintain a polished desktop layout.
 
 ### P2 — Payments and operational readiness
-- [ ] Keep real money collection disabled until a provider/acquirer is selected and its server-side integration is complete.
-- [ ] Implement and test provider-signed webhooks, replay protection, reconciliation, idempotent state changes, cancellations and refunds before launch.
+- [ ] Keep any live-money use disabled until the chosen direct-seller/manual billing paths pass staging, security, operational and compliance reviews and receive explicit launch approval.
+- [ ] For any future *automatic* verification, select an authorized provider/acquirer or supported bank/PSP and implement and test authenticated server-side confirmation, signed webhooks where applicable, replay protection, reconciliation, idempotent state changes, cancellations and refunds before launch.
 - [ ] Complete legal/privacy/security review with qualified professionals; keep drafts clearly labelled for review.
 - [ ] Add observability and safe error reporting without logging secrets or sensitive customer data.
 

@@ -16,11 +16,11 @@ const handlers = new Map();
 const cacheLookups = [];
 const installWarnings = [];
 const deletedCaches = [];
-const cacheNames = ["doodhwala-v97", "doodhwala-v99", "unrelated-origin-cache-test"];
+const cacheNames = ["doodhwala-v97", "doodhwala-v99", "doodhwala-v100", "doodhwala-v101", "unrelated-origin-cache-test"];
 let skipWaitingCalls = 0;
 let onlineMode = false;
 let cachePutFinished = false;
-const optionalFailure = "/Doodhwala/provider.css?v=20261027.2";
+const optionalFailure = "/Doodhwala/provider.css?v=20261028.2";
 const installCache = {
   async addAll(urls) {
     for (const asset of urls) await this.add(asset);
@@ -85,10 +85,10 @@ const queryAsset = await offlineResponse(origin + "/Doodhwala/styles.css?v=999",
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Doodhwala/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v99"'), "service worker cache revision must remain current");
+assert.ok(source.includes('const CACHE="doodhwala-v101"'), "service worker cache revision must remain current");
 assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
-assert.ok(source.includes('/Doodhwala/provider.js?v=20261027.1'), "the current seller authorization script must be explicitly precached");
-assert.ok(source.includes('/Doodhwala/provider.css?v=20261027.2'), "the current seller mobile navigation styles must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/provider.js?v=20261028.2'), "the current seller authorization script must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/provider.css?v=20261028.2'), "the current seller mobile navigation styles must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/styles.css?v=20261023.5'), "the current discovery styles must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/app.js?v=20261027.1'), "the current discovery runtime must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/customer-nav.js?v=20261027.1'), "the clean-route navigation runtime must be explicitly precached");
@@ -123,12 +123,12 @@ assert.ok(installWarnings.some(args => String(args[0]).includes("optional offlin
 
 assert.ok(source.includes('/Doodhwala/product.js?v=20261025.6'), "the guarded product detail runtime must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/store.js?v=20261025.4'), "the provider storefront runtime must be explicitly precached");
-assert.ok(source.includes('/Doodhwala/checkout.js?v=20261025.3'), "the checkout runtime must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/checkout.js?v=20261028.1'), "the checkout runtime must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261025.4'), "the shared milk transition stylesheet must be precached");
 assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261025.4'), "the shared milk transition runtime must be precached");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v99"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v101"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "unversioned mascot URL must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/customer-journey-refresh.css?v=20261025.1'), "exact checkout stylesheet variant must be precached");
@@ -141,7 +141,7 @@ assert.doesNotMatch(source, /keys\.filter\(k=>k!==CACHE\)/, "activation preserve
 let activationPromise;
 handlers.get("activate")({ waitUntil(promise) { activationPromise = promise; } });
 await activationPromise;
-assert.deepEqual(deletedCaches, ["doodhwala-v97"], "activation must delete only obsolete Doodhwala cache keys");
+assert.deepEqual(deletedCaches, ["doodhwala-v97", "doodhwala-v99", "doodhwala-v100"], "activation must delete only obsolete Doodhwala cache keys");
 assert.ok(cacheNames.includes("unrelated-origin-cache-test"), "unrelated cache remains in the shared origin");
 
 onlineMode = true;

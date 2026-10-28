@@ -60,16 +60,16 @@ assert.match(actual.placed, /Accept order/, "New orders must offer the primary n
 assert.match(actual.placed, /Decline order/, "New orders must offer a clearly named decline action.");
 assert.match(actual.delivered, /Delivered/, "Delivered orders must reach the final progress stage.");
 
-assert.ok(html.includes("provider.css?v=20261027.2"), "Seller page must load the latest order workflow CSS.");
-assert.ok(html.includes("provider.js?v=20261027.1"), "Seller page must load the latest order workflow JavaScript.");
+assert.ok(html.includes("provider.css?v=20261028.2"), "Seller page must load the latest order workflow CSS.");
+assert.ok(html.includes("provider.js?v=20261028.2"), "Seller page must load the latest order workflow JavaScript.");
 assert.match(css, /\.order-progress\{/, "Order progress must have its own layout.");
 assert.match(css, /\.order-reason-modal\{/, "Reason dialog must have a dedicated overlay.");
 assert.match(css, /@media\(max-width:700px\)/, "Order progress/dialog must adapt to mobile.");
 assert.match(css, /prefers-reduced-motion:reduce/, "New seller workflow styles must respect reduced motion.");
 assert.match(css, /focus-visible/, "Keyboard focus must be visible.");
-assert.match(worker, /doodhwala-v99/, "PWA cache version must change with updated seller assets.");
-assert.ok(worker.includes("/Doodhwala/provider.css?v=20261027.2"), "PWA must cache the versioned seller stylesheet.");
-assert.ok(worker.includes("/Doodhwala/provider.js?v=20261027.1"), "PWA must cache the versioned seller runtime.");
+assert.match(worker, /doodhwala-v101/, "PWA cache version must change with updated seller assets.");
+assert.ok(worker.includes("/Doodhwala/provider.css?v=20261028.2"), "PWA must cache the versioned seller stylesheet.");
+assert.ok(worker.includes("/Doodhwala/provider.js?v=20261028.2"), "PWA must cache the versioned seller runtime.");
 assert.match(workflow, /node scripts\/test-provider-simple-order-workflow\.mjs/, "New order workflow regression tests must run in static CI.");
 
 console.log("PASS: provider order progression, cancellation/decline reason dialog, safe reason rendering, filter counts, mobile/accessibility and offline asset contracts.");
