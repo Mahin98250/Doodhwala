@@ -242,6 +242,7 @@ function navigateHomeView(destination){
  if(destination==="providers"){browseMode="all";activeFilter=activeFilter||"all";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="saved"){browseMode="saved";render();$("providers")?.scrollIntoView({behavior:"smooth",block:"start"})}
  if(destination==="home"){browseMode="all";render();window.scrollTo({top:0,behavior:"smooth"})}
+ window.dispatchEvent(new CustomEvent("doodhwala:view-changed",{detail:{view:destination}}));
 }
 window.__doodhwalaNavigate=navigateHomeView;
 
