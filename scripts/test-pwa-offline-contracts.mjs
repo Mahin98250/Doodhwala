@@ -39,6 +39,8 @@ assert.match(networkStatus, /Refresh if any information looks out of date/,
 
 
 const sharedUiAsset = "/Doodhwala/experience-layer.css?v=20261028.3";
+const coreAssetsMatch = sw.match(/const CORE_ASSETS=\[(.*?)\];/s);
+assert.ok(coreAssetsMatch && coreAssetsMatch[1].includes(sharedUiAsset), "shared UI stylesheet must be a required core offline asset");
 const routeAliases = [
   ["index.html", null],
   ["auth.html", "auth/index.html"],
