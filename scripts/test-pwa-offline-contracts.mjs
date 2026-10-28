@@ -61,9 +61,11 @@ const routeAliases = [
 for (const [rootPage, aliasPage] of routeAliases) {
   const rootMarkup = fs.readFileSync(new URL("../" + rootPage, import.meta.url), "utf8");
   assert.ok(rootMarkup.includes(sharedUiAsset), rootPage + " must load the versioned shared UI layer");
+  assert.ok(rootMarkup.includes(cleanUiAsset), rootPage + " must load the final clean UI stylesheet");
   if (aliasPage) {
     const aliasMarkup = fs.readFileSync(new URL("../" + aliasPage, import.meta.url), "utf8");
     assert.ok(aliasMarkup.includes(sharedUiAsset), aliasPage + " must load the versioned shared UI layer");
+    assert.ok(aliasMarkup.includes(cleanUiAsset), aliasPage + " must load the final clean UI stylesheet");
     assert.equal(aliasMarkup, rootMarkup, aliasPage + " must stay in parity with " + rootPage);
   }
 }
