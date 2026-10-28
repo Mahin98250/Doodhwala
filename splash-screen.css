@@ -1,0 +1,28 @@
+/* Doodhwala branded app-start reveal */
+.dw-splash[hidden]{display:none!important}
+.dw-splash{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;overflow:hidden;padding:24px;background:radial-gradient(ellipse at 50% 36%,#fafffb 0%,#f0f8f1 48%,#e0f0e4 100%);color:#10482f;opacity:1;visibility:visible;transition:opacity .42s ease,visibility .42s ease}
+.dw-splash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+.dw-splash::before,.dw-splash::after{content:"";position:absolute;border:1px solid rgba(23,96,63,.1);border-radius:50%;aspect-ratio:1;pointer-events:none}
+.dw-splash::before{width:min(94vw,650px);animation:dw-splash-orbit 2.8s ease-out both}
+.dw-splash::after{width:min(75vw,500px);animation:dw-splash-orbit 2.8s .12s ease-out both}
+.dw-splash-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0;animation:dw-splash-arrive .8s cubic-bezier(.2,.8,.2,1) both}
+.dw-splash-mascot-wrap{position:relative;display:grid;place-items:center;width:clamp(112px,31vw,172px);aspect-ratio:1;margin-bottom:19px}
+.dw-splash-mascot-wrap::before{content:"";position:absolute;inset:5%;border-radius:38%;background:linear-gradient(145deg,#fff,#e4f4e8);box-shadow:0 20px 60px rgba(16,72,47,.13),inset 0 1px 0 #fff;transform:rotate(-5deg);animation:dw-splash-tile 1.1s cubic-bezier(.2,.8,.2,1) both}
+.dw-splash-mascot{position:relative;width:82%;height:82%;object-fit:contain;filter:drop-shadow(0 9px 12px rgba(13,70,42,.12));animation:dw-splash-mascot-in .85s .08s cubic-bezier(.2,.9,.25,1.2) both}
+.dw-splash-milk{position:absolute;bottom:2%;left:50%;width:160%;height:23%;transform:translateX(-50%);overflow:visible}
+.dw-splash-milk path{fill:none;stroke:#fff;stroke-width:8;stroke-linecap:round;stroke-dasharray:210;stroke-dashoffset:210;filter:drop-shadow(0 3px 3px rgba(24,93,52,.08));animation:dw-splash-pour .9s .32s ease-out forwards}
+.dw-splash-wordmark{margin:0;font-family:Manrope,"DM Sans",system-ui,sans-serif;font-size:clamp(35px,9vw,58px);font-weight:800;letter-spacing:-.075em;line-height:1;color:#10482f;opacity:0;transform:translateY(10px);animation:dw-splash-wordmark .55s .36s ease-out forwards}
+.dw-splash-tagline{margin:12px 0 0;font-size:clamp(10px,2.8vw,13px);font-weight:700;letter-spacing:.19em;text-transform:uppercase;color:#48745a;opacity:0;animation:dw-splash-tagline .5s .58s ease-out forwards}
+.dw-splash-progress{width:72px;height:3px;margin-top:27px;overflow:hidden;border-radius:999px;background:#d8e9dc;opacity:0;animation:dw-splash-tagline .3s .7s ease-out forwards}
+.dw-splash-progress::after{content:"";display:block;width:40%;height:100%;border-radius:inherit;background:#17603f;animation:dw-splash-progress .9s .72s ease-in-out both}
+.dw-splash-skip{position:absolute;right:20px;bottom:calc(18px + env(safe-area-inset-bottom,0px));border:1px solid rgba(23,96,63,.16);border-radius:999px;padding:9px 14px;background:rgba(255,255,255,.68);color:#315e42;font:600 12px inherit;cursor:pointer}
+@keyframes dw-splash-arrive{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes dw-splash-tile{from{transform:rotate(-13deg) scale(.82)}to{transform:rotate(-5deg) scale(1)}}
+@keyframes dw-splash-mascot-in{from{opacity:0;transform:translateY(13px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes dw-splash-pour{to{stroke-dashoffset:0}}
+@keyframes dw-splash-wordmark{to{opacity:1;transform:translateY(0)}}
+@keyframes dw-splash-tagline{to{opacity:1}}
+@keyframes dw-splash-progress{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
+@keyframes dw-splash-orbit{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}
+@media(max-height:650px){.dw-splash-mascot-wrap{width:clamp(86px,22vh,130px);margin-bottom:13px}.dw-splash-tagline{margin-top:8px}.dw-splash-progress{margin-top:17px}}
+@media(prefers-reduced-motion:reduce){.dw-splash,.dw-splash *{animation:none!important;transition:none!important}.dw-splash-wordmark,.dw-splash-tagline,.dw-splash-progress{opacity:1;transform:none}.dw-splash-milk path{stroke-dashoffset:0}}
