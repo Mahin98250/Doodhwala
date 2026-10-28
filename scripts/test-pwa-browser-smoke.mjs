@@ -158,8 +158,10 @@ try {
         heading: document.querySelector("h1")?.textContent?.trim() || ""
       }));
       assert.ok(layout.cleanUiLink,
-        name + " must include the final shared clean UI layer; URL=" + layout.pageUrl +
-        "; stylesheet hrefs=" + JSON.stringify(layout.stylesheetHrefs));
+        name + " must include the final shared clean UI layer; target=" + target +
+        "; URL=" + layout.pageUrl +
+        "; stylesheet hrefs=" + JSON.stringify(layout.stylesheetHrefs) +
+        "; failedRequests=" + JSON.stringify(failedVisualRequests));
       assert.equal(layout.horizontalOverflow, false,
         name + " " + viewport.name + " layout must not overflow horizontally (document " +
         layout.documentWidth + "px / viewport " + layout.viewportWidth + "px)");
