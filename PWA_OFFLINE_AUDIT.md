@@ -5,7 +5,7 @@
 ## Findings and fixes
 
 ### PWA-001 — exact asset variants must be precached
-Checkout requests `/Doodhwala/customer-journey-refresh.css?v=20261025.1`; an older customer UI polish URL is `/Doodhwala/customer-ui-polish.css?v=20261025.3`; customer pages also request the mascot without a query string. The worker now includes those exact URLs alongside newer variants. The current cache name on main at the 2026-10-28 review is `doodhwala-v105`; the current `sw.js` blob is `0037577e51a9bf6ffb29bd5b83128e54f23a4c82`. Cache-version references in this audit should be refreshed whenever the service-worker revision advances.
+Checkout requests `/Doodhwala/customer-journey-refresh.css?v=20261025.1`; an older customer UI polish URL is `/Doodhwala/customer-ui-polish.css?v=20261025.3`; customer pages also request the mascot without a query string. The worker includes those exact URLs alongside newer variants. At the historical main snapshot `ad49f2c32ad49d396b9d7abf0719f9cbf4a392ad`, the cache was `doodhwala-v105` (`sw.js` blob `0037577e51a9bf6ffb29bd5b83128e54f23a4c82`). Main has since advanced to `c8ca3ef7f4a849be315321d79264c242615bf855`, whose worker declares `doodhwala-v108` (`sw.js` blob `6940fd52ec4aaf54a30d2584a28005af8ec0f1f6`). The milk-transition CSS/JS query version remains `20261027.8` in the reviewed worker. Treat version values as commit-scoped evidence and refresh them whenever the worker revision advances.
 
 ### PWA-002 — only Doodhwala cache keys may be removed
 Activation now deletes obsolete keys only when they begin with `doodhwala-`. Unrelated Cache Storage entries on the shared `mahin98250.github.io` origin are preserved.
@@ -24,10 +24,11 @@ The worker now awaits `cache.put(event.request, response.clone())` for successfu
 
 ## Evidence snapshot — 2026-10-28
 
-- Current main SHA reviewed: `ad49f2c32ad49d396b9d7abf0719f9cbf4a392ad`.
-- Current service-worker cache: `doodhwala-v105`; milk-transition CSS/JS query version: `20261027.8`.
+- Historical main SHA used for the v105 review: `ad49f2c32ad49d396b9d7abf0719f9cbf4a392ad`; this snapshot is not the latest main.
+- Latest main SHA checked during this audit refresh: `c8ca3ef7f4a849be315321d79264c242615bf855`, with cache `doodhwala-v108`. The milk-transition CSS/JS query version is `20261027.8` in that worker.
+- Documentation PR exact head: `fe4ec35654a14ebb70ca88cbe0b9ae27e9d22aa6`; static validation **PASS** [run 40678674862](https://github.com/Mahin98250/Doodhwala/actions/runs/40678674862), in-app notification validation **PASS** [run 40678674850](https://github.com/Mahin98250/Doodhwala/actions/runs/40678674850), and SQL migration validation **PASS** [run 40678674878](https://github.com/Mahin98250/Doodhwala/actions/runs/40678674878). These checks do not establish physical-device or authenticated-staging behavior.
 - PR #113 merged head `a1af2ff92794310792ce92f170b7c4aecbf78f9b`: **PASS** static [run 40614198562](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198562), Chromium PWA [run 40614198400](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198400), SQL [run 40614198410](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198410), notifications [run 40614198412](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198412).
-- PR #117 head `57e3b4d179f6e4eec1f3993be371bb636cdea7c2): **PASS** static [run 40663395330](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395330), notifications [run 40663395343](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395343), SQL [run 40663395326](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395326). PR #117 added a contract assertion for the homepage refresh stylesheet; it does not prove full route-to-manifest consistency.
+- PR #117 head `57e3b4d179f6e4eec1f3993be371bb636cdea7c2`: **PASS** static [run 40663395330](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395330), notifications [run 40663395343](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395343), SQL [run 40663395326](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395326). PR #117 added a contract assertion for the homepage refresh stylesheet; it does not prove full route-to-manifest consistency.
 - PR #90 remains open/draft with stale v95 expectations and a duplicate older workflow filename. The service-worker browser smoke, source-contract tests and service-worker test files are present on main with newer contracts. Do not merge #90 as-is; inspect/port only any genuinely unique test behavior.
 - Physical Android/iOS, installed-PWA update with an older tab open, and manual freshness after reconnect remain **NOT RUN / BLOCKED**. Browser automation uses isolated local browser storage and is not authenticated E2E evidence.
 - GitHub Pages deployment evidence must be recorded separately from Vercel preview status; a passing browser workflow does not prove a current production deployment.
@@ -37,7 +38,8 @@ The worker now awaits `cache.put(event.request, response.clone())` for successfu
 - Test physical Android and iOS devices and an installed PWA update while an older tab remains open.
 - After reconnect, manually refresh and confirm fresh seller/page content appears.
 - Browser automation does not establish real authentication, payment or order-submission behavior.
-- Vercel preview is not required for this local offline test and remains subject to the existing free-tier deployment rate limit.
+- Vercel preview is not required for this local offline test. The preview attempt separately **FAILED** because the Vercel daily build/deployment rate limit was reached (`api-deployments-free-per-day`); this is not a GitHub Actions test result.
+- Exact-head GitHub Pages deployment status for latest main is **NOT VERIFIED** in this audit; do not infer a live deployment from local browser automation or Vercel status.
 
 ## Safety
 
