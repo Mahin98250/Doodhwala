@@ -171,7 +171,7 @@ The payment foundation introduces a server-owned `payment_transactions` ledger a
 
 ### Payment security and release status
 
-A read-only audit of the connected Doodhwala Supabase project found that the payment migrations and `doodhwala-pay` function are not deployed there yet. Direct seller UPI is not bank-verified, and the project is not approved for real-money/high-volume use. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md) for verified findings, hardening changes, and launch gates.
+A historical 2026-10-23 read-only audit found the payment foundation absent at that time. A later 2026-10-28 read-only check found direct-seller payment settings, audit and seller-attestation RPCs on production; the proposed atomic checkout RPC and inspected seller-billing tables were absent. This does not establish functional readiness. Direct seller UPI is not bank-verified, and the project is not approved for real-money/high-volume use. See [PAYMENT_SECURITY_READINESS.md](./PAYMENT_SECURITY_READINESS.md) and [the dated staging baseline](./docs/STAGING_BASELINE.md) for findings and launch gates.
 
 **Important launch boundary:** the automated `doodhwala-pay` gateway foundation is not live and does not collect or move money (`gateway_ready: false`, `money_moved: false`). Direct seller UPI is a separate manual-confirmation flow: money is intended to go from the customer's UPI app to the seller's UPI address, but Doodhwala cannot independently verify bank settlement. Automated collection/verification remains disabled until a suitable acquiring/payment provider or official merchant/bank integration is configured with server-side secrets, verified signed webhooks, replay protection, reconciliation, failure/refund handling, and required reviews. Never collect card numbers, CVV, UPI PINs, or banking passwords in Doodhwala. Never mark an order paid from a browser redirect or client callback alone.
 
@@ -185,7 +185,11 @@ Before enabling live collection:
 
 The current API explicitly reports `gateway_ready: false` and `money_moved: false`; an intent is not proof of payment.
 
+### Seller monthly plan preview
 
+The owner-selected alternatives are ₹2,000/month for a normal listing or ₹3,500/month **total** for a listing with a text-only “Recommended by Doodhwala · Sponsored” in-app label. See the [pricing preview](./seller-plans.html). Customer milk payments go directly to sellers; seller fees are separate.
+
+The seller/admin billing screens and sponsored-card renderer are development work adapted to the existing [billing PR #71](https://github.com/Mahin98250/Doodhwala/pull/71). Their server rollout and eligibility SQL is [deferred and default-off](./supabase/deferred/README.md); the plans, payments and sponsored benefit are **not launched**. No migration or real payment is authorized by this preview. This branch also contains a proposed atomic-checkout migration that revokes legacy RPC grants; deploying it without a coordinated client/rollback and job audit could interrupt orders. Do not merge or deploy these changes without reviewing the [manual pilot and release gates](./docs/MANUAL_CONFIRMATION_PILOT.md).
 
 ## Scalability roadmap — one app, managed infrastructure
 
@@ -213,7 +217,7 @@ flowchart TD
 
 ### Current verified baseline (2026-10-24)
 
-- The production-connected Supabase migration history currently ends at `20261013164921`. Later repository migrations—including payment foundation and newer query-index work—are not evidence of production deployment. Reconcile migration history and test the sequence in an isolated staging project before applying changes to production.
+- A historical 2026-10-24 audit found a migration-history cutoff at `20261013164921`; a later read-only check observed direct-payment migration entries in production dated 2026-10-27. Neither repository files nor a historical cutoff prove current deployment or safety. Reconcile the target's actual migration history and schema and test the sequence in an authorized isolated staging project before applying changes to production.
 - The repository contains a bounded nearby-provider search migration, order-capacity query indexes, and an existing manual staging-only k6 workflow for the read-only discovery RPC. The workflow's proposed load profile ramps through 1, 5, 10, 25 and 50 requests/second; it has **not been run against a configured staging project**, so it proves no achieved capacity.
 - Order creation already has a trusted RPC with server-side pricing and an idempotency key, plus seller capacity checks. Keep its locking/capacity semantics safe while optimizing query cost; do not trade correctness for raw throughput.
 - Supabase Realtime is used for order/provider experiences and requires a separate connection, fan-out and reconnect test.

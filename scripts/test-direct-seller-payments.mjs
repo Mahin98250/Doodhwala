@@ -11,6 +11,9 @@ const pendingOnly = read("supabase/migrations/20261022154000_doodhwala_direct_up
 const readiness = read("supabase/migrations/20261023050000_doodhwala_payment_controls_readiness.sql");
 const approvalGuard = read("supabase/migrations/20261023100000_doodhwala_recheck_seller_approval_for_upi.sql");
 const checkout = read("checkout.js");
+const checkoutExtension = read("checkout-10x.js");
+const customerNav = read("customer-nav.js");
+const atomicCheckoutMigration = read("supabase/migrations/20261028100000_doodhwala_atomic_manual_checkout.sql");
 const checkoutHtml = read("checkout.html");
 const provider = read("provider.js");
 const providerHtml = read("provider.html");
@@ -47,7 +50,14 @@ assert.ok(paymentWriteGuard.includes("payment_fields_require_authorized_rpc"), "
 assert.ok(paymentWriteGuard.includes("current_setting('doodhwala.payment_rpc', true)"), "payment field changes require the trusted transaction capability");
 assert.ok(paymentWriteGuard.includes("set_config('doodhwala.payment_rpc','on',true)"), "ownership-checked RPCs must set the transaction-local capability");
 assert.match(checkout, /customer_check_provider_direct_upi/);
-assert.match(checkout, /customer_set_order_payment_method/);
+assert.match(checkout, /customer_create_order_with_payment/, "checkout must create the order and payment choice atomically");
+assert.doesNotMatch(checkout, /rpc\("customer_set_order_payment_method"/, "checkout must not use a separate payment-choice request");
+assert.doesNotMatch(checkout + checkoutExtension, /rpc\(["'](?:create_order|create_order_with_promo)["']/, "no client checkout path may call legacy order creation");
+assert.doesNotMatch(customerNav, /loadScriptOnce\([^\n]*checkout-10x\.js/, "navigation must not inject the old promo interceptor");
+assert.match(checkoutHtml, /Promo codes are paused/);
+assert.match(checkoutHtml, /customer-nav\.js\?v=20261028\.1/, "checkout navigation must use a new cache key");
+assert.match(atomicCheckoutMigration, /create_order_with_promo/);
+assert.match(atomicCheckoutMigration, /atomic_checkout_legacy_privilege_remains/, "the migration must reject inherited legacy grants");
 assert.match(checkout, /paymentMethod/);
 assert.match(checkoutHtml, /value="direct_upi"/);
 assert.match(checkoutHtml, /value="cod"/);

@@ -1,0 +1,4 @@
+/* Text-only paid placement; no ranking changes or graphical advertisement. */
+.sponsored-seller-copy{display:grid;gap:4px;margin:11px 0 3px;padding:10px 11px;border:1px solid #d9e9db;border-radius:11px;background:#f3faf4;color:#23583a}
+.sponsored-seller-copy b{font-size:10px;line-height:1.35;font-weight:900;letter-spacing:.01em}
+.sponsored-seller-copy small{font-size:10px;line-height:1.45;color:#64766a}
