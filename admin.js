@@ -410,6 +410,7 @@ async function loadSection(next){
   if(section==="orders"){await loadOrdersSection();return;}
   if(section==="support"){await loadSupportTicketsSection();return;}
   if(section==="providers"){await loadProvidersSection();return}
+  if(section==="seller-billing"){await window.loadSellerBillingAdmin({host:$("adminContent"),rpc:adminRpc,db:Doodhwala.supabase,escape:esc,toast,isCurrent:()=>section==="seller-billing"});return}
   if(section==="customers"){cache.customers=await adminRpc("admin_list_customers",{p_limit:150});table("Customers",[["Customer",r=>"<button data-customer='"+esc(r.id)+"'>"+esc(r.full_name||"—")+"</button>"],["Email",r=>esc(r.email||"—")],["Phone",r=>esc(r.phone||"—")],["Orders",r=>r.order_count],["Active plans",r=>r.active_plan_count],["Joined",r=>dateText(r.created_at)]],cache.customers);$("adminContent").querySelectorAll("[data-customer]").forEach(b=>b.onclick=()=>showCustomerDetail(b.dataset.customer));return}
   if(section==="subscriptions"){cache.subscriptions=await adminRpc("admin_list_subscriptions",{p_limit:150});table("Subscriptions",[["Customer",r=>esc(r.customer_name||"—")],["Provider",r=>esc(r.provider_name||"—")],["Milk",r=>esc(r.product_name||"—")],["Status",r=>'<span class="admin-status '+esc(r.status)+'">'+esc(r.status)+'</span>'],["Qty",r=>Number(r.quantity_litres||0)+" L"],["Period",r=>dateText(r.start_date)+" → "+dateText(r.end_date)],["Deliveries",r=>r.delivery_count],["Action",r=>'<button data-subscription="'+esc(r.id)+'">View</button>']],cache.subscriptions);$("adminContent").querySelectorAll("[data-subscription]").forEach(b=>b.onclick=()=>showSubscriptionDetail(b.dataset.subscription));return}
   if(section==="products"){await loadProductsSection();return}
@@ -514,7 +515,7 @@ if($("adminMore"))$("adminMore").onclick=function(){
  const existing=$("adminMoreMenu");if(existing){existing.remove();return}
  const menu=document.createElement("div");menu.id="adminMoreMenu";
  menu.style.cssText="position:fixed;z-index:10001;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));width:min(250px,calc(100vw - 24px));padding:10px;border:1px solid #d7dfd8;border-radius:16px;background:#fff;box-shadow:0 14px 36px rgba(13,37,23,.22);display:grid;gap:5px";
- [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
+ [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Seller billing","seller-billing"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
  const button=document.createElement("button");button.type="button";button.textContent=item[0];
  button.style.cssText="padding:12px;border:0;border-radius:10px;background:#f5f8f5;color:#17251c;text-align:left;font:700 13px system-ui;cursor:pointer";
  button.onclick=()=>{menu.remove();if(item[1]==="search"){const input=$("adminSearch");if(input){input.focus();input.select()}}else navTo(item[1])};

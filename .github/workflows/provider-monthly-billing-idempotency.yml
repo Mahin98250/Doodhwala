@@ -1,0 +1,55 @@
+name: Provider monthly billing idempotency validation
+
+on:
+  push:
+    branches: [main, feat/provider-monthly-billing]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  provider-invoice-idempotency:
+    name: Validate one provider invoice per calendar month
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_invoice_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_invoice_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_invoice_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Create isolated synthetic billing schema
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-fixture.sql
+      - name: Apply provider invoice idempotency migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql
+      - name: Verify retry idempotency, period boundaries and fail-closed admin guard
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-assertions.sql
+
+  provider-billing-static:
+    name: Validate provider billing contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test provider monthly billing security contracts
+        run: node scripts/test-provider-monthly-billing.mjs

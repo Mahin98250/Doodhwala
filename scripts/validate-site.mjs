@@ -61,11 +61,12 @@ if(localFiles.has("/provider.css")){
   const providerCssText=fs.readFileSync(providerCssPath,"utf8");
   if(!providerCssText.includes("padding-bottom:calc(82px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile content must clear the safe-area-aware bottom navigation");
   if(!providerCssText.includes("height:calc(70px + env(safe-area-inset-bottom,0px))")) errors.push("provider.css -> seller mobile navigation must respect device safe-area inset");
-  if(!providerCssText.includes("grid-template-columns:repeat(7,minmax(0,1fr))")) errors.push("provider.css -> all seven seller navigation destinations must remain visible on mobile");
+  if(!providerCssText.includes(".provider-mobile-nav{display:flex;overflow-x:auto;overscroll-behavior-x:contain}")) errors.push("provider.css -> eight seller navigation destinations must remain horizontally scrollable on mobile");
+  if(!providerCssText.includes(".provider-mobile-nav button{flex:1 0 58px;min-width:58px}")) errors.push("provider.css -> mobile navigation buttons must preserve a usable 58px minimum width");
   const providerHtml=fs.readFileSync(path.join(root,"provider.html"),"utf8");
-  if(!providerHtml.includes('/Doodhwala/provider.css?v=20261027.2')) errors.push("provider.html -> seller mobile CSS cache version stale");
+  if(!providerHtml.includes('/Doodhwala/provider.css?v=20261028.2')) errors.push("provider.html -> seller mobile CSS cache version stale");
   const providerSw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!providerSw.includes('/Doodhwala/provider.css?v=20261027.2')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
+  if(!providerSw.includes('/Doodhwala/provider.css?v=20261028.2')) errors.push("sw.js -> latest seller mobile CSS missing from offline precache");
 }else errors.push("required seller mobile stylesheet missing /provider.css");
 
 const sessionControlsPath=path.join(root,"session-controls.js");
@@ -129,14 +130,14 @@ if(fs.existsSync(providerHtmlPath)){
   if(!providerHtml.includes('data-view="subscriptions"')) errors.push("provider.html -> subscriptions navigation missing");
   if(!providerHtml.includes('id="view-subscriptions"')) errors.push("provider.html -> subscriptions view missing");
   if(!providerHtml.includes("provider.js?v=")) errors.push("provider.html -> provider bundle cache bust missing");
-  if(!providerHtml.includes("/Doodhwala/provider.js?v=20261027.1")) errors.push("provider.html -> provider feed runtime cache version stale");
+  if(!providerHtml.includes("/Doodhwala/provider.js?v=20261028.2")) errors.push("provider.html -> provider feed runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes("/Doodhwala/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
-  if(!swText.includes("/Doodhwala/provider.js?v=20261027.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
+  if(!swText.includes("/Doodhwala/provider.js?v=20261028.2")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Doodhwala/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v105"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v106"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -173,11 +174,11 @@ if(localFiles.has("/admin.js")){
   ]) if(!adminJs.includes(required)) errors.push("admin live sync -> missing integration contract "+required);
 }
 const adminHtmlPath=path.join(root,"admin.html");
-if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261028.2")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v105"')) errors.push("sw.js -> admin live-sync cache revision stale");
-  if(!swText.includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
+  if(!swText.includes('const CACHE="doodhwala-v106"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes("/Doodhwala/admin.js?v=20261028.2")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
 if(!localFiles.has(adminRealtimeMigration)) errors.push("admin live-sync migration missing");
@@ -222,7 +223,7 @@ if(fs.existsSync(path.join(root,"provider.js"))&&fs.readFileSync(path.join(root,
 if(fs.existsSync(path.join(root,"checkout.js"))&&!fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes("readObjectStorage")) errors.push("checkout.js -> safe cart storage recovery missing");
 if(localFiles.has("/checkout.js")){
   const checkoutText=fs.readFileSync(path.join(root,"checkout.js"),"utf8");
-  for(const contract of ["let savedAddressId=null;","from(\"addresses\").update(row)",".eq(\"user_id\",sessionUser.id)","validCoordinates(latitude,longitude)","let placingOrder=false;","We couldn't finish checkout because of a connection problem.","Retry remaining orders →"])
+  for(const contract of ["let savedAddressId=null;","from(\"addresses\").update(row)",".eq(\"user_id\",sessionUser.id)","validCoordinates(latitude,longitude)","let placingOrder=false;","We couldn't confirm checkout. Check Orders before retrying; your cart and request key are kept where possible.","Retry order →"])
     if(!checkoutText.includes(contract)) errors.push("checkout.js -> missing P0 checkout reliability contract "+contract);
 }
 if(localFiles.has("/orders.js")){
@@ -233,12 +234,12 @@ if(localFiles.has("/orders.js")){
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Doodhwala/orders/">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
-  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("checkout.html -> checkout runtime cache version stale");
+  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261028.1')) errors.push("checkout.html -> checkout runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v105"')) errors.push("sw.js -> P0 checkout cache revision missing");
-  if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
+  if(!swP0.includes('const CACHE="doodhwala-v106"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('/Doodhwala/checkout.js?v=20261028.1')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
@@ -251,7 +252,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
   const adminHtml=fs.readFileSync(path.join(root,"admin.html"),"utf8");
   if(!adminHtml.includes('data-section="health"')) errors.push("admin.html -> System Health navigation missing");
   if(!adminHtml.includes('data-section="support"')) errors.push("admin.html -> support inbox navigation missing");
-  if(!adminHtml.includes('admin.js?v=20261022.3')) errors.push("admin.html -> admin runtime cache version stale");
+  if(!adminHtml.includes('admin.js?v=20261028.2')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
   if(file==="/offline.html"||file==="/offline/index.html") continue; // Keep the offline recovery page independent of app bootstrapping.
