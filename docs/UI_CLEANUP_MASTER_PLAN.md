@@ -269,3 +269,11 @@ Reuse existing brand values where sensible rather than inventing a second palett
 - Advanced the service-worker cache revision to `doodhwala-v106` and aligned the PWA contracts with the new exact asset URL.
 - Added source-contract checks requiring each public route family and its directory alias to load the shared stylesheet and remain byte-for-byte equivalent.
 - Automated checks still need to run against the final candidate SHA; rendered screenshots, physical-device QA, and authenticated staging journeys remain separate and are not inferred from source contracts.
+
+
+## 9. Shared presentation layer — 28 October 2026
+
+- Added `clean-ui.css?v=20261028.1` as the final stylesheet on 12 route families (23 HTML entry points counting root pages and directory aliases), so common controls/surfaces receive consistent polish without replacing each page's structural layout.
+- Standardizes focus rings, form controls, primary-action states, restrained surface elevation, modal glass, and reduced-motion behavior. Uses local CSS only; no new dependency, remote font, or paid API.
+- The service worker treats the stylesheet as a required core asset so cached route shells retain shared styling offline.
+- Updated service-worker/PWA assertions for the exact stylesheet URL and cache evidence. Visual QA still requires rendered screenshots; source contracts do not substitute for physical-device checks or authenticated staging E2E.

@@ -158,3 +158,4 @@ assert.equal(await networkResponse.text(), "fresh network body", "successful net
 assert.equal(cachePutFinished, true, "network response must not resolve before cache.put completes");
 assert.equal(cache.get(origin + "/Doodhwala/orders.html?filter=active"), "fresh network body", "exact query-string URL must be persisted in Cache Storage");
 assert.ok(source.includes('/Doodhwala/experience-layer.css?v=20261028.3'), "shared experience stylesheet must be precached");
+assert.ok(source.includes('/Doodhwala/clean-ui.css?v=20261028.1'), "final clean UI stylesheet must be precached");

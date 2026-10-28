@@ -13,7 +13,8 @@ for (const asset of [
   "/Doodhwala/customer-ui-polish.css?v=20261025.3",
   "/Doodhwala/assets/mascot.png",
   "/Doodhwala/splash-screen.css?v=20261028.2",
-  "/Doodhwala/splash-screen.js?v=20261028.2"
+  "/Doodhwala/splash-screen.js?v=20261028.2",
+  "/Doodhwala/clean-ui.css?v=20261028.1"
 ]) {
   assert.ok(sw.includes(asset), "exact customer-facing URL must be precached: " + asset);
 }
@@ -41,6 +42,8 @@ assert.match(networkStatus, /Refresh if any information looks out of date/,
 const sharedUiAsset = "/Doodhwala/experience-layer.css?v=20261028.3";
 const coreAssetsMatch = sw.match(/const CORE_ASSETS=\[(.*?)\];/s);
 assert.ok(coreAssetsMatch && coreAssetsMatch[1].includes(sharedUiAsset), "shared UI stylesheet must be a required core offline asset");
+const cleanUiAsset = "/Doodhwala/clean-ui.css?v=20261028.1";
+assert.ok(coreAssetsMatch && coreAssetsMatch[1].includes(cleanUiAsset), "clean UI stylesheet must be a required core offline asset");
 const routeAliases = [
   ["index.html", null],
   ["auth.html", "auth/index.html"],
