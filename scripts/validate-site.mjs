@@ -173,11 +173,11 @@ if(localFiles.has("/admin.js")){
   ]) if(!adminJs.includes(required)) errors.push("admin live sync -> missing integration contract "+required);
 }
 const adminHtmlPath=path.join(root,"admin.html");
-if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
+if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261028.2")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swText.includes('const CACHE="doodhwala-v106"')) errors.push("sw.js -> admin live-sync cache revision stale");
-  if(!swText.includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
+  if(!swText.includes("/Doodhwala/admin.js?v=20261028.2")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
 if(!localFiles.has(adminRealtimeMigration)) errors.push("admin live-sync migration missing");
@@ -251,7 +251,7 @@ if(fs.existsSync(path.join(root,"admin.html"))){
   const adminHtml=fs.readFileSync(path.join(root,"admin.html"),"utf8");
   if(!adminHtml.includes('data-section="health"')) errors.push("admin.html -> System Health navigation missing");
   if(!adminHtml.includes('data-section="support"')) errors.push("admin.html -> support inbox navigation missing");
-  if(!adminHtml.includes('admin.js?v=20261022.3')) errors.push("admin.html -> admin runtime cache version stale");
+  if(!adminHtml.includes('admin.js?v=20261028.2')) errors.push("admin.html -> admin runtime cache version stale");
 }
 for(const file of htmlFiles){
   if(file==="/offline.html"||file==="/offline/index.html") continue; // Keep the offline recovery page independent of app bootstrapping.
