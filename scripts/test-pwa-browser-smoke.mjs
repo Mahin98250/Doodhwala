@@ -158,6 +158,25 @@ try {
         "; status=" + (routeResponse?.status() ?? "no response") +
         "; finalURL=" + visualPage.url() +
         "; failedRequests=" + JSON.stringify(failedVisualRequests));
+
+      // Capture the page after the branded intro is dismissed, not while it
+      // covers the underlying layout. This is visual evidence only: external
+      // backend/CDN requests remain blocked in this static route-layout smoke.
+      if (name === "home") {
+        const skipIntro = visualPage.getByRole("button", { name: /skip intro/i });
+        await skipIntro.waitFor({ state: "visible", timeout: 1500 }).catch(() => {});
+        if (await skipIntro.isVisible().catch(() => false)) {
+          await skipIntro.click();
+          await visualPage.waitForFunction(() => {
+            const splash = document.getElementById("dwSplash");
+            return !splash || splash.hidden;
+          }, { timeout: 2000 });
+        }
+      }
+      await visualPage.evaluate(async () => {
+        if (document.fonts?.ready) await document.fonts.ready;
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
       const layout = await visualPage.evaluate(() => ({
         viewportWidth: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
