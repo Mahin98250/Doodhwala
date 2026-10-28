@@ -5,6 +5,7 @@ const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "
 const profile = read("profile/index.html");
 const editor = read("profile/details/index.html");
 const runtime = read("profile-details.js");
+const nav = read("customer-nav.js");
 const migrations = fs.readdirSync(new URL("../supabase/migrations/", import.meta.url));
 const completionMigration = read("supabase/migrations/20261011151730_fix_customer_profile_phone_regex.sql");
 const completionBase = read("supabase/migrations/20261008031000_customer_oauth_profile_completion.sql");
