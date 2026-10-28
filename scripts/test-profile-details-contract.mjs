@@ -14,7 +14,7 @@ assert.match(profile, /href=["']\/Doodhwala\/profile\/details\/["'][^>]*>[\s\S]*
   "Personal details must open the dedicated editor route");
 assert.match(editor, /<form[^>]+id=["']personalDetailsForm["']/i, "Editor must expose a real personal details form");
 for (const id of ["fullName", "phone", "addressLine", "areaName", "city", "pinCode", "saveProfile", "formMessage"]) {
-  assert.ok(new RegExp('id=["'] + id + '["']').test(editor), "Editor is missing required control: " + id);
+  assert.ok(new RegExp(`id=[\"']${id}[\"']`).test(editor), "Editor is missing required control: " + id);
 }
 assert.match(editor, /auth\.getSession\(\)/, "Editor must require an authenticated session");
 assert.match(editor, /\.from\(["']profiles["']\)[\s\S]*?\.eq\(["']id["'],\s*user\.id\)/,
