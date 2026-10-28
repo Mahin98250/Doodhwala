@@ -1,5 +1,6 @@
 /* Doodhwala app-start signature — lightweight, responsive and reduced-motion aware. */
 .dw-splash[hidden]{display:none!important}
+body.dw-splash-active{overflow:hidden}
 .dw-splash{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;overflow:hidden;isolation:isolate;padding:24px max(20px,env(safe-area-inset-left)) 24px max(20px,env(safe-area-inset-right));background:radial-gradient(ellipse at 50% 35%,#fff 0%,#f7fcf8 25%,#eef7f0 63%,#e1f0e5 100%);color:#10482f;opacity:1;visibility:visible;transition:opacity .38s cubic-bezier(.2,.7,.2,1),visibility .38s;contain:layout paint}
 .dw-splash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
 .dw-splash-ambient{position:absolute;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
