@@ -203,7 +203,7 @@ All route entry points below were read at baseline `46b48d20c896bee9f96902d2fc2f
 |---|---|---|
 | Tracked repository inventory | **Complete** | 237 tracked files inventoried; user-facing HTML/CSS/JS and CI/PWA areas identified |
 | Main route and style/script imports | **Complete for listed public route HTML** | 13 route families mapped above, including root and directory-style aliases |
-| Root/clean-route entry-point content parity | **Source-verified for the 11 listed aliases** | Matching Git blob SHAs observed for root HTML and corresponding `index.html` files |
+| Root/clean-route entry-point content parity | **Source-verified for the 12 listed aliases** | Matching Git blob SHAs observed for root HTML and corresponding `index.html` files |
 | Initial CSS token/layer ownership | **Source-reviewed** | Base tokens plus `--market-*` and `--retail-*` extensions, broad interaction layer, high specificity customer overrides |
 | Service-worker asset manifest vs route imports | **Finding identified; automated proof pending** | `marketplace-refresh.css?v=20261025.3` appears in homepage import but was not found in inspected SW asset lists; add contract test |
 | Visual/browser screenshots for all routes | **Not yet done** | Need real browser run, screenshots, mobile/tablet/desktop inspection |
