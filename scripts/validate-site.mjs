@@ -222,7 +222,7 @@ if(fs.existsSync(path.join(root,"provider.js"))&&fs.readFileSync(path.join(root,
 if(fs.existsSync(path.join(root,"checkout.js"))&&!fs.readFileSync(path.join(root,"checkout.js"),"utf8").includes("readObjectStorage")) errors.push("checkout.js -> safe cart storage recovery missing");
 if(localFiles.has("/checkout.js")){
   const checkoutText=fs.readFileSync(path.join(root,"checkout.js"),"utf8");
-  for(const contract of ["let savedAddressId=null;","from(\"addresses\").update(row)",".eq(\"user_id\",sessionUser.id)","validCoordinates(latitude,longitude)","let placingOrder=false;","We couldn't finish checkout because of a connection problem.","Retry remaining orders →"])
+  for(const contract of ["let savedAddressId=null;","from(\"addresses\").update(row)",".eq(\"user_id\",sessionUser.id)","validCoordinates(latitude,longitude)","let placingOrder=false;","We couldn't confirm checkout. Check Orders before retrying; your cart and request key are kept where possible.","Retry order →"])
     if(!checkoutText.includes(contract)) errors.push("checkout.js -> missing P0 checkout reliability contract "+contract);
 }
 if(localFiles.has("/orders.js")){
@@ -233,12 +233,12 @@ if(localFiles.has("/orders.js")){
 if(localFiles.has("/checkout.html")){
   const checkoutHtml=fs.readFileSync(path.join(root,"checkout.html"),"utf8");
   if(!checkoutHtml.includes('href="/Doodhwala/orders/">Track my order')) errors.push("checkout.html -> order success must link directly to order tracking");
-  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("checkout.html -> checkout runtime cache version stale");
+  if(!checkoutHtml.includes('/Doodhwala/checkout.js?v=20261028.1')) errors.push("checkout.html -> checkout runtime cache version stale");
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
   if(!swP0.includes('const CACHE="doodhwala-v106"')) errors.push("sw.js -> P0 checkout cache revision missing");
-  if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
+  if(!swP0.includes('/Doodhwala/checkout.js?v=20261028.1')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 
 if(fs.existsSync(path.join(root,"provider.js"))&&!fs.readFileSync(path.join(root,"provider.js"),"utf8").includes("readObjectStorage")) errors.push("provider.js -> safe provider storage recovery missing");
