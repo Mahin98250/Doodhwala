@@ -36,8 +36,8 @@ for (const [rootRoute, directoryRoute] of routeAliases) {
 }
 
 const connection = read("network-status.js");
-assert.match(connection, /window\\.addEventListener\\("offline"/, "offline event should show a warning");
-assert.match(connection, /window\\.addEventListener\\("online"/, "online event should report reconnection");
+assert.ok(connection.includes('window.addEventListener("offline"'), "offline event should show a warning");
+assert.ok(connection.includes('window.addEventListener("online"'), "online event should report reconnection");
 assert.match(connection, /aria-live/, "status changes should be accessible");
 assert.match(connection, /checkout, account actions and live order updates need a connection/i,
   "offline messaging must not imply checkout/live updates work offline");
@@ -51,9 +51,9 @@ assert.match(experience, /prefers-reduced-motion:reduce/, "reduced-motion must b
 const cleanUi = read("clean-ui.css");
 assert.match(cleanUi, /--dw-clean-focus:#(?:[0-9a-f]{6});/i,
   "focus ring must use an opaque, contrast-testable color instead of a translucent token");
-assert.match(cleanUi, /outline:3px solid var\\(--dw-clean-focus\\)/,
+assert.ok(cleanUi.includes("outline:3px solid var(--dw-clean-focus)"),
   "shared controls must use the stronger visible focus token");
-assert.match(cleanUi, /@media\\(prefers-reduced-motion:reduce\\)/,
+assert.ok(cleanUi.includes("@media(prefers-reduced-motion:reduce)"),
   "clean UI layer must honor reduced motion");
 
 function hexRgb(hex) {
