@@ -22,6 +22,9 @@
 
 **Handoff owner:** Mahin + ChatGPT for PR #118 implementation/debugging; Vaidik remains read-only reviewer while PR #118 owns shared UI/service-worker files.
 
+- Follow-up debugging change: commit [`b912469`](https://github.com/Mahin98250/Doodhwala/commit/b9124693a8a890d891e62f1889cbd6d653a8c507) adds the current page URL and stylesheet hrefs to the failing auth-route assertion in `scripts/test-pwa-browser-smoke.mjs`. This is diagnostic only; it does not weaken the assertion or claim a fix.
+- CI for the new PR #118 head is pending/not yet returned by the workflow-run lookup. Recheck the exact head before further changes; no merge/deploy.
+
 ## 2026-10-28 — Collaboration system initialized
 
 ### Completed
