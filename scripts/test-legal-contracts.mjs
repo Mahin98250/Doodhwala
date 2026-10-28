@@ -16,8 +16,13 @@ assert.match(legal, /not enabled and that no payment is collected/i, "payment di
 assert.match(legal, /must be reviewed by a qualified Indian legal professional/i, "legal review must be required before launch");
 for (const file of pages) {
   const html = fs.readFileSync(new URL("../" + file, import.meta.url), "utf8");
-  assert.ok(html.includes("/Doodhwala/legal/#privacy"), file + " must link to privacy information");
-  assert.ok(html.includes("/Doodhwala/legal/#terms"), file + " must link to marketplace terms");
+  if (file === "index.html") {
+    assert.ok(html.includes("/Doodhwala/profile/"), "homepage must direct customers to the Profile hub for policies");
+    assert.ok(html.includes("Profile &amp; policies"), "homepage must label the Profile hub clearly");
+  } else {
+    assert.ok(html.includes("/Doodhwala/legal/#privacy"), file + " must link to privacy information");
+    assert.ok(html.includes("/Doodhwala/legal/#terms"), file + " must link to marketplace terms");
+  }
   assert.ok(html.includes("Legal pages are drafts pending review"), file + " must clearly disclose draft status");
   const stylesheetVersion = ["index.html","support.html"].includes(file) ? (file === "index.html" ? "styles.css?v=20261023.5" : "styles.css?v=20261023.5") : "styles.css?v=20261023.5";
   assert.ok(html.includes(stylesheetVersion), file + " must use current shared legal-footer styles");
