@@ -125,10 +125,14 @@ try {
         documentWidth: document.documentElement.scrollWidth,
         horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
         cleanUiLink: !!document.querySelector('link[rel="stylesheet"][href*="clean-ui.css?v=20261028.1"]'),
+        stylesheetHrefs: [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => link.getAttribute("href")),
+        pageUrl: window.location.href,
         title: document.title,
         heading: document.querySelector("h1")?.textContent?.trim() || ""
       }));
-      assert.ok(layout.cleanUiLink, name + " must include the final shared clean UI layer");
+      assert.ok(layout.cleanUiLink,
+        name + " must include the final shared clean UI layer; URL=" + layout.pageUrl +
+        "; stylesheet hrefs=" + JSON.stringify(layout.stylesheetHrefs));
       assert.equal(layout.horizontalOverflow, false,
         name + " " + viewport.name + " layout must not overflow horizontally (document " +
         layout.documentWidth + "px / viewport " + layout.viewportWidth + "px)");
