@@ -24,6 +24,8 @@
 
 - Follow-up debugging change: commit [`b912469`](https://github.com/Mahin98250/Doodhwala/commit/b9124693a8a890d891e62f1889cbd6d653a8c507) adds the current page URL and stylesheet hrefs to the failing auth-route assertion in `scripts/test-pwa-browser-smoke.mjs`. This is diagnostic only; it does not weaken the assertion or claim a fix.
 - CI for the new PR #118 head is pending/not yet returned by the workflow-run lookup. Recheck the exact head before further changes; no merge/deploy.
+- CI then reproduced the failure with `URL=chrome-error://chromewebdata/` and no stylesheet links, indicating the assertion was inspecting a browser navigation error page rather than the auth document. Updated `scripts/test-pwa-browser-smoke.mjs` in commit [`5c228d6`](https://github.com/Mahin98250/Doodhwala/commit/5c228d684cda9046cd57e35cb726b391ae1423e8) to run the 12-route layout audit in a fresh Playwright context with service workers blocked. The preceding offline/reconnect checks still exercise the service worker in the original context; the clean UI assertion remains intact. This is a targeted isolation fix, not a verified pass yet.
+- Latest PR #118 head: `5c228d684cda9046cd57e35cb726b391ae1423e8`. CI results for this exact head had not appeared at the last lookup; check again before claiming green.
 
 ## 2026-10-28 — Collaboration system initialized
 
