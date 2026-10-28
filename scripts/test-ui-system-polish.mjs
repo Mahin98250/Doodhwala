@@ -6,7 +6,7 @@ const sharedHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.1";
 const homeHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.2";
 const customerHref = "/Doodhwala/customer-ui-stability.css?v=20261028.1";
 const pages = [
-  "index.html",
+  "index.html", "profile.html", "profile/index.html",
   "auth.html", "auth/index.html",
   "checkout.html", "checkout/index.html",
   "plans.html", "plans/index.html",
