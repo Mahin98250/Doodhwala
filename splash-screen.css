@@ -18,7 +18,7 @@ body.dw-splash-active{overflow:hidden}
 .dw-splash-mascot{position:relative;z-index:2;width:82%;height:82%;object-fit:contain;filter:drop-shadow(0 10px 14px rgba(13,70,42,.13));animation:dw-splash-mascot-in .8s .08s cubic-bezier(.2,.9,.25,1.2) both}
 .dw-splash-drop{position:absolute;z-index:3;display:block;width:11px;height:15px;border-radius:80% 12% 70% 70%;background:linear-gradient(145deg,#fff 8%,#e8f7ec 57%,#bbddc4);box-shadow:0 5px 10px rgba(26,103,56,.1);opacity:0;animation:dw-splash-drop-in .8s .35s cubic-bezier(.2,.8,.2,1) forwards}
 .dw-splash-drop--one{left:2%;top:43%;transform:rotate(-28deg)}
-.dw-splash-drop--two{right:3%;top:60%;width:8px;height:11px;animation-delay:.48s;transform:rotate(28deg)}
+.dw-splash-drop--two{right:3%;top:60%;width:8px;height:11px;animation-delay:.48s;transform:rotate(28deg);--dw-drop-angle:28deg}
 .dw-splash-milk{position:absolute;z-index:4;left:50%;bottom:2%;width:147%;height:27%;transform:translateX(-50%);overflow:visible;pointer-events:none}
 .dw-splash-milk path{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:300;stroke-dashoffset:300;filter:drop-shadow(0 4px 4px rgba(24,93,52,.1));animation:dw-splash-pour 1.05s .3s cubic-bezier(.2,.7,.15,1) forwards}
 .dw-splash-milk .dw-splash-milk-glint{stroke:#e8f6eb;stroke-width:2.5;stroke-dasharray:260;stroke-dashoffset:260;animation-delay:.42s}
@@ -35,7 +35,7 @@ body.dw-splash-active{overflow:hidden}
 @keyframes dw-splash-tile{from{transform:rotate(-13deg) scale(.82)}to{transform:rotate(-5deg) scale(1)}}
 @keyframes dw-splash-mascot-in{from{opacity:0;transform:translateY(13px) scale(.82)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes dw-splash-halo{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
-@keyframes dw-splash-drop-in{0%{opacity:0;transform:translateY(9px) scale(.6) rotate(-28deg)}70%{opacity:1}100%{opacity:.8;transform:translateY(0) scale(1) rotate(-28deg)}}
+@keyframes dw-splash-drop-in{0%{opacity:0;transform:translateY(9px) scale(.6) rotate(var(--dw-drop-angle,-28deg))}70%{opacity:1}100%{opacity:.8;transform:translateY(0) scale(1) rotate(var(--dw-drop-angle,-28deg))}}
 @keyframes dw-splash-pour{to{stroke-dashoffset:0}}
 @keyframes dw-splash-wordmark{to{opacity:1;transform:translateY(0)}}
 @keyframes dw-splash-fade-up{to{opacity:1;transform:translateY(0)}}
