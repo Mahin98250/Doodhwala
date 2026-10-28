@@ -113,6 +113,17 @@ try {
   });
   await visualPage.route("**/*", route => {
     const url = new URL(route.request().url());
+    // auth.js intentionally redirects local-origin auth pages to the production
+    // OAuth-capable site. This smoke only checks static route markup/layout, so
+    // stub that one script in this isolated visual context; auth behavior remains
+    // covered by its own contracts and is not changed in application code.
+    if (url.origin === origin && url.pathname === "/Doodhwala/auth.js") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/javascript; charset=utf-8",
+        body: "/* auth interactions intentionally excluded from static route-layout smoke */"
+      });
+    }
     if (url.origin !== origin) return route.abort();
     return route.continue();
   });
