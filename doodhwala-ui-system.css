@@ -1,0 +1,164 @@
+/* Doodhwala shared UI system polish: consistent responsive surfaces, controls, and accessible states.
+   Intentionally presentation-only; no workflow or business logic is changed. */
+:root{
+  --dw-ui-radius:18px;
+  --dw-ui-radius-lg:24px;
+  --dw-ui-focus:rgba(35,119,73,.22);
+}
+:where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page,.legal-page){
+  min-width:0;
+  overflow-x:clip;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(main,section,article,aside,header,footer,form,nav){
+  min-width:0;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=submit]),select,textarea){
+  max-width:100%;
+  border-radius:12px;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.provider-app,.admin-page,.support-page) :where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=submit]),select,textarea){
+  min-height:44px;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.provider-app,.admin-page,.support-page) textarea{min-height:100px;resize:vertical}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.provider-app,.admin-page,.support-page) :where(input,select,textarea):focus-visible{
+  outline:3px solid var(--dw-ui-focus);
+  outline-offset:2px;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(button,a[role=button],input[type=submit]){
+  -webkit-tap-highlight-color:transparent;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(button:disabled,input:disabled,select:disabled,textarea:disabled,[aria-disabled=true]){
+  cursor:not-allowed;
+  opacity:.58;
+  box-shadow:none;
+  transform:none;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(.hidden,[hidden]){display:none!important}
+:where(.auth-card,.checkout-card,.plans-card,.orders-card,.support-card,.notifications-panel,.onboarding-card,.store-identity,.product-detail,.location-modal,.compare-panel,.admin-card,.metric){
+  min-width:0;
+}
+:where(.auth-card,.checkout-card,.plans-card,.orders-card,.support-card,.notifications-panel,.onboarding-card) {
+  border-radius:var(--dw-ui-radius-lg);
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(h1,h2,h3){
+  overflow-wrap:anywhere;
+  text-wrap:pretty;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(p,small,label){
+  overflow-wrap:anywhere;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(button,a){
+  touch-action:manipulation;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(a:not([class]),.support-page .support-faq a){
+  text-underline-offset:3px;
+}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(a:focus-visible,button:focus-visible){
+  outline:3px solid var(--dw-ui-focus);
+  outline-offset:3px;
+}
+.home-page .no-results>div:first-child svg{
+  display:block!important;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;
+  max-width:36px!important;max-height:36px!important;flex:0 0 36px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;
+  stroke-linecap:round;stroke-linejoin:round;overflow:visible;
+}
+.home-page .no-results>div:first-child svg path,
+.home-page .no-results>div:first-child svg circle,
+.home-page .no-results>div:first-child svg line,
+.home-page .no-results>div:first-child svg polyline{
+  fill:none!important;stroke:currentColor!important;
+}
+.home-page .no-results>div:first-child{flex-shrink:0}
+.location-modal-backdrop{
+  padding-top:max(10px,env(safe-area-inset-top,0px));
+  padding-right:max(10px,env(safe-area-inset-right,0px));
+  padding-bottom:max(10px,env(safe-area-inset-bottom,0px));
+  padding-left:max(10px,env(safe-area-inset-left,0px));
+}
+.location-modal{
+  width:min(760px,100%);
+  max-height:calc(100vh - 20px);
+  max-height:calc(100dvh - max(20px,env(safe-area-inset-top,0px)) - max(20px,env(safe-area-inset-bottom,0px)));
+  overscroll-behavior:contain;
+}
+.location-map{min-width:0;max-width:100%}
+:where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(button,.primary,.secondary,.checkout-cta,.auth-submit,.back-shop){
+  transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+@media(hover:hover) and (pointer:fine){
+  :where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(button:not(:disabled),.primary,.secondary):hover{
+    filter:brightness(.99);
+  }
+}
+@media(max-width:760px){
+  :where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) :where(.app-shell,.page-shell,.main,.main-content,main){
+    min-width:0;
+    max-width:100%;
+  }
+  .auth-shell{padding:calc(22px + env(safe-area-inset-top,0px)) 14px calc(22px + env(safe-area-inset-bottom,0px))}
+  .auth-card{padding:clamp(20px,5vw,28px);border-radius:22px}
+  .auth-card h1{font-size:clamp(30px,8vw,38px);line-height:1.04}
+  .auth-back{position:static;display:inline-flex;margin:0 0 12px}
+  .checkout-main,.plans-main,.orders-main{width:auto;max-width:100%;padding:24px 14px calc(34px + env(safe-area-inset-bottom,0px))}
+  .checkout-heading h1{font-size:clamp(30px,8vw,42px);line-height:1.04}
+  .checkout-layout{grid-template-columns:minmax(0,1fr)!important;gap:14px}
+  .checkout-left,.checkout-right,.checkout-card,.checkout-summary{min-width:0}
+  .checkout-top,.plans-top,.orders-top{padding-inline:14px;gap:10px}
+  .checkout-brand,.plans-brand,.orders-brand{min-width:0}
+  .checkout-brand b,.plans-brand b,.orders-brand b{white-space:nowrap}
+  .plans-heading,.orders-heading{align-items:stretch}
+  .plans-heading h1,.orders-heading h1{font-size:clamp(30px,8vw,43px);line-height:1.05}
+  .plans-heading #refreshPlans,.orders-heading #refreshOrders{min-height:44px}
+  .market-top{padding-inline:12px;gap:8px}
+  .market-brand{min-width:0;flex:0 1 auto}
+  .market-brand img{width:32px;height:32px;flex:0 0 auto}
+  .market-brand b{font-size:14px}
+  .market-location{min-width:0;max-width:44vw;padding:7px 8px;gap:6px}
+  .market-location-copy{min-width:0}
+  .market-location-copy b{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .market-back{white-space:nowrap;font-size:11px}
+  .market-main{width:auto;max-width:100%;padding-inline:14px}
+  .product-detail{grid-template-columns:minmax(0,1fr)!important}
+  .product-info,.product-visual{min-width:0}
+  .store-hero{grid-template-columns:minmax(0,1fr)!important}
+  .support-top,.notifications-top{flex-wrap:wrap;gap:12px}
+  .support-top-actions,.notifications-top nav{display:flex;flex-wrap:wrap;gap:10px}
+  .support-wrap,.notifications-shell{width:auto;max-width:100%;padding:18px 14px calc(40px + env(safe-area-inset-bottom,0px))}
+  .support-layout{grid-template-columns:minmax(0,1fr)!important;gap:14px}
+  .support-hero h1,.notifications-hero h1{font-size:clamp(30px,8vw,44px);line-height:1.05}
+  .support-card,.notifications-panel{padding:clamp(16px,4vw,22px)}
+  .onboarding-card{padding:clamp(16px,4vw,28px);border-radius:22px}
+  .provider-onboarding{padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px))}
+  .admin-app,.admin-main,.admin-top,.admin-top-main,.admin-period{min-width:0;max-width:100%}
+  .admin-top-main{gap:12px;flex-wrap:wrap}
+  .admin-search{min-width:0;max-width:100%}
+  .admin-period{display:flex;flex-wrap:wrap;gap:8px}
+  .admin-period input{min-width:0;flex:1 1 120px}
+  .location-modal{padding:16px;border-radius:20px}
+  .location-modal-head{gap:10px}
+  .location-modal-head h2{font-size:clamp(22px,6vw,30px);line-height:1.1}
+  .location-map{height:clamp(240px,42dvh,380px)}
+  .location-modal-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .location-nearby{grid-column:1/-1}
+  .location-modal-actions button{min-height:44px;min-width:0}
+  .location-modal-actions .primary{width:100%}
+}
+@media(max-width:420px){
+  .checkout-top,.plans-top,.orders-top{padding-inline:11px}
+  .checkout-brand img,.plans-brand img,.orders-brand img{width:30px;height:30px}
+  .checkout-brand b,.plans-brand b,.orders-brand b{font-size:13px}
+  .market-top{padding-inline:10px}
+  .market-location{max-width:42vw}
+  .market-back{font-size:10px}
+  .support-top-actions a,.notifications-top nav a{font-size:11px}
+  .location-modal-actions{grid-template-columns:minmax(0,1fr)}
+  .location-nearby{grid-column:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  :where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) *,
+  :where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) *::before,
+  :where(.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page) *::after{
+    animation:none!important;transition:none!important;scroll-behavior:auto!important;
+  }
+}
