@@ -103,6 +103,14 @@ try {
     serviceWorkers: "block"
   });
   const visualPage = await visualContext.newPage();
+  const failedVisualRequests = [];
+  visualPage.on("requestfailed", request => {
+    failedVisualRequests.push({
+      url: request.url(),
+      failure: request.failure()?.errorText || "unknown"
+    });
+    if (failedVisualRequests.length > 25) failedVisualRequests.shift();
+  });
   await visualPage.route("**/*", route => {
     const url = new URL(route.request().url());
     if (url.origin !== origin) return route.abort();
@@ -134,7 +142,11 @@ try {
     for (const [name,route] of visualRoutes) {
       const target = route ? new URL(route, base).href : base;
       const routeResponse = await visualPage.goto(target,{waitUntil:"domcontentloaded"});
-      assert.ok(routeResponse && routeResponse.ok(), name + " " + viewport.name + " route must load");
+      assert.ok(routeResponse && routeResponse.ok(),
+        name + " " + viewport.name + " route must load; target=" + target +
+        "; status=" + (routeResponse?.status() ?? "no response") +
+        "; finalURL=" + visualPage.url() +
+        "; failedRequests=" + JSON.stringify(failedVisualRequests));
       const layout = await visualPage.evaluate(() => ({
         viewportWidth: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
