@@ -233,6 +233,12 @@ function clearComparison(closeDialog=false){
  comparedProviderIds=[];render();if(closeDialog)closeCompareDialog();toast("Comparison cleared");
 }
 function navigateHomeView(destination){
+ if(destination==="profile"){
+  const url="/Doodhwala/profile/";
+  if(window.DoodhwalaMilkTransition&&typeof window.DoodhwalaMilkTransition.navigate==="function")window.DoodhwalaMilkTransition.navigate(url);
+  else window.location.href=url;
+  return;
+ }
  if(destination==="plans"||destination==="orders"){
   const url="/Doodhwala/"+(destination==="plans"?"plans/":"orders/");
   if(window.DoodhwalaMilkTransition&&typeof window.DoodhwalaMilkTransition.navigate==="function")window.DoodhwalaMilkTransition.navigate(url);
