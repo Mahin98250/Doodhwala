@@ -214,3 +214,48 @@ All route entry points below were read at baseline `46b48d20c896bee9f96902d2fc2f
 ## 10. First implementation PR acceptance rules
 
 The first implementation PR is limited to shared token/component foundations and audit-derived tests. It must not change payment, order, auth, provider approval, admin authorization, database schemas or real customer data. Before merging, compare screenshots for home, auth, product/store, checkout/orders, plans, provider and admin; verify clean URLs and root aliases; test reduced motion and offline asset contracts; and require every relevant CI check to pass on the exact PR head.
+
+
+## 11. Proposed design-token contract (planning draft, not yet implemented)
+
+Reuse existing brand values where sensible rather than inventing a second palette. These values are a proposed starting point and must be checked against contrast and screenshot evidence before being applied.
+
+| Token | Proposed value / mapping | Usage |
+|---|---|---|
+| `--dw-canvas` | `#f5f7f3` (existing `--bg`) | Main app background |
+| `--dw-surface` | `#ffffff` (existing `--surface`) | Forms, main content cards, tables and critical task surfaces |
+| `--dw-surface-soft` | `#f8faf7` (existing `--surface-2`) | Quiet inset surfaces |
+| `--dw-text` | `#17221a` (existing `--ink`) | Primary text |
+| `--dw-text-muted` | `#6f7c73` (existing `--muted`) | Supporting text; validate small-text contrast before use |
+| `--dw-border` | `#e2e8e1` (existing `--line`) | Dividers and card boundaries |
+| `--dw-brand` | `#17603f` (existing `--green`) | Primary action and key brand accent |
+| `--dw-brand-strong` | `#10482f` (existing `--green-dark`) | Active/pressed and high-emphasis brand states |
+| `--dw-brand-soft` | `#e3f1e7` (existing `--green-soft`) | Soft selection and status backgrounds |
+| `--dw-warning` | `#b47716` (existing `--amber`) | Warning states only; confirm contrast for text usage |
+| `--dw-danger` | `#a3483e` (existing `--danger`) | Destructive/error states |
+| `--dw-glass-bg` | `rgba(255,255,255,.76)` | Headers, floating navigation, location panels and selected overlays |
+| `--dw-glass-border` | `rgba(255,255,255,.78)` plus a visible neutral border fallback | Separation against variable backgrounds |
+| `--dw-glass-blur` | `16px` | Optional glass surfaces only; keep blur count low on mobile |
+| `--dw-radius-sm / --dw-radius / --dw-radius-lg` | `10px / 16px / 22px` | Inputs, standard cards, dialogs/feature panels |
+| `--dw-motion-fast / --dw-motion-ui` | `150ms / 220ms` | Press/hover feedback and ordinary transitions |
+| `--dw-motion-ease` | `cubic-bezier(.2,.75,.25,1)` | Shared easing for ordinary UI transitions |
+
+### Glass rules
+- Keep the default content surface opaque. Use glass selectively for app headers, floating navigation, location pickers, small utility overlays and the startup/transition layer.
+- Do not put translucent blur behind core reading surfaces, checkout totals, form labels, prices, seller order statuses, data tables or error/success messages.
+- Always retain a visible edge against both light and green-tinted backdrops; the glass layer cannot be the only source of separation.
+- Add `@supports` fallback to a solid/high-opacity surface for browsers without `backdrop-filter`, and verify colour contrast without blur.
+- Avoid stacking multiple blurred layers; on smaller/low-end devices, prefer less blur rather than adding runtime work.
+
+### Cinematic motion rules
+- Brand intro and page transition are the only allowed cinematic sequences. They must be skippable or short, cannot hide an error, cannot block route changes, and must clean up on interruption/page lifecycle events.
+- Everyday actions (filtering, quantity change, accepting an order, submitting checkout) use immediate feedback and short transitions. Do not make functional controls wait for decorative animations.
+- Honour `prefers-reduced-motion: reduce` on every layer, not just the splash screen. Avoid large parallax, repeated card choreography and motion that obscures order status.
+- Animation performance gate: inspect on a lower-end mobile profile, avoid layout-thrashing animations, and verify content remains usable if animations never run.
+
+### Density and responsive contract
+- Base spacing steps: `4, 8, 12, 16, 20, 24, 32, 40, 48px`; no page-specific random spacing values unless there is a documented reason.
+- Use a balanced content density: readable sections and card groups, but no oversized vertical gaps that hide customer/provider tasks below the fold.
+- Maintain primary task access at small phone widths, handle safe-area insets, avoid horizontal overflow, and support browser zoom / enlarged text.
+- Keep DM Sans as the body typeface and Manrope as the heading/brand typeface unless a measured readability issue suggests otherwise; system fallbacks must always work.
+
