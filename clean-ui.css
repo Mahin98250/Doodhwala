@@ -1,0 +1,118 @@
+/* Doodhwala clean UI layer — shared presentation only.
+   Loaded after page-specific CSS. No application logic or data behavior lives here. */
+:root{
+  --dw-clean-bg:#f5f8f4;
+  --dw-clean-surface:#ffffff;
+  --dw-clean-surface-soft:#f8fbf7;
+  --dw-clean-glass:rgba(255,255,255,.84);
+  --dw-clean-ink:#17251c;
+  --dw-clean-muted:#637268;
+  --dw-clean-line:#dfe8df;
+  --dw-clean-line-strong:#c8d8cb;
+  --dw-clean-primary:#17603f;
+  --dw-clean-primary-hover:#10482f;
+  --dw-clean-focus:rgba(23,96,63,.28);
+  --dw-clean-shadow:0 10px 28px rgba(20,45,29,.065);
+  --dw-clean-shadow-raised:0 18px 40px rgba(20,45,29,.11);
+  --dw-clean-radius-sm:12px;
+  --dw-clean-radius:18px;
+  --dw-clean-radius-lg:24px;
+}
+body{
+  color:var(--dw-clean-ink);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+img,svg,video,canvas{max-width:100%}
+a{text-underline-offset:3px}
+button,a,[role="button"]{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible,
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--dw-clean-focus);
+  outline-offset:3px;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]),
+select,textarea{
+  max-width:100%;
+  border-color:var(--dw-clean-line-strong);
+  border-radius:12px;
+  color:var(--dw-clean-ink);
+  transition:border-color 160ms ease,box-shadow 160ms ease,background-color 160ms ease;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):focus,
+select:focus,textarea:focus{
+  border-color:var(--dw-clean-primary);
+  box-shadow:0 0 0 4px rgba(23,96,63,.09);
+}
+textarea{line-height:1.55}
+.auth-card,.onboarding-card,.checkout-card,.order-card,.plan-card,.provider,
+.provider-order,.dispatch-card,.trust-card,.compare-panel,.location-modal,
+.modal,.cart-drawer,.cart-panel,.support-card,.support-form-card,.admin-gate{
+  border-color:var(--dw-clean-line);
+  box-shadow:var(--dw-clean-shadow);
+  border-radius:var(--dw-clean-radius);
+}
+.auth-card,.onboarding-card,.checkout-card,.order-card,.plan-card,.provider,
+.provider-order,.dispatch-card,.trust-card,.support-card,.support-form-card{
+  background-color:var(--dw-clean-surface);
+}
+.primary,.secondary,.provider-primary,.provider-secondary,.auth-submit,
+.checkout-cta,.back-shop,.cart,.filter-button{
+  border-radius:12px;
+  font-weight:700;
+  transition:box-shadow 180ms ease,border-color 180ms ease,
+             background-color 180ms ease,transform 180ms ease;
+}
+.primary,.provider-primary,.auth-submit,.checkout-cta{
+  box-shadow:0 5px 14px rgba(23,96,63,.12);
+}
+.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,
+.dispatch-card,.trust-card,.auth-card,.onboarding-card,.support-card,
+.support-form-card{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.compare-dock,.compare-panel,.location-modal,.modal,.cart-drawer,.cart-panel{
+  border:1px solid rgba(223,232,223,.94);
+}
+@supports(backdrop-filter:blur(12px)){
+  .compare-dock,.compare-panel,.location-modal,.modal,.cart-drawer,.cart-panel{
+    backdrop-filter:blur(16px) saturate(1.08);
+    -webkit-backdrop-filter:blur(16px) saturate(1.08);
+  }
+  .compare-panel,.location-modal,.modal,.cart-drawer,.cart-panel{
+    background:var(--dw-clean-glass);
+  }
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  .primary:hover:not(:disabled),.provider-primary:hover:not(:disabled),
+  .auth-submit:hover:not(:disabled),.checkout-cta:hover:not(:disabled){
+    transform:translateY(-1px);
+    box-shadow:var(--dw-clean-shadow-raised);
+  }
+  .secondary:hover:not(:disabled),.provider-secondary:hover:not(:disabled),
+  .back-shop:hover:not(:disabled),.filter-button:hover:not(:disabled){
+    border-color:var(--dw-clean-line-strong);
+  }
+  .auth-card,.onboarding-card,.checkout-card,.order-card,.plan-card,
+  .provider,.provider-order,.dispatch-card,.trust-card,.support-card,
+  .support-form-card{
+    transition:box-shadow 180ms ease,border-color 180ms ease;
+  }
+  .auth-card:hover,.onboarding-card:hover,.checkout-card:hover,
+  .order-card:hover,.plan-card:hover,.provider:hover,.provider-order:hover,
+  .dispatch-card:hover,.trust-card:hover,.support-card:hover,.support-form-card:hover{
+    border-color:var(--dw-clean-line-strong);
+  }
+}
+@media(max-width:760px){
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]),
+  select,textarea{font-size:16px}
+  .auth-card,.onboarding-card,.checkout-card,.order-card,.plan-card,
+  .provider-order,.dispatch-card,.trust-card,.support-card,.support-form-card{
+    border-radius:16px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}

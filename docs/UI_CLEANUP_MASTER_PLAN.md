@@ -1,6 +1,6 @@
 # Doodhwala Whole-App Clean UI Audit & Master Checklist
 
-**Status:** Planning baseline — audit inventory completed; implementation not started  
+**Status:** Implementation in progress — repository audit baseline retained; shared UI foundation is under review in PR #118  
 **Baseline branch:** `main`  
 **Baseline commit:** `46b48d20c896bee9f96902d2fc2fbee0f1fc0158`  
 **Chosen direction:** soft glass accents + balanced density + cinematic, purposeful motion  
@@ -146,7 +146,7 @@ PRs may be split further if a workstream is large. Each PR must state changed ro
 - [ ] All required CI checks are green on the exact PR head; no merge while checks are pending or failing.
 - [ ] Live deployment and a real-device visual review are recorded after merge.
 
-**Next action:** complete the detailed route-by-route baseline (including CSS/JS ownership and direct-link parity), then propose the shared design tokens before implementing the redesign.
+**Next action:** validate the shared UI layer and PWA cache contract across all route variants, then continue in focused customer, seller, and owner UI passes. Browser/device QA remains a separate release gate.
 
 
 ## 7. Route-by-route asset ownership audit (static source inspection)
@@ -259,3 +259,21 @@ Reuse existing brand values where sensible rather than inventing a second palett
 - Maintain primary task access at small phone widths, handle safe-area insets, avoid horizontal overflow, and support browser zoom / enlarged text.
 - Keep DM Sans as the body typeface and Manrope as the heading/brand typeface unless a measured readability issue suggests otherwise; system fallbacks must always work.
 
+
+
+## 8. Implementation progress — 28 October 2026
+
+- PR #118 establishes the first semantic green-and-white UI foundation in `experience-layer.css`; the foundation remains a first phase, not a completion claim.
+- Integrated the shared layer into the home, authentication, checkout, product, store, plans, orders, seller, notification, support, legal, and owner route families.
+- Bumped the shared stylesheet URL to `experience-layer.css?v=20261028.3` so deployed browser and service-worker caches do not silently retain the previous stylesheet.
+- Advanced the service-worker cache revision to `doodhwala-v106` and aligned the PWA contracts with the new exact asset URL.
+- Added source-contract checks requiring each public route family and its directory alias to load the shared stylesheet and remain byte-for-byte equivalent.
+- Automated checks still need to run against the final candidate SHA; rendered screenshots, physical-device QA, and authenticated staging journeys remain separate and are not inferred from source contracts.
+
+
+## 9. Shared presentation layer — 28 October 2026
+
+- Added `clean-ui.css?v=20261028.1` as the final stylesheet on 12 route families (23 HTML entry points counting root pages and directory aliases), so common controls/surfaces receive consistent polish without replacing each page's structural layout.
+- Standardizes focus rings, form controls, primary-action states, restrained surface elevation, modal glass, and reduced-motion behavior. Uses local CSS only; no new dependency, remote font, or paid API.
+- The service worker treats the stylesheet as a required core asset so cached route shells retain shared styling offline.
+- Updated service-worker/PWA assertions for the exact stylesheet URL and cache evidence. Visual QA still requires rendered screenshots; source contracts do not substitute for physical-device checks or authenticated staging E2E.

@@ -4,7 +4,7 @@ import fs from "node:fs";
 const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const cssPages = ["checkout.html","index.html","orders.html","plans.html","product.html","provider.html","store.html"];
 const networkPages = ["admin.html","auth.html","checkout.html","index.html","legal.html","orders.html","plans.html","product.html","provider.html","store.html","support.html"];
-const cssTag = "/Doodhwala/experience-layer.css?v=20261023.5";
+const cssTag = "/Doodhwala/experience-layer.css?v=20261028.3";
 const networkTag = "/Doodhwala/network-status.js?v=20261023.1";
 
 for (const path of cssPages) {

@@ -71,3 +71,89 @@ button:disabled,[role="button"][aria-disabled="true"]{cursor:not-allowed;opacity
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
 }
+
+
+/* Whole-app clean UI foundation — semantic tokens and restrained glass.
+   Additive visual layer only: preserve existing DOM hooks and application logic. */
+:root{
+  color-scheme:light;
+  --dw-ui-bg:#f5f8f4;
+  --dw-ui-surface:rgba(255,255,255,.94);
+  --dw-ui-glass:rgba(255,255,255,.76);
+  --dw-ui-glass-strong:rgba(255,255,255,.88);
+  --dw-ui-ink:#17251c;
+  --dw-ui-muted:#637268;
+  --dw-ui-line:#dfe8df;
+  --dw-ui-line-strong:#cbd9cc;
+  --dw-ui-primary:#17603f;
+  --dw-ui-primary-hover:#10482f;
+  --dw-ui-focus:rgba(23,96,63,.28);
+  --dw-ui-shadow-sm:0 3px 12px rgba(20,45,29,.045);
+  --dw-ui-shadow:0 12px 32px rgba(20,45,29,.075);
+  --dw-ui-shadow-raised:0 20px 48px rgba(20,45,29,.12);
+  --dw-ui-radius-sm:12px;
+  --dw-ui-radius:18px;
+  --dw-ui-radius-lg:24px;
+  --dw-ui-ease:cubic-bezier(.2,.75,.25,1);
+}
+:where(button,a,input,select,textarea,[role="button"],[tabindex]):focus-visible{
+  outline:3px solid var(--dw-ui-focus);
+  outline-offset:3px;
+}
+:where(input,select,textarea){
+  max-width:100%;
+}
+:where(img,svg,video,canvas){
+  max-width:100%;
+}
+:where(.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,.dispatch-card,.trust-card,.provider,.compare-panel,.location-modal){
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+:where(.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,.dispatch-card,.trust-card){
+  border-color:var(--dw-ui-line);
+  box-shadow:var(--dw-ui-shadow-sm);
+}
+:where(.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,.dispatch-card,.trust-card):focus-within{
+  border-color:var(--dw-ui-line-strong);
+}
+:where(input,select,textarea){
+  accent-color:var(--dw-ui-primary);
+}
+:where(button,a,[role="button"]){
+  -webkit-tap-highlight-color:transparent;
+}
+:where(button,a,[role="button"]):focus-visible{
+  position:relative;
+  z-index:1;
+}
+::selection{
+  background:rgba(166,218,178,.48);
+  color:var(--dw-ui-ink);
+}
+@supports(backdrop-filter:blur(12px)){
+  :where(.compare-dock,.compare-panel,.location-modal,.modal,.toast){
+    backdrop-filter:blur(16px) saturate(1.08);
+    -webkit-backdrop-filter:blur(16px) saturate(1.08);
+  }
+  .compare-dock,.compare-panel,.location-modal,.modal{
+    background:var(--dw-ui-glass-strong);
+    border-color:rgba(255,255,255,.82);
+  }
+}
+@media(max-width:760px){
+  :where(input,select,textarea){
+    font-size:16px;
+  }
+  :where(.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,.dispatch-card,.trust-card){
+    overflow-wrap:anywhere;
+  }
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  :where(.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,.dispatch-card,.trust-card){
+    transition:box-shadow var(--motion-ui) var(--motion-smooth),border-color var(--motion-ui) var(--motion-smooth);
+  }
+  :where(.card,.panel,.checkout-card,.order-card,.plan-card,.provider-order,.dispatch-card,.trust-card):hover{
+    box-shadow:var(--dw-ui-shadow);
+  }
+}
