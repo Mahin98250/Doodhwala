@@ -32,7 +32,7 @@
   **Goal:** Check navigation, buttons, forms, loading/empty/error states, and mobile/desktop layouts.  
   **Done when:** Findings are recorded with route, device/viewport, steps to reproduce, expected vs actual result, and severity; critical issues are fixed or converted into tasks.  
   **Branch:** `vaidik/dw-002-ui-ux-audit-current-main`  
-  **Evidence:** [PR #88 (earlier audit/evidence)](https://github.com/Mahin98250/Doodhwala/pull/88); current-main refresh PR pending. Source/browser checks for this refresh will be recorded in its PR. Physical-device, assistive-technology, live backend and authenticated staging checks remain unverified.
+  **Evidence:** [PR #88 (earlier audit/evidence)](https://github.com/Mahin98250/Doodhwala/pull/88) · [current-main refresh PR #139](https://github.com/Mahin98250/Doodhwala/pull/139). Latest source/browser checks and screenshots are recorded in PR #139. Physical-device, assistive-technology, live backend and authenticated staging checks remain unverified.
   
 - [ ] **DW-003 — Service worker and offline/reconnect validation** ([Issue #75](https://github.com/Mahin98250/Doodhwala/issues/75))  
   **Owner:** Unassigned · **Status:** TODO · **Area:** PWA / QA  
