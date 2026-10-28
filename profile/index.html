@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#175a3c">
+<meta name="description" content="Manage your Doodhwala account, orders, milk plans, privacy and help.">
+<title>Profile — Doodhwala</title>
+<link rel="manifest" href="/Doodhwala/manifest.webmanifest">
+<link rel="icon" href="/Doodhwala/assets/mascot.png?v=20261023.3">
+<link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5">
+<link rel="stylesheet" href="/Doodhwala/milk-transition.css?v=20261027.8">
+<link rel="stylesheet" href="/Doodhwala/doodhwala-ui-system.css?v=20261028.2">
+<style>
+.profile-page{min-height:100vh;color:var(--ink);background:radial-gradient(circle at 85% 0%,#e0f0e4 0,transparent 27rem),var(--bg)}
+.profile-shell{max-width:960px;margin:0 auto;padding:28px 24px 60px}
+.profile-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:25px}
+.profile-brand{display:flex;align-items:center;gap:11px;text-decoration:none}.profile-brand img{width:42px;height:42px;object-fit:contain}.profile-brand b{display:block;font-family:Manrope,sans-serif;font-size:17px}.profile-brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.profile-back{color:var(--green);background:#fff;border:1px solid var(--line);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:800;text-decoration:none}
+.profile-intro{margin:15px 0 24px}.profile-kicker{color:var(--green);font-size:10px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.profile-intro h1{font-family:Manrope,sans-serif;font-size:clamp(32px,5.5vw,48px);letter-spacing:-.055em;line-height:1.05;margin:10px 0}.profile-intro p{max-width:600px;color:var(--muted);font-size:14px;line-height:1.65;margin:0}
+.profile-account{display:flex;align-items:center;gap:16px;padding:22px;background:linear-gradient(120deg,rgba(255,255,255,.98),rgba(237,247,239,.92));border:1px solid #d5e5d8;border-radius:24px;box-shadow:var(--shadow-sm);margin-bottom:18px}
+.profile-avatar{width:58px;height:58px;border-radius:20px;background:#dceddf;color:var(--green);display:grid;place-items:center;flex:none}.profile-avatar svg{width:29px;height:29px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.profile-account-copy{min-width:0;flex:1}.profile-account-copy h2{font-family:Manrope,sans-serif;font-size:18px;margin:0 0 4px;letter-spacing:-.03em}.profile-account-copy p{color:var(--muted);font-size:12px;margin:0;overflow-wrap:anywhere}.profile-account-action{border:0;border-radius:12px;background:var(--green);color:white;padding:11px 14px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.profile-panel{min-width:0;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:21px;padding:19px;box-shadow:0 6px 20px rgba(20,45,29,.035)}.profile-panel-head{display:flex;align-items:center;gap:11px;margin-bottom:13px}.profile-panel-icon{width:39px;height:39px;border-radius:13px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;flex:none}.profile-panel-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.profile-panel-head h2{font-family:Manrope,sans-serif;font-size:15px;letter-spacing:-.025em;margin:0}.profile-panel-head p{font-size:11px;color:var(--muted);margin:3px 0 0;line-height:1.45}
+.profile-links{display:grid}.profile-link{display:flex;align-items:center;gap:12px;min-width:0;min-height:53px;padding:10px 1px;text-decoration:none;color:var(--ink);border-top:1px solid #edf1ed}.profile-link:first-child{border-top:0}.profile-link-copy{min-width:0;flex:1}.profile-link-copy b{display:block;font-size:12px;font-weight:800}.profile-link-copy small{display:block;color:var(--muted);font-size:10px;line-height:1.45;margin-top:3px}.profile-link .chevron{color:#7c8d80;font-size:19px;line-height:1}.profile-pill{font-size:9px;font-weight:800;background:#f3f6f3;color:#65756a;border-radius:99px;padding:5px 7px;white-space:nowrap}
+.profile-note{display:flex;align-items:flex-start;gap:11px;margin-top:16px;padding:15px 16px;background:#fff8e9;border:1px solid #efe1bc;border-radius:16px;color:#745a25;font-size:11px;line-height:1.6}.profile-note strong{display:block;margin-bottom:2px}.profile-footer{text-align:center;color:var(--muted);font-size:10px;margin-top:22px}.profile-footer a{color:var(--green);font-weight:800}
+@media(max-width:680px){.profile-shell{padding:17px 15px 40px}.profile-header{margin-bottom:20px}.profile-brand img{width:37px;height:37px}.profile-back{padding:9px 11px}.profile-intro{margin:9px 0 19px}.profile-intro p{font-size:13px}.profile-account{padding:16px;border-radius:20px;gap:12px}.profile-avatar{width:49px;height:49px;border-radius:16px}.profile-account-copy h2{font-size:15px}.profile-account-copy p{font-size:11px}.profile-account-action{padding:10px 11px;font-size:11px}.profile-grid{grid-template-columns:1fr;gap:12px}.profile-panel{padding:16px;border-radius:18px}.profile-panel-head{margin-bottom:10px}.profile-link{min-height:51px}.profile-note{margin-top:12px}}
+@media(max-width:360px){.profile-shell{padding-inline:12px}.profile-account{align-items:flex-start;flex-wrap:wrap}.profile-account-action{margin-left:61px}.profile-panel{padding:14px}}
+@media(prefers-reduced-motion:no-preference){.profile-panel,.profile-account{animation:profile-rise .32s ease both}.profile-panel:nth-child(2){animation-delay:.035s}.profile-panel:nth-child(3){animation-delay:.07s}.profile-panel:nth-child(4){animation-delay:.105s}@keyframes profile-rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}}
+</style>
+</head>
+<body class="profile-page">
+<main class="profile-shell">
+<header class="profile-header">
+<a class="profile-brand" href="/Doodhwala/"><img src="/Doodhwala/assets/mascot.png?v=20261023.3" alt=""><span><b>Doodhwala</b><small>Your local milk marketplace</small></span></a>
+<a class="profile-back" href="/Doodhwala/">← Keep shopping</a>
+</header>
+<section class="profile-intro">
+<span class="profile-kicker">Your space</span>
+<h1>Profile & settings</h1>
+<p>Your account, delivery activity, app preferences and all important policies—together in one easy-to-find place.</p>
+</section>
+<section class="profile-account" aria-labelledby="accountTitle">
+<div class="profile-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></div>
+<div class="profile-account-copy"><h2 id="accountTitle">Your Doodhwala account</h2><p id="accountStatus">Sign in to view your account details and manage saved information.</p></div>
+<a class="profile-account-action" id="accountAction" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F">Sign in <span aria-hidden="true">→</span></a>
+</section>
+<div class="profile-grid">
+<section class="profile-panel">
+<div class="profile-panel-head"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></span><div><h2>Account & security</h2><p>Profile details and account access</p></div></div>
+<div class="profile-links">
+<a class="profile-link" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F"><span class="profile-link-copy"><b>Personal details</b><small>Manage details associated with your signed-in account</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F"><span class="profile-link-copy"><b>Sign-in & password</b><small>Access account sign-in and password recovery</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F"><span class="profile-link-copy"><b>Account deletion</b><small>Sign in before starting an account deletion request</small></span><span class="profile-pill">Secure</span></a>
+</div>
+</section>
+<section class="profile-panel">
+<div class="profile-panel-head"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-3-6 3V3Z"/><path d="M9 8h6M9 12h6"/></svg></span><div><h2>Orders & daily milk</h2><p>Keep track of your everyday essentials</p></div></div>
+<div class="profile-links">
+<a class="profile-link" href="/Doodhwala/orders/"><span class="profile-link-copy"><b>My orders</b><small>View available order status and history</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/plans/"><span class="profile-link-copy"><b>Milk plans</b><small>Review recurring plans available to your account</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/?view=saved"><span class="profile-link-copy"><b>Saved providers</b><small>Return to your favourite local milk sellers</small></span><span class="chevron" aria-hidden="true">›</span></a>
+</div>
+</section>
+<section class="profile-panel">
+<div class="profile-panel-head"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><div><h2>Privacy & legal</h2><p>Know how the marketplace works and handles data</p></div></div>
+<div class="profile-links">
+<a class="profile-link" href="/Doodhwala/legal/"><span class="profile-link-copy"><b>Privacy policy</b><small>Learn how personal information is handled</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/legal/"><span class="profile-link-copy"><b>Terms & conditions</b><small>Understand marketplace rules and responsibilities</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/legal/"><span class="profile-link-copy"><b>Seller & payment rules</b><small>Local seller marketplace and payment limitations</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/legal/"><span class="profile-link-copy"><b>Refunds & cancellations</b><small>Read current order and refund terms</small></span><span class="chevron" aria-hidden="true">›</span></a>
+</div>
+</section>
+<section class="profile-panel">
+<div class="profile-panel-head"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3V5Z"/><path d="M8 9h8M8 13h5"/></svg></span><div><h2>Help & preferences</h2><p>Get help and manage your experience</p></div></div>
+<div class="profile-links">
+<a class="profile-link" href="/Doodhwala/support/"><span class="profile-link-copy"><b>Help & support</b><small>FAQs and account-linked support requests</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/notifications/"><span class="profile-link-copy"><b>Notifications</b><small>View order updates available to your account</small></span><span class="chevron" aria-hidden="true">›</span></a>
+<a class="profile-link" href="/Doodhwala/provider/"><span class="profile-link-copy"><b>I'm a local milk seller</b><small>Open the separate seller experience</small></span><span class="chevron" aria-hidden="true">›</span></a>
+</div>
+</section>
+</div>
+<aside class="profile-note"><span aria-hidden="true">ⓘ</span><div><strong>We keep money and account security honest.</strong>Doodhwala does not ask for your password, OTP, UPI PIN or bank login in support messages. Direct seller UPI is not independently bank-verified by this website.</div></aside>
+<footer class="profile-footer">Fresh • Local • Direct <span aria-hidden="true">·</span> <a href="/Doodhwala/legal/">Legal & privacy centre</a></footer>
+</main>
+<script src="/Doodhwala/supabase-config.js"></script>
+<script src="/Doodhwala/supabase-client.js"></script>
+<script src="/Doodhwala/customer-nav.js?v=20261028.4"></script>
+<script>
+(()=>{const $=id=>document.getElementById(id);const db=()=>window.Doodhwala?.supabase;async function syncAccount(){const client=db();if(!client){$("accountStatus").textContent="Sign in to view your account details and manage saved information.";$("accountAction").textContent="Sign in →";return}try{const {data,error}=await client.auth.getSession();if(error)throw error;const user=data?.session?.user;if(!user)return;const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0]||"Doodhwala customer";$("accountTitle").textContent=name;$("accountStatus").textContent=user.email||"Signed in";$("accountAction").href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F";$("accountAction").textContent="Manage account →"}catch(_){$("accountStatus").textContent="Your account details could not be loaded. Please try again later."}}syncAccount()})();
+</script>
+</body>
+</html>
