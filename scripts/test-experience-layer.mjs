@@ -44,3 +44,11 @@ assert.ok(workflow.includes('node --check "$file"'), "syntax-check loop must exe
 assert.ok(workflow.includes("Test premium experience and connection feedback"), "new contract test must run in CI");
 
 console.log("Experience-layer contracts passed: route coverage, accessible connectivity status, safe offline messaging, reduced-motion support, and customer-facing naming.");
+
+const cinematic = read("milk-transition.css");
+assert.match(cinematic, /@keyframes dw-page-arrive/, "shared cinematic page entrance should exist");
+assert.match(cinematic, /backdrop-filter:saturate\(145%\) blur\(16px\)/, "shared navigation surfaces should use restrained glass");
+assert.match(cinematic, /:active:not\(:disabled\)/, "interactive controls should provide press feedback");
+assert.match(cinematic, /prefers-reduced-motion:reduce/, "cinematic UI layer must disable motion for reduced-motion users");
+assert.match(cinematic, /@supports not/, "glass surfaces must have a solid fallback");
+assert.doesNotMatch(cinematic, /https?:\/\//i, "cinematic UI layer must not introduce external dependencies");

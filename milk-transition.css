@@ -219,3 +219,89 @@
 @media (prefers-reduced-motion: reduce) {
   .dw-milk-transition-card { transform: none; }
 }
+
+
+/* Doodhwala cinematic UI layer — balanced motion, soft glass and accessible feedback.
+   This layer is intentionally additive: it does not change route, form or payment logic. */
+:root{
+  --dw-motion-fast:160ms;
+  --dw-motion-base:240ms;
+  --dw-motion-enter:480ms;
+  --dw-motion-ease:cubic-bezier(.2,.75,.25,1);
+  --dw-glass-border:rgba(255,255,255,.72);
+  --dw-glass-shadow:0 16px 42px rgba(19,63,37,.085);
+}
+@keyframes dw-page-arrive{
+  from{opacity:0;transform:translate3d(0,9px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes dw-soft-reveal{
+  from{opacity:0;transform:translate3d(0,14px,0) scale(.992)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes dw-glass-sheen{
+  0%{background-position:120% 0}
+  100%{background-position:-120% 0}
+}
+/* One short entrance per page. Do not animate every card or every scroll frame. */
+:where(.home-page main,.market-main,.provider-onboarding,.admin-gate,.admin-app,.plans-main,.orders-main,.checkout-main,.auth-shell,.support-wrap,.notifications-shell,.legal-page,.offline-shell){
+  animation:dw-page-arrive var(--dw-motion-enter) var(--dw-motion-ease) both;
+}
+:where(.home-page .hero,.support-hero,.notifications-hero,.store-hero,.product-detail){
+  animation:dw-soft-reveal 560ms var(--dw-motion-ease) 60ms both;
+}
+:where(.plans-top,.orders-top,.checkout-top,.market-top,.support-top,.notifications-top,.admin-top){
+  -webkit-backdrop-filter:saturate(145%) blur(16px);
+  backdrop-filter:saturate(145%) blur(16px);
+  border-bottom-color:rgba(215,229,217,.78);
+}
+:where(.auth-card,.checkout-card,.plans-card,.orders-card,.support-card,.notifications-panel,.admin-card,.metric,.onboarding-card,.store-identity,.product-detail,.location-modal,.compare-panel){
+  border-color:color-mix(in srgb,var(--line,#dfe8df) 78%,white);
+  box-shadow:var(--dw-glass-shadow);
+  transition:box-shadow var(--dw-motion-base) var(--dw-motion-ease),border-color var(--dw-motion-base) var(--dw-motion-ease),transform var(--dw-motion-base) var(--dw-motion-ease);
+}
+:where(button,a[role="button"],.primary,.secondary,.back-shop,.store-link,.cart,.auth-submit,.add,.plan-add){
+  transition:background-color var(--dw-motion-fast) ease,border-color var(--dw-motion-fast) ease,color var(--dw-motion-fast) ease,box-shadow var(--dw-motion-fast) ease,transform var(--dw-motion-fast) ease;
+}
+:where(button,a[role="button"],.primary,.secondary,.back-shop,.store-link,.cart,.auth-submit,.add,.plan-add):active:not(:disabled){
+  transform:scale(.985);
+}
+:where(button,a[role="button"],.primary,.secondary,.back-shop,.store-link,.cart,.auth-submit,.add,.plan-add):disabled{
+  cursor:not-allowed;
+  transform:none;
+}
+:where(input,select,textarea){
+  transition:border-color var(--dw-motion-fast) ease,box-shadow var(--dw-motion-fast) ease,background-color var(--dw-motion-fast) ease;
+}
+:where(input,select,textarea):focus-visible{
+  border-color:#4b9365;
+  box-shadow:0 0 0 4px rgba(48,126,75,.12);
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  :where(.auth-card,.checkout-card,.plans-card,.orders-card,.support-card,.notifications-panel,.admin-card,.onboarding-card,.store-identity,.product-detail):hover{
+    border-color:rgba(103,160,113,.46);
+    box-shadow:0 20px 48px rgba(19,63,37,.105);
+  }
+  :where(.primary,.secondary,.back-shop,.store-link,.cart,.auth-submit,.add,.plan-add):hover:not(:disabled){
+    transform:translateY(-1px);
+  }
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :where(.plans-top,.orders-top,.checkout-top,.market-top,.support-top,.notifications-top,.admin-top){
+    background-color:#fff;
+  }
+}
+@media(max-width:600px){
+  :where(.auth-card,.checkout-card,.plans-card,.orders-card,.support-card,.notifications-panel,.admin-card,.onboarding-card,.store-identity,.product-detail,.location-modal,.compare-panel){
+    box-shadow:0 8px 24px rgba(19,63,37,.06);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  :where(.home-page main,.market-main,.provider-onboarding,.admin-gate,.admin-app,.plans-main,.orders-main,.checkout-main,.auth-shell,.support-wrap,.notifications-shell,.legal-page,.offline-shell,.home-page .hero,.support-hero,.notifications-hero,.store-hero,.product-detail){
+    animation:none!important;
+  }
+  :where(button,a[role="button"],.primary,.secondary,.back-shop,.store-link,.cart,.auth-submit,.add,.plan-add,.auth-card,.checkout-card,.plans-card,.orders-card,.support-card,.notifications-panel,.admin-card,.metric,.onboarding-card,.store-identity,.location-modal,.compare-panel,input,select,textarea){
+    transition:none!important;
+    scroll-behavior:auto!important;
+  }
+}
