@@ -51,3 +51,17 @@ When updating a task, change its row above and add a short note below:
 - Evidence (PR, commit, CI run, screenshot/log):
 - Remaining / blocker:
 - Next action:
+
+
+## Migrated standing product QA assignments
+
+These tasks were previously tracked in the removed root TASK_BOARD.md. They are now managed here so all Vaidik work has one home. Live evidence/status must be updated here and in DAILY_PROGRESS.md.
+
+| ID | Priority | Task | Status at migration | Owner | Acceptance / notes |
+|---|---|---|---|---|---|
+| DW-002 | P0 | Responsive UI and interaction audit: navigation, buttons, forms, loading/empty/error states, mobile and desktop. | TODO / not yet verified | Vaidik | Record route, viewport/device, repro steps, expected vs actual, severity and evidence. Review PR #88 and coordinate with the PR #118 file ownership boundary. |
+| DW-011 | P0 | Full product regression, E2E, security and release validation. Prepare and maintain the test matrix; execute tests as features become testable. | TODO / ongoing matrix evidence needs verification | Vaidik | Record exact commit/environment/steps/expected/actual/status/evidence. Include role isolation, idempotency/concurrency, responsive/accessibility, PWA, Android/iOS where available and non-production performance. No production order writes, real payments, production migrations or customer data. |
+| DW-003 | P0 | Service worker/offline/reconnect validation. | Open; compare existing PRs #90/#112 before taking code action | Vaidik audit first | Fresh install, cache update, offline navigation, reconnect, physical device follow-up. Report only evidence from exact current commits. |
+| DW-004 | P1 | Map existing daily-delivery functionality and identify the smallest valuable improvement without duplicating scheduler logic. | Audit notes migrated; follow-up only if assigned | Vaidik when assigned | Existing customer recurring plans and seller order/route/subscription views are documented in the master plan appendix. Staging behavior remains unverified without approved isolated staging. |
+
+Do not create a separate file for these tasks. Keep task state and evidence in this table or the existing active-task rows above.
