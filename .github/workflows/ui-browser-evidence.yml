@@ -42,6 +42,7 @@ jobs:
         run: node scripts/test-ui-regression-contracts.mjs
       - name: Start local static server
         run: |
+          cd ..
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/doodhwala-ui-server.log 2>&1 &
           for i in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:4173/Doodhwala/ >/dev/null; then exit 0; fi
