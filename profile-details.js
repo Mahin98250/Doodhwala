@@ -1,0 +1,139 @@
+(()=> {
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const client=()=>window.Doodhwala?.supabase||null;
+  const form=$("personalDetailsForm");
+  const save=$("saveProfile");
+  const message=$("formMessage");
+  const addressToggle=$("editAddress");
+  const addressFields=$("addressFields");
+  let currentUser=null;
+
+  function showMessage(text,kind="info"){
+    message.textContent=text;
+    message.dataset.kind=kind;
+  }
+  function setAddressEditing(enabled){
+    addressFields.disabled=!enabled;
+    for(const id of ["addressLine","areaName","city","pinCode"]) $(id).required=enabled;
+  }
+  function normalizePhone(value){return String(value||"").trim().replace(/[\s()-]/g,"");}
+  function safeError(error){
+    const text=String(error?.message||"");
+    if(/authentication_required|jwt expired|invalid jwt|session/i.test(text)) return "Your session has expired. Please sign in again.";
+    if(/full_name_required/i.test(text)) return "Enter your full name (at least 2 characters).";
+    if(/invalid_phone/i.test(text)) return "Enter a valid phone number using 10–15 digits.";
+    if(/complete_address_required|invalid_pin/i.test(text)) return "Complete the address, area, city and 6-digit PIN code.";
+    if(/failed to fetch|network|timeout|fetch/i.test(text)) return "We couldn't connect. Check your connection and try again.";
+    return "We couldn't save your details. Please try again.";
+  }
+  function redirectToSignIn(){
+    const returnPath=location.pathname+location.search+location.hash;
+    location.replace("/Doodhwala/auth/?return="+encodeURIComponent(returnPath));
+  }
+  async function loadDetails(){
+    const sup=client();
+    if(!sup){
+      showMessage("Secure account service is unavailable. Please refresh or try again later.","error");
+      $("accountEmail").textContent="Account connection unavailable";
+      save.disabled=true;
+      return;
+    }
+    save.disabled=true;
+    showMessage("Checking your sign-in…");
+    try{
+      const {data:sessionData,error:sessionError}=await sup.auth.getSession();
+      if(sessionError) throw sessionError;
+      currentUser=sessionData?.session?.user||null;
+      if(!currentUser){redirectToSignIn();return;}
+      $("accountEmail").textContent=currentUser.email||currentUser.phone||"Signed in to your Doodhwala account";
+
+      const {data:profile,error:profileError}=await sup.from("profiles")
+        .select("full_name,phone")
+        .eq("id",currentUser.id)
+        .maybeSingle();
+      if(profileError) throw profileError;
+
+      $("fullName").value=profile?.full_name||currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||"";
+      $("phone").value=profile?.phone||currentUser.phone||"";
+
+      const {data:address,error:addressError}=await sup.from("addresses")
+        .select("recipient_name,phone,address_line,area_name,city,pin_code")
+        .eq("user_id",currentUser.id)
+        .eq("is_default",true)
+        .order("created_at",{ascending:true})
+        .limit(1)
+        .maybeSingle();
+      if(addressError) throw addressError;
+      if(address){
+        $("addressLine").value=address.address_line||"";
+        $("areaName").value=address.area_name||"";
+        $("city").value=address.city||"";
+        $("pinCode").value=address.pin_code||"";
+      }
+      setAddressEditing(false);
+      showMessage("Your saved details are loaded. Make your changes, then save.","success");
+      save.disabled=false;
+    }catch(error){
+      showMessage(safeError(error),"error");
+      save.disabled=true;
+    }
+  }
+
+  addressToggle.addEventListener("change",()=>{
+    setAddressEditing(addressToggle.checked);
+    showMessage(addressToggle.checked
+      ?"Complete all address fields to save your default delivery address."
+      :"Your saved default address will be left unchanged.","info");
+  });
+
+  form.addEventListener("submit",async event=>{
+    event.preventDefault();
+    if(!currentUser){redirectToSignIn();return;}
+    if(save.disabled)return;
+    const fullName=$("fullName").value.trim();
+    const phone=normalizePhone($("phone").value);
+    if(fullName.length<2||fullName.length>120){
+      showMessage("Enter your full name (2–120 characters).","error");$("fullName").focus();return;
+    }
+    if(!/^\+?[0-9]{10,15}$/.test(phone)){
+      showMessage("Enter a valid phone number using 10–15 digits, with an optional leading +.","error");$("phone").focus();return;
+    }
+    let addressLine=null,areaName=null,city=null,pinCode=null;
+    if(addressToggle.checked){
+      addressLine=$("addressLine").value.trim();
+      areaName=$("areaName").value.trim();
+      city=$("city").value.trim();
+      pinCode=$("pinCode").value.trim();
+      if(!addressLine||!areaName||!city||!/^[0-9]{6}$/.test(pinCode)){
+        showMessage("Complete the address, area, city and 6-digit PIN code, or turn off address editing to keep it unchanged.","error");return;
+      }
+    }
+    const sup=client();
+    if(!sup){showMessage("Secure account service is unavailable. Please refresh and try again.","error");return;}
+    save.disabled=true;
+    save.textContent="Saving…";
+    showMessage("Saving your changes securely…");
+    try{
+      const {error}=await sup.rpc("complete_current_customer_profile",{
+        p_full_name:fullName,
+        p_phone:phone,
+        p_address_line:addressLine,
+        p_area_name:areaName,
+        p_city:city,
+        p_pin_code:pinCode
+      });
+      if(error) throw error;
+      showMessage("Personal details saved to your account.","success");
+      $("accountEmail").textContent=currentUser.email||currentUser.phone||"Signed in to your Doodhwala account";
+      if(addressToggle.checked) setAddressEditing(false);
+    }catch(error){
+      showMessage(safeError(error),"error");
+    }finally{
+      save.disabled=false;
+      save.textContent="Save personal details";
+    }
+  });
+
+  loadDetails();
+})();
