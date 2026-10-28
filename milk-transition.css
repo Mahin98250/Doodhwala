@@ -44,3 +44,178 @@
 @keyframes dw-milk-drop{0%,15%,75%,100%{opacity:0;transform:translate(0,-2px) scale(.55)}30%,62%{opacity:.9;transform:translate(2px,9px) scale(1)}}
 @media(max-width:420px){.dw-milk-transition-card{width:min(300px,100%);padding:18px 14px}.dw-milk-transition-card .dw-milk-scene{transform:scale(.92);transform-origin:center center;margin-top:-3px;margin-bottom:-4px}.dw-milk-loading{padding-right:10px}.dw-milk-loading .dw-milk-title{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.dw-milk-transition,.dw-milk-source,.dw-milk-target,.dw-milk-stream,.dw-milk-stream-glint,.dw-milk-pour i{animation:none!important;transition:none!important}.dw-milk-stream{opacity:0}.dw-milk-pour i{display:none}.dw-milk-source{transform:rotate(22deg)}.dw-milk-target svg .dw-milk-fill,.dw-milk-target svg .dw-milk-surface{transform:scaleY(.75)}}
+
+
+/* Premium cross-document transitions: subtle depth, quick motion, no heavy effects. */
+@view-transition { navigation: auto; }
+::view-transition-old(root) {
+  animation: dw-page-out 180ms cubic-bezier(.22,.61,.36,1) both;
+}
+::view-transition-new(root) {
+  animation: dw-page-in 360ms cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes dw-page-out {
+  to { opacity: 0; transform: translateY(-4px) scale(.995); filter: blur(1.5px); }
+}
+@keyframes dw-page-in {
+  from { opacity: 0; transform: translateY(10px) scale(.99); filter: blur(2px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.dw-milk-transition {
+  background: radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.78),rgba(235,245,232,.94) 70%);
+  transition: opacity 260ms cubic-bezier(.22,.61,.36,1);
+}
+.dw-milk-transition::before {
+  content: "";
+  position: absolute;
+  inset: -18% -12%;
+  pointer-events: none;
+  background: linear-gradient(135deg,rgba(210,235,201,.22),rgba(255,255,255,.5) 45%,rgba(203,229,193,.2));
+  clip-path: ellipse(72% 56% at 50% 50%);
+  transform: scale(.92);
+  opacity: 0;
+  transition: transform 520ms cubic-bezier(.16,1,.3,1),opacity 320ms ease;
+}
+.dw-milk-transition.is-visible::before { opacity: 1; transform: scale(1); }
+.dw-milk-transition-card {
+  position: relative;
+  z-index: 1;
+  transform: translateY(9px) scale(.975);
+  opacity: 0;
+  transition: transform 460ms cubic-bezier(.16,1,.3,1),opacity 300ms ease;
+  box-shadow: 0 34px 100px rgba(20,58,35,.17),0 8px 24px rgba(20,58,35,.08),inset 0 1px 0 #fff;
+}
+.dw-milk-transition.is-visible .dw-milk-transition-card { transform: translateY(0) scale(1); opacity: 1; }
+.dw-milk-brand-mark { box-shadow: 0 6px 18px rgba(22,77,50,.2),0 0 0 5px rgba(22,77,50,.055); }
+.dw-milk-scene--transition { --dw-pour-duration: .94s; }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-old(root),::view-transition-new(root) { animation: none!important; }
+  .dw-milk-transition::before,.dw-milk-transition-card { transition: none!important; }
+  .dw-milk-transition.is-visible .dw-milk-transition-card { transform: none; opacity: 1; }
+}
+
+/* Refined milk transition: slower liquid choreography and a softer glass-card arrival. */
+.dw-milk-transition { background: radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.88),rgba(231,243,228,.96) 68%,rgba(222,238,220,.96)); }
+.dw-milk-transition-card { will-change: transform, opacity; }
+.dw-milk-scene--transition { --dw-pour-duration: .94s; }
+.dw-milk-stream-shadow { stroke-width: 10; opacity: .24; }
+.dw-milk-stream-core { stroke-width: 5.8; }
+.dw-milk-transition.is-visible .dw-milk-transition-card { transition-delay: 35ms; }
+@media (prefers-reduced-motion: reduce) { .dw-milk-transition-card { will-change: auto; } }
+
+
+/* Final motion polish: liquid sheen, gentle bottle anticipation, and a soft landing. */
+.dw-milk-transition {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.94) 0%, rgba(241,249,239,.96) 42%, rgba(222,239,221,.98) 100%);
+  isolation: isolate;
+}
+.dw-milk-transition::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(112deg, transparent 28%, rgba(255,255,255,.42) 46%, transparent 62%);
+  transform: translateX(-32%);
+}
+.dw-milk-transition.is-visible::after {
+  animation: dw-milk-sheen 920ms cubic-bezier(.22,.61,.36,1) 1 both;
+}
+.dw-milk-transition-card {
+  border-color: rgba(255,255,255,.98);
+  background: linear-gradient(155deg, rgba(255,255,255,.98), rgba(250,253,249,.94));
+  transform: translateY(13px) scale(.965);
+  transition: transform 520ms cubic-bezier(.2,.8,.2,1), opacity 360ms ease, box-shadow 520ms ease;
+}
+.dw-milk-transition.is-visible .dw-milk-transition-card {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 32px 92px rgba(20,58,35,.16), 0 8px 22px rgba(20,58,35,.07), inset 0 1px 0 #fff;
+}
+.dw-milk-brand-mark { animation: dw-milk-mark-arrive 540ms cubic-bezier(.2,.8,.2,1) both; }
+.dw-milk-transition.is-visible .dw-milk-source { animation-name: dw-milk-tip; }
+.dw-milk-transition.is-visible .dw-milk-target { animation-name: dw-milk-receive; }
+.dw-milk-stream-glint { stroke-dasharray: 3 16; }
+@keyframes dw-milk-sheen {
+  0% { opacity: 0; transform: translateX(-32%); }
+  24% { opacity: .72; }
+  100% { opacity: 0; transform: translateX(32%); }
+}
+@keyframes dw-milk-mark-arrive {
+  0% { opacity: 0; transform: translateY(5px) scale(.88); }
+  72% { opacity: 1; transform: translateY(-1px) scale(1.035); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dw-milk-transition.is-visible::after, .dw-milk-brand-mark { animation: none !important; }
+  .dw-milk-transition::after { display: none; }
+}
+
+
+/* Clean, product-grade transition scene: minimal chrome, physically paced liquid. */
+.dw-milk-transition {
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background: rgba(246, 250, 246, .97);
+  -webkit-backdrop-filter: blur(12px) saturate(112%);
+  backdrop-filter: blur(12px) saturate(112%);
+}
+.dw-milk-transition::before {
+  inset: 0;
+  border-radius: 0;
+  clip-path: none;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(255,255,255,.98) 0%, rgba(242,248,241,.68) 42%, transparent 72%);
+}
+.dw-milk-transition::after { display: none; }
+.dw-milk-transition-card {
+  width: min(320px, 100%);
+  padding: 22px 18px 19px;
+  border: 1px solid rgba(32, 82, 49, .08);
+  border-radius: 24px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 18px 54px rgba(24,62,43,.09), 0 2px 8px rgba(24,62,43,.035);
+  transform: translateY(8px) scale(.985);
+  transition: transform 340ms cubic-bezier(.2,.75,.25,1), opacity 240ms ease;
+}
+.dw-milk-transition.is-visible .dw-milk-transition-card {
+  box-shadow: 0 18px 54px rgba(24,62,43,.09), 0 2px 8px rgba(24,62,43,.035);
+}
+.dw-milk-brand-mark {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 3px;
+  border-radius: 11px;
+  box-shadow: none;
+  animation: none;
+}
+.dw-milk-scene--transition { --dw-pour-duration: 1.55s; }
+.dw-milk-scene { width: min(250px, 100%); }
+.dw-milk-transition-card .dw-milk-title {
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -.015em;
+}
+.dw-milk-transition-card small {
+  margin-top: 5px;
+  color: #7b8b7f;
+  font-size: 11px;
+}
+.dw-milk-stream-shadow { stroke: #b5d9c0; stroke-width: 7.5; opacity: .28; }
+.dw-milk-stream-core { stroke: #fff; stroke-width: 4.5; }
+.dw-milk-stream-glint { stroke-width: .9; opacity: .65; }
+.dw-milk-pour i { box-shadow: none; }
+.dw-milk-loading {
+  border-color: rgba(32,82,49,.08);
+  box-shadow: 0 5px 18px rgba(24,62,43,.08);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+@media (max-width: 420px) {
+  .dw-milk-transition { padding-left: 16px; padding-right: 16px; }
+  .dw-milk-transition-card { width: min(300px,100%); padding: 18px 14px 16px; }
+  .dw-milk-transition-card .dw-milk-scene { transform: scale(.9); margin-top: -4px; margin-bottom: -7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dw-milk-transition-card { transform: none; }
+}

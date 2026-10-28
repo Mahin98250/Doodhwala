@@ -8,8 +8,8 @@ const runtimes = [
   { path: "product.js", label: "product detail", loading: 'showLoading("Loading this milk…")' },
   { path: "checkout.js", label: "checkout", loading: 'showLoading("Preparing your checkout…")' }
 ];
-const transitionCss = "/Doodhwala/milk-transition.css?v=20261025.4";
-const transitionJs = "/Doodhwala/milk-transition.js?v=20261025.4";
+const transitionCss = "/Doodhwala/milk-transition.css?v=20261027.8";
+const transitionJs = "/Doodhwala/milk-transition.js?v=20261027.8";
 const sw = read("sw.js");
 
 for (const page of pages) {
@@ -51,3 +51,16 @@ assert.match(motionCss, /@keyframes dw-milk-surface-source/, "The source liquid 
 assert.match(motionCss, /prefers-reduced-motion/, "The liquid animation must respect reduced-motion settings.");
 
 console.log("PASS: realistic milk-pour animation and loading coverage across provider storefront, product details, and checkout.");
+
+assert.ok(motionCss.includes("@view-transition { navigation: auto; }"), "Cross-document navigation should use the native View Transitions API when supported.");
+assert.match(motionCss, /@keyframes dw-page-in/, "Incoming pages should use a smooth depth-and-fade entrance.");
+assert.match(motionCss, /@keyframes dw-page-out/, "Outgoing pages should use a subtle departure motion.");
+assert.ok(motionJs.includes("reduceMotion?0:980"), "Navigation should allow the smoother milk-pour choreography while respecting reduced motion.");
+assert.match(motionCss, /prefers-reduced-motion: reduce/, "Native page transitions should disable motion when the user requests reduced motion.");
+assert.match(read("sw.js"), /const CACHE="doodhwala-v105"/, "PWA cache revision should refresh the updated transition assets.");
+for (const page of ["index.html","auth.html","checkout.html","orders.html","plans.html","product.html","provider.html","store.html","support.html","notifications.html","legal.html","admin.html"]) {
+  const html = read(page);
+  assert.ok(html.includes("/Doodhwala/milk-transition.css?v=20261027.8"), page + " must load the current transition CSS.");
+  assert.ok(html.includes("/Doodhwala/milk-transition.js?v=20261027.8"), page + " must load the current transition runtime.");
+}
+console.log("PASS: premium cross-page motion, reduced-motion behavior, fast navigation, and cache-version contracts.");
