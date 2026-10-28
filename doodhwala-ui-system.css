@@ -162,3 +162,86 @@
     animation:none!important;transition:none!important;scroll-behavior:auto!important;
   }
 }
+
+
+/* Customer home mobile header: reserve a real row for each action.
+   The old flex row let three text links compete for the same narrow space. */
+.home-page .brand img{width:44px;height:44px;flex:0 0 44px;object-fit:contain}
+.home-page .mobile-logo{gap:10px;min-width:0;flex:0 0 auto}
+.home-page .mobile-logo img{width:44px;height:44px;flex:0 0 44px;object-fit:contain}
+.home-page .mobile-logo b{font-size:19px;letter-spacing:-.035em;white-space:nowrap}
+@media(max-width:760px){
+  .home-page header{
+    height:auto;
+    min-height:0;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:
+      "brand location"
+      "search search"
+      "account cart";
+    align-items:center;
+    gap:10px 12px;
+    padding:12px 16px 14px;
+  }
+  .home-page header .mobile-logo{grid-area:brand;display:flex;min-width:0;padding:0;text-align:left}
+  .home-page header .mobile-logo img{width:46px;height:46px;flex:0 0 46px}
+  .home-page header .mobile-logo b{font-size:20px;line-height:1.1}
+  .home-page header .location-top{
+    grid-area:location;
+    margin:0;
+    width:min(44vw,220px);
+    min-width:0;
+    max-width:100%;
+    min-height:48px;
+    padding:8px 9px;
+    gap:6px;
+    border-radius:16px;
+  }
+  .home-page header .location-top-icon{font-size:17px;flex:0 0 auto}
+  .home-page header .location-top-copy{min-width:0}
+  .home-page header .location-top-copy small{font-size:8px;line-height:1.15}
+  .home-page header .location-top-copy b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;line-height:1.25}
+  .home-page header .location-top-chevron{flex:0 0 auto}
+  .home-page header .search{grid-area:search;width:100%;max-width:none;min-width:0;height:48px;margin:0;border-radius:16px;padding-inline:14px}
+  .home-page header .search input{min-width:0;font-size:15px}
+  .home-page header .auth-link:not(#authLink){display:none!important}
+  .home-page header #authLink{
+    grid-area:account;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    justify-self:start;
+    min-width:0;
+    min-height:44px;
+    max-width:100%;
+    padding:8px 12px;
+    border:1px solid #dce8de;
+    border-radius:13px;
+    background:rgba(255,255,255,.82);
+    color:var(--green);
+    font-size:12px;
+    font-weight:800;
+    line-height:1.2;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .home-page header .cart{
+    grid-area:cart;
+    justify-self:end;
+    min-width:72px;
+    min-height:44px;
+    padding:10px 15px;
+    border-radius:15px;
+    font-size:13px;
+  }
+}
+@media(max-width:390px){
+  .home-page header{padding-inline:12px;column-gap:8px}
+  .home-page header .mobile-logo{gap:7px}
+  .home-page header .mobile-logo img{width:42px;height:42px;flex-basis:42px}
+  .home-page header .mobile-logo b{font-size:18px}
+  .home-page header .location-top{width:min(45vw,190px);padding-inline:7px}
+  .home-page header .location-top-icon{display:none}
+  .home-page header .location-top-copy b{font-size:10px}
+}
