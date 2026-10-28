@@ -4,7 +4,16 @@
 
 Doodhwala is a marketplace and software/service provider for independent local milk sellers. The customer pays **100% of the order amount directly to the selected milk provider**. Doodhwala does not collect, split, deduct, or hold customer order funds.
 
-Milk providers pay Doodhwala a separate fixed subscription fee (and, if selected, a separately disclosed advertising fee) for listing, marketplace access, and optional promotion. Subscription collection is separate from customer checkout.
+Milk providers choose one of two fixed monthly Doodhwala plans: a normal listing or a premium listing with a recommended tag and advertising. The premium price is the full monthly price, not a ₹3,500 add-on to the normal plan. Subscription collection is separate from customer checkout.
+
+## Owner-selected seller plans
+
+| Plan | Monthly price | Included benefit |
+| --- | ---: | --- |
+| Normal listing | ₹2,000 (200,000 paise) | Seller's name/listing in the app. |
+| Recommended + advertising | ₹3,500 (350,000 paise) **total** | Seller's app listing, text-only recommended label and in-app advertising. |
+
+The premium plan replaces the normal plan for the selected period; it is not ₹5,500 per month or an extra ₹3,500 charge. The owner wants the words “Recommended by Doodhwala” in the app. The initial design puts **“Recommended by Doodhwala · Sponsored”** on the seller's existing discovery card, with a short neutral line inviting customers to view milk, prices and delivery details. This is a text-only promotion, not a banner or hidden change to search ranking. Campaign limits and duration, whether tax is included, billing dates, and upgrade/downgrade or proration rules still need approval. Do not activate, bill, promise a placement or collect payment until the separate billing and advertising flows are integrated, tested and approved for launch.
 
 ## Customer order payment methods
 
@@ -25,19 +34,19 @@ Milk providers pay Doodhwala a separate fixed subscription fee (and, if selected
 ## Seller subscription billing
 
 - Maintain a separate seller subscription record with plan, fixed price, billing period, start/end dates, status, invoice/reference, and audit timestamps.
-- Example plan prices are configuration only; never hard-code a price into checkout or imply a plan is active until its terms are set and approved.
+- Configure the owner-selected ₹2,000 and ₹3,500 monthly plans in the separate billing system, in paise. Never put seller-plan prices into customer checkout or imply a plan is active before its terms and implementation are approved.
 - Subscription payments are made by the seller to Doodhwala using an explicitly configured method (for example, Doodhwala's own business UPI/bank details) and are reconciled separately.
 - A subscription receipt must not mark any customer order as paid, and a customer order payment must not settle a seller subscription.
 - Provide a clear invoice/receipt, renewal date, due status, grace period, cancellation process, and seller notification.
 - Any suspension for non-payment should follow disclosed terms, preserve seller/order records, and not disrupt orders already accepted without an explicit operational policy.
-- Advertising is optional, separately priced, and must not be silently added to a subscription.
+- Recommended placement and advertising are optional benefits included in the ₹3,500 premium plan. Do not silently charge an extra advertising fee. A paid recommendation or placement must be transparently identified as sponsored, not represented as an independent endorsement.
 
 ## Ledger separation
 
 Keep separate records and state machines for:
 1. Customer order payments: seller is the payee; Doodhwala does not take a commission.
-2. Seller subscription invoices/payments: Doodhwala is the payee.
-3. Optional seller advertising invoices/payments: Doodhwala is the payee.
+2. Seller subscription invoices/payments: Doodhwala is the payee; the ₹3,500 premium plan includes its stated advertising benefit.
+3. Any separately approved future advertising charge: Doodhwala is the payee, with its own clear terms. There is no separate advertising charge in the two plans selected above.
 
 Never use one ledger row or status field to represent both an order payment and a subscription payment. Use server-derived amounts, authenticated ownership checks, idempotency, append-only audit events, and database constraints for duplicate references and invalid transitions.
 
@@ -53,8 +62,8 @@ Never use one ledger row or status field to represent both an order payment and 
 
 ## Customer-facing wording
 
-"Pay the full order amount directly to your milk provider. Doodhwala does not deduct a commission from this order. Your provider pays Doodhwala separately for their seller subscription or any optional advertising plan."
+"Pay the full order amount directly to your milk provider. Doodhwala does not deduct a commission from this order. Your provider pays Doodhwala separately for a seller plan. Paid placements are identified as sponsored."
 
 ## Current implementation status
 
-This document records the intended business model; it does not itself enable payments, verify bank transfers, create subscription billing, or activate a production payment provider. Existing payment backend readiness must be verified in staging before launch.
+This document records the business model; it does not itself enable payments, verify bank transfers, create subscription billing, or activate a production payment provider. The owner has chosen manual confirmation; see the [pilot plan](MANUAL_CONFIRMATION_PILOT.md) for current implementation status, separate billing dependency, operating steps and release gates. Existing payment backend readiness must be verified in staging before launch.

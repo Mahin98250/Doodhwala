@@ -31,11 +31,11 @@ for (const runtime of runtimes) {
 
 assert.ok(read("store.html").includes("/Doodhwala/store.js?v=20261025.4"), "Storefront must use the current runtime URL.");
 assert.ok(read("product.html").includes("/Doodhwala/product.js?v=20261025.6"), "Product page must use the current runtime URL.");
-assert.ok(read("checkout.html").includes("/Doodhwala/checkout.js?v=20261025.3"), "Checkout must use the current runtime URL.");
+assert.ok(read("checkout.html").includes("/Doodhwala/checkout.js?v=20261028.1"), "Checkout must use the current runtime URL.");
 for (const asset of [
   "/Doodhwala/store.js?v=20261025.4",
   "/Doodhwala/product.js?v=20261025.6",
-  "/Doodhwala/checkout.js?v=20261025.3"
+  "/Doodhwala/checkout.js?v=20261028.1"
 ]) assert.ok(sw.includes(asset), "PWA precache must reference " + asset);
 
 const motionCss = read("milk-transition.css");
@@ -57,7 +57,7 @@ assert.match(motionCss, /@keyframes dw-page-in/, "Incoming pages should use a sm
 assert.match(motionCss, /@keyframes dw-page-out/, "Outgoing pages should use a subtle departure motion.");
 assert.ok(motionJs.includes("reduceMotion?0:980"), "Navigation should allow the smoother milk-pour choreography while respecting reduced motion.");
 assert.match(motionCss, /prefers-reduced-motion: reduce/, "Native page transitions should disable motion when the user requests reduced motion.");
-assert.match(read("sw.js"), /const CACHE="doodhwala-v105"/, "PWA cache revision should refresh the updated transition assets.");
+assert.match(read("sw.js"), /const CACHE="doodhwala-v106"/, "PWA cache revision should refresh the updated transition assets.");
 for (const page of ["index.html","auth.html","checkout.html","orders.html","plans.html","product.html","provider.html","store.html","support.html","notifications.html","legal.html","admin.html"]) {
   const html = read(page);
   assert.ok(html.includes("/Doodhwala/milk-transition.css?v=20261027.8"), page + " must load the current transition CSS.");

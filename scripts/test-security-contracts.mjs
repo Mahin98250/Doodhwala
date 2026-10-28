@@ -47,7 +47,9 @@ for(const required of [
 ]){
   assert.ok(sql.toLowerCase().includes(required.toLowerCase()),"security migration must include "+required);
 }
-assert.ok(sql.includes("grant execute on function private.create_order_secure_with_promo"),"order-with-promo RPC must remain available to authenticated customers");
+assert.ok(sql.includes("grant execute on function private.create_order_secure_with_promo"),"historical promo grant remains documented in the original migration");
+const atomicMigration=fs.readFileSync(path.join(migrationsDir,"20261028100000_doodhwala_atomic_manual_checkout.sql"),"utf8");
+assert.ok(atomicMigration.includes("create_order_secure_with_promo")&&atomicMigration.includes("atomic_checkout_legacy_privilege_remains"),"the later checkout migration must revoke legacy promo helpers and reject inherited grants");
 assert.ok(sql.includes("grant execute on function private.provider_add_tracking_event_impl"),"provider live tracking must remain available to authenticated providers");
 assert.ok(sql.includes("grant execute on function private.submit_order_rating_impl"),"customer rating must remain available to authenticated customers");
 assert.ok(sql.includes("from public, anon, authenticated, service_role"),"internal helper/trigger function execution must be revoked from client roles");
