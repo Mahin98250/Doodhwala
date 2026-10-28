@@ -26,6 +26,9 @@
 - CI for the new PR #118 head is pending/not yet returned by the workflow-run lookup. Recheck the exact head before further changes; no merge/deploy.
 - CI then reproduced the failure with `URL=chrome-error://chromewebdata/` and no stylesheet links, indicating the assertion was inspecting a browser navigation error page rather than the auth document. Updated `scripts/test-pwa-browser-smoke.mjs` in commit [`5c228d6`](https://github.com/Mahin98250/Doodhwala/commit/5c228d684cda9046cd57e35cb726b391ae1423e8) to run the 12-route layout audit in a fresh Playwright context with service workers blocked. The preceding offline/reconnect checks still exercise the service worker in the original context; the clean UI assertion remains intact. This is a targeted isolation fix, not a verified pass yet.
 - Latest PR #118 head: `5c228d684cda9046cd57e35cb726b391ae1423e8`. CI results for this exact head had not appeared at the last lookup; check again before claiming green.
+- The next run exposed the actual reason the auth route became `chrome-error://chromewebdata/`: `auth.js` deliberately redirects local-origin auth pages to the production OAuth-capable site. The visual test's network allowlist blocks that production navigation, so it was testing a browser error page rather than route markup. Application auth behavior is intentional and must not be changed to satisfy this test.
+- Commit [`1032821`](https://github.com/Mahin98250/Doodhwala/commit/103282190a9314ef37a019671836fe05b5d426f3) stubs only `/Doodhwala/auth.js` in the isolated static route-layout smoke context, with a code comment explaining why. Production code and the original service-worker/offline tests are untouched; auth interactions remain outside this static layout assertion.
+- Latest PR #118 head now: `103282190a9314ef37a019671836fe05b5d426f3`. Await exact-head CI before calling this resolved.
 
 ## 2026-10-28 — Collaboration system initialized
 
