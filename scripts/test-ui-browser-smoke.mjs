@@ -43,9 +43,11 @@ try {
     assert.equal(state.overflow, false, `no horizontal overflow at ${width}px`);
     assert.deepEqual(errors, [], `no uncaught page errors at ${width}px`);
     if (width === 390) {
+      await page.waitForFunction(() => typeof window.__doodhwalaNavigate === "function", null, { timeout: 5000 });
       for (const key of ["explore", "saved", "home"]) {
-        await page.locator(`[data-customer-nav="${key}"]`).click();
-        await page.waitForFunction(k => document.querySelector(`[data-customer-nav="${k}"]`)?.getAttribute("aria-current") === "page", key);
+        const selector = `[data-customer-nav="${key}"]`;
+        await page.locator(selector).click();
+        await page.waitForFunction(sel => document.querySelector(sel)?.getAttribute("aria-current") === "page", selector, { timeout: 5000 });
       }
     }
     await page.close();
