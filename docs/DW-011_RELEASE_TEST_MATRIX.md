@@ -3,7 +3,7 @@
 **Owner:** Vaidik Patel (@vaidikpatel22112010-tech)  
 **Parent feature scope:** [DW-010 / #93](https://github.com/Mahin98250/Doodhwala/issues/93)  
 **QA task:** [DW-011 / #94](https://github.com/Mahin98250/Doodhwala/issues/94)  
-**Inventory baseline:** main tree `fa41464ba69b320b0ae345ad9f01ffb3cc050722`  
+**Inventory baseline:** main tree `ad49f2c32ad49d396b9d7abf0719f9cbf4a392ad` (refreshed 2026-10-28)  
 **Initial matrix commit tested by CI:** `5f08d08e463531cce04dda247324ee5f310f1ade`  
 **Status:** Inventory prepared; full authenticated backend E2E is **BLOCKED** pending an isolated staging project and project-lead confirmation of a test-ready target. This is a plan/evidence ledger, not a claim that the entire product has passed.
 
@@ -31,12 +31,14 @@
 - Load script (only approved isolated staging): `scripts/load-tests/nearby-provider-search.k6.js`.
 
 ### Existing workflows
-- `.github/workflows/static-validation.yml` — repository/static contracts; not backend integration proof.
+- `.github/workflows/static-validation.yml` — syntax and source-contract scripts; not backend integration proof.
 - `.github/workflows/sql-migration-validation.yml` — disposable PostgreSQL migration/fixture validation; not proof of the deployed Supabase schema.
-- `.github/workflows/live-page-smoke.yml` — public page availability smoke; no authenticated mutations.
+- `.github/workflows/in-app-notifications-validation.yml` — disposable PostgreSQL notification migration assertions plus notification UI/static contracts.
+- `.github/workflows/pwa-offline-browser.yml` — Playwright/Chromium offline/PWA browser simulation with screenshot/JSON artifacts; no authenticated Supabase backend journey.
+- `.github/workflows/live-page-smoke.yml` — scheduled/manual public-page/asset availability smoke; no authenticated mutations.
 - `.github/workflows/production-readiness-probe.yml` and `.github/workflows/production-reporting-smoke.yml` — read-only/production reporting probes only; do not use them to create test orders or run load.
-- `.github/workflows/staging-scalability-load-test.yml` — must remain blocked until an isolated staging target and explicit environment safeguards are verified.
-- UI evidence already exists in draft PR [#88](https://github.com/Mahin98250/Doodhwala/pull/88) and PWA evidence in draft PR [#90](https://github.com/Mahin98250/Doodhwala/pull/90). Those narrow browser tests are not a substitute for authenticated feature E2E.
+- `.github/workflows/staging-scalability-load-test.yml` — manual-only bounded read-only k6 scenario; must remain blocked until an isolated staging target and explicit environment safeguards are verified.
+- UI evidence exists in PR [#88](https://github.com/Mahin98250/Doodhwala/pull/88) and PWA audit/browser evidence in PRs [#90](https://github.com/Mahin98250/Doodhwala/pull/90) and [#125](https://github.com/Mahin98250/Doodhwala/pull/125). These narrow browser/source checks are not authenticated feature E2E.
 
 ### CI evidence on the matrix branch
 - **PASS — Static validation** on commit `5f08d08e463531cce04dda247324ee5f310f1ade`: [run 40474626708](https://github.com/Mahin98250/Doodhwala/actions/runs/40474626708). The workflow's source/contract checks passed, including auth contracts, cross-account/provider isolation contracts, checkout/retry, discovery/pagination, payment contracts, resilience, support/legal contracts, service-worker checks, and site validation. This is not authenticated Supabase E2E.
@@ -119,7 +121,7 @@ Run from a clean checkout of the tested SHA. First inspect workflow definitions 
 
 | ID / checklist item | Automated command / workflow | Environment | Test role / data | Expected result | Evidence | Status | Owner |
 |---|---|---|---|---|---|---|---|
-| 5.1 PWA install/update from old cache/open tab/offline/reconnect freshness; no offline mutation promise | `node scripts/test-service-worker.mjs`, `node scripts/test-pwa-registration.mjs`; PR #90 browser workflow | Chromium CI simulation; real installed PWA requires device/manual test | Synthetic cache v94→v95; no backend mutations | New assets served after activation; unrelated caches preserved; offline routes explain limits; reconnect refreshes content | [PWA browser run](https://github.com/Mahin98250/Doodhwala/actions/runs/40371394649), commit previously tested `d8cb4b4a980a2f57b1b7a384726fa1d637930fe2` | PASS for that narrow PR commit/scope; NOT RUN on current matrix SHA; physical update BLOCKED | Vaidik |
+| 5.1 PWA install/update from old cache/open tab/offline/reconnect freshness; no offline mutation promise | `node scripts/test-service-worker.mjs`, `node scripts/test-pwa-registration.mjs`, `node scripts/test-pwa-offline-contracts.mjs`; `.github/workflows/pwa-offline-browser.yml` | Chromium CI simulation; real installed PWA requires device/manual test | Current main cache `doodhwala-v105`; no backend mutations | New assets served after activation; unrelated caches preserved; offline routes explain limits; reconnect refreshes content | Current-main static PASS [run 40663684748](https://github.com/Mahin98250/Doodhwala/actions/runs/40663684748), Pages PASS [run 40663683820](https://github.com/Mahin98250/Doodhwala/actions/runs/40663683820); browser simulation evidence is scoped to its exact PR/main run only | PASS for current-main static/PWA contracts and Pages build; live installed-PWA open-tab update/reconnect remains NOT RUN / BLOCKED on device | Vaidik |
 | 5.2 Browser/responsive/accessibility: focus, labels, screen reader, touch targets, reduced motion, forced colors | UI contract/browser evidence workflows; `node scripts/test-provider-mobile-nav-a11y.mjs`; manual screen-reader/keyboard tests | Chromium CI and manual browsers; device matrix needed | Anonymous synthetic UI state; widths 320/390/768/1024/1440 CSS px | No unintended overflow; keyboard/focus and semantics work; contrast/forced colors/reduced motion and screen reader checked manually | [UI Chromium run](https://github.com/Mahin98250/Doodhwala/actions/runs/40372312018) on prior PR #88 commit `7dd3717625762da00ab81f97fb3d7c9e1dec4ac3` | PASS for stated browser smoke only; full accessibility NOT RUN | Vaidik |
 | 5.3 Physical Android/iOS tests; otherwise exact manual steps | Manual checklist below | Physical devices not yet evidenced | Test account only after staging is provisioned | Install/update/offline/reconnect, touch, permissions and auth tested; unavailable devices remain BLOCKED | No physical-device artifacts | BLOCKED — no device evidence recorded | Vaidik |
 | 5.4 Native packaging/build/signing/store readiness; do not call PWA native | Inspect repository build manifests, app IDs, signing config, target SDK, assets and store checklist; no native build command found in current inventory | Repository only; actual signing/store account not assumed available | No production credentials | Clearly distinguish static PWA from native app; missing package/build/signing is reported as a gap, not passed | No native build artifact found in current inventory | NOT RUN; native package readiness unverified | Vaidik |
@@ -141,3 +143,102 @@ Run from a clean checkout of the tested SHA. First inspect workflow definitions 
 ## Current release decision
 
 **Not release-certified.** The current safe work is inventory, static contracts, and disposable PostgreSQL fixture validation. Authenticated Supabase E2E, actual RLS/Realtime/payment RPC deployment checks, physical-device tests, staging load testing, and backup/restore remain blocked or not run. The production schema snapshot is not a safe substitute for staging. Keep all unresolved rows open and attach fresh evidence per commit as DW-010 PRs become ready.
+
+
+## 2026-10-28 current-main evidence refresh and exhaustive inventory
+
+**Verified main SHA:** `ad49f2c32ad49d396b9d7abf0719f9cbf4a392ad`. The following runs were queried by exact head SHA and all completed successfully:
+
+- Static validation (all scripts listed in its workflow scope): [PASS — run 40663684748](https://github.com/Mahin98250/Doodhwala/actions/runs/40663684748).
+- Disposable PostgreSQL migration/fixture assertions (nearby discovery/capacity and payment audit): [PASS — run 40663684713](https://github.com/Mahin98250/Doodhwala/actions/runs/40663684713).
+- Notification UI contracts plus disposable PostgreSQL notification migration/assertions: [PASS — run 40663684756](https://github.com/Mahin98250/Doodhwala/actions/runs/40663684756).
+- Scheduled live-page smoke/asset availability: [PASS — run 40674269872](https://github.com/Mahin98250/Doodhwala/actions/runs/40674269872).
+- GitHub Pages build/deployment: [PASS — run 40663683820](https://github.com/Mahin98250/Doodhwala/actions/runs/40663683820).
+
+These results are for those workflow scopes only. They do **not** prove authenticated Supabase E2E, deployed RLS/RPC/Realtime/payment Edge Function behavior, real-money settlement, or physical-device accessibility. The live-page smoke is public HTTP/asset availability, not a customer order journey. The current service-worker cache is `doodhwala-v105`; older PR #90's v95 assumptions/workflow filename are stale against main. PR #125 proposes the audit refresh. Do not treat the stale PR's prior browser evidence as current-main physical-device evidence.
+
+### Complete tracked script / fixture inventory at this SHA
+
+Generated from the recursive Git tree of the exact main SHA above; this is an inventory, not a claim that every listed script ran independently. The static/SQL/notification workflows above determine which commands actually ran in CI.
+
+**Scripts and fixtures (`52` files):**
+- `scripts/live-page-smoke.mjs`
+- `scripts/load-tests/nearby-provider-search.k6.js`
+- `scripts/production-readiness-probe.mjs`
+- `scripts/production-reporting-smoke.mjs`
+- `scripts/sql-tests/in-app-notifications-assertions.sql`
+- `scripts/sql-tests/in-app-notifications-fixture.sql`
+- `scripts/sql-tests/nearby-search-assertions.sql`
+- `scripts/sql-tests/nearby-search-fixture.sql`
+- `scripts/sql-tests/payment-audit-assertions.sql`
+- `scripts/sql-tests/payment-audit-fixture.sql`
+- `scripts/staging-schema-audit.sql`
+- `scripts/test-admin-allowlist-rls.mjs`
+- `scripts/test-admin-data-sync.mjs`
+- `scripts/test-anon-access-hardening.mjs`
+- `scripts/test-auth-contracts.mjs`
+- `scripts/test-authorization-isolation.mjs`
+- `scripts/test-checkout-flow.mjs`
+- `scripts/test-customer-journey-refresh.mjs`
+- `scripts/test-customer-ui-fixes.mjs`
+- `scripts/test-direct-seller-payments.mjs`
+- `scripts/test-discovery-enhancements.mjs`
+- `scripts/test-discovery-pagination.mjs`
+- `scripts/test-doodhwala-pay-state.mjs`
+- `scripts/test-doodhwala-pay.mjs`
+- `scripts/test-error-report-version.mjs`
+- `scripts/test-experience-layer.mjs`
+- `scripts/test-legal-contracts.mjs`
+- `scripts/test-marketplace-refresh.mjs`
+- `scripts/test-milk-loading-coverage.mjs`
+- `scripts/test-nearby-provider-search-scalability.mjs`
+- `scripts/test-notifications.mjs`
+- `scripts/test-order-capacity-query-indexes.mjs`
+- `scripts/test-payment-reconciliation-audit.mjs`
+- `scripts/test-policy-consolidation.mjs`
+- `scripts/test-product-runtime.mjs`
+- `scripts/test-production-migration-manifest.mjs`
+- `scripts/test-production-schema-inventory.mjs`
+- `scripts/test-provider-mobile-nav-a11y.mjs`
+- `scripts/test-provider-simple-order-workflow.mjs`
+- `scripts/test-pwa-browser-smoke.mjs`
+- `scripts/test-pwa-offline-contracts.mjs`
+- `scripts/test-pwa-registration.mjs`
+- `scripts/test-resilience.mjs`
+- `scripts/test-security-contracts.mjs`
+- `scripts/test-service-worker.mjs`
+- `scripts/test-splash-screen.mjs`
+- `scripts/test-staging-baseline.mjs`
+- `scripts/test-staging-load-test-safety.mjs`
+- `scripts/test-subscription-local-dates.mjs`
+- `scripts/test-subscription-schedule-preview.mjs`
+- `scripts/test-support-center.mjs`
+- `scripts/validate-site.mjs`
+
+**Workflow files (`8` files):**
+- `.github/workflows/in-app-notifications-validation.yml`
+- `.github/workflows/live-page-smoke.yml`
+- `.github/workflows/production-readiness-probe.yml`
+- `.github/workflows/production-reporting-smoke.yml`
+- `.github/workflows/pwa-offline-browser.yml`
+- `.github/workflows/sql-migration-validation.yml`
+- `.github/workflows/staging-scalability-load-test.yml`
+- `.github/workflows/static-validation.yml`
+
+**Test-runner note:** root `package.json` was not present in the main tree when inspected. The static workflow invokes Node scripts directly; SQL workflows provision disposable PostgreSQL service containers and run explicit fixture/migration/assertion files; PWA browser workflow installs Playwright/Chromium inside the runner. Do not assume a single `npm test` command exists.
+
+### Revalidated environment and safety boundary
+
+- Safe database target proven by CI: ephemeral/disposable PostgreSQL service with synthetic fixture schemas only.
+- Supabase staging target: **BLOCKED / not provisioned or verified** in `docs/STAGING_BASELINE.md`. No staging credentials or target were available to this audit.
+- Production project `hmiboyfcvtfawrwujslg` is explicitly **not a test target**; documented schema/migration-history drift makes it unsafe to substitute for staging.
+- Payment security docs state that the app does not have a verified production payment gateway and direct-seller UPI confirmation is seller-attested, not bank-verified. The `doodhwala-pay` Edge Function was absent in the last documented production audit. No real payments were attempted.
+- Current issue #93 feature checklist remains open for authenticated identity/ownership/RLS, checkout/order retry and state, subscriptions, seller monthly invoice idempotency/reconciliation, admin, routes/GPS, support/deletion, installed-PWA/device accessibility, staging performance, and backup/restore. Do not close these rows from static CI evidence alone.
+
+### Next executable steps / owners
+
+1. **Mahin:** provide an explicitly approved isolated Supabase staging target (or confirm an available zero-cost isolated option), region, schema/migration baseline, and synthetic test-account authorization. No paid resource is created by this task.
+2. **Vaidik + feature owners:** verify feature PR heads are ready, then run authenticated cross-role journeys on that staging target and record exact head SHA, role, browser/device/viewport, steps, expected/actual, artifact and follow-up issue.
+3. **Mahin + Vaidik:** approve a bounded non-production load-test window only after target guards and synthetic data are verified; collect metrics/artifacts; execute backup/restore or documented recovery verification in disposable/staging only.
+4. **Vaidik:** perform the documented manual Android/iOS/PWA/accessibility checklist when devices are available; otherwise keep each unavailable test BLOCKED with exact steps.
+5. **Mahin:** review the final evidence report. Release decision remains **BLOCKED / NOT READY** until the open gates have genuine evidence and owner approval.
