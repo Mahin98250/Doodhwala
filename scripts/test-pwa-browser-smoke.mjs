@@ -94,6 +94,21 @@ try {
   await page.goto(base, { waitUntil: "domcontentloaded" });
   await page.screenshot({ path: path.join(evidenceDir, "reconnected-home.png"), fullPage: true });
   evidence.checks.push("reconnect returns to the site; manual refresh remains the way to ensure fresh content");
+
+  // Run route/layout assertions in a fresh context with service workers blocked.
+  // This keeps the visual audit independent of the intentionally manipulated
+  // offline/service-worker state above while still testing the same local build.
+  const visualContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: "block"
+  });
+  const visualPage = await visualContext.newPage();
+  await visualPage.route("**/*", route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== origin) return route.abort();
+    return route.continue();
+  });
+
   // Route-family visual smoke: verify the final shared layer is present and
   // record actual layout widths for the customer, seller, and owner shells.
   const visualRoutes = [
@@ -115,12 +130,12 @@ try {
     {name:"mobile",width:390,height:844},
     {name:"desktop",width:1440,height:900}
   ]) {
-    await page.setViewportSize({width:viewport.width,height:viewport.height});
+    await visualPage.setViewportSize({width:viewport.width,height:viewport.height});
     for (const [name,route] of visualRoutes) {
       const target = route ? new URL(route, base).href : base;
-      const routeResponse = await page.goto(target,{waitUntil:"domcontentloaded"});
+      const routeResponse = await visualPage.goto(target,{waitUntil:"domcontentloaded"});
       assert.ok(routeResponse && routeResponse.ok(), name + " " + viewport.name + " route must load");
-      const layout = await page.evaluate(() => ({
+      const layout = await visualPage.evaluate(() => ({
         viewportWidth: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
@@ -136,11 +151,12 @@ try {
       assert.equal(layout.horizontalOverflow, false,
         name + " " + viewport.name + " layout must not overflow horizontally (document " +
         layout.documentWidth + "px / viewport " + layout.viewportWidth + "px)");
-      await page.screenshot({path:path.join(evidenceDir,"route-"+name+"-"+viewport.name+".png")});
+      await visualPage.screenshot({path:path.join(evidenceDir,"route-"+name+"-"+viewport.name+".png")});
       evidence.visualRoutes.push({route:name,viewport:viewport.name,...layout});
     }
   }
   evidence.checks.push("12 route families rendered at mobile and desktop widths with the clean UI layer present and no horizontal overflow");
+  await visualContext.close();
   fs.writeFileSync(path.join(evidenceDir, "pwa-browser-results.json"), JSON.stringify(evidence, null, 2));
   console.log("PWA offline browser smoke passed; screenshots and JSON evidence are in artifacts/pwa.");
 } finally {
