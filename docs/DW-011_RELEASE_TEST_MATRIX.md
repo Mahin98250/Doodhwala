@@ -7,6 +7,36 @@
 **Initial matrix commit tested by CI:** `5f08d08e463531cce04dda247324ee5f310f1ade`  
 **Status:** Inventory prepared; full authenticated backend E2E is **BLOCKED** pending an isolated staging project and project-lead confirmation of a test-ready target. This is a plan/evidence ledger, not a claim that the entire product has passed.
 
+
+
+## Post-merge evidence refresh — 2026-10-27
+
+**Latest main commit reviewed:** `3c102f69a7922346340253823730c9dbcf3900b6` ([commit](https://github.com/Mahin98250/Doodhwala/commit/3c102f69a7922346340253823730c9dbcf3900b6)). The original inventory baseline and matrix-branch test SHAs below are retained as historical evidence; they are not represented as tests of this newer main commit.
+
+### Five latest successful CI / GitHub Pages runs on main
+
+All five runs below completed successfully for the exact latest main commit above on 2026-10-27. These are scoped automation/deployment checks, not full release certification.
+
+| Check | Result | Commit / run evidence |
+|---|---|---|
+| Static validation | PASS | [Run 40490032917](https://github.com/Mahin98250/Doodhwala/actions/runs/40490032917) |
+| SQL migration validation (disposable PostgreSQL fixtures only) | PASS | [Run 40490033166](https://github.com/Mahin98250/Doodhwala/actions/runs/40490033166) |
+| In-app notification validation | PASS | [Run 40490033062](https://github.com/Mahin98250/Doodhwala/actions/runs/40490033062) |
+| PWA offline browser evidence (isolated browser storage; no authenticated order/payment flow) | PASS | [Run 40490032811](https://github.com/Mahin98250/Doodhwala/actions/runs/40490032811) |
+| GitHub Pages build and deployment workflow | PASS | [Run 40490031833](https://github.com/Mahin98250/Doodhwala/actions/runs/40490031833) |
+
+### Explicitly unresolved DW-011 work
+
+- **BLOCKED:** Authenticated Supabase end-to-end testing and deployed RLS/RPC/Realtime verification. No isolated Supabase staging project/schema has been provisioned and verified; production is not a test target.
+- **BLOCKED / NOT RUN:** Physical Android/iOS device verification, including installed-PWA update behavior with an older tab open and reconnect freshness checks.
+- **BLOCKED:** Staging load/performance tests. Run only after an isolated staging target and safety safeguards are verified and approved.
+- **BLOCKED / NOT RUN:** Backup/restore and recovery evidence for a safe non-production environment.
+- **NOT RUN or BLOCKED as detailed in the phase tables:** Remaining feature-level identity, ownership/RLS, checkout/order, subscriptions, seller operations, admin, payment, accessibility, store-readiness and live integration scenarios. Passing static contracts or disposable PostgreSQL fixtures does not satisfy these rows.
+
+### Release status
+
+This refresh updates the evidence ledger after [PR #105](https://github.com/Mahin98250/Doodhwala/pull/105) merged. It is documentation-only and does not change application code, production configuration/data, database migrations, payments, or deployment behavior. **DW-011 remains IN PROGRESS; unresolved checklist items stay open. This matrix does not claim full release certification.**
+
 ## Status and evidence rules
 
 - **PASS** only for the exact scope and commit actually tested; narrow UI mocks/static contracts are not authenticated backend E2E.
