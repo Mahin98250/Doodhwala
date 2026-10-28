@@ -94,6 +94,49 @@ try {
   await page.goto(base, { waitUntil: "domcontentloaded" });
   await page.screenshot({ path: path.join(evidenceDir, "reconnected-home.png"), fullPage: true });
   evidence.checks.push("reconnect returns to the site; manual refresh remains the way to ensure fresh content");
+  // Route-family visual smoke: verify the final shared layer is present and
+  // record actual layout widths for the customer, seller, and owner shells.
+  const visualRoutes = [
+    ["home", ""],
+    ["auth", "auth/"],
+    ["checkout", "checkout/"],
+    ["orders", "orders/"],
+    ["plans", "plans/"],
+    ["product", "product/"],
+    ["store", "store/"],
+    ["provider", "provider/"],
+    ["admin", "admin/"],
+    ["notifications", "notifications/"],
+    ["support", "support/"],
+    ["legal", "legal/"]
+  ];
+  evidence.visualRoutes = [];
+  for (const viewport of [
+    {name:"mobile",width:390,height:844},
+    {name:"desktop",width:1440,height:900}
+  ]) {
+    await page.setViewportSize({width:viewport.width,height:viewport.height});
+    for (const [name,route] of visualRoutes) {
+      const target = route ? new URL(route, base).href : base;
+      const routeResponse = await page.goto(target,{waitUntil:"domcontentloaded"});
+      assert.ok(routeResponse && routeResponse.ok(), name + " " + viewport.name + " route must load");
+      const layout = await page.evaluate(() => ({
+        viewportWidth: window.innerWidth,
+        documentWidth: document.documentElement.scrollWidth,
+        horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+        cleanUiLink: !!document.querySelector('link[rel="stylesheet"][href*="clean-ui.css?v=20261028.1"]'),
+        title: document.title,
+        heading: document.querySelector("h1")?.textContent?.trim() || ""
+      }));
+      assert.ok(layout.cleanUiLink, name + " must include the final shared clean UI layer");
+      assert.equal(layout.horizontalOverflow, false,
+        name + " " + viewport.name + " layout must not overflow horizontally (document " +
+        layout.documentWidth + "px / viewport " + layout.viewportWidth + "px)");
+      await page.screenshot({path:path.join(evidenceDir,"route-"+name+"-"+viewport.name+".png")});
+      evidence.visualRoutes.push({route:name,viewport:viewport.name,...layout});
+    }
+  }
+  evidence.checks.push("12 route families rendered at mobile and desktop widths with the clean UI layer present and no horizontal overflow");
   fs.writeFileSync(path.join(evidenceDir, "pwa-browser-results.json"), JSON.stringify(evidence, null, 2));
   console.log("PWA offline browser smoke passed; screenshots and JSON evidence are in artifacts/pwa.");
 } finally {
