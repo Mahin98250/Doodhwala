@@ -41,10 +41,20 @@ The specific stale assertions (`doodhwala-v101` versus candidate `v103`, and ass
 
 - **Status:** Draft PR open; documentation-only.
 - **Head commit:** `a1dc88ea09ddae9c27e3b52574f9654ee402d3c7`.
-- **Static / SQL / notification workflows:** At report drafting, runs were queued or in progress; do not count as PASS until completed.
-- **Vercel preview:** latest observed combined status was **failure** due to a build-rate-limit target; this is separate from GitHub Actions/application tests.
+- **PASS — Static validation:** [run 40678412666](https://github.com/Mahin98250/Doodhwala/actions/runs/40678412666).
+- **PASS — SQL migration validation:** [run 40678412737](https://github.com/Mahin98250/Doodhwala/actions/runs/40678412737).
+- **PASS — In-app notification validation:** [run 40678412641](https://github.com/Mahin98250/Doodhwala/actions/runs/40678412641).
+- **Vercel preview:** **FAIL** due to a build-rate-limit target; separate from GitHub Actions/application tests.
 - **Artifact:** [PR #123](https://github.com/Mahin98250/Doodhwala/pull/123) updates DW-002/DW-003/DW-011 from stale TODO labels to IN PROGRESS and preserves manual/staging gaps.
 - **No task is marked DONE by this report.**
+
+### PR #125 — current-source PWA audit reconciliation
+
+- **Status:** Draft PR open; documentation-only.
+- **Head commit:** `fe4ec35654a14ebb70ca88cbe0b9ae27e9d22aa6`.
+- Refreshes `PWA_OFFLINE_AUDIT.md` to current cache v105 and asset version `20261027.8`, corrects the workflow path to `.github/workflows/pwa-offline-browser.yml`, and records exact-head evidence/limitations.
+- Prior evidence reused only for its exact tested heads: PR #113 checks all PASS on head `a1af2ff92794310792ce92f170b7c4aecbf78f9b`; PR #117 static [40663395330](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395330), notification [40663395343](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395343), SQL [40663395326](https://github.com/Mahin98250/Doodhwala/actions/runs/40663395326) all PASS. CI for PR #125 itself has not yet been observed in this snapshot.
+- PR #90's v95 expectations and duplicate workflow filename are stale; do not merge it as-is. Device checks remain NOT RUN/BLOCKED.
 
 ## 3. Open work and blockers
 
