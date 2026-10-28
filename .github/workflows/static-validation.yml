@@ -91,6 +91,8 @@ jobs:
         run: node scripts/test-support-center.mjs
       - name: Test auth return paths and password recovery
         run: node scripts/test-auth-contracts.mjs
+      - name: Test secure customer personal details editor
+        run: node scripts/test-profile-details-contract.mjs
       - name: Test seller order progression and decision dialogs
         run: node scripts/test-provider-simple-order-workflow.mjs
       - name: Test seller mobile navigation accessibility
