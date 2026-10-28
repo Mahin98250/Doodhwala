@@ -24,6 +24,20 @@ try {
   });
   const response = await page.goto(base, { waitUntil: "domcontentloaded" });
   assert.ok(response && response.ok(), "home route loads on the local static server");
+  await page.waitForFunction(() => {
+    const splash = document.getElementById("dwSplash");
+    return !!splash && !splash.hidden;
+  }, { timeout: 5000 });
+  assert.ok(await page.getByRole("heading", { name: "Doodhwala" }).isVisible(),
+    "first visit should show the Doodhwala branded app-start screen");
+  assert.ok(await page.getByRole("button", { name: "Skip intro" }).isVisible(),
+    "splash must offer a visible skip action on mobile");
+  await page.getByRole("button", { name: "Skip intro" }).click();
+  await page.waitForFunction(() => {
+    const splash = document.getElementById("dwSplash");
+    return !!splash && splash.hidden;
+  }, { timeout: 1500 });
+  evidence.checks.push("first-visit branded splash appeared and skip dismissed it cleanly");
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, { timeout: 15000 });
   await page.waitForFunction(async () => {
