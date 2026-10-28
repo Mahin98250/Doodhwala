@@ -35,6 +35,7 @@ assert.match(completionBase, /revoke execute on function public\.complete_curren
 assert.match(runtime, /textContent\s*=|\.value\s*=/, "User-controlled values should be assigned as text/input values, not HTML markup");
 assert.match(runtime, /p_full_name|p_phone/, "Editor must send validated profile fields to the RPC");
 assert.match(runtime, /p_address_line|p_area_name|p_city|p_pin_code/, "Editor must handle optional complete default-address fields");
+assert.match(editor, /\.details-toggle-row input:focus-visible/, "Address edit checkbox must have visible keyboard focus");
 assert.match(editor, /pwa-register\.js/, "Editor must register the existing PWA service worker");
 assert.match(editor, /resilience\.js/, "Editor must load the existing network resilience bootstrap");
 assert.ok(migrations.includes("20261011151730_fix_customer_profile_phone_regex.sql"),
