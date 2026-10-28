@@ -31,6 +31,7 @@
   **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** TODO (awaiting task acknowledgement) · **Area:** Customer UI / QA  
   **Goal:** Check navigation, buttons, forms, loading/empty/error states, and mobile/desktop layouts.  
   **Done when:** Findings are recorded with route, device/viewport, steps to reproduce, expected vs actual result, and severity; critical issues are fixed or converted into tasks.  
+  **Master UI plan:** [docs/UI_CLEANUP_MASTER_PLAN.md](docs/UI_CLEANUP_MASTER_PLAN.md) — repository route/style/script map and prioritized checklist; rendered-device QA, accessibility execution and staging E2E remain unverified.  
   **Evidence:** PR/Issue: add link · Checks: not run.
 
 - [ ] **DW-003 — Service worker and offline/reconnect validation** ([Issue #75](https://github.com/Mahin98250/Doodhwala/issues/75))  
