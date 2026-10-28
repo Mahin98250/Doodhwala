@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const js=read("provider.js"), html=read("provider.html"), css=read("provider.css");
+assert.ok(css.includes("grid-template-columns:repeat(8,minmax(0,1fr))"),"mobile navigation must provide a slot for seller billing");
 const start=js.indexOf("function showView(view){");
 const end=js.indexOf("\nasync function setupProviderSubscriptionRealtime",start);
 assert.ok(start>=0&&end>start,"showView handler must exist");
@@ -14,7 +15,8 @@ const ne=html.indexOf("</nav>",ns);
 assert.ok(ns>=0&&ne>ns,"mobile navigation must have an accessible name");
 const nav=html.slice(ns,ne);
 const buttons=[...nav.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
-assert.equal(buttons.length,7,"keep all seven existing destinations available");
+assert.equal(buttons.length,8,"keep all seven existing destinations and seller billing available");
+assert.ok(nav.includes('data-view="billing"'),"seller billing destination must be present");
 for(const [,attrs,body] of buttons){
  assert.match(attrs,/data-view="[^"]+"/,"destination must declare its view");
  assert.match(body,/<small>[^<]+<\/small>/,"destination must have a visible label");
@@ -26,6 +28,6 @@ assert.ok(css.includes("@media(max-width:760px){\n  .provider-topbar{min-width:0
 assert.ok(css.includes(".provider-top-actions .provider-auth-link{display:none}"),"hide redundant account link on mobile while preserving the profile control");
 assert.ok(css.includes(".provider-top-actions .provider-store-toggle{padding:7px 8px;font-size:8px;line-height:1.1}"),"store availability control must stay compact on mobile");
 assert.ok(css.includes(".provider-top-actions .provider-top-signout{padding:7px 8px;font-size:9px;line-height:1.1}"),"sign-out must remain accessible in the mobile header");
-assert.ok(html.includes("provider.css?v=20261027.2"),"mobile CSS change must use a fresh cache-busting version");
-assert.ok(read("sw.js").includes('const CACHE="doodhwala-v105"'),"service worker cache must be bumped for the mobile fix");
+assert.ok(html.includes("provider.css?v=20261028.2"),"mobile CSS change must use a fresh cache-busting version");
+assert.ok(read("sw.js").includes('const CACHE="doodhwala-v106"'),"service worker cache must be bumped for the mobile fix");
 console.log("Provider mobile navigation and compact header accessibility contracts passed.");
