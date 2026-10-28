@@ -131,7 +131,7 @@ assert.ok(source.includes('/Doodhwala/splash-screen.js?v=20261028.2'), "the app-
 assert.ok(source.includes('/Doodhwala/splash-screen.css?v=20261028.2' ) && source.includes('/Doodhwala/splash-screen.js?v=20261028.2'), "the PWA offline shell must include both splash assets");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v105"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v106"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "unversioned mascot URL must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/customer-journey-refresh.css?v=20261025.1'), "exact checkout stylesheet variant must be precached");
