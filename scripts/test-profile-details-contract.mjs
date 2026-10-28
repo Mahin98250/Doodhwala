@@ -18,6 +18,7 @@ assert.match(editor, /profile-details\.js\?v=20261028\.1/, "Editor must load the
 for (const id of ["fullName", "phone", "addressLine", "areaName", "city", "pinCode", "saveProfile", "formMessage"]) {
   assert.ok(editor.includes('id="' + id + '"'), "Editor is missing required control: " + id);
 }
+assert.ok(nav.includes('pathname.startsWith("/doodhwala/profile/")||pathname==="/doodhwala/profile"'), "Nested Profile routes must keep Profile selected in bottom navigation");
 assert.match(runtime, /auth\.getSession\(\)/, "Editor must require an authenticated session");
 assert.match(runtime, /\.from\(["']profiles["']\)[\s\S]*?\.eq\(["']id["'],\s*currentUser\.id\)/,
   "Profile read must be scoped to the authenticated user's id");
