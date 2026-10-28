@@ -85,7 +85,7 @@ const queryAsset = await offlineResponse(origin + "/Doodhwala/styles.css?v=999",
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Doodhwala/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v107"'), "service worker cache revision must remain current");
+assert.ok(source.includes('const CACHE="doodhwala-v108"'), "service worker cache revision must remain current");
 assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.js?v=20261027.1'), "the current seller authorization script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261027.2'), "the current seller mobile navigation styles must be explicitly precached");
@@ -117,7 +117,7 @@ assert.ok(cache.has(origin + "/Doodhwala/plans.js?v=20261027.3"), "the new custo
 assert.ok(cache.has(origin + "/Doodhwala/notifications.html"), "the notification route must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/notifications.css?v=20261027.1"), "the notification stylesheet must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/notifications.js?v=20261027.1"), "the notification client must be installed into the PWA cache");
-assert.ok(cache.has(origin + "/Doodhwala/doodhwala-ui-system.css?v=20261028.1"), "shared responsive UI styles must be installed into the PWA cache");
+assert.ok(cache.has(origin + "/Doodhwala/doodhwala-ui-system.css?v=20261028.2"), "shared responsive UI styles must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/customer-ui-stability.css?v=20261028.1"), "customer UI fixes must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/subscription-schedule-preview.css?v=20261027.2"), "the customer plan calendar stylesheet must be installed into the PWA cache");
 assert.ok(installWarnings.some(args => String(args[0]).includes("optional offline asset")), "optional cache failures must be reported for diagnosis");
@@ -130,12 +130,12 @@ assert.ok(source.includes('/Doodhwala/milk-transition.css?v=20261027.8'), "the s
 assert.ok(source.includes('/Doodhwala/milk-transition.js?v=20261027.8'), "the shared milk transition runtime must be precached");
 assert.ok(source.includes('/Doodhwala/splash-screen.css?v=20261028.2'), "the app-start splash stylesheet must be precached");
 assert.ok(source.includes('/Doodhwala/splash-screen.js?v=20261028.2'), "the app-start splash runtime must be precached");
-assert.ok(source.includes('/Doodhwala/doodhwala-ui-system.css?v=20261028.1'), "shared responsive UI styles must be precached");
+assert.ok(source.includes('/Doodhwala/doodhwala-ui-system.css?v=20261028.2'), "shared responsive UI styles must be precached");
 assert.ok(source.includes('/Doodhwala/customer-ui-stability.css?v=20261028.1'), "customer empty-state and mobile layout fixes must be precached");
 assert.ok(source.includes('/Doodhwala/splash-screen.css?v=20261028.2' ) && source.includes('/Doodhwala/splash-screen.js?v=20261028.2'), "the PWA offline shell must include both splash assets");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v107"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v108"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "unversioned mascot URL must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/customer-journey-refresh.css?v=20261025.1'), "exact checkout stylesheet variant must be precached");

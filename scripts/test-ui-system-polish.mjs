@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const sharedHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.1";
+const homeHref = "/Doodhwala/doodhwala-ui-system.css?v=20261028.2";
 const customerHref = "/Doodhwala/customer-ui-stability.css?v=20261028.1";
 const pages = [
   "index.html",
@@ -21,10 +22,11 @@ const pages = [
 
 for (const path of pages) {
   const html = fs.readFileSync(new URL(path, root), "utf8");
-  assert.ok(html.includes(sharedHref), `${path} must load the shared UI consistency layer`);
+  assert.ok(html.includes(path === "index.html" ? homeHref : sharedHref), `${path} must load the expected shared UI consistency layer`);
 }
 const home = fs.readFileSync(new URL("index.html", root), "utf8");
 assert.ok(home.includes(customerHref), "home must load its focused mobile empty-state fixes");
+assert.ok(home.includes(homeHref), "home must use the refreshed mobile header stylesheet URL");
 
 const css = fs.readFileSync(new URL("doodhwala-ui-system.css", root), "utf8");
 for (const [pattern, reason] of [
@@ -41,8 +43,8 @@ assert.match(customer, /\.no-results>div:first-child svg/, "customer empty-state
 assert.match(customer, /grid-template-columns:minmax\(0,1fr\)!important/, "provider cards must collapse safely on narrow screens");
 
 const sw = fs.readFileSync(new URL("sw.js", root), "utf8");
-assert.match(sw, /const CACHE="doodhwala-v107"/, "UI release must advance the PWA cache revision");
-assert.ok(sw.includes(sharedHref), "shared UI stylesheet must be precached for offline shell consistency");
+assert.match(sw, /const CACHE="doodhwala-v108"/, "UI release must advance the PWA cache revision");
+assert.ok(sw.includes(homeHref), "refreshed home stylesheet must be precached for offline shell consistency");
 assert.ok(sw.includes(customerHref), "customer empty-state stylesheet must be precached");
 
 console.log("Shared UI system contracts passed: customer, seller, admin, clean routes, responsive states, accessibility, and PWA cache.");
