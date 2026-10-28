@@ -31,7 +31,7 @@ assert.match(js, /data-splash-skip/, "skip control must end the intro immediatel
 assert.match(js, /pagehide/, "navigation away must never leave a stale overlay on return");
 assert.doesNotMatch(js, /fetch\(|https?:\/\//, "splash runtime must have no network dependency");
 
-assert.match(sw, /const CACHE="doodhwala-v106"/, "PWA cache must advance for the splash release");
+assert.match(sw, /const CACHE="doodhwala-v107"/, "PWA cache must advance for the splash release");
 for (const asset of ["/Doodhwala/splash-screen.css?v=20261028.2", "/Doodhwala/splash-screen.js?v=20261028.2"]) {
   assert.ok(sw.includes(asset), "service worker must precache " + asset);
 }

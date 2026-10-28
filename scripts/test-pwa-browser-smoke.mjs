@@ -41,9 +41,11 @@ try {
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, { timeout: 15000 });
   await page.waitForFunction(async () => {
-    const cache = await caches.open("doodhwala-v106");
+    const cache = await caches.open("doodhwala-v107");
     return !!(await cache.match("/Doodhwala/offline.html")) &&
-      !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1"));
+      !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")) &&
+      !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.1")) &&
+      !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1"));
   }, { timeout: 15000 });
   await page.screenshot({ path: path.join(evidenceDir, "home-online.png"), fullPage: true });
   evidence.checks.push("worker installed and required offline shell/exact CSS variant cached");
@@ -52,7 +54,7 @@ try {
   const queryResponse = await page.goto(queryUrl, { waitUntil: "domcontentloaded" });
   assert.ok(queryResponse && queryResponse.ok(), "query-string route loads online");
   await page.waitForFunction(async url => {
-    const cache = await caches.open("doodhwala-v106");
+    const cache = await caches.open("doodhwala-v107");
     return !!(await cache.match(url));
   }, queryUrl, { timeout: 10000 });
   await page.screenshot({ path: path.join(evidenceDir, "orders-query-online.png"), fullPage: true });
@@ -60,14 +62,16 @@ try {
 
   const cacheEvidence = await page.evaluate(async () => {
     const names = await caches.keys();
-    const cache = await caches.open("doodhwala-v106");
+    const cache = await caches.open("doodhwala-v107");
     return {
       names,
       oldDoodhwalaCacheRemoved: !names.includes("doodhwala-v97"),
       unrelatedCachePreserved: names.includes("unrelated-origin-cache-test"),
       offlineFallbackCached: !!(await cache.match("/Doodhwala/offline.html")),
       checkoutCssExactVariantCached: !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")),
-      mascotUnversionedCached: !!(await cache.match("/Doodhwala/assets/mascot.png"))
+      mascotUnversionedCached: !!(await cache.match("/Doodhwala/assets/mascot.png")),
+      sharedUiCssCached: !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.1")),
+      customerUiCssCached: !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1"))
     };
   });
   assert.ok(cacheEvidence.oldDoodhwalaCacheRemoved, "obsolete Doodhwala cache is removed");
@@ -75,6 +79,8 @@ try {
   assert.ok(cacheEvidence.offlineFallbackCached, "offline fallback is cached");
   assert.ok(cacheEvidence.checkoutCssExactVariantCached, "exact versioned checkout CSS is cached");
   assert.ok(cacheEvidence.mascotUnversionedCached, "unversioned mascot URL is cached");
+  assert.ok(cacheEvidence.sharedUiCssCached, "shared UI consistency stylesheet is cached");
+  assert.ok(cacheEvidence.customerUiCssCached, "customer mobile stability stylesheet is cached");
   evidence.cache = cacheEvidence;
 
   await context.setOffline(true);

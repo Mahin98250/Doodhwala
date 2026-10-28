@@ -67,6 +67,8 @@ jobs:
         run: node scripts/test-customer-journey-refresh.mjs
       - name: Test customer runtime and milk transition fixes
         run: node scripts/test-customer-ui-fixes.mjs
+      - name: Test shared responsive UI system across customer, seller and admin pages
+        run: node scripts/test-ui-system-polish.mjs
       - name: Test customer subscription schedule preview and offline cache
         run: node scripts/test-subscription-schedule-preview.mjs
       - name: Test subscription local-date boundaries and cutoff errors
