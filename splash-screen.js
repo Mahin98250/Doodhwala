@@ -25,5 +25,5 @@
  var skip=root.querySelector("[data-splash-skip]");
  if(skip)skip.addEventListener("click",finish,{once:true});
  root.addEventListener("click",function(e){if(e.target===root)finish();});
- w.addEventListener("pagehide",function(){w.clearTimeout(timer);w.clearTimeout(hideTimer);});
+ w.addEventListener("pagehide",function(){w.clearTimeout(timer);w.clearTimeout(hideTimer);root.hidden=true;root.classList.remove("is-leaving");if(body)body.classList.remove("dw-splash-active");finished=true;},{once:true});
 })(window,document);
