@@ -50,7 +50,14 @@ try {
       for (const key of ["explore", "saved", "home"]) {
         const selector = `[data-customer-nav="${key}"]`;
         await page.locator(selector).click();
-        await page.waitForFunction(sel => document.querySelector(sel)?.getAttribute("aria-current") === "page", selector, { timeout: 5000 });
+        await page.waitForTimeout(150);
+        const navState = await page.evaluate(() => ({
+          url: location.href,
+          current: [...document.querySelectorAll("[data-customer-nav]")].filter(b => b.getAttribute("aria-current") === "page").map(b => b.dataset.customerNav),
+          navigateFunction: typeof window.__doodhwalaNavigate,
+          navigateSource: String(window.__doodhwalaNavigate || "").slice(-220)
+        }));
+        assert.deepEqual(navState.current, [key], `active navigation should follow ${key}; observed ${JSON.stringify(navState)}`);
       }
     }
     await page.close();
