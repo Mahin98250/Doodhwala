@@ -83,11 +83,13 @@
 <aside class="profile-note"><span aria-hidden="true">ⓘ</span><div><strong>We keep money and account security honest.</strong>Doodhwala does not ask for your password, OTP, UPI PIN or bank login in support messages. Direct seller UPI is not independently bank-verified by this website.</div></aside>
 <footer class="profile-footer">Fresh • Local • Direct <span aria-hidden="true">·</span> <a href="/Doodhwala/legal/">Legal & privacy centre</a></footer>
 </main>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script>
 <script src="/Doodhwala/supabase-config.js"></script>
 <script src="/Doodhwala/supabase-client.js"></script>
 <script src="/Doodhwala/customer-nav.js?v=20261028.4"></script>
 <script>
 (()=>{const $=id=>document.getElementById(id);const db=()=>window.Doodhwala?.supabase;async function syncAccount(){const client=db();if(!client){$("accountStatus").textContent="Sign in to view your account details and manage saved information.";$("accountAction").textContent="Sign in →";return}try{const {data,error}=await client.auth.getSession();if(error)throw error;const user=data?.session?.user;if(!user)return;const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0]||"Doodhwala customer";$("accountTitle").textContent=name;$("accountStatus").textContent=user.email||"Signed in";$("accountAction").href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F";$("accountAction").textContent="Manage account →"}catch(_){$("accountStatus").textContent="Your account details could not be loaded. Please try again later."}}syncAccount()})();
 </script>
+<script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
 </body>
 </html>
