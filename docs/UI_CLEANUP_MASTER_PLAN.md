@@ -147,3 +147,70 @@ PRs may be split further if a workstream is large. Each PR must state changed ro
 - [ ] Live deployment and a real-device visual review are recorded after merge.
 
 **Next action:** complete the detailed route-by-route baseline (including CSS/JS ownership and direct-link parity), then propose the shared design tokens before implementing the redesign.
+
+
+## 7. Route-by-route asset ownership audit (static source inspection)
+
+All route entry points below were read at baseline `46b48d20c896bee9f96902d2fc2fbee0f1fc0158`. The directory-style public routes and their corresponding root HTML files have matching Git blob SHAs for the checked pairs; they are currently exact-content aliases, not separate implementations. Keep this parity as a CI contract.
+
+| User journey / route | HTML entry points | Page CSS layer(s) after shared base | Main page logic / shared runtime |
+|---|---|---|---|
+| Customer home/discovery | `index.html` | `styles.css`, `experience-layer.css`, `marketplace-refresh.css`, `customer-ui-polish.css`, `milk-transition.css`, `splash-screen.css` | `app.js`, `location.js`, `customer-nav.js`, `milk-transition.js`, `splash-screen.js`, Supabase client/config, resilience, session controls, PWA registration, network status |
+| Sign in / account | `auth.html`, `auth/index.html` | `styles.css`, `auth.css`, `milk-transition.css` | `auth.js`, shared Supabase/resilience/session/PWA/network runtime, transition |
+| Checkout | `checkout.html`, `checkout/index.html` | `styles.css`, `experience-layer.css`, `checkout.css`, `customer-journey-refresh.css`, `milk-transition.css` | `checkout.js`, customer navigation, Supabase/resilience/session/PWA/network runtime |
+| Milk detail | `product.html`, `product/index.html` | `styles.css`, `experience-layer.css`, `market.css`, `customer-journey-refresh.css`, `milk-transition.css` | `product.js`, customer navigation, shared Supabase/resilience/session/PWA/network runtime |
+| Seller/store details | `store.html`, `store/index.html` | Same customer detail stack as product, plus Leaflet CSS | `store.js`, customer navigation, Leaflet JS, shared runtime |
+| Milk plans/subscriptions | `plans.html`, `plans/index.html` | `styles.css`, `experience-layer.css`, `plans.css`, `subscription-schedule-preview.css`, `customer-journey-refresh.css`, `customer-ui-polish.css`, `milk-transition.css` | `plans.js`, customer navigation, shared runtime |
+| Orders/tracking/payment choice | `orders.html`, `orders/index.html` | `styles.css`, `experience-layer.css`, `orders.css`, `customer-journey-refresh.css`, `direct-upi-checkout.css`, `customer-ui-polish.css`, `milk-transition.css` | `orders.js`, `direct-upi-checkout.js`, customer navigation/10x helper, QRCode, shared runtime |
+| Notifications | `notifications.html`, `notifications/index.html` | `styles.css`, `notifications.css`, `milk-transition.css` | `notifications.js`, shared Supabase/resilience/PWA/transition |
+| Help and support | `support.html`, `support/index.html` | `styles.css`, `support.css`, `milk-transition.css` | `support.js`, shared runtime |
+| Legal/policy pages | `legal.html`, `legal/index.html` | `styles.css`, `milk-transition.css` | Primarily static page plus resilience/PWA/network/transition |
+| Seller onboarding/operations | `provider.html`, `provider/index.html` | `styles.css`, `experience-layer.css`, `provider.css`, `milk-transition.css`, Leaflet CSS | `provider.js`, `provider-location.js`, shared Supabase/resilience/PWA/network/transition |
+| Owner/admin console | `admin.html`, `admin/index.html` | `styles.css`, `admin.css`, `milk-transition.css` | `admin.js`, `admin-intelligence.js`, shared Supabase/resilience/PWA/network/transition |
+| Offline fallback | `offline.html`, `offline/index.html` | No external stylesheet/script links identified in page source; standalone inline fallback | Standalone offline explanation/link back to app |
+
+### Shared runtime boundaries
+
+- **Data/auth:** `supabase-config.js`, `supabase-client.js`, `auth.js`, `session-controls.js`.
+- **Resilience/PWA:** `resilience.js`, `network-status.js`, `pwa-register.js`, `sw.js`.
+- **Customer shell/navigation:** `customer-nav.js` and customer page scripts.
+- **Motion:** `milk-transition.css/js` shared by many routes; treat it as a high-blast-radius component.
+- **Seller/admin:** `provider.js` and `admin.js` are separate role-specific owners. Shared visual primitives must not merge their permissions/flows or blur role boundaries.
+
+## 8. Specific source-level findings to turn into tickets
+
+### P1 — PWA styling cache coverage
+- [ ] **Verify/fix homepage refresh CSS cache coverage:** `index.html` imports `/Doodhwala/marketplace-refresh.css?v=20261025.3`, but that exact URL was not present in the inspected `sw.js` `ASSETS` or `CORE_ASSETS` arrays. The runtime fetch handler may populate cache during an online visit, so this is a cold/offline cache completeness risk rather than a confirmed production failure. Add an explicit asset-contract test and decide whether this stylesheet should be precached.
+- [ ] Review all current HTML query-string asset URLs against `ASSETS` and `CORE_ASSETS`, not just filenames. The service worker currently contains multiple historic versioned keys (for example different `styles.css`, `provider.css`, `plans.js`, `customer-nav.js`, `resilience.js` and `customer-ui-polish.css` variants). Keep only needed compatibility entries after testing cache migration and old-client recovery.
+- [ ] Add a release test that detects an imported local CSS/JS URL omitted from the service-worker manifest and distinguishes core shell assets from optional enhancements.
+
+### P1 — CSS ownership and design-token fragmentation
+- [ ] `styles.css` establishes base tokens such as `--bg`, `--surface`, `--ink`, `--muted`, `--line`, `--green`, shadows and radii.
+- [ ] `marketplace-refresh.css` separately declares `--market-*` tokens; `customer-journey-refresh.css` declares `--retail-*` tokens; individual page styles also contain hard-coded colors.
+- [ ] `customer-ui-polish.css` contains targeted `!important` overrides. Preserve intentional contrast fixes, but document ownership and remove overrides only after screenshot/regression verification.
+- [ ] `experience-layer.css` applies transitions/focus/interaction rules across broad selectors (buttons, links, inputs and role=button elements). Treat it as global behaviour and verify every role/route before changing.
+- [ ] Home has the deepest visual cascade. Page stacks differ by route; do not blindly add glass effects globally. Define tokens first, then migrate one workstream/route group at a time.
+- [ ] `milk-transition.css/js` is shared widely and creates a high-z-index transition overlay. Motion refactors must retain reduced-motion, interruption cleanup, back/forward navigation and non-blocking navigation.
+
+### P1 — external runtime and graceful fallback
+- [ ] Google Fonts are requested through a CSS import; preserve system fallbacks and confirm the interface remains readable when fonts/network are unavailable.
+- [ ] Supabase JS, Leaflet and QRCode arrive from external CDNs on routes that need them. UI changes must retain visible failure/retry states and not assume a CDN/network is always available.
+- [ ] Do not introduce new paid libraries/APIs for visual effects. Prefer CSS and existing assets; blur/glass must fall back cleanly on constrained devices.
+
+## 9. Audit completion status
+
+| Audit item | Status | Evidence / outstanding step |
+|---|---|---|
+| Tracked repository inventory | **Complete** | 237 tracked files inventoried; user-facing HTML/CSS/JS and CI/PWA areas identified |
+| Main route and style/script imports | **Complete for listed public route HTML** | 13 route families mapped above, including root and directory-style aliases |
+| Root/clean-route entry-point content parity | **Source-verified for the 11 listed aliases** | Matching Git blob SHAs observed for root HTML and corresponding `index.html` files |
+| Initial CSS token/layer ownership | **Source-reviewed** | Base tokens plus `--market-*` and `--retail-*` extensions, broad interaction layer, high specificity customer overrides |
+| Service-worker asset manifest vs route imports | **Finding identified; automated proof pending** | `marketplace-refresh.css?v=20261025.3` appears in homepage import but was not found in inspected SW asset lists; add contract test |
+| Visual/browser screenshots for all routes | **Not yet done** | Need real browser run, screenshots, mobile/tablet/desktop inspection |
+| Keyboard/contrast/accessibility audit | **Not yet done** | Needs automated and manual execution, not inference from source |
+| Auth/RLS/checkout/order live staging E2E | **Not yet done by this UI audit** | Must use authorized staging accounts; no synthetic production data |
+| CI for the planning documentation PR | **Pending** | Run checks on the planning branch/PR before approval; UI implementation remains out of scope |
+
+## 10. First implementation PR acceptance rules
+
+The first implementation PR is limited to shared token/component foundations and audit-derived tests. It must not change payment, order, auth, provider approval, admin authorization, database schemas or real customer data. Before merging, compare screenshots for home, auth, product/store, checkout/orders, plans, provider and admin; verify clean URLs and root aliases; test reduced motion and offline asset contracts; and require every relevant CI check to pass on the exact PR head.
