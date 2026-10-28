@@ -1,0 +1,110 @@
+name: Seller billing pilot regression (synthetic)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "admin-billing.js"
+      - "provider-billing.js"
+      - "sponsored-cards.js"
+      - "seller-plans.html"
+      - "scripts/test-seller-*.mjs"
+      - "scripts/test-checkout-browser.mjs"
+      - "scripts/sql-tests/**"
+      - "supabase/deferred/**"
+      - "supabase/migrations/20261028100000_doodhwala_atomic_manual_checkout.sql"
+      - ".github/workflows/seller-billing-pilot-validation.yml"
+  push:
+    branches: [review/reconcile-manual-billing-20261028]
+
+permissions:
+  contents: read
+
+jobs:
+  static-and-browser:
+    name: Static contracts and synthetic Chromium flows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check syntax of new browser-facing modules
+        run: |
+          set -e
+          node --check admin-billing.js
+          node --check provider-billing.js
+          node --check sponsored-cards.js
+          node --check checkout.js
+          node --check checkout-10x.js
+          node --check admin.js
+          node --check provider.js
+      - name: Test seller-plan and billing UI contracts
+        run: |
+          node scripts/test-seller-plan-drafts.mjs
+          node scripts/test-seller-billing-ui.mjs
+          node scripts/test-checkout-flow.mjs
+          node scripts/test-direct-seller-payments.mjs
+          node scripts/test-security-contracts.mjs
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Start local-only static server
+        run: |
+          mkdir -p /tmp/doodhwala-www
+          ln -s "$GITHUB_WORKSPACE" /tmp/doodhwala-www/Doodhwala
+          python3 -m http.server 4173 --directory /tmp/doodhwala-www >/tmp/doodhwala-http.log 2>&1 &
+          echo $! >/tmp/doodhwala-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/Doodhwala/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/doodhwala-http.log
+          exit 1
+      - name: Run synthetic Chromium checkout and seller billing flows
+        env:
+          DOODHWALA_BASE_URL: http://127.0.0.1:4173/Doodhwala/
+        run: |
+          node scripts/test-checkout-browser.mjs
+          node scripts/test-seller-billing-browser.mjs
+      - name: Stop local server
+        if: always()
+        run: if [ -f /tmp/doodhwala-http.pid ]; then kill "$(cat /tmp/doodhwala-http.pid)" || true; fi
+
+  disposable-postgres:
+    name: Disposable PostgreSQL checkout and billing integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: doodhwala_disposable_billing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d doodhwala_disposable_billing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: doodhwala_disposable_billing
+      DOODHWALA_DISPOSABLE_DB_CONFIRMED: yes
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Verify isolated database target and run synthetic PR #71 integration
+        run: bash scripts/sql-tests/test-pr71-plan-integration.sh
+      - name: Verify atomic checkout idempotency under concurrent retries
+        run: bash scripts/sql-tests/atomic-checkout-concurrency.sh
+      - name: Verify atomic-checkout permission preflight and clean reapply
+        run: bash scripts/sql-tests/atomic-checkout-preflight.sh
