@@ -47,7 +47,7 @@ assert.match(loadScenario, /p_sort: "closest"/);
 
 // Cache-bust the updated runtime so existing PWA installs can load pagination.
 assert.ok(html.includes('/Doodhwala/app.js?v=20261027.1'));
-assert.ok(sw.includes('const CACHE="doodhwala-v108"'));
+assert.ok(sw.includes('const CACHE="doodhwala-v109"'));
 assert.ok(sw.includes('/Doodhwala/app.js?v=20261027.1'));
 assert.ok(sqlWorkflow.includes("20261026140000_doodhwala_paginated_provider_discovery.sql"));
 assert.ok(staticWorkflow.includes("scripts/test-discovery-pagination.mjs"));
