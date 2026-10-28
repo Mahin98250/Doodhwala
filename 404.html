@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#175a3c">
+<meta name="robots" content="noindex">
+<title>Opening Doodhwala…</title>
+<link rel="icon" href="/Doodhwala/assets/mascot.png?v=20261023.3">
+<link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5">
+<style>
+body{min-height:100vh;display:grid;place-items:center;padding:24px;background:#f4f8f4;color:#173b28;font-family:system-ui,sans-serif}
+main{width:min(100%,420px);padding:30px 24px;text-align:center;background:#fff;border:1px solid #dce8de;border-radius:24px;box-shadow:0 18px 50px #173b2812}
+img{width:64px;height:64px;object-fit:contain}h1{font-size:25px;margin:12px 0 8px}p{color:#657568;line-height:1.6;font-size:14px}a{display:inline-flex;margin-top:12px;padding:12px 18px;border-radius:12px;background:#175a3c;color:white;text-decoration:none;font-weight:700}
+</style>
+<script>
+(function(){
+  "use strict";
+  var path=window.location.pathname;
+  var base="/Doodhwala/";
+  // Repair links that accidentally repeat the GitHub Pages repository path.
+  // Only normalize paths that are clearly malformed; preserve the query and hash.
+  var normalized=path;
+  for(var i=0;i<4;i++){
+    normalized=normalized.replace(/^\/Doodhwala\/(?:\/Doodhwala\/)+/i,base);
+    normalized=normalized.replace(/^\/Doodhwala\/Doodhwala\//i,base);
+    normalized=normalized.replace(/^\/Doodhwala\/\/+/i,base);
+  }
+  if(normalized!==path){
+    window.location.replace(normalized+window.location.search+window.location.hash);
+  }
+})();
+</script>
+</head>
+<body>
+<main>
+<img src="/Doodhwala/assets/mascot.png?v=20261023.3" alt="Doodhwala">
+<h1>Let’s get you to the right page</h1>
+<p>The link opened with an incorrect or repeated path. We’re correcting it automatically. If it does not redirect, use the button below to return to Doodhwala.</p>
+<a href="/Doodhwala/">Open Doodhwala</a>
+</main>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+<script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
+</body>
+</html>
