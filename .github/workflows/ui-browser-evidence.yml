@@ -17,6 +17,7 @@ on:
       - 'provider.js'
       - 'UI_UX_AUDIT.md'
       - 'CUSTOMER_JOURNEY_INTERACTION_AUDIT.md'
+      - 'TASK_BOARD.md'
       - 'scripts/test-ui-regression-contracts.mjs'
       - 'scripts/test-ui-browser-smoke.mjs'
       - '.github/workflows/ui-browser-evidence.yml'
