@@ -63,3 +63,17 @@ create table public.provider_subscription_invoices (
   check((status='paid') = (paid_at is not null)),
   check((status='void') = (voided_at is not null))
 );
+
+create table public.provider_subscription_payments (
+  id uuid primary key default gen_random_uuid(),
+  invoice_id uuid not null references public.provider_subscription_invoices(id) on delete restrict,
+  provider_id uuid not null references public.provider_profiles(id) on delete restrict,
+  amount_paise bigint not null check(amount_paise > 0),
+  method text not null check(method in ('manual_upi','bank_transfer','cash')),
+  reference text not null check(length(trim(reference)) between 3 and 120),
+  received_at timestamptz not null default now(),
+  recorded_by uuid references auth.users(id) on delete set null,
+  notes text not null default '',
+  created_at timestamptz not null default now(),
+  unique(reference)
+);
