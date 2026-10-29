@@ -238,3 +238,98 @@ comment on column public.provider_payment_settings.upi_ownership_attested_by is
 'Authenticated seller user who declared ownership of the configured UPI destination.';
 comment on function public.provider_save_direct_upi(text,text,boolean,boolean) is
 'Seller-owned UPI configuration. Enabling requires explicit ownership attestation and seller approval; attestation is not bank verification.';
+
+
+-- Make seller confirmation safe to retry after a timeout without duplicating audit effects.
+-- A replay succeeds only when the same seller repeats the exact already-recorded reference.
+create or replace function public.provider_confirm_direct_upi_payment(
+  p_order_id uuid,
+  p_reference text default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_order public.orders%rowtype;
+  v_reference text := upper(nullif(trim(coalesce(p_reference, '')), ''));
+begin
+  if auth.uid() is null then
+    raise exception 'authentication_required';
+  end if;
+
+  if v_reference is null
+    or length(v_reference) < 6
+    or length(v_reference) > 120
+    or v_reference !~ '^[A-Z0-9/_-]{6,120}$' then
+    raise exception 'payment_reference_required';
+  end if;
+
+  select * into v_order
+  from public.orders
+  where id = p_order_id
+    and provider_owner_id = auth.uid()
+  for update;
+
+  if not found then
+    raise exception 'order_not_found';
+  end if;
+
+  if v_order.payment_method <> 'direct_upi' then
+    raise exception 'not_direct_upi_order';
+  end if;
+
+  -- Safe network retry: the first call may have committed even if its response was
+  -- lost. Do not create another event/update when the same owner repeats the same UTR.
+  if v_order.payment_status = 'paid_direct_to_seller' then
+    if v_order.payment_confirmed_by = auth.uid()
+      and upper(coalesce(v_order.payment_reference, '')) = v_reference then
+      return jsonb_build_object(
+        'order_id', p_order_id,
+        'payment_status', 'paid_direct_to_seller',
+        'payment_reference_recorded', true,
+        'seller_attested', true,
+        'idempotent_retry', true,
+        'bank_settlement_verified_by_doodhwala', false
+      );
+    end if;
+    raise exception 'payment_already_confirmed_with_different_reference';
+  end if;
+
+  if v_order.payment_status <> 'payment_pending_verification' then
+    raise exception 'payment_not_pending_verification';
+  end if;
+
+  if v_order.status in ('rejected', 'cancelled') then
+    raise exception 'order_not_payable';
+  end if;
+
+  perform set_config('doodhwala.payment_rpc', 'on', true);
+  begin
+    update public.orders
+    set payment_status = 'paid_direct_to_seller',
+        payment_reference = v_reference,
+        payment_confirmed_by = auth.uid(),
+        payment_confirmed_at = now()
+    where id = p_order_id;
+  exception when unique_violation then
+    raise exception 'payment_reference_already_used' using errcode = 'unique_violation';
+  end;
+
+  return jsonb_build_object(
+    'order_id', p_order_id,
+    'payment_status', 'paid_direct_to_seller',
+    'payment_reference_recorded', true,
+    'seller_attested', true,
+    'idempotent_retry', false,
+    'bank_settlement_verified_by_doodhwala', false
+  );
+end;
+$$;
+
+revoke execute on function public.provider_confirm_direct_upi_payment(uuid, text) from public, anon;
+grant execute on function public.provider_confirm_direct_upi_payment(uuid, text) to authenticated;
+
+comment on function public.provider_confirm_direct_upi_payment(uuid, text) is
+'Seller-owned direct-UPI receipt attestation requiring a transaction reference. Exact same-owner retries are idempotent. This does not independently verify bank settlement.';
