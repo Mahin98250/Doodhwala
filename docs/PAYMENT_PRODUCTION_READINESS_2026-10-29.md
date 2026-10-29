@@ -18,7 +18,7 @@ Read-only Supabase project, migration, Edge Function, table, grant, and security
 | Current payment rows | Payment ledger and provider-event inbox currently have zero rows | No live gateway transactions or webhook processing have been demonstrated |
 | Deployed Edge Functions | Only `client-error-report` is deployed; `doodhwala-pay` is absent | The Doodhwala Pay intent/status endpoint is not live |
 | Payment-table grants | `payment_transactions`, `payment_provider_events`, and `provider_payment_settings` have service-role table grants only for API roles; `order_payment_events` exposes SELECT to authenticated users and relies on RLS | Continue to verify row ownership policies and RPC boundaries; do not grant browser table writes |
-| Authenticated RPCs | Eight direct-UPI/payment-control SECURITY DEFINER RPCs are executable by `authenticated` | Advisor flags them; inspect each function's ownership checks and search_path. Do not revoke blindly because the customer/seller flows call them |
+| Authenticated RPCs | All eight direct-UPI/payment-control SECURITY DEFINER definitions were inspected read-only. They use an empty `search_path`; order-specific customer RPCs check `auth.uid()` ownership, seller settings are scoped to the authenticated provider owner, and seller payment/COD confirmation checks `provider_owner_id` plus expected payment/order state | Advisor warnings are not automatically vulnerabilities; keep these RPCs only with negative cross-account tests and exact role grants. `customer_check_provider_direct_upi` is an eligibility lookup and is granted to authenticated/service roles only |
 | Security Advisor | 5 RLS-enabled/no-policy findings (including server-only payment tables); 8 authenticated SECURITY DEFINER warnings; leaked-password protection disabled | Verify intended deny-by-default grants, review each RPC, and enable leaked-password protection before launch |
 | Orders/payments | Read-only table summary showed 0 orders and 0 payment ledger rows | No real-money end-to-end flow has been proven |
 
@@ -52,7 +52,7 @@ Read-only Supabase project, migration, Edge Function, table, grant, and security
 - **Edge Function rate limiting:** current source uses an in-memory per-instance bucket. It is not distributed and cannot be relied on as a production-wide abuse control.
 - **Webhook security:** the event-ledger migration explicitly requires signature verification before event insertion; no provider webhook endpoint is deployed.
 - **State truth:** only trusted server-side provider events may set gateway payments to captured/refunded. Seller-attested direct UPI must remain a separate status path.
-- **RPC security:** review all eight SECURITY DEFINER functions for strict ownership/role checks, fixed `search_path`, input validation, and least privilege; resolve advisor findings based on code evidence, not blanket grant changes.
+- **RPC security:** all eight live definitions were reviewed read-only. They set `search_path` to empty and the order-specific mutation/read RPCs contain user/provider ownership checks and explicit state validation. The eligibility lookup exposes only approved/active/enabled status. Remaining gate: run negative cross-account API tests against isolated staging and confirm exact execute grants; do not blanket-revoke required RPCs or broaden grants to silence advisor warnings.
 - **Auth security:** leaked-password protection is disabled in the current Supabase project and needs enabling/verification in Auth settings.
 - **Staging/migrations:** do not push migrations based on filenames or old snapshots alone. Reconcile the current migration history/schema and test in an isolated staging project first. The current environment inventory has previously documented that a free isolated Supabase staging project was unavailable; do not create paid compute or use production as a test environment without explicit approval.
 
@@ -62,8 +62,8 @@ Read-only Supabase project, migration, Edge Function, table, grant, and security
 - [x] Live migration history checked for payment migrations.
 - [x] Deployed Edge Function list checked.
 - [x] Payment tables, RLS, API-role grants, and security-advisor findings checked.
-- [ ] Review source and live definitions for all payment-related SECURITY DEFINER RPCs.
-- [ ] Fix or explicitly justify every payment-related security finding.
+- [x] Inspect live definitions for all eight payment-related SECURITY DEFINER RPCs: fixed empty search path and ownership/state checks observed in source.
+- [ ] Run negative cross-account API tests against isolated staging and verify exact execute grants; justify advisor warnings with test evidence.
 - [ ] Add a supported provider integration, or formally keep gateway methods disabled and launch only the reviewed direct-UPI/COD/manual-reconciliation model.
 - [ ] Deploy/test only in isolated staging; authenticated browser/API tests with synthetic accounts.
 - [ ] Test idempotency under concurrency, duplicate/replayed callbacks, amount mismatch, cancelled orders, refunds, delayed settlement, reconciliation mismatches, and outage recovery.
