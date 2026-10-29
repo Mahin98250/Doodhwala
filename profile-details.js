@@ -8,6 +8,8 @@
   const addressToggle=$("editAddress");
   const addressFields=$("addressFields");
   let currentUser=null;
+  let latestAuthTransition=null;
+  let redirectingToSignIn=false;
 
   function showMessage(text,kind="info"){
     message.textContent=text;
@@ -28,8 +30,28 @@
     return "We couldn't save your details. Please try again.";
   }
   function redirectToSignIn(){
+    if(redirectingToSignIn) return;
+    redirectingToSignIn=true;
+    currentUser=null;
+    save.disabled=true;
+    save.textContent="Redirecting…";
+    for(const id of ["fullName","phone","addressLine","areaName","city","pinCode"]){
+      const field=$(id);
+      if(field) field.value="";
+    }
+    $("accountEmail").textContent="Your session changed. Please sign in again.";
+    showMessage("Your session changed. Please sign in again.","error");
     const returnPath=location.pathname+location.search+location.hash;
     location.replace("/Doodhwala/auth/?return="+encodeURIComponent(returnPath));
+  }
+  function watchAuthState(){
+    const sup=client();
+    if(!sup?.auth||typeof sup.auth.onAuthStateChange!=="function") return;
+    sup.auth.onAuthStateChange((event,session)=>{
+      const nextUser=session?.user||null;
+      if(event!=="INITIAL_SESSION") latestAuthTransition={event,userId:nextUser?.id||null};
+      if(currentUser&&currentUser.id!==nextUser?.id) redirectToSignIn();
+    });
   }
   async function loadDetails(){
     const sup=client();
@@ -45,6 +67,9 @@
       const {data:sessionData,error:sessionError}=await sup.auth.getSession();
       if(sessionError) throw sessionError;
       currentUser=sessionData?.session?.user||null;
+      if(latestAuthTransition&&latestAuthTransition.userId!==(currentUser?.id||null)){
+        redirectToSignIn();return;
+      }
       if(!currentUser){redirectToSignIn();return;}
       $("accountEmail").textContent=currentUser.email||currentUser.phone||"Signed in to your Doodhwala account";
 
@@ -53,6 +78,7 @@
         .eq("id",currentUser.id)
         .maybeSingle();
       if(profileError) throw profileError;
+      if(redirectingToSignIn) return;
 
       $("fullName").value=profile?.full_name||currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||"";
       $("phone").value=profile?.phone||currentUser.phone||"";
@@ -65,6 +91,7 @@
         .limit(1)
         .maybeSingle();
       if(addressError) throw addressError;
+      if(redirectingToSignIn) return;
       if(address){
         $("addressLine").value=address.address_line||"";
         $("areaName").value=address.area_name||"";
@@ -75,6 +102,7 @@
       showMessage("Your saved details are loaded. Make your changes, then save.","success");
       save.disabled=false;
     }catch(error){
+      if(redirectingToSignIn) return;
       showMessage(safeError(error),"error");
       save.disabled=true;
     }
@@ -89,6 +117,7 @@
 
   form.addEventListener("submit",async event=>{
     event.preventDefault();
+    if(redirectingToSignIn)return;
     if(!currentUser){redirectToSignIn();return;}
     if(save.disabled)return;
     const fullName=$("fullName").value.trim();
@@ -115,6 +144,13 @@
     save.textContent="Saving…";
     showMessage("Saving your changes securely…");
     try{
+      const {data:latestSession,error:latestSessionError}=await sup.auth.getSession();
+      if(latestSessionError) throw latestSessionError;
+      if(redirectingToSignIn) return;
+      const latestUser=latestSession?.session?.user||null;
+      if(!latestUser||latestUser.id!==currentUser.id){
+        redirectToSignIn();return;
+      }
       const {error}=await sup.rpc("complete_current_customer_profile",{
         p_full_name:fullName,
         p_phone:phone,
@@ -128,12 +164,16 @@
       $("accountEmail").textContent=currentUser.email||currentUser.phone||"Signed in to your Doodhwala account";
       if(addressToggle.checked) setAddressEditing(false);
     }catch(error){
-      showMessage(safeError(error),"error");
+      if(/authentication_required|jwt expired|invalid jwt|session/i.test(String(error?.message||""))){
+        redirectToSignIn();return;
+      }
+      if(!redirectingToSignIn) showMessage(safeError(error),"error");
     }finally{
-      save.disabled=false;
-      save.textContent="Save personal details";
+      save.disabled=redirectingToSignIn;
+      save.textContent=redirectingToSignIn?"Redirecting…":"Save personal details";
     }
   });
 
+  watchAuthState();
   loadDetails();
 })();
