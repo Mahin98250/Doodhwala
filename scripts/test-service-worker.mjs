@@ -85,7 +85,7 @@ const queryAsset = await offlineResponse(origin + "/Doodhwala/styles.css?v=999",
 assert.equal(await queryAsset.text(), "cached stylesheet", "offline asset should fall back to its cached path");
 const versionedAuth = await offlineResponse(origin + "/Doodhwala/auth.js?v=20261012.1", "no-cors");
 assert.equal(await versionedAuth.text(), "cached current auth script", "offline password recovery script must fall back to the refreshed cached base script");
-assert.ok(source.includes('const CACHE="doodhwala-v111"'), "service worker cache revision must remain current");
+assert.ok(source.includes('const CACHE="doodhwala-v112"'), "service worker cache revision must remain current");
 assert.ok(source.includes('/Doodhwala/auth.js?v=20261012.1'), "the current password recovery script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.js?v=20261027.1'), "the current seller authorization script must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/provider.css?v=20261027.2'), "the current seller mobile navigation styles must be explicitly precached");
@@ -101,6 +101,7 @@ assert.ok(source.includes('/Doodhwala/subscription-schedule-preview.css?v=202610
 const unknownRoute = await offlineResponse(origin + "/Doodhwala/not-cached.html");
 assert.equal(await unknownRoute.text(), "offline recovery page", "unknown offline navigation should show the honest offline recovery page");
 assert.ok(source.includes('"/Doodhwala/offline.html"'), "offline recovery page must be included in the PWA precache");
+assert.ok(source.includes('"/Doodhwala/about/"') && source.includes('"/Doodhwala/about/index.html"'), "About route must be explicitly precached");
 const offlinePage = fs.readFileSync(new URL("../offline.html", import.meta.url), "utf8");
 assert.match(offlinePage, /Orders, sign-in, live order updates and payments need an internet connection/i, "offline page must clearly state online-only actions");
 assert.match(offlinePage, /id="retry"/, "offline page must provide a retry action");
@@ -113,6 +114,8 @@ assert.ok(installPromise, "service worker install handler must register its comp
 await installPromise;
 assert.equal(skipWaitingCalls, 1, "optional asset failures must not block service worker activation");
 assert.ok(cache.has(origin + "/Doodhwala/index.html"), "core offline shell must be cached before activation");
+assert.ok(cache.has(origin + "/Doodhwala/about/"), "About route must be installed into the PWA cache");
+assert.ok(cache.has(origin + "/Doodhwala/about/index.html"), "About document must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/plans.js?v=20261027.3"), "the new customer plan runtime must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/notifications.html"), "the notification route must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/notifications.css?v=20261027.1"), "the notification stylesheet must be installed into the PWA cache");
@@ -136,7 +139,7 @@ assert.ok(source.includes('/Doodhwala/profile-details.js?v=20261029.2'), "retrya
 assert.ok(source.includes('/Doodhwala/splash-screen.css?v=20261028.2' ) && source.includes('/Doodhwala/splash-screen.js?v=20261028.2'), "the PWA offline shell must include both splash assets");
 
 assert.ok(source.includes('/Doodhwala/pwa-register.js?v=20261022.4'), "the diagnostic PWA registration runtime must be explicitly precached");
-assert.ok(source.includes('const CACHE="doodhwala-v111"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
+assert.ok(source.includes('const CACHE="doodhwala-v112"'), "seller authorization cache revision must advance so installed PWAs refresh their precache");
 assert.ok(source.includes('/Doodhwala/network-status.js?v=20261023.1'), "network-status banner script must be precached");
 assert.ok(source.includes('/Doodhwala/assets/mascot.png'), "unversioned mascot URL must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/customer-journey-refresh.css?v=20261025.1'), "exact checkout stylesheet variant must be precached");
