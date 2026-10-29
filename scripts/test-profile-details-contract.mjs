@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const profile = read("profile/index.html");
