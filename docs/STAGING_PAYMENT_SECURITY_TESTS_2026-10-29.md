@@ -95,7 +95,17 @@ The isolated PostgreSQL CI fixture now exercises direct database amount constrai
 
 - The staging Security Advisor reported RLS-enabled/no-policy findings for the payment rate-limit table, payment ledger/event inbox, and seller payment/billing settings. The rate-limit table and payment ledger/event inbox have RLS enabled and browser-role table privileges revoked; those rows are intentionally inaccessible directly through browser roles. The no-policy findings are documented, not presented as a clean Advisor result.
 - The Advisor also reported 14 SECURITY DEFINER functions executable by authenticated. Reviewed the payment and seller-billing RPC definitions: anonymous execute was denied for the inspected functions; each uses an empty search_path; customer payment-method selection and UPI instruction retrieval scope to auth.uid()/the owning order; seller UPI/COD confirmation scope to the seller owner and enforce method/status requirements; and seller-billing write/read RPCs check the admin allowlist or provider ownership. COD collection is restricted until an order is delivered.
-- These checks reduce the risk but do not erase the Advisor warnings. Final manual review must still validate the admin allowlist/authentication model and every exposed privileged RPC before release. Do not silence or bulk-revoke the findings without checking the intended app calls and least-privilege behavior.
+- These checks reduce the risk but do not erase the Advisor warnings. The later confirmed-email guard migration now binds the admin decision to `auth.uid()`, the current `auth.users.email`, a non-null `email_confirmed_at`, the JWT email claim, and the private allowlist. It pins an empty `search_path`, denies anonymous/public execution, and preserves authenticated execution required by policies/RPCs. Disposable PostgreSQL tests cover confirmed allowlisted admin, unconfirmed admin, mismatched JWT email, unlisted user, and no authenticated subject.
+- The confirmed-email guard was also applied to **staging only** under migration version `20261029110337`. A staging SQL transaction repeated those identity checks using synthetic users and a synthetic allowlist row, then rolled back. A separate post-rollback query confirmed zero synthetic auth/allowlist rows. This does not count as browser E2E because staging has no real admin allowlist entry and no deployed Edge Functions.
+- The email-identity part of the admin gate is now hardened and verified. Remaining release review still includes the complete exposed privileged RPC surface and verification that Supabase leaked-password protection is enabled. Do not silence or bulk-revoke Advisor findings without checking intended app calls and least-privilege behavior.
+
+
+## Admin allowlist identity hardening (2026-10-29)
+
+- Added `20261029110337_doodhwala_admin_allowlist_confirmed_email.sql` to prevent an unconfirmed account from obtaining owner access solely by matching an allowlisted email claim.
+- The SQL check was applied to staging, read back from the database, and tested in one transaction. Confirmed matching admin was accepted; unconfirmed email, mismatched JWT email, unlisted user, and missing subject were rejected. The synthetic rows were rolled back and then verified absent.
+- The staging migration history now records the same version used by the repository file. This aligns the feature migration version, but it does not resolve the broader repository-vs-production migration-history drift.
+
 
 
 ## Safety
