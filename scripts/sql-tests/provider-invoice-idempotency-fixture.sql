@@ -22,17 +22,17 @@ create or replace function auth.uid()
 returns uuid
 language sql
 stable
-as $
+as $func$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
-$;
+$func$;
 
 create or replace function auth.jwt()
 returns jsonb
 language sql
 stable
-as $
+as $func$
   select jsonb_build_object('email', nullif(current_setting('request.jwt.claim.email', true), ''))
-$;
+$func$;
 
 -- The custom "admin=null" claim is only a test seam for verifying SQL RPCs
 -- reject an unexpected NULL helper result. The migration under test replaces
@@ -43,7 +43,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $func$
   select case
     when current_setting('request.jwt.claim.admin', true) = 'null' then null::boolean
     else exists (
@@ -55,7 +55,7 @@ as $
         and lower(u.email) = lower(coalesce(auth.jwt()->>'email', ''))
     )
   end
-$;
+$func$;
 
 create table public.provider_profiles (
   id uuid primary key,
