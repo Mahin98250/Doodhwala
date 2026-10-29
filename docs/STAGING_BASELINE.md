@@ -1,42 +1,61 @@
 # Staging baseline and migration reconciliation
 
-**Status: staging project not yet provisioned or validated.** This document is the first execution gate for the scalability roadmap. Do not run synthetic checkout/load tests against production.
+**Current status (read-only inventory, 2026-10-29): staging project exists and is healthy; full application acceptance is not yet proven.** Use synthetic identities/data only. Do not run synthetic checkout/load tests or migrations against production.
 
-## Known current state (read-only audit, 2026-10-24)
+## Current verified environment inventory (2026-10-29)
 
-- Supabase production project: `hmiboyfcvtfawrwujslg` (`Doodhwala`, `ap-south-1`).
-- Connected database engine: PostgreSQL 17.
-- Live migration history contains 57 entries and currently ends at `20261013164921` (`doodhwala_revoke_provider_direct_writes`).
-- The production project currently has only the `client-error-report` Edge Function deployed. The `doodhwala-pay` function is not deployed.
-- Repository `main` contains newer migrations after the production history, including nearby search / order-capacity changes and payment foundations. A repository migration file is not proof that it was applied to a database.
-- The most recent disposable PostgreSQL CI run passed for the repository's synthetic nearby-search and payment-audit fixtures. This is not a complete staging end-to-end test.
+| Measure | Doodhwala Staging | Doodhwala Production |
+| --- | --- | --- |
+| Project ref | `jbcekiaiyxcatueixeqh` | `hmiboyfcvtfawrwujslg` |
+| Region | `ap-northeast-2` | `ap-south-1` |
+| Database engine | PostgreSQL 17 | PostgreSQL 17 |
+| Public tables | 25 | 27 |
+| Public functions | 68 | 70 |
+| Public RLS policies | 40 | 45 |
+| Public triggers | 13 | 17 |
+| Recorded migration entries | 87 | 67 |
+| Latest recorded migration | `20261029110337` | `20261027062657` |
+| Edge Functions observed | `doodhwala-pay` v1 (JWT verification enabled) | `client-error-report` v3 |
 
+These are read-only inventory facts, not certification that the schemas are equivalent or secure. Table counts, policy counts and RLS-enabled flags do not prove policy correctness. The application tables observed in staging were empty at the time of this snapshot, so synthetic test fixtures and authenticated browser journeys are still required.
 
-## Current no-cost blocker (checked 2026-10-25)
+The two projects are in different regions. Staging test timing is not directly representative of production latency unless the region difference and test design are documented. Refresh this table after any reviewed environment change.
 
-- The existing Supabase Free organization has reached its limit of two active free projects (Learner's Guide and Doodhwala). A new `Doodhwala Staging` project was not created.
-- A development branch quote returned `$0.01344/hour` (about `$9.81` for 30 days of continuous use at that quoted rate). It was not created because the user has not approved additional charges.
-- Do not delete, pause, or repurpose either existing project merely to free a slot. Do not upgrade the plan or create paid compute/branches without explicit approval.
-- Until a zero-cost isolated staging environment is available, continue with disposable PostgreSQL CI fixtures, static contracts, migration-manifest review, and local-only checks. These tests are useful but **do not replace** full Supabase Auth/RLS/Realtime/end-to-end testing or prove live capacity.
-- Phase 1 remains **blocked for full staging acceptance** until a separate test project is available. Production remains off-limits for synthetic load or test-order writes.
+## Current blockers and safety boundaries
 
-## Provision staging first
+- **Migration reconciliation remains P0.** Staging records 87 migrations versus production's 67. Public-object counts also differ. Determine which differences are intended, missing, renamed or unsafe before applying any changes. Never infer that a Git migration is deployed solely because its file exists.
+- **Authenticated end-to-end acceptance remains pending.** No evidence in this baseline proves the full customer → seller → customer journey, actual Auth/RLS/Realtime behavior, or cross-account isolation on staging.
+- **Payment separation remains important.** The staging `doodhwala-pay` Edge Function exists, but the repository's documented contract is a fail-closed payment-intent foundation, not a live automated gateway. Direct seller UPI is manually seller-attested, not bank-verified by Doodhwala. Production currently has no `doodhwala-pay` function in the observed inventory.
+- **No additional spend without approval.** Do not create paid branches, additional projects, or upgraded compute without explicit cost review and approval. Do not pause, delete or repurpose projects to free a slot.
+- **No production test writes or migrations.** Keep production preflight read-only. Production rollout is a separate reviewed change with explicit approval.
 
-### Current blocker — no staging environment exists yet
+## First execution sequence
 
-The attempt to create `Doodhwala Staging` was rejected because the organization/user already reached the free-project limit. No new project was created. A development branch was quoted at a nonzero hourly cost and was not created because the budget rule is **no additional charges without approval**. Until a free slot or separately approved budget is available, continue with repository tests and disposable PostgreSQL CI only; do not point staging variables at production and do not claim a measured staging baseline.
+1. Capture the latest migration list, relevant schema definitions and grants from both staging and production using read-only methods.
+2. Compare functions/signatures, triggers, indexes, RLS policies, grants and migration identifiers. Record each difference and its impact.
+3. Review migration dependencies and rehearse an explicitly selected sequence on staging; do not blindly replay all local migrations.
+4. Verify the staged schema and all relevant grants/policies after migration rehearsal.
+5. Run authenticated synthetic customer → seller → customer browser journeys, including retries/reload/reconnect, and capture non-sensitive evidence.
+6. Run bounded load tests against staging only after validating the workflow's project-ref/URL guards.
+7. Save the commit SHA, migration list, test account aliases, synthetic order IDs, results, limitations and rollback steps.
+8. Treat production rollout as a separate change; staging results never authorize production migration automatically.
 
-Use a separate Supabase project in the same organization as Doodhwala, preferably in `ap-south-1` to match the production region and reduce regional differences in test results. Use synthetic users, providers, products, addresses and orders only. Never copy production customer PII into staging.
+## Read-only database audit
 
-Before creating a project, confirm the organization and inspect the quoted cost. Do not accept a nonzero project/compute charge without explicit approval. Use separate staging URL and publishable key; never copy a service-role key into browser code or repository files.
+Use `scripts/staging-schema-audit.sql` only when the SQL client is explicitly connected to the intended staging database. Verify project ref and URL before execution; do not include secret credentials in the report.
 
-Suggested GitHub Actions secrets/environment variables for a staging-only load workflow:
-- `STAGING_PROJECT_REF` (exact 20-character ref; must not equal the production project ref)
-- `STAGING_SUPABASE_URL`
-- `STAGING_SUPABASE_ANON_KEY`
-- `STAGING_PROJECT_REF` (must not equal the production project ref)
+## Acceptance gates
 
-Do not add real secret values to this repository, README, logs or pull requests. Set them in GitHub Actions Environment secrets after staging is provisioned. Restrict the environment to maintainers and require an explicit staging confirmation input for any load test.
+- [x] A distinct staging project exists and current inventory reports it active/healthy.
+- [ ] Exact staging migration history and schema inventory reconciled.
+- [ ] RLS, function grants, payment gates and order-capacity constraints reviewed against actual definitions.
+- [ ] Authenticated synthetic end-to-end order journey passes.
+- [ ] Retry, reload, reconnect and duplicate-submit behavior verified in browser.
+- [ ] Backup/restore or supported recovery procedure tested and documented.
+- [ ] Read-only discovery load test passes with named baseline settings.
+- [ ] Report records commit SHA, environment, metrics, errors and limitations.
+
+**No capacity or enterprise-readiness claim** should be made until tests are evidenced for a named commit, environment/region, plan, data size, scenario mix and load-generator profile.
 
 ## Production migration snapshot and repository drift
 
