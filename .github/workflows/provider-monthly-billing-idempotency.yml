@@ -44,13 +44,13 @@ jobs:
       - name: Apply provider invoice idempotency migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql
       - name: Apply billing amount and payment timestamp guards
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029131000_doodhwala_billing_amount_and_time_guards.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql
       - name: Verify billing guard migration can be safely re-applied
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029131000_doodhwala_billing_amount_and_time_guards.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql
       - name: Apply shared payment API rate-limit migration
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029132000_doodhwala_payment_api_shared_rate_limit.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102528_doodhwala_payment_api_shared_rate_limit.sql
       - name: Verify shared rate-limit migration can be safely re-applied
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029132000_doodhwala_payment_api_shared_rate_limit.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102528_doodhwala_payment_api_shared_rate_limit.sql
       - name: Verify retry idempotency, billing limits, timestamps and fail-closed admin guard
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-assertions.sql
       - name: Verify shared payment API rate limiting and client privilege denial
