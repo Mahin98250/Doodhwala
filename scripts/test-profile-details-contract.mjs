@@ -13,6 +13,11 @@ assert.ok(profilePage.includes("authRevision===revisionAtStart"), "Profile must 
 const editor = read("profile/details/index.html");
 const runtime = read("profile-details.js");
 const nav = read("customer-nav.js");
+assert.ok(profile.includes("supabase-js@2.117.1/dist/umd/supabase.min.js"), "Profile must load the Supabase browser SDK before initializing the client");
+assert.ok(editor.includes("supabase-js@2.117.1/dist/umd/supabase.min.js"), "Personal Details must load the Supabase browser SDK before initializing the client");
+assert.ok(profile.indexOf("supabase-js@2.117.1/dist/umd/supabase.min.js") < profile.indexOf("supabase-client.js"), "Profile SDK must load before the Supabase client bootstrap");
+assert.ok(editor.indexOf("supabase-js@2.117.1/dist/umd/supabase.min.js") < editor.indexOf("supabase-client.js"), "Personal Details SDK must load before the Supabase client bootstrap");
+
 const migrations = fs.readdirSync(new URL("../supabase/migrations/", import.meta.url));
 const completionMigration = read("supabase/migrations/20261011151730_fix_customer_profile_phone_regex.sql");
 const completionBase = read("supabase/migrations/20261008031000_customer_oauth_profile_completion.sql");
