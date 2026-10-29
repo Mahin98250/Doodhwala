@@ -114,3 +114,33 @@ console.log("Personal details contracts passed: dedicated route, authenticated s
   assert.equal(elements.get("formMessage").dataset.kind,"info","a successful read must not claim a save succeeded");
   assert.equal(rpcCalls,0,"the UI-state regression must not exercise or alter RPC persistence");
 }
+
+
+// The unavailable-client branch must also lock the form and recover when the
+// client becomes available; this remains a UI-only test with mocked reads.
+{
+  const elements = new Map();
+  for (const id of ["personalDetailsForm","saveProfile","formMessage","retryLoadDetails","editAddress","addressFields","fullName","phone","addressLine","areaName","city","pinCode","accountEmail"]) {
+    elements.set(id,{id,value:"",disabled:false,hidden:id==="retryLoadDetails",checked:false,required:false,textContent:"",dataset:{},listeners:{},addEventListener(type,callback){this.listeners[type]=callback;},focus(){}});
+  }
+  const window={Doodhwala:{}};
+  const document={getElementById(id){return elements.get(id)||null;}};
+  const location={pathname:"/Doodhwala/profile/details/",search:"",hash:"",replace(){throw new Error("unexpected sign-in redirect");}};
+  vm.runInNewContext(runtime,{window,document,location,console:{warn(){},error(){}}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(elements.get("retryLoadDetails").hidden,false,"unavailable client must expose retry");
+  assert.equal(elements.get("fullName").disabled,true,"unavailable client must keep fields locked");
+  assert.equal(elements.get("saveProfile").disabled,true,"unavailable client must keep save disabled");
+  const user={id:"customer-b",email:"customer-b@example.test",user_metadata:{}};
+  window.Doodhwala.supabase={
+    auth:{async getSession(){return {data:{session:{user}},error:null};},onAuthStateChange(){}},
+    from(table){return {select(){return this;},eq(){return this;},order(){return this;},limit(){return this;},async maybeSingle(){return {data:table==="profiles"?{full_name:"Second Customer",phone:"9876543211"}:null,error:null};}};},
+    async rpc(){throw new Error("UI state test must not call RPC");}
+  };
+  elements.get("retryLoadDetails").listeners.click();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(elements.get("retryLoadDetails").hidden,true,"retry should hide after the client becomes available");
+  assert.equal(elements.get("fullName").disabled,false,"fields should unlock after a successful retry");
+  assert.equal(elements.get("fullName").value,"Second Customer","successful retry should load the account's saved name");
+  assert.equal(elements.get("formMessage").dataset.kind,"info","successful retry should not announce a save");
+}
