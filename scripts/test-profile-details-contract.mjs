@@ -14,12 +14,15 @@ const completionBase = read("supabase/migrations/20261008031000_customer_oauth_p
 assert.match(profile, /href=["']\/Doodhwala\/profile\/details\/["'][^>]*>[\s\S]*?Personal details/i,
   "Personal details must open the dedicated editor route");
 assert.match(editor, /<form[^>]+id=["']personalDetailsForm["']/i, "Editor must expose a real personal details form");
-assert.match(editor, /profile-details\.js\?v=20261029\.1/, "Editor must load the separately syntax-checked runtime");
+assert.match(editor, /profile-details\.js\?v=20261029\.2/, "Editor must load the separately syntax-checked runtime");
 for (const id of ["fullName", "phone", "addressLine", "areaName", "city", "pinCode", "saveProfile", "formMessage"]) {
   assert.ok(editor.includes('id="' + id + '"'), "Editor is missing required control: " + id);
 }
 assert.ok(nav.includes('pathname.startsWith("/doodhwala/profile/")||pathname==="/doodhwala/profile"'), "Nested Profile routes must keep Profile selected in bottom navigation");
 assert.match(runtime, /auth\.getSession\(\)/, "Editor must require an authenticated session");
+assert.match(editor, /id="retryLoadDetails"[^>]*hidden/, "Profile editor must start with its load-retry control hidden");
+assert.match(runtime, /retryLoad\.hidden=false/, "Profile read failures must expose a retry action");
+assert.match(runtime, /retryLoad\.addEventListener\("click"/, "Retry must re-run the profile read flow");
 assert.ok(runtime.includes("auth.onAuthStateChange("), "Editor must respond to cross-tab and same-tab authentication changes");
 assert.ok(runtime.includes("latestAuthTransition.userId!==(currentUser?.id||null)"), "Editor must reject a stale session snapshot when authentication changes during loading");
 assert.ok(runtime.includes("latestUser.id!==currentUser.id"), "Save must verify the active account immediately before the profile RPC");
@@ -45,8 +48,8 @@ assert.match(editor, /resilience\.js/, "Editor must load the existing network re
 assert.ok(migrations.includes("20261011151730_fix_customer_profile_phone_regex.sql"),
   "Editor must rely on the known PostgreSQL-safe phone validation migration");
 const worker = read("sw.js");
-assert.match(worker, /doodhwala-v110/, "Service worker cache revision must advance for the new editor");
+assert.match(worker, /doodhwala-v111/, "Service worker cache revision must advance for the new editor");
 assert.match(worker, /profile\/details\/index\.html/, "Service worker must precache the editor route");
-assert.match(worker, /profile-details\.js\?v=20261029\.1/, "Service worker must precache the editor runtime");
+assert.match(worker, /profile-details\.js\?v=20261029\.2/, "Service worker must precache the editor runtime");
 
 console.log("Personal details contracts passed: dedicated route, authenticated session, owner-scoped reads, protected RPC, validation feedback, and PWA/resilience bootstraps.");
