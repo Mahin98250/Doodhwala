@@ -639,7 +639,7 @@ if($("adminMore"))$("adminMore").onclick=function(){
  const existing=$("adminMoreMenu");if(existing){existing.remove();return}
  const menu=document.createElement("div");menu.id="adminMoreMenu";
  menu.style.cssText="position:fixed;z-index:10001;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));width:min(250px,calc(100vw - 24px));padding:10px;border:1px solid #d7dfd8;border-radius:16px;background:#fff;box-shadow:0 14px 36px rgba(13,37,23,.22);display:grid;gap:5px";
- [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
+ [["Search records","search"],["Support inbox","support"],["Subscriptions","subscriptions"],["Seller billing","seller-billing"],["Products","products"],["Audit log","audit"],["System health","health"],["Owner settings","settings"]].forEach(item=>{
  const button=document.createElement("button");button.type="button";button.textContent=item[0];
  button.style.cssText="padding:12px;border:0;border-radius:10px;background:#f5f8f5;color:#17251c;text-align:left;font:700 13px system-ui;cursor:pointer";
  button.onclick=()=>{menu.remove();if(item[1]==="search"){const input=$("adminSearch");if(input){input.focus();input.select()}}else navTo(item[1])};
