@@ -1,7 +1,7 @@
 # Doodhwala Team Task Board
 
 > Shared source of truth for Mahin, teammates, and coding agents. Keep this file current in the same PR as task-related changes.
-> Last updated: 2026-10-28
+> Last updated: 2026-10-29
 > Rule: a checkbox is only checked after the change is merged (or explicitly accepted) and the stated verification is recorded. A coding agent must not mark work done merely because it generated code.
 
 ## How to use this board
@@ -64,10 +64,12 @@
   **Evidence:** PR/Issue: add link · Checks: code inspection.
 
 - [ ] **DW-005 — Loading, empty, error, and success states** ([Issue #77](https://github.com/Mahin98250/Doodhwala/issues/77))  
-  **Owner:** Unassigned · **Status:** TODO · **Area:** UX  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** UX  
   **Goal:** Make asynchronous actions understandable while preserving existing behavior and accessibility.  
+  **Scope:** Support request submission/history and notification read/refresh actions; preserve existing RPCs and authentication.  
+  **Branch:** `feat/dw-005-async-ui-states-20261029`  
   **Done when:** Selected high-priority screens have consistent, tested states and no false success messages.  
-  **Evidence:** PR/Issue: add link · Checks: not run.
+  **Evidence:** [Issue #77](https://github.com/Mahin98250/Doodhwala/issues/77) · PR: not opened yet · Checks: not run.
 
 ### P2 — Payments and security (do not enable live collection)
 
