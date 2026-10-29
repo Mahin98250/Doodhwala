@@ -176,7 +176,7 @@ function renderTimeline(events){
   }).join("")+'</div>';
 }
 
-function paymentStatusLabel(o){const map={unpaid:"Payment not selected",payment_pending_verification:"UPI payment pending seller verification",paid_direct_to_seller:"Seller marked UPI payment received",cash_on_delivery:"Pay seller on delivery",paid_cod:"Cash collection confirmed",payment_failed:"Payment failed",refund_or_reversal_review:"Payment issue needs review"};return map[o.payment_status]||"Payment status unavailable"}
+function paymentStatusLabel(o){const map={unpaid:"Payment not selected",payment_pending_verification:"UPI payment pending seller verification",paid_direct_to_seller:"Seller attested receipt (not independently bank-verified)",cash_on_delivery:"Pay seller on delivery",paid_cod:"Cash collection confirmed",payment_failed:"Payment failed",refund_or_reversal_review:"Payment issue needs review"};return map[o.payment_status]||"Payment status unavailable"}
 function renderOrderCard(o,events){
   const provider=o.provider_profiles||{};
   const items=o.order_items||[];
@@ -194,7 +194,7 @@ function renderOrderCard(o,events){
     o.delivery_address_line,
     [o.delivery_area_name,o.delivery_city,o.delivery_pin_code].filter(Boolean).join(", ")
   ].filter(Boolean).join(", ");
-  const paymentMethod=o.payment_method==="direct_upi"?"Direct seller UPI":o.payment_method==="selection_pending"?"Choosing payment method":o.payment_method==="cash_on_delivery"?"Cash on Delivery":"Payment method not recorded";const paymentAction=o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>Payment · '+esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
+  const paymentMethod=o.payment_method==="direct_upi"?"Direct seller UPI":o.payment_method==="selection_pending"?"Choosing payment method":o.payment_method==="cash_on_delivery"?"Cash on Delivery":"Payment method not recorded";const paymentAction=o.payment_method==="direct_upi"&&o.payment_status==="payment_pending_verification"&&o.status!=="rejected"&&o.status!=="cancelled"?'<button class="order-cancel" data-pay-direct-upi="'+esc(o.id)+'">Pay seller with UPI</button>':"";const paymentPanel='<div class="customer-payment"><div><b>Payment · '+esc(paymentMethod)+'</b><span>'+esc(paymentStatusLabel(o))+'</span></div>'+paymentAction+'</div>';return '<article class="order-card">'+
     '<div class="order-card-head"><div><div class="order-provider">'+
       esc(provider.display_name||"Local milk provider")+
       '</div><div class="order-meta">Order '+esc(o.id)+" · "+esc(when(o.created_at))+
