@@ -3,6 +3,7 @@ import fs from "node:fs";
 
 const api = fs.readFileSync(new URL("../supabase/functions/doodhwala-pay/index.ts", import.meta.url), "utf8");
 const migration = fs.readFileSync(new URL("../supabase/migrations/20261022120000_doodhwala_pay_foundation.sql", import.meta.url), "utf8");
+const sharedRateLimit = fs.readFileSync(new URL("../supabase/migrations/20261029132000_doodhwala_payment_api_shared_rate_limit.sql", import.meta.url), "utf8");
 const orderStateMachine = fs.readFileSync(new URL("../supabase/migrations/20261007092600_doodhwala_order_state_machine.sql", import.meta.url), "utf8");
 const payableStatusesMatch = api.match(/const payableOrderStatuses = new Set\(\[(.*?)\]\);/s);
 assert.ok(payableStatusesMatch, "payment intents must use an explicit allowlist of payable order states");
@@ -15,12 +16,17 @@ assert.ok(api.includes("!payableOrderStatuses.has(String(order.status))"), "unkn
 
 assert.ok(api.includes("/auth/v1/user"), "payment API must validate the caller session with Supabase Auth");
 const authenticatedIdentityGuard = api.indexOf("if (!user?.id)");
-const userRateLimitGuard = api.indexOf("if (limited(String(user.id)))");
-assert.match(api, /function limited\(userId: string\)/, "rate limiting must key on a verified user identity, not client-provided network headers");
-assert.ok(userRateLimitGuard > authenticatedIdentityGuard && authenticatedIdentityGuard >= 0, "per-user rate limiting must run only after Supabase validates the session");
-assert.doesNotMatch(api, /x-real-ip|cf-connecting-ip/, "do not trust client-supplied IP headers as the rate-limit identity");
-assert.ok(api.includes("rateBuckets.size >= 4000"), "in-memory rate-limit buckets must have a hard capacity guard");
-assert.match(api, /isolates do not\s*\/\/\s*share this Map/, "in-memory limiting must document its non-global scope even when the comment wraps across lines");
+const userRateLimitGuard = api.indexOf('rest("rpc/doodhwala_payment_api_allow_request"');
+assert.ok(userRateLimitGuard > authenticatedIdentityGuard && authenticatedIdentityGuard >= 0, "shared rate limiting must run only after Supabase validates the session");
+assert.doesNotMatch(api, /rateBuckets|function limited\(/, "the payment endpoint must not rely on an isolate-local rate-limit map");
+assert.match(api, /rate_limit_unavailable[\s\S]*?503, origin/, "the payment endpoint must fail closed if the shared limiter is unavailable");
+assert.match(sharedRateLimit, /request_count <= 30/i, "the shared limiter must cap each user at 30 requests per window");
+assert.match(sharedRateLimit, /interval '60 seconds'/i, "the shared limiter must use a 60-second window");
+assert.match(sharedRateLimit, /on conflict \(user_id\) do update/i, "per-user request counters must update atomically under concurrent requests");
+assert.match(sharedRateLimit, /alter table public\.doodhwala_payment_api_rate_limits enable row level security/i, "shared limiter table must have RLS enabled");
+assert.match(sharedRateLimit, /revoke all on public\.doodhwala_payment_api_rate_limits from public, anon, authenticated/i, "browser roles must not access shared limiter state");
+assert.match(sharedRateLimit, /revoke all on function public\.doodhwala_payment_api_allow_request\(uuid\)[\s\S]*?from public, anon, authenticated/i, "clients must not invoke the shared limiter RPC");
+assert.match(sharedRateLimit, /grant execute on function public\.doodhwala_payment_api_allow_request\(uuid\)[\s\S]*?to service_role/i, "only the server service role may invoke the shared limiter RPC");
 assert.ok(api.includes("!PUBLISHABLE_KEYS.length"), "missing publishable-key allowlist configuration must fail closed");
 assert.ok(api.includes("if (!apiKey || !PUBLISHABLE_KEYS.includes(apiKey))"), "missing or unconfigured client apikey must be rejected before authentication");
 assert.doesNotMatch(api, /PUBLISHABLE_KEYS\.length\s*&&/, "an empty allowlist must never disable API-key validation");
