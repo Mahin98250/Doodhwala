@@ -9,7 +9,7 @@
 ## Finding DW-005-PROFILE-01 — personal details load failure has no in-screen retry
 
 - **Route/files:** `/Doodhwala/profile/details/`; `profile/details/index.html`, `profile-details.js`.
-- **Viewport/browser:** source review only; no interactive browser/device was available for this run. Responsive CSS is defined for widths below 440px, but rendered layout is **NOT RUN**.
+- **Viewport/browser:** source review plus automated CI only; no manual interactive browser or physical device was used for this finding. Responsive CSS is defined for widths below 440px, but the profile route's rendered layout is **NOT RUN**.
 - **Reproduction (source-confirmed path):** open Personal details with the secure client unavailable or make the initial session/profile/default-address read reject.
 - **Expected:** a truthful error message, a clear retry action, and no editable form that appears ready to save before the existing account details have loaded.
 - **Actual before fix:** an error was shown and Save was disabled, but there was no in-screen retry control; fields remained editable while the initial read had failed. A successful read also used a `success` status for a “details loaded” informational message.
@@ -21,12 +21,18 @@
 
 | Check | Exact command/environment | Result | Evidence / limitation |
 |---|---|---|---|
-| Profile source-contract regression | `node scripts/test-profile-details-contract.mjs` in GitHub Actions / repository CI | PENDING CI | Do not mark PASS until the workflow finishes on the PR head. |
-| PWA source-contract regression | `node scripts/test-pwa-offline-contracts.mjs` in GitHub Actions / repository CI | PENDING CI | Do not mark PASS until the workflow finishes on the PR head. |
-| Site validation / JS syntax | Repository's existing Static validation workflow on exact PR head | PENDING CI | Record workflow URL and tested SHA in the PR. |
+| Profile source-contract + mocked UI-state regression | `node scripts/test-profile-details-contract.mjs` via Static validation, tested code SHA `105de7299e8936aa7f78798b541216008228a3a4` | PASS | [Static validation run 40897115651](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115651). Includes failed-read → retry-success state simulation; RPC call count is asserted to remain zero. |
+| PWA source-contract regression | `node scripts/test-pwa-offline-contracts.mjs` via Static validation, tested code SHA `105de7299e8936aa7f78798b541216008228a3a4` | PASS | [Static validation run 40897115651](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115651). Cache expectations in related contracts were aligned to v111. |
+| Site validation / JS syntax | Repository Static validation on code SHA `105de7299e8936aa7f78798b541216008228a3a4` | PASS | [Run 40897115651](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115651).
 | Profile read/write persistence | Authenticated customer browser session in an approved non-production test environment | BLOCKED / NOT RUN | Requires an approved test account/session and an explicitly permitted isolated test environment. This sprint does not test or alter RPC/database behavior. |
 | Mobile/tablet/desktop visual check | Real browser/device at 320, 390, 768, 1024, and 1440 CSS px | NOT RUN | CI/source contracts are not physical-device or full visual proof. |
-| Installed PWA update/offline/reconnect | Identified browser/device, previous cache, airplane/offline toggle, reconnect + reload | NOT RUN | Cache contract is updated; installed-PWA lifecycle acceptance still needs a browser/device run. |
+| PWA offline/reconnect smoke | Chromium via `.github/workflows/pwa-offline-browser.yml`, viewport 390×844, tested code SHA `105de7299e8936aa7f78798b541216008228a3a4` | PASS | [Run 40897115563](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115563); [screenshots + JSON artifact](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115563/artifacts/12907243012). Covers local cached shell, query route, offline fallback and reconnect. |
+| Physical installed-PWA lifecycle | Android/iOS device; fresh install, update from prior cache, old tab open, reconnect refresh | NOT RUN | CI Chromium evidence is not physical-device proof. |
+
+## Additional CI evidence on code SHA `105de7299e8936aa7f78798b541216008228a3a4`
+
+- **PASS — In-app notification UI and migration validation:** [run 40897115562](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115562).
+- **PASS — Disposable PostgreSQL validation:** [run 40897115599](https://github.com/Mahin98250/Doodhwala/actions/runs/40897115599). This is CI-only synthetic validation; this task made no database or migration changes and did not connect to a live database.
 
 ## Remaining sprint coverage — not claimed complete
 
