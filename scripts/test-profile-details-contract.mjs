@@ -7,6 +7,8 @@ const profile = read("profile/index.html");
 const editor = read("profile/details/index.html");
 const runtime = read("profile-details.js");
 const nav = read("customer-nav.js");
+const about = read("about/index.html");
+const legal = read("legal.html");
 const migrations = fs.readdirSync(new URL("../supabase/migrations/", import.meta.url));
 const completionMigration = read("supabase/migrations/20261011151730_fix_customer_profile_phone_regex.sql");
 const completionBase = read("supabase/migrations/20261008031000_customer_oauth_profile_completion.sql");
@@ -20,6 +22,21 @@ for (const id of ["fullName", "phone", "addressLine", "areaName", "city", "pinCo
   assert.ok(editor.includes('id="' + id + '"'), "Editor is missing required control: " + id);
 }
 assert.ok(nav.includes('pathname.startsWith("/doodhwala/profile/")||pathname==="/doodhwala/profile"'), "Nested Profile routes must keep Profile selected in bottom navigation");
+assert.ok(profile.includes('href="/Doodhwala/about/"'), "Profile must expose the existing About destination");
+assert.ok(about.includes("<title>About Doodhwala</title>"), "About destination must have a clear page title");
+assert.ok(about.includes('href="/Doodhwala/profile/"'), "About page must provide a back-to-Profile route");
+const deletionHelp = profile.match(/<a class="profile-link" href="\/Doodhwala\/support\/">[\s\S]*?<b>Account deletion help<\/b>[\s\S]*?<\/a>/);
+assert.ok(deletionHelp, "Account deletion help must route to the existing Support destination rather than loop through Profile sign-in");
+assert.match(deletionHelp[0], /this link does not delete your account/i, "Account deletion help must not imply that clicking submits or performs deletion");
+for (const target of ["privacy", "terms", "seller", "cancellations", "grievance"]) {
+  assert.ok(legal.includes('id="' + target + '"'), "Legal destination fragment must exist: #" + target);
+  assert.ok(profile.includes('/Doodhwala/legal/#' + target), "Profile must expose legal destination fragment: #" + target);
+}
+assert.ok(profile.includes('href="/Doodhwala/support/"'), "Profile must expose Help & Support");
+assert.ok(profile.includes('href="/Doodhwala/notifications/"'), "Profile must expose Notifications");
+assert.ok(profile.includes('href="/Doodhwala/orders/"'), "Profile must expose Orders");
+assert.ok(profile.includes('href="/Doodhwala/plans/"'), "Profile must expose Milk plans");
+assert.ok(profile.includes('href="/Doodhwala/?view=saved"'), "Profile must expose Saved providers");
 assert.match(runtime, /auth\.getSession\(\)/, "Editor must require an authenticated session");
 assert.match(runtime, /setProfileFieldsEnabled\(false\)/, "Profile fields must be locked while initial data is loading or unavailable");
 assert.match(runtime, /setProfileFieldsEnabled\(true\)/, "Profile fields must unlock only after the saved details load successfully");
@@ -52,7 +69,7 @@ assert.match(editor, /resilience\.js/, "Editor must load the existing network re
 assert.ok(migrations.includes("20261011151730_fix_customer_profile_phone_regex.sql"),
   "Editor must rely on the known PostgreSQL-safe phone validation migration");
 const worker = read("sw.js");
-assert.match(worker, /doodhwala-v111/, "Service worker cache revision must advance for the new editor");
+assert.match(worker, /doodhwala-v112/, "Service worker cache revision must advance for the new editor");
 assert.match(worker, /profile\/details\/index\.html/, "Service worker must precache the editor route");
 assert.match(worker, /profile-details\.js\?v=20261029\.2/, "Service worker must precache the editor runtime");
 

@@ -41,7 +41,7 @@ try {
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, { timeout: 15000 });
   await page.waitForFunction(async () => {
-    const cache = await caches.open("doodhwala-v111");
+    const cache = await caches.open("doodhwala-v112");
     return !!(await cache.match("/Doodhwala/offline.html")) &&
       !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")) &&
       !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")) &&
@@ -50,11 +50,25 @@ try {
   await page.screenshot({ path: path.join(evidenceDir, "home-online.png"), fullPage: true });
   evidence.checks.push("worker installed and required offline shell/exact CSS variant cached");
 
+  const profileResponse = await page.goto(new URL("profile/", base).href, { waitUntil: "domcontentloaded" });
+  assert.ok(profileResponse && profileResponse.ok(), "Profile route loads on the local static server");
+  assert.ok(await page.getByRole("link", { name: /Account deletion help/i }).isVisible(), "Profile must expose the honest account-deletion help route");
+  assert.ok(await page.getByRole("link", { name: /About Doodhwala/i }).isVisible(), "Profile must expose the About destination");
+  await page.screenshot({ path: path.join(evidenceDir, "profile-destinations.png"), fullPage: true });
+  evidence.checks.push("Profile renders About and transparent account-deletion help destinations");
+
+  const aboutResponse = await page.goto(new URL("about/", base).href, { waitUntil: "domcontentloaded" });
+  assert.ok(aboutResponse && aboutResponse.ok(), "About route loads on the local static server");
+  assert.ok(await page.getByRole("heading", { name: "About Doodhwala" }).isVisible(), "About page must render its page heading");
+  assert.ok(await page.getByRole("link", { name: "Back to Profile" }).isVisible(), "About page must provide back navigation");
+  await page.screenshot({ path: path.join(evidenceDir, "about-page.png"), fullPage: true });
+  evidence.checks.push("About route renders at mobile viewport with a working Profile return link");
+
   const queryUrl = new URL("/Doodhwala/orders.html?filter=active", origin).href;
   const queryResponse = await page.goto(queryUrl, { waitUntil: "domcontentloaded" });
   assert.ok(queryResponse && queryResponse.ok(), "query-string route loads online");
   await page.waitForFunction(async url => {
-    const cache = await caches.open("doodhwala-v111");
+    const cache = await caches.open("doodhwala-v112");
     return !!(await cache.match(url));
   }, queryUrl, { timeout: 10000 });
   await page.screenshot({ path: path.join(evidenceDir, "orders-query-online.png"), fullPage: true });
@@ -62,7 +76,7 @@ try {
 
   const cacheEvidence = await page.evaluate(async () => {
     const names = await caches.keys();
-    const cache = await caches.open("doodhwala-v111");
+    const cache = await caches.open("doodhwala-v112");
     return {
       names,
       oldDoodhwalaCacheRemoved: !names.includes("doodhwala-v97"),
@@ -73,6 +87,8 @@ try {
       sharedUiCssCached: !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")),
       customerUiCssCached: !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1")),
       profileDetailsRouteCached: !!(await cache.match("/Doodhwala/profile/details/")),
+      aboutRouteCached: !!(await cache.match("/Doodhwala/about/")),
+      aboutDocumentCached: !!(await cache.match("/Doodhwala/about/index.html")),
       profileDetailsRuntimeCached: !!(await cache.match("/Doodhwala/profile-details.js?v=20261029.2"))
     };
   });
@@ -84,6 +100,8 @@ try {
   assert.ok(cacheEvidence.sharedUiCssCached, "shared UI consistency stylesheet is cached");
   assert.ok(cacheEvidence.customerUiCssCached, "customer mobile stability stylesheet is cached");
   assert.ok(cacheEvidence.profileDetailsRouteCached, "personal details route is cached for offline access");
+  assert.ok(cacheEvidence.aboutRouteCached, "About route is cached for offline access");
+  assert.ok(cacheEvidence.aboutDocumentCached, "About document is cached for offline access");
   assert.ok(cacheEvidence.profileDetailsRuntimeCached, "personal details runtime is cached for offline access");
   evidence.cache = cacheEvidence;
 

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#175a3c">
+<meta name="description" content="About Doodhwala, a local-first marketplace for independent neighbourhood milk sellers.">
+<title>About Doodhwala</title>
+<link rel="manifest" href="/Doodhwala/manifest.webmanifest">
+<link rel="icon" href="/Doodhwala/assets/mascot.png?v=20261023.3">
+<link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5">
+<link rel="stylesheet" href="/Doodhwala/milk-transition.css?v=20261027.8">
+<link rel="stylesheet" href="/Doodhwala/doodhwala-ui-system.css?v=20261028.2">
+<style>
+.about-page{min-height:100vh;background:radial-gradient(circle at 85% 0%,#e0f0e4 0,transparent 28rem),var(--bg);color:var(--ink)}
+.about-shell{width:min(100% - 30px,820px);margin:0 auto;padding:22px 0 60px}
+.about-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:28px}
+.about-brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}.about-brand img{width:40px;height:40px;object-fit:contain}.about-brand b{display:block;font-size:15px}.about-brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.about-back,.about-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--green);font-size:12px;font-weight:800;text-decoration:none}
+.about-kicker{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:900}
+.about-hero{padding:clamp(22px,5vw,42px);border:1px solid #d5e5d8;border-radius:24px;background:linear-gradient(130deg,rgba(255,255,255,.98),rgba(237,247,239,.92));box-shadow:var(--shadow-sm)}
+.about-hero h1{font-family:Manrope,sans-serif;font-size:clamp(34px,7vw,54px);letter-spacing:-.055em;line-height:1.04;margin:10px 0 15px}
+.about-hero p{max-width:62ch;color:var(--muted);font-size:14px;line-height:1.75;margin:0}
+.about-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:18px 0}
+.about-card{min-width:0;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.92)}
+.about-card h2{font-family:Manrope,sans-serif;font-size:15px;margin:0 0 8px}.about-card p{color:var(--muted);font-size:12px;line-height:1.65;margin:0}
+.about-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.about-note{margin-top:18px;color:var(--muted);font-size:11px;line-height:1.65}
+.about-back:focus-visible,.about-action:focus-visible{outline:3px solid #8bc4a0;outline-offset:2px}
+@media(max-width:620px){.about-shell{width:calc(100% - 24px);padding-top:15px}.about-top{align-items:flex-start}.about-grid{grid-template-columns:1fr}.about-card{padding:16px}.about-actions{display:grid;grid-template-columns:1fr}.about-action{width:100%}}
+</style>
+</head>
+<body class="about-page">
+<main class="about-shell">
+<header class="about-top">
+<a class="about-brand" href="/Doodhwala/"><img src="/Doodhwala/assets/mascot.png?v=20261023.3" alt=""><span><b>Doodhwala</b><small>Local milk, nearby.</small></span></a>
+<a class="about-back" href="/Doodhwala/profile/">Back to Profile</a>
+</header>
+<section class="about-hero" aria-labelledby="aboutTitle">
+<span class="about-kicker">Fresh · Local · Direct</span>
+<h1 id="aboutTitle">About Doodhwala</h1>
+<p>Doodhwala is a local-first marketplace that helps customers discover independent neighbourhood milk sellers, compare listed milk types and prices, and explore the delivery options each seller offers.</p>
+<div class="about-actions">
+<a class="about-action" href="/Doodhwala/">Explore local sellers</a>
+<a class="about-action" href="/Doodhwala/legal/">Legal & privacy centre</a>
+<a class="about-action" href="/Doodhwala/support/">Help & support</a>
+</div>
+</section>
+<section class="about-grid" aria-label="Marketplace focus">
+<article class="about-card"><h2>Local-first</h2><p>The marketplace is designed around independent local milk sellers rather than large packaged-dairy catalogues.</p></article>
+<article class="about-card"><h2>Clear choices</h2><p>Compare the product and pricing information that sellers list before deciding what works for your household.</p></article>
+<article class="about-card"><h2>Honest status</h2><p>Order, account and payment actions depend on the features and connection available to your account. A screen or redirect alone is not proof that an action succeeded.</p></article>
+</section>
+<p class="about-note">Legal pages are working drafts pending review. This page describes the product's purpose and does not make a legal-compliance, provider-verification, refund or payment-settlement claim.</p>
+</main>
+<script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
+</body>
+</html>
