@@ -41,6 +41,10 @@ jobs:
           sudo apt-get install --yes postgresql-client
       - name: Create isolated synthetic billing schema
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-fixture.sql
+      - name: Apply confirmed-email admin allowlist guard
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110000_doodhwala_admin_allowlist_confirmed_email.sql
+      - name: Verify confirmed-email admin guard can be safely re-applied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110000_doodhwala_admin_allowlist_confirmed_email.sql
       - name: Apply provider invoice idempotency migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql
       - name: Apply billing amount and payment timestamp guards
