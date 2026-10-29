@@ -1,7 +1,7 @@
 # Doodhwala Team Task Board
 
 > Shared source of truth for Mahin, teammates, and coding agents. Keep this file current in the same PR as task-related changes.
-> Last updated: 2026-10-28
+> Last updated: 2026-10-29
 > Rule: a checkbox is only checked after the change is merged (or explicitly accepted) and the stated verification is recorded. A coding agent must not mark work done merely because it generated code.
 
 ## How to use this board
@@ -64,10 +64,12 @@
   **Evidence:** PR/Issue: add link · Checks: code inspection.
 
 - [ ] **DW-005 — Loading, empty, error, and success states** ([Issue #77](https://github.com/Mahin98250/Doodhwala/issues/77))  
-  **Owner:** Unassigned · **Status:** TODO · **Area:** UX  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** UX  
+  **Branch:** `vaidik/dw-005-ui-state-sprint-20261029`  
   **Goal:** Make asynchronous actions understandable while preserving existing behavior and accessibility.  
+  **Current focused slice:** Profile → Personal details now has a retryable initial-load error state; fields stay locked until saved details load, and successful reads are announced as information rather than a save-success confirmation. Service-worker cache revision is refreshed for the new runtime URL.  
   **Done when:** Selected high-priority screens have consistent, tested states and no false success messages.  
-  **Evidence:** PR/Issue: add link · Checks: not run.
+  **Evidence:** Draft PR pending creation; source-contract/PWA CI and manual review results will be recorded on the PR. Authenticated persistence and physical-device checks remain NOT RUN/BLOCKED until an approved test environment/device is available.
 
 ### P2 — Payments and security (do not enable live collection)
 
