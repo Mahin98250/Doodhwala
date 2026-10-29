@@ -3,6 +3,13 @@ import fs from "node:fs";
 
 const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const profile = read("profile/index.html");
+const profilePage = read("profile/index.html");
+assert.ok(profilePage.includes("client.auth.onAuthStateChange("), "Profile account card must react to sign-in/sign-out changes");
+assert.ok(profilePage.includes("client.auth.getUser()"), "Profile must verify the current authenticated user");
+assert.ok(profilePage.includes('action.href=detailsHref'), "Signed-in account action must open personal details, not send users back to sign-in");
+assert.ok(profilePage.includes('action.href=signInHref'), "Signed-out account action must open sign-in");
+assert.ok(profilePage.includes("authRevision===revisionAtStart"), "Profile must not overwrite a newer auth event with a stale initial request");
+
 const editor = read("profile/details/index.html");
 const runtime = read("profile-details.js");
 const nav = read("customer-nav.js");
