@@ -17,6 +17,17 @@
 - **Fix in this branch:** add a keyboard-accessible retry action shown only for initial-load failures; retry the existing read flow without touching persistence; disable profile fields while initial data is unavailable; announce a successful read as informational status; bump the service-worker cache to `doodhwala-v111` and precache the versioned runtime `profile-details.js?v=20261029.2`.
 - **Regression coverage added:** `scripts/test-profile-details-contract.mjs` asserts retry wiring, field locking, and truthful status semantics. `scripts/test-pwa-offline-contracts.mjs` asserts the new cache revision and exact versioned runtime URL.
 
+## Finding DW-005-PROFILE-02 — About was undiscoverable and Account deletion linked back to sign-in
+
+- **Route/files:** /Doodhwala/profile/; profile/index.html; new /Doodhwala/about/ (about/index.html); sw.js.
+- **Viewport/browser:** source/route review only; no manual signed-in browser session was used for this finding.
+- **Reproduction:** open Profile and select “Account deletion”; the link routed to /auth/?return=/profile/, so after sign-in it returned to Profile rather than opening a deletion request or a useful destination. Profile had no About entry, even though the homepage already describes the marketplace purpose; the existing #grievance destination was also not exposed from Profile.
+- **Expected:** a real, discoverable About destination; a truthful account-deletion help destination that does not imply deletion occurs; and a Profile link to the existing grievance section.
+- **Actual before fix:** About was not reachable from Profile; Account deletion was a misleading sign-in detour; the grievance fragment existed only elsewhere.
+- **Severity:** P1 navigation/trust issue. The actual deletion workflow remains a separate P0 gap and is not implemented by this change.
+- **Fix in stacked PR #148:** add a small responsive About page based on existing product-purpose copy; link it from Profile; route “Account deletion help” to the existing Support page with explicit copy that the link does not delete the account; expose the existing grievance fragment; add About route/document to the PWA precache and bump cache revision to doodhwala-v112.
+- **Regression coverage:** scripts/test-profile-details-contract.mjs checks Profile destination links, About back navigation, existing legal fragment IDs, and explicit non-deletion disclosure. scripts/test-service-worker.mjs, scripts/test-pwa-offline-contracts.mjs, and the Chromium PWA smoke test check About route/document precaching. Results remain PENDING CI on the stacked PR head until those workflows finish.
+
 ## Verification matrix
 
 | Check | Exact command/environment | Result | Evidence / limitation |
