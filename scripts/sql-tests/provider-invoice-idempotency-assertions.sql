@@ -22,6 +22,8 @@ declare
   v_bad_period_rejected boolean := false;
   v_duplicate_rejected boolean := false;
   v_non_admin_rejected boolean := false;
+  v_nonadmin_plan_write_rejected boolean := false;
+  v_nonadmin_payment_rejected boolean := false;
   v_null_admin_rejected boolean := false;
   v_unauthenticated_rejected boolean := false;
   v_plan_limit_rejected boolean := false;
@@ -272,6 +274,44 @@ begin
 
   if not v_null_admin_rejected then
     raise exception 'null_admin_result_did_not_fail_closed';
+  end if;
+
+  -- SECURITY DEFINER plan writes must still reject an authenticated non-admin.
+  perform set_config('request.jwt.claim.admin', 'false', false);
+  begin
+    perform public.admin_upsert_provider_billing_plan(
+      null::uuid, 'Non-admin plan write', 200000::bigint, 'must not be persisted', true
+    );
+  exception when others then
+    if sqlerrm = 'admin_access_required' then
+      v_nonadmin_plan_write_rejected := true;
+    else
+      raise;
+    end if;
+  end;
+  if not v_nonadmin_plan_write_rejected then
+    raise exception 'non_admin_plan_write_was_not_rejected';
+  end if;
+
+  -- A non-admin must not reconcile even an otherwise valid payment.
+  begin
+    perform public.admin_record_provider_subscription_payment(
+      v_first, 200000, 'manual_upi', 'NONADMIN-UTR-001',
+      now(), 'non-admin reconciliation must be rejected'
+    );
+  exception when others then
+    if sqlerrm = 'admin_access_required' then
+      v_nonadmin_payment_rejected := true;
+    else
+      raise;
+    end if;
+  end;
+  if not v_nonadmin_payment_rejected then
+    raise exception 'non_admin_payment_reconciliation_was_not_rejected';
+  end if;
+  if (select status from public.provider_subscription_invoices where id=v_first) <> 'due'
+     or (select count(*) from public.provider_subscription_payments where invoice_id=v_first) <> 0 then
+    raise exception 'non_admin_attempt_mutated_invoice_or_payment_ledger';
   end if;
 
   -- A forged admin claim without a user subject must not pass the auth.uid()
