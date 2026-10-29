@@ -1,0 +1,63 @@
+name: DW-002 UI browser evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'app.js'
+      - 'customer-nav.js'
+      - 'checkout/**'
+      - 'auth/**'
+      - 'plans/**'
+      - 'orders/**'
+      - 'product/**'
+      - 'support/**'
+      - 'provider.html'
+      - 'provider.js'
+      - 'UI_UX_AUDIT.md'
+      - 'CUSTOMER_JOURNEY_INTERACTION_AUDIT.md'
+      - 'TASK_BOARD.md'
+      - 'scripts/test-ui-regression-contracts.mjs'
+      - 'scripts/test-ui-browser-smoke.mjs'
+      - '.github/workflows/ui-browser-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install isolated browser dependency
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run UI source-contract regressions
+        run: node scripts/test-ui-regression-contracts.mjs
+      - name: Start local static server
+        run: |
+          cd ..
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/doodhwala-ui-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/Doodhwala/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/doodhwala-ui-server.log
+          exit 1
+      - name: Run Chromium viewport and route smoke
+        run: node scripts/test-ui-browser-smoke.mjs
+      - name: Upload screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doodhwala-dw002-ui-evidence
+          path: artifacts/ui/
+          if-no-files-found: warn
+          retention-days: 14

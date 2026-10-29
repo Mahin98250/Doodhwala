@@ -28,12 +28,12 @@
   **Evidence:** [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80) · [Static validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741459) · [SQL migration validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741596).
 
 - [ ] **DW-002 — Responsive UI and interaction audit** ([Issue #74](https://github.com/Mahin98250/Doodhwala/issues/74))  
-  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** TODO (awaiting task acknowledgement) · **Area:** Customer UI / QA  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** Customer UI / QA  
   **Goal:** Check navigation, buttons, forms, loading/empty/error states, and mobile/desktop layouts.  
   **Done when:** Findings are recorded with route, device/viewport, steps to reproduce, expected vs actual result, and severity; critical issues are fixed or converted into tasks.  
-  **Master UI plan:** [docs/UI_CLEANUP_MASTER_PLAN.md](docs/UI_CLEANUP_MASTER_PLAN.md) — repository route/style/script map and prioritized checklist; rendered-device QA, accessibility execution and staging E2E remain unverified.  
-  **Evidence:** PR/Issue: add link · Checks: not run.
-
+  **Branch:** `vaidik/dw-002-ui-ux-audit-current-main`  
+  **Evidence:** [PR #88 (earlier audit/evidence)](https://github.com/Mahin98250/Doodhwala/pull/88) · [current-main refresh PR #139](https://github.com/Mahin98250/Doodhwala/pull/139). Latest source/browser checks and screenshots are recorded in PR #139. Physical-device, assistive-technology, live backend and authenticated staging checks remain unverified.
+  
 - [ ] **DW-003 — Service worker and offline/reconnect validation** ([Issue #75](https://github.com/Mahin98250/Doodhwala/issues/75))  
   **Owner:** Unassigned · **Status:** TODO · **Area:** PWA / QA  
   **Goal:** Confirm the latest assets replace stale cached assets and the UI explains offline status accurately.  
