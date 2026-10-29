@@ -58,6 +58,7 @@ assert.match(provider, /provider_confirm_direct_upi_payment/);
 assert.match(provider, /provider_confirm_cod_collected/);
 assert.match(provider, /bank settlement is not independently verified/);
 assert.match(phase1Hardening, /upi_ownership_attested_at timestamptz/i, "seller UPI ownership attestation must be persisted");
+assert.match(phase1Hardening, /upi_ownership_attested_by uuid references auth\.users\(id\) on delete cascade/i, "removing a seller account must not break the enabled-attestation constraint");
 assert.match(phase1Hardening, /provider_payment_settings_enabled_requires_owner_attestation/i, "database must block enabled UPI destinations without a seller attestation");
 assert.match(phase1Hardening, /p_ownership_confirmed boolean default false/i, "legacy callers must default to no ownership attestation");
 assert.match(phase1Hardening, /seller_upi_ownership_confirmation_required/i, "backend must reject enabling UPI without explicit ownership confirmation");
