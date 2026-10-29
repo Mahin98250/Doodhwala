@@ -20,6 +20,9 @@ for (const id of ["fullName", "phone", "addressLine", "areaName", "city", "pinCo
 }
 assert.ok(nav.includes('pathname.startsWith("/doodhwala/profile/")||pathname==="/doodhwala/profile"'), "Nested Profile routes must keep Profile selected in bottom navigation");
 assert.match(runtime, /auth\.getSession\(\)/, "Editor must require an authenticated session");
+assert.match(runtime, /setProfileFieldsEnabled\(false\)/, "Profile fields must be locked while initial data is loading or unavailable");
+assert.match(runtime, /setProfileFieldsEnabled\(true\)/, "Profile fields must unlock only after the saved details load successfully");
+assert.match(runtime, /Your saved details are loaded\. Make your changes, then save\.","info"/, "A successful read must be announced as information, not as a save-success confirmation");
 assert.match(editor, /id="retryLoadDetails"[^>]*hidden/, "Profile editor must start with its load-retry control hidden");
 assert.match(runtime, /retryLoad\.hidden=false/, "Profile read failures must expose a retry action");
 assert.match(runtime, /retryLoad\.addEventListener\("click"/, "Retry must re-run the profile read flow");
