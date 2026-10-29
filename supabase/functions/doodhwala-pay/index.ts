@@ -5,7 +5,8 @@ const SECRET_KEYS = (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECR
 const SERVICE_KEY = SECRET_KEYS.default || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const PUBLISHABLE_KEYS = (() => { try { return Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}")); } catch { return []; } })();
 const ALLOWED_ORIGINS = new Set(["https://mahin98250.github.io"]);
-const METHODS = new Set(["upi", "card", "netbanking", "wallet", "cod"]);
+const ONLINE_METHODS = new Set(["upi", "card", "netbanking", "wallet"]);
+const METHODS = new Set([...ONLINE_METHODS, "cod"]);
 const MAX_BODY_BYTES = 8_000;
 const rateBuckets = new Map<string, { start: number; count: number }>();
 
@@ -103,7 +104,22 @@ async function main(req: Request) {
   const idempotencyKey = String(body.idempotency_key || "");
   if (!/^[0-9a-f-]{36}$/i.test(orderId)) return json({ error: "invalid_order_id" }, 400, origin);
   if (!METHODS.has(method)) return json({ error: "unsupported_payment_method" }, 400, origin);
+  if (method === "cod") {
+    return json({ error: "cod_uses_order_payment_flow", gateway_ready: false, money_moved: false }, 409, origin);
+  }
   if (!/^[A-Za-z0-9:_-]{12,120}$/.test(idempotencyKey)) return json({ error: "invalid_idempotency_key" }, 400, origin);
+
+  // No acquiring-provider adapter and verified webhook processor are registered yet.
+  // Fail closed before order lookup or ledger insertion: creating a bookkeeping row
+  // must never make an unconfigured online method appear selectable or payable.
+  if (ONLINE_METHODS.has(method)) {
+    return json({
+      error: "payment_provider_not_configured",
+      gateway_ready: false,
+      next_step: "payment_provider_setup_required",
+      money_moved: false,
+    }, 503, origin);
+  }
 
   const orderResponse = await rest("orders?id=eq." + encodeURIComponent(orderId) + "&customer_id=eq." + encodeURIComponent(user.id) + "&select=id,customer_id,provider_id,status,total&limit=1");
   if (!orderResponse.ok) return json({ error: "order_lookup_failed" }, 502, origin);
