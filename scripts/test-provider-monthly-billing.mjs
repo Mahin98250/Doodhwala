@@ -28,6 +28,14 @@ assert.doesNotMatch(rpcs, /update public\.orders/i, "seller subscription payment
 assert.doesNotMatch(rpcs, /update public\.payment_transactions/i, "seller subscription payment must not alter customer payment ledger");
 
 const invoiceIdempotency = fs.readFileSync(new URL("../supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql", import.meta.url), "utf8");
+const amountTimeGuards = fs.readFileSync(new URL("../supabase/migrations/20261029131000_doodhwala_billing_amount_and_time_guards.sql", import.meta.url), "utf8");
+assert.match(amountTimeGuards, /provider_billing_plans_amount_paise_range_check/i, "database must bound plan prices");
+assert.match(amountTimeGuards, /provider_subscription_invoices_amount_paise_range_check/i, "database must bound invoice amounts");
+assert.match(amountTimeGuards, /provider_subscription_payments_amount_paise_range_check/i, "database must bound recorded payment amounts");
+assert.match(amountTimeGuards, /p_amount_paise < 100 or p_amount_paise > 100000000/i, "server RPC must enforce ₹1–₹10,00,000 plan/payment bounds");
+assert.match(amountTimeGuards, /payment_received_at_in_future/i, "future-dated manual payment evidence must be rejected");
+assert.match(amountTimeGuards, /payment_received_before_invoice/i, "manual payment evidence cannot predate invoice creation");
+assert.match(amountTimeGuards, /revoke all on function public\.admin_record_provider_subscription_payment[\s\S]*?from public,anon,authenticated/i, "replacement payment RPC must retain explicit grants");
 assert.match(invoiceIdempotency, /provider_subscription_invoices_calendar_month_check/i, "monthly billing periods must be full calendar months");
 assert.match(invoiceIdempotency, /provider_subscription_invoices_provider_month_unique[\s\S]*?unique\s*\(provider_id,\s*period_start\)/i, "database must enforce one invoice per provider/month");
 assert.match(invoiceIdempotency, /on conflict\s*\(provider_id,\s*period_start\)\s*do nothing/i, "concurrent invoice creation must not create a duplicate");
