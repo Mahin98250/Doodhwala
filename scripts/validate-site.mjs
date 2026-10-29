@@ -190,7 +190,7 @@ else{
 const supportHtmlPath=path.join(root,"support.html");
 if(localFiles.has("/support.html")){
   const supportHtml=fs.readFileSync(supportHtmlPath,"utf8");
-  for(const contract of ['id="supportForm"','id="faqList"','create_support_ticket','Never share passwords','/Doodhwala/support.css?v=20261022.1','/Doodhwala/support.js?v=20261022.2'])
+  for(const contract of ['id="supportForm"','id="faqList"','create_support_ticket','Never share passwords','/Doodhwala/support.css?v=20261022.1','/Doodhwala/support.js?v=20261029.1'])
     if(!supportHtml.includes(contract) && contract!=="create_support_ticket" && contract!=="Never share passwords") errors.push("support.html -> missing support experience contract "+contract);
   if(!supportHtml.includes("Help & Support")) errors.push("support.html -> help title missing");
 }else errors.push("support page missing");
