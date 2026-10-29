@@ -105,3 +105,17 @@ Keep the provider-specific code behind a server-side adapter. Browser code must 
 - No real payment initiated.
 
 **Status: BLOCKED for real-money launch.** Next implementation step after provider selection: build the adapter and webhook receiver against the provider sandbox on a dedicated branch, extend disposable PostgreSQL tests, then request review. A passing test suite is necessary but not a certification or independent penetration test.
+
+
+## 7. Follow-up official-document review (2026-10-29)
+
+A second review of provider-owned pages adds two decision-critical caveats:
+
+- **Razorpay Route eligibility is not a given.** Razorpay's current Route documentation/terms state a minimum annual turnover condition of ₹40 lakh for third-party settlements (or ₹5 lakh annual export turnover where applicable), alongside requirements that the linked account directly interface with the customer and additional Route compliance checks. Doodhwala must not assume eligibility from a standard gateway account. Get written confirmation from Razorpay for this exact local-milk marketplace and legal entity before treating Route as viable. References: https://razorpay.com/terms/ and https://razorpay.com/route/ .
+- **Cashfree Easy Split has relevant documented APIs** for vendor creation/management, order-level split or split-after-payment, refund, vendor settlement details and reconciliation. This is a good fit at the feature level, but does not prove Doodhwala's account/business model will be approved. Confirm product activation, marketplace eligibility, seller onboarding/KYC, UPI flow and all fees with Cashfree. Reference: https://www.cashfree.com/docs/api-reference/payments/latest/split/easy-split-overview .
+- Cashfree documents webhook signature verification and server-side order/payment status retrieval. Implement using the current provider SDK/spec and raw request bytes; never use a browser redirect as the final source of truth. References: https://www.cashfree.com/devstudio/preview/pg/tools/webhookVerification and https://www.cashfree.com/devstudio/preview/pg/web/checkout .
+- RBI's public authorised-PA listing includes both Cashfree Payments India Private Limited and Razorpay's prior operating entity, but Razorpay's own notice says the online payment aggregation business transfer to Razorpay Payments Private Limited was operationalised from 1 January 2026. Verify the **current contracting legal entity and its applicable RBI authorisation** directly at onboarding, rather than relying on an old listing entry. References: https://systemhealth.rbi.org.in/Scripts/PublicationsView.aspx_id%3D12043.html and https://razorpay.com/notice/ .
+
+### Refined recommendation (not a final selection)
+
+Given the Route turnover/eligibility gate, **request written marketplace eligibility and total-cost information from Cashfree Easy Split first, and ask Razorpay to confirm Route eligibility in parallel**. Do not implement either provider's production adapter until one confirms in writing that it supports Doodhwala's exact model. This ordering is an evaluation priority, not a statement that Cashfree is approved or objectively safer. Security should be judged by documented webhook/status semantics, seller verification, refund/reversal lifecycle, reconciliation and operational support—not by brand reputation alone.
