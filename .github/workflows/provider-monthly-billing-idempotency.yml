@@ -39,13 +39,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes postgresql-client
-      - name: Create isolated synthetic billing schema
+      - name: Create isolated Auth, marketplace and admin-allowlist prerequisites
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-fixture.sql
-      - name: Apply confirmed-email admin allowlist guard
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110337_doodhwala_admin_allowlist_confirmed_email.sql
-      - name: Verify confirmed-email admin guard can be safely re-applied
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110337_doodhwala_admin_allowlist_confirmed_email.sql
-      - name: Apply provider invoice idempotency migration
+      - name: Apply seller billing tables and RLS
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026083840_doodhwala_provider_monthly_billing.sql
+      - name: Apply seller billing RPCs
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026083845_doodhwala_provider_billing_rpcs.sql
+      - name: Apply seller billing indexes
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026083920_doodhwala_provider_billing_indexes.sql
+      - name: Apply owner-only billing settings read RPC
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026084531_doodhwala_admin_get_provider_billing_settings.sql
+      - name: Enforce globally unique seller-billing references
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026084927_doodhwala_provider_billing_reference_unique.sql
+      - name: Apply one-invoice-per-provider-month migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029090708_doodhwala_provider_invoice_month_idempotency.sql
       - name: Apply billing amount and payment timestamp guards
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql
@@ -55,7 +61,11 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102528_doodhwala_payment_api_shared_rate_limit.sql
       - name: Verify shared rate-limit migration can be safely re-applied
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102528_doodhwala_payment_api_shared_rate_limit.sql
-      - name: Verify retry idempotency, billing limits, timestamps and fail-closed admin guard
+      - name: Apply confirmed-email admin authorization guard
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110337_doodhwala_admin_allowlist_confirmed_email.sql
+      - name: Verify confirmed-email admin guard can be safely re-applied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110337_doodhwala_admin_allowlist_confirmed_email.sql
+      - name: Verify invoice retry idempotency, auth identity, billing limits and timestamp guards
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-assertions.sql
       - name: Verify shared payment API rate limiting and client privilege denial
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/payment-api-rate-limit-assertions.sql
