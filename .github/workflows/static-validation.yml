@@ -41,6 +41,8 @@ jobs:
         run: node scripts/test-payment-reconciliation-audit.mjs
       - name: Test unconfigured payment gateway fail-closed behavior
         run: node scripts/test-payment-gateway-fail-closed.mjs
+      - name: Test no-gateway direct seller payment model
+        run: node scripts/test-direct-payment-no-gateway-model.mjs
       - name: Test provider billing UI contracts
         run: node scripts/test-provider-billing-ui.mjs
       - name: Test provider monthly billing contracts
