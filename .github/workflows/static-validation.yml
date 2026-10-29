@@ -39,6 +39,10 @@ jobs:
         run: node scripts/test-direct-seller-payments.mjs
       - name: Test payment reconciliation audit and reference guard
         run: node scripts/test-payment-reconciliation-audit.mjs
+      - name: Test provider billing UI contracts
+        run: node scripts/test-provider-billing-ui.mjs
+      - name: Test provider monthly billing contracts
+        run: node scripts/test-provider-monthly-billing.mjs
       - name: Test customer discovery enhancements
         run: node scripts/test-discovery-enhancements.mjs
       - name: Test scalable nearby-provider query contract
