@@ -27,5 +27,5 @@ assert.ok(css.includes(".provider-top-actions .provider-auth-link{display:none}"
 assert.ok(css.includes(".provider-top-actions .provider-store-toggle{padding:7px 8px;font-size:8px;line-height:1.1}"),"store availability control must stay compact on mobile");
 assert.ok(css.includes(".provider-top-actions .provider-top-signout{padding:7px 8px;font-size:9px;line-height:1.1}"),"sign-out must remain accessible in the mobile header");
 assert.ok(html.includes("provider.css?v=20261027.2"),"mobile CSS change must use a fresh cache-busting version");
-assert.ok(read("sw.js").includes('const CACHE="doodhwala-v109"'),"service worker cache must be bumped for the mobile fix");
+assert.ok(read("sw.js").includes('const CACHE="doodhwala-v110"'),"service worker cache must be bumped for the mobile fix");
 console.log("Provider mobile navigation and compact header accessibility contracts passed.");
