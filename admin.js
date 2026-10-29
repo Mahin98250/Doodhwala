@@ -528,12 +528,13 @@ async function loadSection(next){
  currentDetail=null;
  section=next;
  document.querySelectorAll("[data-section]").forEach(x=>x.classList.toggle("active",x.dataset.section===section));
- $("adminTitle").textContent=section==="overview"?"Business overview":section==="health"?"System health":section[0].toUpperCase()+section.slice(1);
+ $("adminTitle").textContent=section==="overview"?"Business overview":section==="health"?"System health":section==="seller-billing"?"Seller billing":section[0].toUpperCase()+section.slice(1);
  try{
   if(section==="overview"){await loadOverview();return}
   if(section==="orders"){await loadOrdersSection();return;}
   if(section==="support"){await loadSupportTicketsSection();return;}
   if(section==="providers"){await loadProvidersSection();return}
+  if(section==="seller-billing"){await loadProviderBillingSection();return}
   if(section==="customers"){cache.customers=await adminRpc("admin_list_customers",{p_limit:150});table("Customers",[["Customer",r=>"<button data-customer='"+esc(r.id)+"'>"+esc(r.full_name||"—")+"</button>"],["Email",r=>esc(r.email||"—")],["Phone",r=>esc(r.phone||"—")],["Orders",r=>r.order_count],["Active plans",r=>r.active_plan_count],["Joined",r=>dateText(r.created_at)]],cache.customers);$("adminContent").querySelectorAll("[data-customer]").forEach(b=>b.onclick=()=>showCustomerDetail(b.dataset.customer));return}
   if(section==="subscriptions"){cache.subscriptions=await adminRpc("admin_list_subscriptions",{p_limit:150});table("Subscriptions",[["Customer",r=>esc(r.customer_name||"—")],["Provider",r=>esc(r.provider_name||"—")],["Milk",r=>esc(r.product_name||"—")],["Status",r=>'<span class="admin-status '+esc(r.status)+'">'+esc(r.status)+'</span>'],["Qty",r=>Number(r.quantity_litres||0)+" L"],["Period",r=>dateText(r.start_date)+" → "+dateText(r.end_date)],["Deliveries",r=>r.delivery_count],["Action",r=>'<button data-subscription="'+esc(r.id)+'">View</button>']],cache.subscriptions);$("adminContent").querySelectorAll("[data-subscription]").forEach(b=>b.onclick=()=>showSubscriptionDetail(b.dataset.subscription));return}
   if(section==="products"){await loadProductsSection();return}
