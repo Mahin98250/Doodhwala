@@ -63,7 +63,7 @@ try {
     await page.close();
   }
 
-  for (const route of ["checkout/", "auth/", "plans/", "orders/", "product/", "support/", "provider.html"]) {
+  for (const route of ["checkout/", "auth/", "plans/", "orders/", "product/", "support/", "provider.html", "profile/details/"]) {
     for (const width of [390, 1440]) {
       const page = await browser.newPage({ viewport: { width, height: 844 } });
       await page.route("**/*", routeReq => {
@@ -75,9 +75,13 @@ try {
       const response = await page.goto(new URL(route, base).href, { waitUntil: "domcontentloaded" });
       assert.ok(response?.ok(), `${route} loads at ${width}px`);
       await page.waitForTimeout(250);
-      const size = await page.evaluate(() => ({scroll:document.documentElement.scrollWidth,width:innerWidth}));
+      const size = await page.evaluate(() => ({scroll:document.documentElement.scrollWidth,width:innerWidth,profileActive:document.querySelector('[data-customer-nav="profile"]')?.getAttribute("aria-current")==="page",profileExists:!!document.querySelector('[data-customer-nav="profile"]')}));
       await page.screenshot({path:path.join(out, `${route.replaceAll("/","-")||"home"}-${width}px.png`),fullPage:true});
       assert.ok(size.scroll <= size.width, `${route} has no horizontal overflow at ${width}px`);
+      if (route === "profile/details/") {
+        assert.ok(size.profileExists, "Profile navigation item exists on profile details route");
+        assert.equal(size.profileActive, true, `Profile nav remains active at ${width}px`);
+      }
       await page.close();
     }
   }
