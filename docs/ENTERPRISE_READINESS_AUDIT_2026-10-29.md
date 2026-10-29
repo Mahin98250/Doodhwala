@@ -28,7 +28,7 @@ The staging table inventory reported RLS enabled for the listed public tables. T
 
 The staging and production regions differ. Use staging measurements as useful engineering evidence, but don't treat latency/throughput numbers as directly representative of production without documenting the regional difference.
 
-**Important documentation drift:** `docs/STAGING_BASELINE.md` still says a staging project has not been provisioned. The actual read-only project inventory contradicts that statement. Update the baseline runbook with a current, verified staging snapshot before executing or delegating migration work.
+**Documentation drift found and corrected in this audit branch:** the prior `docs/STAGING_BASELINE.md` said staging had not been provisioned, contrary to the read-only inventory. This branch refreshes that runbook and updates its contract test so it protects the current inventory and does not regress to the stale blocker. Review the updated baseline together with this audit.
 
 ## Prioritized findings
 
