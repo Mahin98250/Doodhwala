@@ -305,3 +305,8 @@ No isolated, approved Supabase staging project/schema is verified. Authenticated
 
 ### Current release recommendation
 **NOT READY FOR RELEASE.** CI evidence is scoped and commit-specific; staging, authorization, device and manual accessibility gates remain unresolved. Mahin retains merge/deploy approval.
+
+
+### CI result for consolidated report PR #155
+- PR #155 head `ab5363cba6661346b737827cee074f96bae18ba1`: static [run 40907274867](https://github.com/Mahin98250/Doodhwala/actions/runs/40907274867), notifications [run 40907274889](https://github.com/Mahin98250/Doodhwala/actions/runs/40907274889), SQL [run 40907274895](https://github.com/Mahin98250/Doodhwala/actions/runs/40907274895) all **PASS**. Vercel reports a separate build-rate-limit failure; no integration settings changed.
+- Updated canonical evidence PR #111 head `ae77b7fcd598149a6131b56857789b4e16456219`: static [run 40906092626](https://github.com/Mahin98250/Doodhwala/actions/runs/40906092626), notifications [run 40906092680](https://github.com/Mahin98250/Doodhwala/actions/runs/40906092680), SQL [run 40906092684](https://github.com/Mahin98250/Doodhwala/actions/runs/40906092684) all **PASS**. Vercel is a separate build-rate-limit failure.
