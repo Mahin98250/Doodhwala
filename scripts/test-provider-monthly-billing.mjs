@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const schema = fs.readFileSync(new URL("../supabase/migrations/20261026120000_doodhwala_provider_monthly_billing.sql", import.meta.url), "utf8");
-const rpcs = fs.readFileSync(new URL("../supabase/migrations/20261026121000_doodhwala_provider_billing_rpcs.sql", import.meta.url), "utf8");
-const referenceGuard = fs.readFileSync(new URL("../supabase/migrations/20261026124000_doodhwala_provider_billing_reference_unique.sql", import.meta.url), "utf8");
-const adminSettings = fs.readFileSync(new URL("../supabase/migrations/20261026123000_doodhwala_admin_get_provider_billing_settings.sql", import.meta.url), "utf8");
+const schema = fs.readFileSync(new URL("../supabase/migrations/20261026083840_doodhwala_provider_monthly_billing.sql", import.meta.url), "utf8");
+const rpcs = fs.readFileSync(new URL("../supabase/migrations/20261026083845_doodhwala_provider_billing_rpcs.sql", import.meta.url), "utf8");
+const referenceGuard = fs.readFileSync(new URL("../supabase/migrations/20261026084927_doodhwala_provider_billing_reference_unique.sql", import.meta.url), "utf8");
+const adminSettings = fs.readFileSync(new URL("../supabase/migrations/20261026084531_doodhwala_admin_get_provider_billing_settings.sql", import.meta.url), "utf8");
 
 assert.match(schema, /create table if not exists public\.provider_subscription_invoices/i);
 assert.match(schema, /create table if not exists public\.provider_subscription_payments/i);
@@ -27,7 +27,7 @@ assert.match(rpcs, /admin_set_provider_billing_settings/i, "owner can configure 
 assert.doesNotMatch(rpcs, /update public\.orders/i, "seller subscription payment must never update customer order status");
 assert.doesNotMatch(rpcs, /update public\.payment_transactions/i, "seller subscription payment must not alter customer payment ledger");
 
-const invoiceIdempotency = fs.readFileSync(new URL("../supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql", import.meta.url), "utf8");
+const invoiceIdempotency = fs.readFileSync(new URL("../supabase/migrations/20261029090708_doodhwala_provider_invoice_month_idempotency.sql", import.meta.url), "utf8");
 const amountTimeGuards = fs.readFileSync(new URL("../supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql", import.meta.url), "utf8");
 assert.match(amountTimeGuards, /provider_billing_plans_amount_paise_range_check/i, "database must bound plan prices");
 assert.match(amountTimeGuards, /provider_subscription_invoices_amount_paise_range_check/i, "database must bound invoice amounts");
