@@ -20,7 +20,10 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-// Best-effort per-authenticated-user limit for this Edge Function isolatrs = new Headers(init.headers || {});
+// Server-only helper for database REST calls. Service-role credentials stay in this function.
+// Do not return these headers or the service key to the browser.
+async function rest(path: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers || {});
   headers.set("apikey", SERVICE_KEY);
   headers.set("Authorization", "Bearer " + SERVICE_KEY);
   headers.set("Content-Type", "application/json");
