@@ -33,6 +33,8 @@ jobs:
         run: node scripts/test-doodhwala-pay.mjs
       - name: Test Doodhwala Pay event ledger and state machine
         run: node scripts/test-doodhwala-pay-state.mjs
+      - name: Test unconfigured payment gateway fail-closed behavior
+        run: node scripts/test-payment-gateway-fail-closed.mjs
       - name: Simulate customer checkout and network retry
         run: node scripts/test-checkout-flow.mjs
       - name: Test direct seller UPI and COD contracts
