@@ -5,7 +5,7 @@
 
 alter table public.provider_payment_settings
   add column if not exists upi_ownership_attested_at timestamptz,
-  add column if not exists upi_ownership_attested_by uuid references auth.users(id) on delete set null;
+  add column if not exists upi_ownership_attested_by uuid references auth.users(id) on delete cascade;
 
 update public.provider_payment_settings
 set enabled = false,
