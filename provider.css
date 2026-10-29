@@ -164,3 +164,9 @@
 }
 
 .provider-quick-links{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.provider-quick-links a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:9px 12px;border-radius:10px;border:1px solid #d4e4d5;color:#23613f;background:#fff;text-decoration:none;font-size:12px;font-weight:800}.provider-quick-links .back-home{margin-bottom:0}@media(max-width:560px){.provider-quick-links{gap:8px;flex-wrap:wrap}.provider-quick-links a{font-size:11px;padding:8px 10px}}
+
+/* Phase 1 direct-UPI ownership attestation */
+.provider-upi-settings .upi-ownership-row{display:flex;align-items:flex-start;gap:10px;margin:12px 0 6px;padding:12px;border:1px solid #d9e8dc;border-radius:12px;background:#f5faf6;color:#254633;font-size:12px;line-height:1.5;font-weight:650}
+.provider-upi-settings .upi-ownership-row input{flex:0 0 auto;margin-top:3px;accent-color:#17603f}
+.provider-upi-settings .upi-ownership-note{display:block;margin:0 0 12px;color:#65766a;font-size:11px;line-height:1.5}
+.provider-upi-settings .upi-ownership-row input:focus-visible{outline:3px solid #8dc8a0;outline-offset:3px}
