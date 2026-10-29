@@ -116,7 +116,7 @@ begin
   -- Server-side plan amount limits must apply even if a caller bypasses the UI.
   begin
     perform public.admin_upsert_provider_billing_plan(
-      null::uuid, 'Out of range plan', 100000001, 'synthetic invalid plan', true
+      null::uuid, 'Out of range plan', 100000001::bigint, 'synthetic invalid plan', true
     );
   exception when others then
     if sqlerrm = 'invalid_plan_amount' then v_plan_limit_rejected := true;
