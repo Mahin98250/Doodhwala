@@ -1,6 +1,6 @@
 # DW-005 — Asynchronous UI State Audit
 
-**Status:** IN PROGRESS  
+**Status:** IN REVIEW — CI evidence pending  
 **Owner:** Vaidik Patel (@vaidikpatel22112010-tech)  
 **Branch:** `feat/dw-005-async-ui-states-20261029`  
 **Issue:** [#77](https://github.com/Mahin98250/Doodhwala/issues/77)
@@ -25,5 +25,9 @@ This focused pass covers two existing customer-facing screens with asynchronous 
 ## Evidence
 
 - Baseline inspection: `support.js`, `support.html`, `notifications.js`, `notifications.html`, `scripts/test-support-center.mjs`, `scripts/test-customer-ui-fixes.mjs`, and `.github/workflows/static-validation.yml`.
-- Automated checks and screenshots: not run yet.
-- Manual signed-in / signed-out browser checks: not run yet.
+- Implementation and tests: [Draft PR #152](https://github.com/Mahin98250/Doodhwala/pull/152), branch `feat/dw-005-async-ui-states-20261029`.
+- Added `scripts/test-async-ui-states.mjs` to exercise confirmed support-ticket success, incomplete response/no false success, notification write failure, and successful write followed by failed refresh.
+- Added `support-async-states.png` and `notifications-async-states.png` screenshot capture to `scripts/test-pwa-browser-smoke.mjs`; artifacts remain pending CI execution.
+- Added exact versioned support/notification runtime URLs to the service-worker precache and advanced cache revision to `doodhwala-v111`.
+- CI: no GitHub Actions workflow run observed for the current PR head yet; Vercel status reports a build-rate-limit failure. Do not mark checks passed until evidence is available.
+- Manual signed-in / signed-out testing: not run; requires a real browser and an approved authenticated environment.
