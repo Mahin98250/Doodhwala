@@ -45,7 +45,9 @@ try {
     return !!(await cache.match("/Doodhwala/offline.html")) &&
       !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")) &&
       !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")) &&
-      !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1"));
+      !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1")) &&
+      !!(await cache.match("/Doodhwala/support.js?v=20261029.1")) &&
+      !!(await cache.match("/Doodhwala/notifications.js?v=20261029.1"));
   }, { timeout: 15000 });
   await page.screenshot({ path: path.join(evidenceDir, "home-online.png"), fullPage: true });
   evidence.checks.push("worker installed and required offline shell/exact CSS variant cached");
@@ -98,6 +100,19 @@ try {
   await page.goto(base, { waitUntil: "domcontentloaded" });
   await page.screenshot({ path: path.join(evidenceDir, "reconnected-home.png"), fullPage: true });
   evidence.checks.push("reconnect returns to the site; manual refresh remains the way to ensure fresh content");
+
+  const supportResponse = await page.goto(new URL("support/", base).href, { waitUntil: "domcontentloaded" });
+  assert.ok(supportResponse && supportResponse.ok(), "support route loads");
+  await page.getByRole("heading", { name: "Send a support request" }).waitFor({ timeout: 5000 });
+  await page.getByRole("heading", { name: "My support requests" }).waitFor({ timeout: 5000 });
+  await page.screenshot({ path: path.join(evidenceDir, "support-async-states.png"), fullPage: true });
+  evidence.checks.push("support form and request-history loading/error recovery regions render on mobile");
+  
+  const notificationsResponse = await page.goto(new URL("notifications/", base).href, { waitUntil: "domcontentloaded" });
+  assert.ok(notificationsResponse && notificationsResponse.ok(), "notifications route loads");
+  await page.locator("#notificationsError").waitFor({ state: "visible", timeout: 5000 });
+  await page.screenshot({ path: path.join(evidenceDir, "notifications-async-states.png"), fullPage: true });
+  evidence.checks.push("notifications route exposes an announced backend-unavailable error rather than a false empty/success state");
   fs.writeFileSync(path.join(evidenceDir, "pwa-browser-results.json"), JSON.stringify(evidence, null, 2));
   console.log("PWA offline browser smoke passed; screenshots and JSON evidence are in artifacts/pwa.");
 } finally {
