@@ -20,7 +20,7 @@ assert.match(api, /function limited\(userId: string\)/, "rate limiting must key 
 assert.ok(userRateLimitGuard > authenticatedIdentityGuard && authenticatedIdentityGuard >= 0, "per-user rate limiting must run only after Supabase validates the session");
 assert.doesNotMatch(api, /x-real-ip|cf-connecting-ip/, "do not trust client-supplied IP headers as the rate-limit identity");
 assert.ok(api.includes("rateBuckets.size >= 4000"), "in-memory rate-limit buckets must have a hard capacity guard");
-assert.ok(api.includes("isolates do not share this Map"), "in-memory limiting must document its non-global scope");
+assert.match(api, /isolates do not\s*\/\/\s*share this Map/, "in-memory limiting must document its non-global scope even when the comment wraps across lines");
 assert.ok(api.includes("!PUBLISHABLE_KEYS.length"), "missing publishable-key allowlist configuration must fail closed");
 assert.ok(api.includes("if (!apiKey || !PUBLISHABLE_KEYS.includes(apiKey))"), "missing or unconfigured client apikey must be rejected before authentication");
 assert.doesNotMatch(api, /PUBLISHABLE_KEYS\.length\s*&&/, "an empty allowlist must never disable API-key validation");
