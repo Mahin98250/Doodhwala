@@ -2,6 +2,7 @@
 -- This fixture contains no customer data, live secrets, or production objects.
 create role anon nologin;
 create role authenticated nologin;
+create role service_role nologin;
 
 create schema auth;
 create schema private;
