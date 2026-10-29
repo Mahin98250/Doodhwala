@@ -15,9 +15,9 @@ for (const status of ["placed", "accepted", "preparing", "ready", "out_for_deliv
 assert.ok(api.includes("!payableOrderStatuses.has(String(order.status))"), "unknown, delivered, rejected and cancelled orders must fail closed");
 
 assert.ok(api.includes("/auth/v1/user"), "payment API must validate the caller session with Supabase Auth");
-assert.match(api, /async function rest\\(path: string, init: RequestInit = \\{\\}\\): Promise<Response> \\{/, "payment API must define its shared REST helper");
-assert.match(api, /headers\\.set\\("apikey", SERVICE_KEY\\)/, "REST helper must use the server API key");
-assert.match(api, /headers\\.set\\("Authorization", "Bearer " \\+ SERVICE_KEY\\)/, "REST helper must use server-only authorization");
+assert.match(api, /async function rest\(path: string, init: RequestInit = \{\}\): Promise<Response> \{/, "payment API must define its shared REST helper");
+assert.match(api, /headers\.set\("apikey", SERVICE_KEY\)/, "REST helper must use the server API key");
+assert.match(api, /headers\.set\("Authorization", "Bearer " \+ SERVICE_KEY\)/, "REST helper must use server-only authorization");
 assert.ok(api.includes('return fetch(PROJECT_URL + "/rest/v1/" + path, { ...init, headers });'), "REST helper must route database calls through Supabase REST");
 
 const authenticatedIdentityGuard = api.indexOf("if (!user?.id)");
