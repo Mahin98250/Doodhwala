@@ -10,7 +10,7 @@ const adminHtml = read("../admin.html");
 const adminJs = read("../admin.js");
 const adminCss = read("../admin.css");
 const worker = read("../sw.js");
-const adminSettingsMigration = read("../supabase/migrations/20261026123000_doodhwala_admin_get_provider_billing_settings.sql");
+const adminSettingsMigration = read("../supabase/migrations/20261026084531_doodhwala_admin_get_provider_billing_settings.sql");
 
 assert.match(providerHtml, /id="view-billing"/, "seller billing view must exist");
 assert.match(providerHtml, /data-view="billing"/, "seller billing must be reachable from navigation");
