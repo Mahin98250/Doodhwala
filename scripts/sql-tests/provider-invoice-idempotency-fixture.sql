@@ -8,27 +8,54 @@ create schema auth;
 create schema private;
 
 create table auth.users (
-  id uuid primary key
+  id uuid primary key,
+  email text,
+  email_confirmed_at timestamptz
+);
+
+create table private.admin_allowlist (
+  user_email text not null,
+  created_at timestamptz not null default now()
 );
 
 create or replace function auth.uid()
 returns uuid
 language sql
 stable
-as $$
+as $
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
-$$;
+$;
 
+create or replace function auth.jwt()
+returns jsonb
+language sql
+stable
+as $
+  select jsonb_build_object('email', nullif(current_setting('request.jwt.claim.email', true), ''))
+$;
+
+-- The custom "admin=null" claim is only a test seam for verifying SQL RPCs
+-- reject an unexpected NULL helper result. The migration under test replaces
+-- this fixture helper with its production confirmed-email implementation.
 create or replace function private.is_current_user_admin()
 returns boolean
 language sql
 stable
-as $$
+security definer
+set search_path = ''
+as $
   select case
     when current_setting('request.jwt.claim.admin', true) = 'null' then null::boolean
-    else coalesce(current_setting('request.jwt.claim.admin', true), 'false') = 'true'
+    else exists (
+      select 1
+      from private.admin_allowlist as a
+      join auth.users as u on u.id = auth.uid()
+      where u.email_confirmed_at is not null
+        and lower(trim(a.user_email)) = lower(u.email)
+        and lower(u.email) = lower(coalesce(auth.jwt()->>'email', ''))
+    )
   end
-$$;
+$;
 
 create table public.provider_profiles (
   id uuid primary key,
