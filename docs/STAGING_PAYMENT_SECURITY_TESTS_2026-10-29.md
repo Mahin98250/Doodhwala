@@ -59,11 +59,11 @@ The live staging project has no deployed Edge Functions. No acquiring-provider a
 
 The static contract test `scripts/test-payment-gateway-fail-closed.mjs` is wired into CI. It asserts that disabled methods cannot create intents, browser roles cannot access the server-owned payment ledger/event inbox, event IDs are unique, and payment state transitions remain guarded.
 
-## Rate limiting — defense in depth
+## Rate limiting — shared server-side control
 
-The payment Edge Function now applies its in-memory request limit only after Supabase Auth verifies the caller and keys it by the verified user ID; client-provided `x-real-ip` and `cf-connecting-ip` values are not used as identity. The map is bounded and rejects new keys if it remains full after stale entries are cleaned up.
+The payment endpoint now validates the caller through Supabase Auth and then calls the server-only `doodhwala_payment_api_allow_request` RPC. PostgreSQL atomically tracks each authenticated user across Edge Function isolates, allowing 30 requests per 60-second window. The endpoint fails closed with HTTP 503 if the shared limiter cannot be reached or returns an unexpected response; a denied request receives HTTP 429.
 
-**Important limitation:** Edge Function isolates do not share this in-memory map, so it is only a per-isolate best-effort control. Before enabling online collection or treating this endpoint as production-ready, add a shared gateway- or database-backed rate limit, alerting, and load/abuse tests. Online gateway methods remain disabled and return HTTP 503 before order lookup or ledger writes.
+The limiter table has RLS enabled and no browser-role table grants or execute permission on the RPC. CI exercises the 31st-request denial, window reset, and privilege boundaries in disposable PostgreSQL. These controls provide shared rate limiting, but alerting, abuse/load testing, and a payment-security review remain release gates. Online gateway methods remain disabled and return HTTP 503 before order lookup or payment-ledger writes.
 
 ## Seller billing amount and timestamp guards
 
