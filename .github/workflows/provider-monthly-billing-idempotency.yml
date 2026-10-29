@@ -53,6 +53,8 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026084927_doodhwala_provider_billing_reference_unique.sql
       - name: Apply one-invoice-per-provider-month migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029090708_doodhwala_provider_invoice_month_idempotency.sql
+      - name: Verify invoice idempotency migration can be safely re-applied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029090708_doodhwala_provider_invoice_month_idempotency.sql
       - name: Apply billing amount and payment timestamp guards
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql
       - name: Verify billing guard migration can be safely re-applied
