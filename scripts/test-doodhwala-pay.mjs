@@ -3,9 +3,9 @@ import fs from "node:fs";
 
 const api = fs.readFileSync(new URL("../supabase/functions/doodhwala-pay/index.ts", import.meta.url), "utf8");
 const migration = fs.readFileSync(new URL("../supabase/migrations/20261022120000_doodhwala_pay_foundation.sql", import.meta.url), "utf8");
-const sharedRateLimit = fs.readFileSync(new URL("../supabase/migrations/20261029132000_doodhwala_payment_api_shared_rate_limit.sql", import.meta.url), "utf8");
+const sharedRateLimit = fs.readFileSync(new URL("../supabase/migrations/20261029102528_doodhwala_payment_api_shared_rate_limit.sql", import.meta.url), "utf8");
 const orderStateMachine = fs.readFileSync(new URL("../supabase/migrations/20261007092600_doodhwala_order_state_machine.sql", import.meta.url), "utf8");
-const payableStatusesMatch = api.match(/const payableOrderStatuses = new Set\(\[(.*?)\]\);/s);
+const payableStatusesMatch = api.match(/const payableOrderStatuses = new Set\((.*?)\);/s);
 assert.ok(payableStatusesMatch, "payment intents must use an explicit allowlist of payable order states");
 const payableStatuses = [...payableStatusesMatch[1].matchAll(/"([^"]+)"/g)].map(match => match[1]);
 assert.deepEqual(payableStatuses, ["placed", "accepted", "preparing", "ready", "out_for_delivery"], "only known pre-delivery order states may create payment intents");
