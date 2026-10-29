@@ -8,7 +8,6 @@ const ALLOWED_ORIGINS = new Set(["https://mahin98250.github.io"]);
 const ONLINE_METHODS = new Set(["upi", "card", "netbanking", "wallet"]);
 const METHODS = new Set([...ONLINE_METHODS, "cod"]);
 const MAX_BODY_BYTES = 8_000;
-const rateBuckets = new Map<string, { start: number; count: number }>();
 
 function json(body: unknown, status: number, origin: string | null) {
   const headers = new Headers({ "Content-Type": "application/json", "Cache-Control": "no-store", "Vary": "Origin" });
@@ -21,30 +20,7 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-// Best-effort per-authenticated-user limit for this Edge Function isolate.
-// Do not trust client-supplied IP headers as identity. Production-wide throttling
-// must additionally be enforced at a shared gateway/store because isolates do not
-// share this Map.
-function limited(userId: string) {
-  const now = Date.now();
-  let bucket = rateBuckets.get(userId);
-  if (!bucket || now - bucket.start > 60_000) {
-    if (rateBuckets.size >= 4000) {
-      for (const [key, value] of rateBuckets) {
-        if (now - value.start > 60_000) rateBuckets.delete(key);
-      }
-      // Fail closed under a full bucket map rather than growing unbounded.
-      if (rateBuckets.size >= 4000 && !rateBuckets.has(userId)) return true;
-    }
-    bucket = { start: now, count: 0 };
-    rateBuckets.set(userId, bucket);
-  }
-  bucket.count++;
-  return bucket.count > 30;
-}
-
-async function rest(path: string, init: RequestInit = {}) {
-  const headers = new Headers(init.headers || {});
+// Best-effort per-authenticated-user limit for this Edge Function isolatrs = new Headers(init.headers || {});
   headers.set("apikey", SERVICE_KEY);
   headers.set("Authorization", "Bearer " + SERVICE_KEY);
   headers.set("Content-Type", "application/json");
@@ -70,7 +46,25 @@ async function main(req: Request) {
   if (!userResponse.ok) return json({ error: "invalid_session" }, 401, origin);
   const user = await userResponse.json();
   if (!user?.id) return json({ error: "invalid_session" }, 401, origin);
-  if (limited(String(user.id))) return json({ error: "rate_limited" }, 429, origin);
+  // The shared database counter is authoritative across Edge Function isolates.
+  // If it is unreachable or returns an unexpected payload, fail closed rather than
+  // silently fall back to a process-local limiter.
+  try {
+    const rateLimitResponse = await rest("rpc/doodhwala_payment_api_allow_request", {
+      method: "POST",
+      body: JSON.stringify({ p_user_id: String(user.id) }),
+    });
+    if (!rateLimitResponse.ok) {
+      return json({ error: "rate_limit_unavailable", gateway_ready: false, money_moved: false }, 503, origin);
+    }
+    const allowed: unknown = await rateLimitResponse.json();
+    if (allowed === false) return json({ error: "rate_limited" }, 429, origin);
+    if (allowed !== true) {
+      return json({ error: "rate_limit_unavailable", gateway_ready: false, money_moved: false }, 503, origin);
+    }
+  } catch {
+    return json({ error: "rate_limit_unavailable", gateway_ready: false, money_moved: false }, 503, origin);
+  }
 
   const declaredLength = Number(req.headers.get("content-length") || 0);
   if (declaredLength > MAX_BODY_BYTES) return json({ error: "request_too_large" }, 413, origin);
