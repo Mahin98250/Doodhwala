@@ -45,6 +45,8 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql
       - name: Apply billing amount and payment timestamp guards
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029131000_doodhwala_billing_amount_and_time_guards.sql
+      - name: Verify billing guard migration can be safely re-applied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029131000_doodhwala_billing_amount_and_time_guards.sql
       - name: Verify retry idempotency, period boundaries and fail-closed admin guard
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql-tests/provider-invoice-idempotency-assertions.sql
 
