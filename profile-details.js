@@ -65,6 +65,7 @@
   async function loadDetails(){
     const sup=client();
     if(!sup){
+      setProfileFieldsEnabled(false);
       showMessage("Secure account service is unavailable. Check your connection, then retry.","error");
       $("accountEmail").textContent="Account connection unavailable";
       retryLoad.hidden=false;
