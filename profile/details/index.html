@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#175a3c">
+<meta name="description" content="Safely view and update your Doodhwala personal details.">
+<title>Personal details — Doodhwala</title>
+<link rel="manifest" href="/Doodhwala/manifest.webmanifest">
+<link rel="icon" href="/Doodhwala/assets/mascot.png?v=20261023.3">
+<link rel="stylesheet" href="/Doodhwala/styles.css?v=20261023.5">
+<link rel="stylesheet" href="/Doodhwala/milk-transition.css?v=20261027.8">
+<link rel="stylesheet" href="/Doodhwala/doodhwala-ui-system.css?v=20261028.2">
+<style>
+.details-page{min-height:100vh;background:radial-gradient(circle at 85% 0%,#e0f0e4 0,transparent 28rem),var(--bg);color:var(--ink)}
+.details-shell{width:min(100% - 30px,760px);margin:0 auto;padding:22px 0 110px}
+.details-top{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.details-back{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--green);text-decoration:none;font-size:23px}
+.details-brand{display:flex;align-items:center;gap:10px;min-width:0}.details-brand img{width:38px;height:38px;object-fit:contain}.details-brand b{display:block;font-size:15px}.details-brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.details-kicker{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:900}
+.details-title{font-family:Manrope,sans-serif;font-size:clamp(30px,6vw,43px);letter-spacing:-.05em;line-height:1.08;margin:9px 0}.details-intro{color:var(--muted);font-size:14px;line-height:1.65;margin:0 0 22px;max-width:580px}
+.details-card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:22px;padding:clamp(17px,4vw,27px);box-shadow:var(--shadow-sm)}
+.details-card h2{font-family:Manrope,sans-serif;font-size:18px;margin:0 0 5px}.details-help{color:var(--muted);font-size:12px;line-height:1.6;margin:0 0 20px}
+.details-form{display:grid;gap:16px}.details-field{display:grid;gap:7px}.details-field label,.details-label{font-size:12px;font-weight:800}.details-field input{width:100%;min-height:47px;padding:12px 13px;border:1px solid #d5e0d7;border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-size:14px}.details-field input:focus-visible,.details-back:focus-visible,.details-save:focus-visible,.details-toggle-row input:focus-visible{outline:3px solid #8bc4a0;outline-offset:2px}.details-field input:disabled{background:#f4f7f4;color:#68776c}.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.details-section{padding-top:18px;border-top:1px solid #e8eee9}.details-section h3{font-size:14px;margin:0 0 5px}.details-section>p{font-size:12px;line-height:1.55;color:var(--muted);margin:0 0 14px}.details-toggle-row{display:flex;align-items:flex-start;gap:10px;padding:12px;background:#f3f8f4;border:1px solid #dceade;border-radius:13px;margin-bottom:15px}.details-toggle-row input{margin-top:3px;accent-color:var(--green);width:17px;height:17px}.details-toggle-copy{display:grid;gap:3px}.details-toggle-copy b{font-size:12px}.details-toggle-copy small{font-size:11px;color:var(--muted);line-height:1.5}
+.details-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:4px}.details-save{border:0;border-radius:13px;background:var(--green);color:white;font:inherit;font-size:13px;font-weight:800;padding:14px 19px;min-height:48px;cursor:pointer}.details-save:disabled{opacity:.6;cursor:wait}.details-cancel{font-size:12px;color:var(--green);font-weight:800;text-decoration:none;padding:12px}.details-message{min-height:20px;margin:0;font-size:12px;line-height:1.6}.details-message[data-kind="error"]{color:#a12f25}.details-message[data-kind="success"]{color:#17613d}.details-message[data-kind="info"]{color:#53695a}.details-security{margin-top:14px;padding:14px 15px;border:1px solid #eadfbd;background:#fff8e9;border-radius:15px;color:#725b2a;font-size:11px;line-height:1.6}.details-security strong{display:block;margin-bottom:3px}.details-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:440px){.details-grid{grid-template-columns:1fr}.details-shell{width:calc(100% - 24px);padding-top:15px}.details-card{border-radius:19px}.details-actions{display:grid;grid-template-columns:1fr}.details-save{width:100%}.details-cancel{text-align:center}}
+</style>
+</head>
+<body class="details-page">
+<main class="details-shell">
+<header class="details-top">
+<a class="details-back" href="/Doodhwala/profile/" aria-label="Back to Profile">‹</a>
+<a class="details-brand" href="/Doodhwala/"><img src="/Doodhwala/assets/mascot.png?v=20261023.3" alt=""><span><b>Doodhwala</b><small>Personal account</small></span></a>
+</header>
+<section aria-labelledby="detailsTitle">
+<span class="details-kicker">Account & security</span>
+<h1 class="details-title" id="detailsTitle">Personal details</h1>
+<p class="details-intro">View and update the contact details connected to your Doodhwala account. Your changes are saved to your signed-in account, not just this device.</p>
+<div class="details-card">
+<h2>Your information</h2>
+<p class="details-help" id="accountEmail">Checking your secure session…</p>
+<form class="details-form" id="personalDetailsForm" novalidate>
+<div class="details-field">
+<label for="fullName">Full name</label>
+<input id="fullName" name="fullName" type="text" autocomplete="name" maxlength="120" minlength="2" required placeholder="Enter your full name">
+</div>
+<div class="details-field">
+<label for="phone">Phone number</label>
+<input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" required placeholder="+91 98765 43210" aria-describedby="phoneHelp">
+<small id="phoneHelp" style="font-size:11px;color:var(--muted);line-height:1.5">Use 10–15 digits, with an optional leading +. We don't change your authentication method here.</small>
+</div>
+<section class="details-section" aria-labelledby="addressHeading">
+<h3 id="addressHeading">Default delivery address</h3>
+<p>Changing this address updates the saved default address. Leave this option off to keep your current address unchanged.</p>
+<label class="details-toggle-row" for="editAddress">
+<input id="editAddress" type="checkbox">
+<span class="details-toggle-copy"><b>Update my default delivery address</b><small>Turn this on to edit an existing address or add one if you don't have a saved address yet.</small></span>
+</label>
+<fieldset id="addressFields" disabled style="border:0;padding:0;margin:0;min-width:0;display:grid;gap:13px"><legend class="details-sr-only">Default delivery address fields</legend>
+<div class="details-field"><label for="addressLine">House, street or society</label><input id="addressLine" name="addressLine" autocomplete="street-address" maxlength="240" placeholder="House / street / society"></div>
+<div class="details-grid">
+<div class="details-field"><label for="areaName">Area / locality</label><input id="areaName" name="areaName" autocomplete="address-level3" maxlength="120" placeholder="Your locality"></div>
+<div class="details-field"><label for="city">City</label><input id="city" name="city" autocomplete="address-level2" maxlength="80" placeholder="Your city"></div>
+</div>
+<div class="details-field"><label for="pinCode">PIN code</label><input id="pinCode" name="pinCode" inputmode="numeric" autocomplete="postal-code" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit PIN"></div>
+</fieldset>
+</section>
+<p class="details-message" id="formMessage" role="status" aria-live="polite"></p>
+<div class="details-actions">
+<button class="details-save" id="saveProfile" type="submit">Save personal details</button>
+<a class="details-cancel" href="/Doodhwala/profile/">Cancel and return to Profile</a>
+</div>
+</form>
+</div>
+<aside class="details-security"><strong>Your details stay protected</strong>Only your signed-in account can read these details. Never share your password, one-time code, UPI PIN or bank login with anyone claiming to provide support.</aside>
+</section>
+</main>
+<script src="/Doodhwala/resilience.js?v=20261025.3"></script>
+<script src="/Doodhwala/supabase-config.js?v=20261009.1"></script>
+<script src="/Doodhwala/supabase-client.js?v=20261009.1"></script>
+<script src="/Doodhwala/customer-nav.js?v=20261028.4"></script>
+<script src="/Doodhwala/profile-details.js?v=20261028.1"></script>
+<script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
+</body>
+</html>
