@@ -28,7 +28,7 @@ assert.doesNotMatch(rpcs, /update public\.orders/i, "seller subscription payment
 assert.doesNotMatch(rpcs, /update public\.payment_transactions/i, "seller subscription payment must not alter customer payment ledger");
 
 const invoiceIdempotency = fs.readFileSync(new URL("../supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql", import.meta.url), "utf8");
-const amountTimeGuards = fs.readFileSync(new URL("../supabase/migrations/20261029131000_doodhwala_billing_amount_and_time_guards.sql", import.meta.url), "utf8");
+const amountTimeGuards = fs.readFileSync(new URL("../supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql", import.meta.url), "utf8");
 assert.match(amountTimeGuards, /provider_billing_plans_amount_paise_range_check/i, "database must bound plan prices");
 assert.match(amountTimeGuards, /provider_subscription_invoices_amount_paise_range_check/i, "database must bound invoice amounts");
 assert.match(amountTimeGuards, /provider_subscription_payments_amount_paise_range_check/i, "database must bound recorded payment amounts");
