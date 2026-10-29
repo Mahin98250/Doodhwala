@@ -5,7 +5,7 @@
 ## Findings and fixes
 
 ### PWA-001 — exact asset variants must be precached
-Checkout requests `/Doodhwala/customer-journey-refresh.css?v=20261025.1`; an older customer UI polish URL is `/Doodhwala/customer-ui-polish.css?v=20261025.3`; customer pages also request the mascot without a query string. The worker now includes those exact URLs alongside newer variants. The current cache name is `doodhwala-v98` (retained rather than downgrading the repository's later cache revision).
+Checkout requests `/Doodhwala/customer-journey-refresh.css?v=20261025.1`; an older customer UI polish URL is `/Doodhwala/customer-ui-polish.css?v=20261025.3`; customer pages also request the mascot without a query string. The worker includes those exact URLs alongside newer variants. **Historical snapshot only:** the earlier PR #106 audit recorded cache `doodhwala-v98`. Current main has since advanced; see the 2026-10-29 snapshot below.
 
 ### PWA-002 — only Doodhwala cache keys may be removed
 Activation now deletes obsolete keys only when they begin with `doodhwala-`. Unrelated Cache Storage entries on the shared `mahin98250.github.io` origin are preserved.
@@ -32,3 +32,18 @@ The worker now awaits `cache.put(event.request, response.clone())` for successfu
 ## Safety
 
 No production deployment, production configuration changes, migrations, secrets, real payments, or paid services are used by these checks.
+
+
+## Current-main snapshot — 2026-10-29
+
+- **Observed main commit:** `dba11d39ae149d0b57fb36003da7d9330aba8b0b` (commit created 2026-10-29).
+- **Current service-worker cache:** `doodhwala-v110`.
+- **Current milk-transition asset query version:** `20261027.8` in `product.html` and the worker asset list. The product-runtime contract now expects cache v110 and transition assets `.8`; the previously observed PR #113 head `b50580b` had stale v101 / `.6` expectations, but PR #113 was later merged on head `a1af2ff92794310792ce92f170b7c4aecbf78f9b` after all four GitHub Actions workflows passed.
+- **Merged implementation baseline:** PR [#106](https://github.com/Mahin98250/Doodhwala/pull/106) contains the cache-scope and persistence changes. The older draft [#90](https://github.com/Mahin98250/Doodhwala/pull/90) uses stale v95 expectations and is 33 commits ahead / 20 behind current main; do not merge it as-is. The documentation-only [#112](https://github.com/Mahin98250/Doodhwala/pull/112) is an earlier audit update and should not be treated as current-main version evidence.
+- **PASS (historical PR #90 head only):** [Static run 40371393861](https://github.com/Mahin98250/Doodhwala/actions/runs/40371393861), [SQL run 40371393852](https://github.com/Mahin98250/Doodhwala/actions/runs/40371393852), [PWA browser run 40371394649](https://github.com/Mahin98250/Doodhwala/actions/runs/40371394649). These do not validate the current main SHA.
+- **Current main combined status observed:** Vercel success at [preview status](https://vercel.com/patelmahin140-4489s-projects/doodhwala-next-preview/A8QYVTUAejaoj9J2f1D4RfaudZSM). Current-main push-triggered GitHub Actions run IDs were not available through the evidence lookup used for this report; no current-main Actions pass is inferred from Vercel.
+- **BLOCKED / NOT RUN:** Installed PWA update while an older tab remains open, physical Android/iOS offline/reconnect, and authenticated order/payment behavior. Existing Chromium tests are isolated and do not test real accounts or transactions.
+
+## Release gate
+
+PWA source contracts and the historical Chromium smoke are useful scoped evidence; they do not prove physical-device update behavior or authenticated production journeys. No production test writes, deployments, or real payments were performed as part of this audit.
