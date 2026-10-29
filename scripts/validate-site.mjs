@@ -196,7 +196,7 @@ if(localFiles.has("/support.html")){
 }else errors.push("support page missing");
 if(localFiles.has("/support.js")){
   const supportJs=fs.readFileSync(path.join(root,"support.js"),"utf8");
-  for(const contract of ['db.rpc("create_support_ticket"','auth.getSession()','p_subject:subject','p_description:description','p_order_id:orderId'])
+  for(const contract of ['db.rpc("create_support_ticket"','auth.getSession()','p_subject: subject','p_description: description','p_order_id: orderId'])
     if(!supportJs.includes(contract)) errors.push("support.js -> missing secure ticket submission contract "+contract);
 }
 if(localFiles.has("/index.html")){
