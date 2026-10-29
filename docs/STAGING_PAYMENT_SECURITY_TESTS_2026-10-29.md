@@ -59,6 +59,12 @@ The live staging project has no deployed Edge Functions. No acquiring-provider a
 
 The static contract test `scripts/test-payment-gateway-fail-closed.mjs` is wired into CI. It asserts that disabled methods cannot create intents, browser roles cannot access the server-owned payment ledger/event inbox, event IDs are unique, and payment state transitions remain guarded.
 
+## Rate limiting — defense in depth
+
+The payment Edge Function now applies its in-memory request limit only after Supabase Auth verifies the caller and keys it by the verified user ID; client-provided `x-real-ip` and `cf-connecting-ip` values are not used as identity. The map is bounded and rejects new keys if it remains full after stale entries are cleaned up.
+
+**Important limitation:** Edge Function isolates do not share this in-memory map, so it is only a per-isolate best-effort control. Before enabling online collection or treating this endpoint as production-ready, add a shared gateway- or database-backed rate limit, alerting, and load/abuse tests. Online gateway methods remain disabled and return HTTP 503 before order lookup or ledger writes.
+
 ## Remaining release gates
 
 - [ ] Run the new GitHub Actions test suite on the PR head and inspect all checks.
