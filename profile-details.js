@@ -5,6 +5,7 @@
   const form=$("personalDetailsForm");
   const save=$("saveProfile");
   const message=$("formMessage");
+  const retryLoad=$("retryLoadDetails");
   const addressToggle=$("editAddress");
   const addressFields=$("addressFields");
   let currentUser=null;
@@ -56,11 +57,15 @@
   async function loadDetails(){
     const sup=client();
     if(!sup){
-      showMessage("Secure account service is unavailable. Please refresh or try again later.","error");
+      showMessage("Secure account service is unavailable. Check your connection, then retry.","error");
       $("accountEmail").textContent="Account connection unavailable";
+      retryLoad.hidden=false;
+      retryLoad.disabled=false;
       save.disabled=true;
       return;
     }
+    retryLoad.hidden=true;
+    retryLoad.disabled=true;
     save.disabled=true;
     showMessage("Checking your sign-in…");
     try{
@@ -104,9 +109,16 @@
     }catch(error){
       if(redirectingToSignIn) return;
       showMessage(safeError(error),"error");
+      retryLoad.hidden=false;
+      retryLoad.disabled=false;
       save.disabled=true;
     }
   }
+
+  retryLoad.addEventListener("click",()=>{
+    if(retryLoad.disabled)return;
+    loadDetails();
+  });
 
   addressToggle.addEventListener("change",()=>{
     setAddressEditing(addressToggle.checked);
