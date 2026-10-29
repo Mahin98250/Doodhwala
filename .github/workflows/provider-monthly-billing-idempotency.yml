@@ -46,7 +46,7 @@ jobs:
       - name: Verify confirmed-email admin guard can be safely re-applied
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029110337_doodhwala_admin_allowlist_confirmed_email.sql
       - name: Apply provider invoice idempotency migration
-        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026125000_doodhwala_provider_invoice_month_idempotency.sql
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029090708_doodhwala_provider_invoice_month_idempotency.sql
       - name: Apply billing amount and payment timestamp guards
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029102526_doodhwala_billing_amount_and_time_guards.sql
       - name: Verify billing guard migration can be safely re-applied
