@@ -50,6 +50,20 @@ try {
   await page.screenshot({ path: path.join(evidenceDir, "home-online.png"), fullPage: true });
   evidence.checks.push("worker installed and required offline shell/exact CSS variant cached");
 
+  const profileResponse = await page.goto(new URL("profile/", base).href, { waitUntil: "domcontentloaded" });
+  assert.ok(profileResponse && profileResponse.ok(), "Profile route loads on the local static server");
+  assert.ok(await page.getByRole("link", { name: /Account deletion help/i }).isVisible(), "Profile must expose the honest account-deletion help route");
+  assert.ok(await page.getByRole("link", { name: /About Doodhwala/i }).isVisible(), "Profile must expose the About destination");
+  await page.screenshot({ path: path.join(evidenceDir, "profile-destinations.png"), fullPage: true });
+  evidence.checks.push("Profile renders About and transparent account-deletion help destinations");
+
+  const aboutResponse = await page.goto(new URL("about/", base).href, { waitUntil: "domcontentloaded" });
+  assert.ok(aboutResponse && aboutResponse.ok(), "About route loads on the local static server");
+  assert.ok(await page.getByRole("heading", { name: "About Doodhwala" }).isVisible(), "About page must render its page heading");
+  assert.ok(await page.getByRole("link", { name: "Back to Profile" }).isVisible(), "About page must provide back navigation");
+  await page.screenshot({ path: path.join(evidenceDir, "about-page.png"), fullPage: true });
+  evidence.checks.push("About route renders at mobile viewport with a working Profile return link");
+
   const queryUrl = new URL("/Doodhwala/orders.html?filter=active", origin).href;
   const queryResponse = await page.goto(queryUrl, { waitUntil: "domcontentloaded" });
   assert.ok(queryResponse && queryResponse.ok(), "query-string route loads online");
