@@ -83,6 +83,21 @@ The isolated PostgreSQL CI fixture now exercises direct database amount constrai
 - [ ] Enable and verify Supabase leaked-password protection.
 - [ ] Obtain required payment/security review before production release.
 
+
+## Follow-up API source review and runtime validation
+
+- A source-level audit found that doodhwala-pay/index.ts called rest(...) for the shared limiter and payment-status lookup, but its helper definition had been lost during the earlier rate-limit refactor. That made the endpoint fail closed with HTTP 503 rate_limit_unavailable after authentication. Restored a typed server-side REST helper that sets the service key only inside the Edge Function and preserves per-request headers.
+- Added regression assertions for the helper definition and its server-only API/Authorization headers. Added "deno check supabase/functions/doodhwala-pay/index.ts" to Static validation; the actual Edge Function type-check and payment source-contract test pass on code commit 90aa96732ff36d7c82fe04632aaf6069dcfdace8.
+- All five GitHub Actions workflows passed on that code commit: [Static validation](https://github.com/Mahin98250/Doodhwala/actions/runs/40859052967), [SQL migration validation](https://github.com/Mahin98250/Doodhwala/actions/runs/40859052978), [In-app notification validation](https://github.com/Mahin98250/Doodhwala/actions/runs/40859052857), [PWA offline browser evidence](https://github.com/Mahin98250/Doodhwala/actions/runs/40859052911), and [Provider monthly billing idempotency](https://github.com/Mahin98250/Doodhwala/actions/runs/40859052863).
+- The helper correction and CI changes are source-only. doodhwala-pay remains undeployed to staging and production; online payment methods are still disabled. This is not a claim of live Edge Function/browser E2E success.
+
+## Staging Security Advisor and RPC review
+
+- The staging Security Advisor reported RLS-enabled/no-policy findings for the payment rate-limit table, payment ledger/event inbox, and seller payment/billing settings. The rate-limit table and payment ledger/event inbox have RLS enabled and browser-role table privileges revoked; those rows are intentionally inaccessible directly through browser roles. The no-policy findings are documented, not presented as a clean Advisor result.
+- The Advisor also reported 14 SECURITY DEFINER functions executable by authenticated. Reviewed the payment and seller-billing RPC definitions: anonymous execute was denied for the inspected functions; each uses an empty search_path; customer payment-method selection and UPI instruction retrieval scope to auth.uid()/the owning order; seller UPI/COD confirmation scope to the seller owner and enforce method/status requirements; and seller-billing write/read RPCs check the admin allowlist or provider ownership. COD collection is restricted until an order is delivered.
+- These checks reduce the risk but do not erase the Advisor warnings. Final manual review must still validate the admin allowlist/authentication model and every exposed privileged RPC before release. Do not silence or bulk-revoke the findings without checking the intended app calls and least-privilege behavior.
+
+
 ## Safety
 
 No production migration, function deployment, payment setting, billing setting, or real-money action was performed. This report does not claim the online gateway is production-ready.
