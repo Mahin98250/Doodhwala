@@ -65,6 +65,7 @@ assert.match(phase1Hardening, /drop function if exists public\.provider_save_dir
 assert.match(phase1Hardening, /to_regprocedure\('public\.provider_save_direct_upi\(text,text,boolean,boolean\)'\)/i, "checkout readiness must expect the attested save RPC");
 assert.match(phase1Hardening, /idempotent_retry', true/i, "a same-seller same-reference retry must return an idempotent success");
 assert.match(phase1Hardening, /payment_already_confirmed_with_different_reference/i, "a different reference must not overwrite a previous seller attestation");
+assert.match(phase1Hardening, /orders_direct_upi_reference_normalized_unique_idx/i, "case-variant references must not be reused across seller orders");
 assert.match(phase1Hardening, /upper\(nullif\(trim\(coalesce\(p_reference, ''\)\), ''\)\)/i, "transaction references must be normalized before duplicate detection");
 assert.ok(providerHtml.includes("providerUpiOwnershipConfirmed"), "seller dashboard must display explicit UPI ownership attestation");
 assert.ok(provider.includes("p_ownership_confirmed:ownershipConfirmed"), "seller dashboard must pass attestation to the database-enforced RPC");
