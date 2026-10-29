@@ -21,14 +21,26 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-function limited(req: Request) {
-  const ip = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown";
+// Best-effort per-authenticated-user limit for this Edge Function isolate.
+// Do not trust client-supplied IP headers as identity. Production-wide throttling
+// must additionally be enforced at a shared gateway/store because isolates do not
+// share this Map.
+function limited(userId: string) {
   const now = Date.now();
-  let b = rateBuckets.get(ip);
-  if (!b || now - b.start > 60_000) { b = { start: now, count: 0 }; rateBuckets.set(ip, b); }
-  b.count++;
-  if (rateBuckets.size > 4000) for (const [k, v] of rateBuckets) if (now - v.start > 60_000) rateBuckets.delete(k);
-  return b.count > 30;
+  let bucket = rateBuckets.get(userId);
+  if (!bucket || now - bucket.start > 60_000) {
+    if (rateBuckets.size >= 4000) {
+      for (const [key, value] of rateBuckets) {
+        if (now - value.start > 60_000) rateBuckets.delete(key);
+      }
+      // Fail closed under a full bucket map rather than growing unbounded.
+      if (rateBuckets.size >= 4000 && !rateBuckets.has(userId)) return true;
+    }
+    bucket = { start: now, count: 0 };
+    rateBuckets.set(userId, bucket);
+  }
+  bucket.count++;
+  return bucket.count > 30;
 }
 
 async function rest(path: string, init: RequestInit = {}) {
@@ -44,7 +56,6 @@ async function main(req: Request) {
   if (req.method === "OPTIONS") return json({ ok: true }, 200, origin);
   if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ error: "origin_not_allowed" }, 403, null);
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
-  if (limited(req)) return json({ error: "rate_limited" }, 429, origin);
   if (!PROJECT_URL || !SERVICE_KEY || !PUBLISHABLE_KEYS.length) return json({ error: "payment_service_not_configured" }, 503, origin);
 
   const auth = req.headers.get("authorization") || "";
@@ -59,6 +70,7 @@ async function main(req: Request) {
   if (!userResponse.ok) return json({ error: "invalid_session" }, 401, origin);
   const user = await userResponse.json();
   if (!user?.id) return json({ error: "invalid_session" }, 401, origin);
+  if (limited(String(user.id))) return json({ error: "rate_limited" }, 429, origin);
 
   const declaredLength = Number(req.headers.get("content-length") || 0);
   if (declaredLength > MAX_BODY_BYTES) return json({ error: "request_too_large" }, 413, origin);
