@@ -57,7 +57,7 @@ assert.match(motionCss, /@keyframes dw-page-in/, "Incoming pages should use a sm
 assert.match(motionCss, /@keyframes dw-page-out/, "Outgoing pages should use a subtle departure motion.");
 assert.ok(motionJs.includes("reduceMotion?0:980"), "Navigation should allow the smoother milk-pour choreography while respecting reduced motion.");
 assert.match(motionCss, /prefers-reduced-motion: reduce/, "Native page transitions should disable motion when the user requests reduced motion.");
-assert.match(read("sw.js"), /const CACHE="doodhwala-v109"/, "PWA cache revision should refresh the updated transition assets.");
+assert.match(read("sw.js"), /const CACHE="doodhwala-v110"/, "PWA cache revision should refresh the updated transition assets.");
 for (const page of ["index.html","auth.html","checkout.html","orders.html","plans.html","product.html","provider.html","store.html","support.html","notifications.html","legal.html","admin.html"]) {
   const html = read(page);
   assert.ok(html.includes("/Doodhwala/milk-transition.css?v=20261027.8"), page + " must load the current transition CSS.");
