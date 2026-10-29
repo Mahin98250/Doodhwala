@@ -13,7 +13,7 @@ assert.match(html, /id="supportForm"/, "customer support request form must exist
 assert.match(html, /id="faqList"/, "automated self-service answers must exist");
 assert.match(client, /db\.rpc\("create_support_ticket"/, "ticket submission must use the backend RPC");
 assert.match(client, /auth\.getSession\(\)/, "support requests must require a signed-in account");
-assert.match(client, /p_order_id:orderId/, "optional order reference must be passed to the backend");
+assert.match(client, /p_order_id:\s*orderId/, "optional order reference must be passed to the backend");
 assert.match(migration, /private\.is_current_user_admin\(\)/, "ticket administration must use the private owner allowlist");
 assert.match(migration, /customer_id = auth\.uid\(\)/, "order references must be checked against the signed-in customer");
 assert.match(migration, /Unsupported support category/, "backend must reject forged categories");
