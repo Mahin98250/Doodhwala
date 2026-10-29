@@ -89,6 +89,8 @@ jobs:
         run: node scripts/test-legal-contracts.mjs
       - name: Test customer support centre and owner ticket triage
         run: node scripts/test-support-center.mjs
+      - name: Test asynchronous support and notification UI states
+        run: node scripts/test-async-ui-states.mjs
       - name: Test auth return paths and password recovery
         run: node scripts/test-auth-contracts.mjs
       - name: Test secure customer personal details editor
