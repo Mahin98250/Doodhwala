@@ -33,6 +33,15 @@ $$;
 
 -- Remove the legacy three-argument RPC. Older callers that omit the new required
 -- attestation input resolve to the default false and cannot enable payment details.
+-- Normalize seller-entered transaction references so case variants cannot be reused
+-- to attest the same transfer against two orders. If legacy duplicates exist, migration
+-- fails closed for reconciliation instead of silently weakening duplicate protection.
+create unique index if not exists orders_direct_upi_reference_normalized_unique_idx
+  on public.orders(provider_id, upper(trim(payment_reference)))
+  where payment_method = 'direct_upi'
+    and payment_status = 'paid_direct_to_seller'
+    and payment_reference is not null;
+
 drop function if exists public.provider_save_direct_upi(text, text, boolean);
 
 create function public.provider_save_direct_upi(
