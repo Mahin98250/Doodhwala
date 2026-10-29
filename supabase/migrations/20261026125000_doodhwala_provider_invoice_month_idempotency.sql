@@ -26,19 +26,56 @@ begin
 end
 $$;
 
-alter table public.provider_subscription_invoices
-  add constraint provider_subscription_invoices_calendar_month_check
-  check (
-    period_start = date_trunc('month', period_start::timestamp)::date
-    and period_end = (
-      date_trunc('month', period_start::timestamp)
-      + interval '1 month' - interval '1 day'
-    )::date
-  );
+-- Idempotent constraint creation also permits a staging environment to be
+-- reconciled safely when this migration's SQL was previously applied under a
+-- different migration name. Refuse a same-name constraint of the wrong type.
+do $constraints$
+begin
+  if exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.provider_subscription_invoices'::regclass
+      and conname = 'provider_subscription_invoices_calendar_month_check'
+      and contype <> 'c'
+  ) then
+    raise exception 'provider_invoice_calendar_constraint_definition_conflict';
+  end if;
 
-alter table public.provider_subscription_invoices
-  add constraint provider_subscription_invoices_provider_month_unique
-  unique (provider_id, period_start);
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.provider_subscription_invoices'::regclass
+      and conname = 'provider_subscription_invoices_calendar_month_check'
+  ) then
+    alter table public.provider_subscription_invoices
+      add constraint provider_subscription_invoices_calendar_month_check
+      check (
+        period_start = date_trunc('month', period_start::timestamp)::date
+        and period_end = (
+          date_trunc('month', period_start::timestamp)
+          + interval '1 month' - interval '1 day'
+        )::date
+      );
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.provider_subscription_invoices'::regclass
+      and conname = 'provider_subscription_invoices_provider_month_unique'
+      and contype <> 'u'
+  ) then
+    raise exception 'provider_invoice_unique_constraint_definition_conflict';
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.provider_subscription_invoices'::regclass
+      and conname = 'provider_subscription_invoices_provider_month_unique'
+  ) then
+    alter table public.provider_subscription_invoices
+      add constraint provider_subscription_invoices_provider_month_unique
+      unique (provider_id, period_start);
+  end if;
+end
+$constraints$;
 
 comment on constraint provider_subscription_invoices_calendar_month_check
   on public.provider_subscription_invoices is
