@@ -20,7 +20,12 @@ assert.ok(gatewayGate >= 0, "unconfigured gateway must return an explicit error"
 const gateStart = api.indexOf("if (ONLINE_METHODS.has(method)) {");
 const gateEnd = api.indexOf("\n  }\n\n  const orderResponse", gateStart);
 assert.ok(gateStart >= 0 && gateEnd > gateStart, "online gateway guard must be a bounded early-return block");
-assert.match(api.slice(gateStart, gateEnd), /503, origin/, "unconfigured online methods must return HTTP 503");
+const gatewayBlock = api.slice(gateStart, gateEnd);
+assert.match(gatewayBlock, /return\s+json\([\s\S]*?error: "payment_provider_not_configured"[\s\S]*?503, origin\)/, "the unconfigured gateway guard must actually return HTTP 503");
+assert.doesNotMatch(gatewayBlock, /\bawait\s+rest\(/, "the fail-closed guard must not perform service-role database calls before returning");
+assert.match(gatewayBlock, /gateway_ready: false[\s\S]*?money_moved: false/, "disabled methods must explicitly communicate that no payment was collected");
+assert.match(api, /const METHODS = new Set\(\[\.\.\.ONLINE_METHODS, "cod"\]\)/, "every recognized create-intent method must route through an explicit disabled-online or COD guard");
+assert.match(api, /503, origin/, "unconfigured online methods must return HTTP 503");
 assert.ok(orderLookup > gatewayGate, "disabled gateway must fail before order lookup");
 assert.ok(ledgerInsert > gatewayGate, "disabled gateway must fail before creating a payment ledger row");
 assert.ok(api.includes('error: "cod_uses_order_payment_flow"'), "COD must not be treated as an online gateway intent");
