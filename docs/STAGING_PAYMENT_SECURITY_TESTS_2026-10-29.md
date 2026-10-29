@@ -65,6 +65,14 @@ The payment Edge Function now applies its in-memory request limit only after Sup
 
 **Important limitation:** Edge Function isolates do not share this in-memory map, so it is only a per-isolate best-effort control. Before enabling online collection or treating this endpoint as production-ready, add a shared gateway- or database-backed rate limit, alerting, and load/abuse tests. Online gateway methods remain disabled and return HTTP 503 before order lookup or ledger writes.
 
+## Seller billing amount and timestamp guards
+
+A new migration adds database constraints limiting monthly plan prices, invoice totals, and reconciled payment rows to ₹1–₹10,00,000. The admin RPC enforces the same limits, so bypassing the browser UI cannot submit a higher or sub-₹1 amount. Migration preflight rejects existing out-of-range records rather than silently changing billing history.
+
+Manual reconciliation now rejects a received-at timestamp more than five minutes in the future and one more than five minutes before the invoice was created. It also explicitly rejects a null/unsupported payment method, holds the invoice row while recording payment, and retains exact-amount matching. These checks improve data integrity; because reconciliation remains manually attested, they do not independently prove a bank/UPI transfer happened.
+
+The isolated PostgreSQL CI fixture now exercises direct database amount constraints, RPC amount limits, future/backdated timestamps, amount mismatch, and a valid exact-amount reconciliation.
+
 ## Remaining release gates
 
 - [ ] Run the new GitHub Actions test suite on the PR head and inspect all checks.
