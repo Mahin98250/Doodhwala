@@ -26,7 +26,7 @@ The two projects are in different regions. Staging test timing is not directly r
 - **Migration reconciliation remains P0.** Staging records 87 migrations versus production's 67. Public-object counts also differ. Determine which differences are intended, missing, renamed or unsafe before applying any changes. Never infer that a Git migration is deployed solely because its file exists.
 - **Authenticated end-to-end acceptance remains pending.** No evidence in this baseline proves the full customer → seller → customer journey, actual Auth/RLS/Realtime behavior, or cross-account isolation on staging.
 - **Payment separation remains important.** The staging `doodhwala-pay` Edge Function exists, but the repository's documented contract is a fail-closed payment-intent foundation, not a live automated gateway. Direct seller UPI is manually seller-attested, not bank-verified by Doodhwala. Production currently has no `doodhwala-pay` function in the observed inventory.
-- **No additional spend without approval.** Do not create paid branches, additional projects, or upgraded compute without explicit cost review and approval. Do not pause, delete or repurpose projects to free a slot.
+- **No additional spend without approval.** Do not incur unapproved charges or create paid branches, additional projects, or upgraded compute without explicit cost review and approval. Do not pause, delete or repurpose projects to free a slot.
 - **No production test writes or migrations.** Keep production preflight read-only. Production rollout is a separate reviewed change with explicit approval.
 
 ## First execution sequence
