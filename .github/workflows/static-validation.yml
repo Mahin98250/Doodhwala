@@ -11,10 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Doodhwala Pay Edge Function
+        run: deno check supabase/functions/doodhwala-pay/index.ts
       - name: Validate JavaScript syntax
         run: |
           set -e
-          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-10x.js supabase-client.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js splash-screen.js pwa-register.js session-controls.js support.js network-status.js profile-details.js; do
+          for file in app.js auth.js checkout.js checkout-10x.js provider.js provider-billing.js provider-10x.js supabase-config.js sw.js orders.js direct-upi-checkout.js plans.js admin.js admin-intelligence.js store.js product.js customer-nav.js customer-10x.js customer-market-10x.js location.js provider-location.js resilience.js milk-transition.js splash-screen.js pwa-register.js session-controls.js support.js network-status.js profile-details.js; do
             node --check "$file"
           done
       - name: Syntax-check production readiness probe
@@ -39,6 +44,14 @@ jobs:
         run: node scripts/test-direct-seller-payments.mjs
       - name: Test payment reconciliation audit and reference guard
         run: node scripts/test-payment-reconciliation-audit.mjs
+      - name: Test unconfigured payment gateway fail-closed behavior
+        run: node scripts/test-payment-gateway-fail-closed.mjs
+      - name: Test no-gateway direct seller payment model
+        run: node scripts/test-direct-payment-no-gateway-model.mjs
+      - name: Test provider billing UI contracts
+        run: node scripts/test-provider-billing-ui.mjs
+      - name: Test provider monthly billing contracts
+        run: node scripts/test-provider-monthly-billing.mjs
       - name: Test customer discovery enhancements
         run: node scripts/test-discovery-enhancements.mjs
       - name: Test scalable nearby-provider query contract
