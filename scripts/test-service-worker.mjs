@@ -95,7 +95,8 @@ assert.ok(source.includes('/Doodhwala/customer-nav.js?v=20261027.1'), "the clean
 assert.ok(source.includes('/Doodhwala/plans.js?v=20261027.3'), "the latest customer plan runtime must be explicitly precached");
 assert.ok(source.includes('"/Doodhwala/notifications.html"'), "the notification route must be included in the PWA precache");
 assert.ok(source.includes('/Doodhwala/notifications.css?v=20261027.1'), "the notification stylesheet must be explicitly precached");
-assert.ok(source.includes('/Doodhwala/notifications.js?v=20261027.1'), "the notification client must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/notifications.js?v=20261029.1'), "the notification client must be explicitly precached");
+assert.ok(source.includes('/Doodhwala/support.js?v=20261029.1'), "the support request runtime must be explicitly precached");
 assert.ok(source.includes('/Doodhwala/subscription-schedule-preview.css?v=20261027.2'), "the first-week plan calendar styles must be explicitly precached");
 
 const unknownRoute = await offlineResponse(origin + "/Doodhwala/not-cached.html");
@@ -116,7 +117,8 @@ assert.ok(cache.has(origin + "/Doodhwala/index.html"), "core offline shell must 
 assert.ok(cache.has(origin + "/Doodhwala/plans.js?v=20261027.3"), "the new customer plan runtime must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/notifications.html"), "the notification route must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/notifications.css?v=20261027.1"), "the notification stylesheet must be installed into the PWA cache");
-assert.ok(cache.has(origin + "/Doodhwala/notifications.js?v=20261027.1"), "the notification client must be installed into the PWA cache");
+assert.ok(cache.has(origin + "/Doodhwala/notifications.js?v=20261029.1"), "the notification client must be installed into the PWA cache");
+assert.ok(cache.has(origin + "/Doodhwala/support.js?v=20261029.1"), "the support request runtime must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/doodhwala-ui-system.css?v=20261028.2"), "shared responsive UI styles must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/customer-ui-stability.css?v=20261028.1"), "customer UI fixes must be installed into the PWA cache");
 assert.ok(cache.has(origin + "/Doodhwala/subscription-schedule-preview.css?v=20261027.2"), "the customer plan calendar stylesheet must be installed into the PWA cache");
