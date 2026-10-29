@@ -28,17 +28,17 @@
   **Evidence:** [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80) · [Static validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741459) · [SQL migration validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741596).
 
 - [ ] **DW-002 — Responsive UI and interaction audit** ([Issue #74](https://github.com/Mahin98250/Doodhwala/issues/74))  
-  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** TODO (awaiting task acknowledgement) · **Area:** Customer UI / QA  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS (PR #88 open/draft; manual/device acceptance remains outstanding) · **Area:** Customer UI / QA  
   **Goal:** Check navigation, buttons, forms, loading/empty/error states, and mobile/desktop layouts.  
   **Done when:** Findings are recorded with route, device/viewport, steps to reproduce, expected vs actual result, and severity; critical issues are fixed or converted into tasks.  
   **Master UI plan:** [docs/UI_CLEANUP_MASTER_PLAN.md](docs/UI_CLEANUP_MASTER_PLAN.md) — repository route/style/script map and prioritized checklist; rendered-device QA, accessibility execution and staging E2E remain unverified.  
-  **Evidence:** PR/Issue: add link · Checks: not run.
+  **Evidence:** [PR #88](https://github.com/Mahin98250/Doodhwala/pull/88) — recorded static, UI-contract, Chromium viewport/interaction, and disposable-PostgreSQL checks passed on head `7dd3717625762da00ab81f97fb3d7c9e1dec4ac3`; [browser artifacts](https://github.com/Mahin98250/Doodhwala/actions/runs/40372312018/artifacts/12672049367). Manual product/price/cart correctness, seller setup, keyboard/screen-reader/touch-target and physical-device checks remain NOT RUN.
 
 - [ ] **DW-003 — Service worker and offline/reconnect validation** ([Issue #75](https://github.com/Mahin98250/Doodhwala/issues/75))  
-  **Owner:** Unassigned · **Status:** TODO · **Area:** PWA / QA  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS (PR #106 merged; #90/#112 reconciliation and physical-device acceptance pending) · **Area:** PWA / QA  
   **Goal:** Confirm the latest assets replace stale cached assets and the UI explains offline status accurately.  
   **Done when:** Fresh install, update from previous cache, offline navigation, and reconnect are tested on a real or clearly identified browser/device. Do not imply offline orders are queued unless implemented.  
-  **Evidence:** PR/Issue: add link · Checks: not run.
+  **Evidence:** [PR #106 merged](https://github.com/Mahin98250/Doodhwala/pull/106) at merge commit `383ac2e56f0e2f7143ee025fe80eaaca890216c0`; [older implementation PR #90](https://github.com/Mahin98250/Doodhwala/pull/90) still uses stale v95 assumptions; [audit PR #112](https://github.com/Mahin98250/Doodhwala/pull/112) still documents v99 while current main `sw.js` declares v105 (blob `0037577e51a9bf6ffb29bd5b83128e54f23a4c82`). Chromium evidence is available, but physical Android/iOS, old-tab update, and manual reconnect-freshness checks remain NOT RUN/BLOCKED.
 
 ### P0 — Complete remaining product features and release validation
 
@@ -50,7 +50,7 @@
   **Safety:** No production migration, merge, deployment, real-payment collection, or production test orders without explicit approval.
 
 - [ ] **DW-011 — Full product regression, E2E, security and release validation** ([Issue #94](https://github.com/Mahin98250/Doodhwala/issues/94))  
-  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** TODO (assigned; prepare the test matrix now and execute as features become testable) · **Area:** QA / E2E / Accessibility / Security / Release  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS (assigned; evidence matrix and staging checklist prepared; authenticated staging execution blocked) · **Area:** QA / E2E / Accessibility / Security / Release  
   **Goal:** Independently validate the complete feature scope in #93 after each area is ready, with final cross-feature regression at the end.  
   **Done when:** The matrix records commit, environment, exact command/steps, expected vs actual result, PASS/FAIL/BLOCKED/NOT RUN, and evidence for every scenario. Include role-isolation, concurrency/idempotency, responsive/accessibility, PWA update/offline, Android/iOS where available, and non-production performance tests.  
   **Safety:** No production order writes, real money, paid services, production migrations, or customer data. Never mark unrun/device-blocked tests as passed.
@@ -101,6 +101,7 @@ Copy this template and give each task a unique ID:
 Add newest entries first. Link to the PR/commit and report checks honestly.
 | Date | Task | Person / agent | Summary | Verification / evidence |
 |---|---|---|---|---|
+| 2026-10-28 | DW-011 consolidated release-readiness plan | Vaidik Patel (@vaidikpatel22112010-tech) | Diagnosed the historical #113 source/test mismatch; documented #111 as canonical evidence-refresh recommendation while preserving review/approval; reconciled current PWA cache evidence; prepared role-based staging E2E execution gates. | #113 merge head `a1af2ff92794310792ce92f170b7c4aecbf78f9b`: static [40614198562](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198562), PWA [40614198400](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198400), SQL [40614198410](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198410), notifications [40614198412](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198412) all PASS. Staging checklist draft [PR #122](https://github.com/Mahin98250/Doodhwala/pull/122), commit `ef87937e0d8aee4e383489798018a9b468dbc65d`; CI was in progress at the time of recording. Staging E2E and physical-device checks remain BLOCKED/NOT RUN. No merge/deployment performed. |
 | 2026-10-27 | DW-010 feature completion program | Mahin + coding agents | Created a full feature-completion epic covering identity, discovery, checkout/orders, subscriptions, seller/admin operations, provider billing, delivery/GPS, notifications, support/privacy, PWA, mobile-store readiness and safety gates. | [Issue #93](https://github.com/Mahin98250/Doodhwala/issues/93). This is an inventory/implementation gate, not a claim that all items are complete. |
 | 2026-10-27 | DW-011 final test ownership | Vaidik Patel (@vaidikpatel22112010-tech) | Assigned the full-product regression/E2E/security/accessibility/device/load validation task; prepare the test matrix now, run final end-to-end coverage as feature areas become ready, and record evidence honestly. | [Issue #94](https://github.com/Mahin98250/Doodhwala/issues/94). Physical-device tests and authenticated staging journeys remain unverified until actual evidence is recorded. |
 | 2026-10-27 | Provider billing idempotency hardening | Mahin + coding agents | Added a calendar-month boundary/one-provider-month invoice constraint, retry-safe invoice RPC behavior, static contract checks, disposable PostgreSQL fixture/assertions, and a CI job on the existing billing PR branch. | [PR #71](https://github.com/Mahin98250/Doodhwala/pull/71), branch `feat/provider-monthly-billing`, latest commit `9dd71574810966c1023caa48fe65de6f6f130eca`. A dedicated disposable-PostgreSQL workflow is now running for this exact commit; do not mark it passed until the run finishes. |
