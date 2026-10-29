@@ -52,7 +52,7 @@
 - [ ] **DW-011 — Full product regression, E2E, security and release validation** ([Issue #94](https://github.com/Mahin98250/Doodhwala/issues/94))  
   **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS (matrix merged; consolidated evidence refresh in review; staging E2E blocked) · **Area:** QA / E2E / Accessibility / Security / Release  
   **Goal:** Independently validate the complete feature scope in #93 after each area is ready, with final cross-feature regression at the end.  
-  **Evidence:** [DW-011 matrix](docs/DW-011_RELEASE_TEST_MATRIX.md); canonical evidence-refresh recommendation is PR #111 (non-draft), with unique historical evidence from duplicate draft #114 being preserved in its updated matrix.  
+  **Evidence:** [DW-011 matrix](docs/DW-011_RELEASE_TEST_MATRIX.md); [staging E2E execution plan](docs/VAIDIK_STAGING_E2E_EXECUTION_PLAN.md); canonical evidence-refresh recommendation is PR #111 (non-draft), with unique historical evidence from duplicate draft #114 being preserved in its updated matrix.  
   **BLOCKED:** Authenticated Supabase E2E, deployed RLS/RPC/Realtime checks, staging load tests, and backup/restore because no isolated approved staging project/schema is available. Physical Android/iOS and manual accessibility are NOT RUN.  
   **Safety:** No production order writes, real money, paid services, production migrations, or customer data. Never mark unrun/device-blocked tests as passed.
 
