@@ -45,7 +45,7 @@ assert.match(editor, /resilience\.js/, "Editor must load the existing network re
 assert.ok(migrations.includes("20261011151730_fix_customer_profile_phone_regex.sql"),
   "Editor must rely on the known PostgreSQL-safe phone validation migration");
 const worker = read("sw.js");
-assert.match(worker, /doodhwala-v110/, "Service worker cache revision must advance for the new editor");
+assert.match(worker, /doodhwala-v111/, "Service worker cache revision must advance for the new editor");
 assert.match(worker, /profile\/details\/index\.html/, "Service worker must precache the editor route");
 assert.match(worker, /profile-details\.js\?v=20261029\.1/, "Service worker must precache the editor runtime");
 
