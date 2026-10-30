@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const read = path => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const html = read("index.html");
@@ -79,3 +80,35 @@ assert.match(ui, /\.home-page \.app main > header \.auth-link,[\s\S]*?\.home-pag
   "mobile header must not duplicate profile and cart actions from persistent bottom navigation");
 assert.match(ui, /\.home-page \.hero \.hero-art\{[\s\S]*?min-height:112px;height:112px/,
   "mobile hero illustration must be compact enough to reveal discovery content sooner");
+
+
+// Provider-card truthfulness and scanability: price, rating and delivery labels
+// must be derived from real catalogue values, never from UI defaults.
+const cardSummarySource = app.match(/function providerCardSummary\\(p\\)\\s*\\{[\\s\\S]*?\\n\\}/)?.[0];
+assert.ok(cardSummarySource, "app.js must expose the pure providerCardSummary(p) view-model helper");
+const cardSummaryContext = vm.createContext({});
+vm.runInContext(cardSummarySource + "\\nglobalThis.cardSummary = providerCardSummary;", cardSummaryContext);
+const providerCardSummary = cardSummaryContext.cardSummary;
+const populatedCard = providerCardSummary({
+  productPrices: [72, "65.5", 0, null, "invalid"],
+  rating: 4.6,
+  milks: [["Cow milk", "₹72 / L"], ["Buffalo milk", "₹65.50 / L"]],
+  isServiceable: true
+});
+assert.equal(populatedCard.startingPrice, 65.5, "starting price must use the lowest valid positive catalogue price");
+assert.equal(populatedCard.ratingLabel, "★ 4.6", "real positive ratings must remain visible");
+assert.equal(populatedCard.optionCount, 2, "milk option count must match actual catalogue rows");
+assert.equal(populatedCard.serviceLabel, "Can deliver here", "delivery label must reflect the real eligibility result");
+const unknownCard = providerCardSummary({
+  productPrices: [0, null, "invalid"],
+  rating: null,
+  milks: [],
+  isServiceable: null
+});
+assert.equal(unknownCard.startingPrice, null, "missing prices must not become a zero or invented starting price");
+assert.equal(unknownCard.ratingLabel, "No ratings yet", "missing ratings must not become a fabricated 0.0 score");
+assert.equal(unknownCard.serviceLabel, "Choose a location to check delivery", "unknown serviceability must not claim delivery");
+assert.match(app, /provider-price-summary/, "provider cards must expose the actual starting-price summary");
+assert.match(app, /provider-service-chip/, "provider cards must expose delivery eligibility");
+assert.doesNotMatch(app, /<span class="verified">Verified<\\/span>/,
+  "provider cards must not present an unconditional client-side verified badge");
