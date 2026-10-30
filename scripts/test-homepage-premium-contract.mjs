@@ -36,15 +36,15 @@ for (const marker of [
   assert.ok(html.includes(marker), "homepage must include approved region " + marker);
 }
 
-assert.equal((html.match(/<h1\\b/g) || []).length, 1, "homepage must have exactly one h1");
+assert.equal((html.match(/<h1\b/g) || []).length, 1, "homepage must have exactly one h1");
 assert.match(html, /aria-label="[^"]*(?:main|primary)[^"]*"/i,
   "homepage must expose a named primary navigation or landmark");
-assert.match(html, /prefers-reduced-motion\\s*:\\s*reduce/, "homepage styling must respect reduced motion");
+assert.match(html, /prefers-reduced-motion\s*:\s*reduce/, "homepage styling must respect reduced motion");
 assert.match(css, /:focus-visible/, "homepage styling must provide visible keyboard focus");
-assert.match(css, /@media\\s*\\([^)]*(?:max-width|min-width)/, "homepage styling must include responsive breakpoints");
-assert.match(css, /min-width:\\s*0|overflow-x:\\s*(?:clip|hidden)/,
+assert.match(css, /@media\s*\([^)]*(?:max-width|min-width)/, "homepage styling must include responsive breakpoints");
+assert.match(css, /min-width:\s*0|overflow-x:\s*(?:clip|hidden)/,
   "homepage styling must guard against narrow-screen overflow");
-assert.doesNotMatch(html, /(?:\b(?:Test Dairy|Sample Seller|Demo Provider)\b|₹\\s*(?:99|120|150)\\s*\\/\\s*L)/i,
+assert.doesNotMatch(html, /(?:\b(?:Test Dairy|Sample Seller|Demo Provider)\b|₹\s*(?:99|120|150)\s*\/\s*L)/i,
   "homepage must not introduce fabricated seller names or sample prices");
 
 for (const [source, label] of [[app, "app.js"], [location, "location.js"], [nav, "customer-nav.js"]]) {
