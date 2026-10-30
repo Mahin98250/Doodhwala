@@ -66,6 +66,21 @@ function filtered(){
  return list;
 }
 
+function providerCardSummary(p){
+ const prices=(Array.isArray(p.productPrices)?p.productPrices:[])
+  .map(value=>Number(value))
+  .filter(value=>Number.isFinite(value)&&value>0);
+ const rating=p.rating==null?null:Number(p.rating);
+ const serviceable=p.isServiceable;
+ return {
+  startingPrice:prices.length?Math.min(...prices):null,
+  ratingLabel:Number.isFinite(rating)&&rating>0?"★ "+rating.toFixed(1):"No ratings yet",
+  optionCount:Array.isArray(p.milks)?p.milks.length:0,
+  serviceState:serviceable===true?"available":serviceable===false?"unavailable":"unknown",
+  serviceLabel:serviceable===true?"Can deliver here":serviceable===false?"Outside delivery zone":"Choose a location to check delivery"
+ };
+}
+
 function render(){
  syncDeliveryFilterControl();
  renderCompareDock();
@@ -113,14 +128,23 @@ function render(){
  }
  grid.innerHTML=list.map(p=>{
    const saved=favorites.includes(p.id);
-   const locationBadge=p.isServiceable===false?'Outside zone':(p.distanceKm!=null?formatDistance(p.distanceKm):"Set location");
+   const summary=providerCardSummary(p);
+   const areaLabel=[p.area,p.city].filter(Boolean).filter((value,index,array)=>array.indexOf(value)===index).join(" · ");
+   const locationBadge=p.distanceKm!=null?formatDistance(p.distanceKm):(p.isServiceable===true?"Can deliver":p.isServiceable===false?"Outside zone":"Set location");
    const badgeClass=p.isServiceable===false?"service-bad":(p.isServiceable===true?"service-good":"service-neutral");
+   const startingPrice=summary.startingPrice===null?"Price unavailable":money(summary.startingPrice)+'<span> / L</span>';
+   const optionLabel=summary.optionCount+" milk option"+(summary.optionCount===1?"":"s");
+   const deliveryLabel=p.delivery&&p.delivery!=="Local route"?"Delivery "+p.delivery:"Delivery details in store";
    return '<article class="provider provider-live" data-provider-card="'+escapeHtml(p.id)+'">'+
      '<div class="cover" data-store="'+escapeHtml(p.id)+'"><span>'+escapeHtml(p.tag)+'</span><div class="provider-emoji">'+milkEmoji(p.type)+'</div><div class="provider-distance '+badgeClass+'">⌖ '+escapeHtml(locationBadge)+'</div></div>'+
-     '<div class="provider-body"><div class="name-row"><div><div class="provider-name">'+escapeHtml(p.name)+'</div><div class="meta">'+escapeHtml(p.area)+' · ★ '+escapeHtml(p.rating)+'</div></div><div class="provider-actions">'+(p.verified?'<span class="verified">Verified</span>':'')+'<button class="save-provider'+(saved?" saved":"")+'" data-save="'+escapeHtml(p.id)+'" aria-label="'+(saved?"Remove from saved":"Save provider")+'">'+(saved?"♥":"♡")+'</button></div></div>'+
-     (p.isServiceable===false?'<div class="service-warning">This provider is outside the current delivery zone.</div>':"")+
+     '<div class="provider-body"><div class="name-row"><div class="provider-identity"><div class="provider-name">'+escapeHtml(p.name)+'</div><div class="meta">'+escapeHtml(areaLabel||"Local provider")+'</div></div><div class="provider-actions"><button class="save-provider'+(saved?" saved":"")+'" data-save="'+escapeHtml(p.id)+'" aria-label="'+(saved?"Remove from saved":"Save provider")+'">'+(saved?"♥":"♡")+'</button></div></div>'+
+     '<div class="provider-price-summary">'+
+       '<div class="provider-price-block"><small>Starting price</small><strong>'+startingPrice+'</strong></div>'+
+       '<div class="provider-card-facts"><span class="provider-rating">'+escapeHtml(summary.ratingLabel)+'</span><span class="provider-option-count">'+escapeHtml(optionLabel)+'</span></div>'+
+       '<span class="provider-service-chip service-'+summary.serviceState+'">'+escapeHtml(summary.serviceLabel)+'</span>'+
+     '</div>'+
      '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false&&Number.isFinite(Number(p.productPrices?.[i]))&&Number(p.productPrices[i])>0?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
-     '<div class="provider-foot"><span>'+(p.delivery||"Local route")+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
+     '<div class="provider-foot"><span>'+escapeHtml(deliveryLabel)+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
  }).join("");
  appendLoadMoreControl();
  grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
@@ -211,7 +235,7 @@ function compareCellProvider(p){
   :'<span class="compare-muted">No active products listed</span>';
  const distance=p.distanceKm==null?'<span class="compare-muted">Set location</span>':escapeHtml(formatDistance(p.distanceKm));
  const daily=p.subscription?'<span class="compare-status is-good">Available</span>':'<span class="compare-muted">Not listed</span>';
- return {name:escapeHtml(p.name||"Local seller"),rating:'★ '+escapeHtml(Number(p.rating||0).toFixed(1)),area:escapeHtml([p.area,p.city].filter(Boolean).join(", ")||"Local area"),milk,distance,delivery,window:escapeHtml(p.delivery||"Local route"),daily,store:escapeHtml(p.providerId||p.id)};
+ return {name:escapeHtml(p.name||"Local seller"),rating:escapeHtml(providerCardSummary(p).ratingLabel),area:escapeHtml([p.area,p.city].filter(Boolean).join(", ")||"Local area"),milk,distance,delivery,window:escapeHtml(p.delivery||"Local route"),daily,store:escapeHtml(p.providerId||p.id)};
 }
 function openCompareDialog(){
  const selected=selectedForComparison(),overlay=$("compareDialog"),content=$("compareContent");
@@ -284,8 +308,9 @@ function mapRemoteProvider(row){
  return {
    id:row.provider_id,providerId:row.provider_id,name:row.provider_name,area:(row.area_name||"Local area"),city:row.city,
    tag:(row.milk_type||"mixed")+" milk",type:row.milk_type||"mixed",emoji:milkEmoji(row.milk_type),
-   rating:Number(row.rating_avg||0).toFixed(1),delivery:row.delivery_from&&row.delivery_to?String(row.delivery_from).slice(0,5)+"–"+String(row.delivery_to).slice(0,5):"Local route",
-   verified:true,latitude:Number(row.latitude),longitude:Number(row.longitude),
+   rating:row.rating_avg==null||!Number.isFinite(Number(row.rating_avg))||Number(row.rating_avg)<=0?null:Number(row.rating_avg),
+   delivery:row.delivery_from&&row.delivery_to?String(row.delivery_from).slice(0,5)+"–"+String(row.delivery_to).slice(0,5):"Local route",
+   latitude:Number(row.latitude),longitude:Number(row.longitude),
    distanceKm:row.distance_km==null?null:Number(row.distance_km),serviceRadiusKm:row.service_radius_km==null?null:Number(row.service_radius_km),
    isServiceable:row.is_serviceable==null?null:Boolean(row.is_serviceable),
    subscription:products.some(p=>p.daily_available),productDailyAvailable:products.map(p=>Boolean(p.daily_available)),
