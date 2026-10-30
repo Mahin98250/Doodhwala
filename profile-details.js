@@ -5,6 +5,7 @@
   const form=$("personalDetailsForm");
   const save=$("saveProfile");
   const message=$("formMessage");
+  const retryLoad=$("retryLoadDetails");
   const addressToggle=$("editAddress");
   const addressFields=$("addressFields");
   let currentUser=null;
@@ -18,6 +19,11 @@
   function setAddressEditing(enabled){
     addressFields.disabled=!enabled;
     for(const id of ["addressLine","areaName","city","pinCode"]) $(id).required=enabled;
+  }
+  function setProfileFieldsEnabled(enabled){
+    for(const id of ["fullName","phone","editAddress"]) $(id).disabled=!enabled;
+    if(!enabled) addressFields.disabled=true;
+    else setAddressEditing(addressToggle.checked);
   }
   function normalizePhone(value){return String(value||"").trim().replace(/[\s()-]/g,"");}
   function safeError(error){
@@ -33,6 +39,9 @@
     if(redirectingToSignIn) return;
     redirectingToSignIn=true;
     currentUser=null;
+    setProfileFieldsEnabled(false);
+    retryLoad.hidden=true;
+    retryLoad.disabled=true;
     save.disabled=true;
     save.textContent="Redirecting…";
     for(const id of ["fullName","phone","addressLine","areaName","city","pinCode"]){
@@ -56,12 +65,18 @@
   async function loadDetails(){
     const sup=client();
     if(!sup){
-      showMessage("Secure account service is unavailable. Please refresh or try again later.","error");
+      setProfileFieldsEnabled(false);
+      showMessage("Secure account service is unavailable. Check your connection, then retry.","error");
       $("accountEmail").textContent="Account connection unavailable";
+      retryLoad.hidden=false;
+      retryLoad.disabled=false;
       save.disabled=true;
       return;
     }
+    retryLoad.hidden=true;
+    retryLoad.disabled=true;
     save.disabled=true;
+    setProfileFieldsEnabled(false);
     showMessage("Checking your sign-in…");
     try{
       const {data:sessionData,error:sessionError}=await sup.auth.getSession();
@@ -99,14 +114,22 @@
         $("pinCode").value=address.pin_code||"";
       }
       setAddressEditing(false);
-      showMessage("Your saved details are loaded. Make your changes, then save.","success");
+      setProfileFieldsEnabled(true);
+      showMessage("Your saved details are loaded. Make your changes, then save.","info");
       save.disabled=false;
     }catch(error){
       if(redirectingToSignIn) return;
       showMessage(safeError(error),"error");
+      retryLoad.hidden=false;
+      retryLoad.disabled=false;
       save.disabled=true;
     }
   }
+
+  retryLoad.addEventListener("click",()=>{
+    if(retryLoad.disabled)return;
+    loadDetails();
+  });
 
   addressToggle.addEventListener("change",()=>{
     setAddressEditing(addressToggle.checked);

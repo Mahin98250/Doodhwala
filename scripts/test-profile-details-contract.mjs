@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const read = (path) => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const profile = read("profile/index.html");
@@ -14,12 +15,18 @@ const completionBase = read("supabase/migrations/20261008031000_customer_oauth_p
 assert.match(profile, /href=["']\/Doodhwala\/profile\/details\/["'][^>]*>[\s\S]*?Personal details/i,
   "Personal details must open the dedicated editor route");
 assert.match(editor, /<form[^>]+id=["']personalDetailsForm["']/i, "Editor must expose a real personal details form");
-assert.match(editor, /profile-details\.js\?v=20261029\.1/, "Editor must load the separately syntax-checked runtime");
+assert.match(editor, /profile-details\.js\?v=20261029\.2/, "Editor must load the separately syntax-checked runtime");
 for (const id of ["fullName", "phone", "addressLine", "areaName", "city", "pinCode", "saveProfile", "formMessage"]) {
   assert.ok(editor.includes('id="' + id + '"'), "Editor is missing required control: " + id);
 }
 assert.ok(nav.includes('pathname.startsWith("/doodhwala/profile/")||pathname==="/doodhwala/profile"'), "Nested Profile routes must keep Profile selected in bottom navigation");
 assert.match(runtime, /auth\.getSession\(\)/, "Editor must require an authenticated session");
+assert.match(runtime, /setProfileFieldsEnabled\(false\)/, "Profile fields must be locked while initial data is loading or unavailable");
+assert.match(runtime, /setProfileFieldsEnabled\(true\)/, "Profile fields must unlock only after the saved details load successfully");
+assert.match(runtime, /Your saved details are loaded\. Make your changes, then save\.","info"/, "A successful read must be announced as information, not as a save-success confirmation");
+assert.match(editor, /id="retryLoadDetails"[^>]*hidden/, "Profile editor must start with its load-retry control hidden");
+assert.match(runtime, /retryLoad\.hidden=false/, "Profile read failures must expose a retry action");
+assert.match(runtime, /retryLoad\.addEventListener\("click"/, "Retry must re-run the profile read flow");
 assert.ok(runtime.includes("auth.onAuthStateChange("), "Editor must respond to cross-tab and same-tab authentication changes");
 assert.ok(runtime.includes("latestAuthTransition.userId!==(currentUser?.id||null)"), "Editor must reject a stale session snapshot when authentication changes during loading");
 assert.ok(runtime.includes("latestUser.id!==currentUser.id"), "Save must verify the active account immediately before the profile RPC");
@@ -45,8 +52,95 @@ assert.match(editor, /resilience\.js/, "Editor must load the existing network re
 assert.ok(migrations.includes("20261011151730_fix_customer_profile_phone_regex.sql"),
   "Editor must rely on the known PostgreSQL-safe phone validation migration");
 const worker = read("sw.js");
-assert.match(worker, /doodhwala-v110/, "Service worker cache revision must advance for the new editor");
+assert.match(worker, /doodhwala-v111/, "Service worker cache revision must advance for the new editor");
 assert.match(worker, /profile\/details\/index\.html/, "Service worker must precache the editor route");
-assert.match(worker, /profile-details\.js\?v=20261029\.1/, "Service worker must precache the editor runtime");
+assert.match(worker, /profile-details\.js\?v=20261029\.2/, "Service worker must precache the editor runtime");
 
 console.log("Personal details contracts passed: dedicated route, authenticated session, owner-scoped reads, protected RPC, validation feedback, and PWA/resilience bootstraps.");
+
+
+// Exercise the actual UI state transitions with a mocked read-only client. This
+// deliberately never calls the profile RPC or touches a database.
+{
+  const elements = new Map();
+  const ids = ["personalDetailsForm","saveProfile","formMessage","retryLoadDetails","editAddress","addressFields","fullName","phone","addressLine","areaName","city","pinCode","accountEmail"];
+  for (const id of ids) elements.set(id, {
+    id, value:"", disabled:false, hidden:id==="retryLoadDetails", checked:false,
+    required:false, textContent:"", dataset:{}, listeners:{},
+    addEventListener(type, callback){this.listeners[type]=callback;},
+    focus(){this.focused=true;}
+  });
+  let profileReads=0;
+  let rpcCalls=0;
+  const user={id:"customer-a",email:"customer@example.test",user_metadata:{}};
+  const supabase={
+    auth:{
+      async getSession(){return {data:{session:{user}},error:null};},
+      onAuthStateChange(callback){this.callback=callback;}
+    },
+    from(table){
+      const query={
+        select(){return this;},eq(){return this;},order(){return this;},limit(){return this;},
+        async maybeSingle(){
+          if(table==="profiles"){
+            profileReads++;
+            if(profileReads===1)return {data:null,error:new Error("temporary network failure")};
+            return {data:{full_name:"Customer Example",phone:"9876543210"},error:null};
+          }
+          return {data:null,error:null};
+        }
+      };
+      return query;
+    },
+    async rpc(){rpcCalls++;return {error:null};}
+  };
+  const window={Doodhwala:{supabase}};
+  const document={getElementById(id){return elements.get(id)||null;}};
+  const location={pathname:"/Doodhwala/profile/details/",search:"",hash:"",replace(){throw new Error("unexpected sign-in redirect");}};
+  vm.runInNewContext(runtime,{window,document,location,console:{warn(){},error(){}}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(elements.get("formMessage").dataset.kind,"error","failed initial profile read must announce an error");
+  assert.equal(elements.get("retryLoadDetails").hidden,false,"failed initial profile read must expose retry");
+  assert.equal(elements.get("saveProfile").disabled,true,"save must remain disabled after failed initial read");
+  assert.equal(elements.get("fullName").disabled,true,"profile fields must remain locked after failed initial read");
+  assert.equal(elements.get("editAddress").disabled,true,"address editing must remain locked after failed initial read");
+  elements.get("retryLoadDetails").listeners.click();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(profileReads,2,"retry must repeat the profile read");
+  assert.equal(elements.get("retryLoadDetails").hidden,true,"retry control must hide after successful load");
+  assert.equal(elements.get("saveProfile").disabled,false,"save must unlock after successful initial load");
+  assert.equal(elements.get("fullName").disabled,false,"profile fields must unlock after successful initial load");
+  assert.equal(elements.get("fullName").value,"Customer Example","retry must populate the saved profile");
+  assert.equal(elements.get("formMessage").dataset.kind,"info","a successful read must not claim a save succeeded");
+  assert.equal(rpcCalls,0,"the UI-state regression must not exercise or alter RPC persistence");
+}
+
+
+// The unavailable-client branch must also lock the form and recover when the
+// client becomes available; this remains a UI-only test with mocked reads.
+{
+  const elements = new Map();
+  for (const id of ["personalDetailsForm","saveProfile","formMessage","retryLoadDetails","editAddress","addressFields","fullName","phone","addressLine","areaName","city","pinCode","accountEmail"]) {
+    elements.set(id,{id,value:"",disabled:false,hidden:id==="retryLoadDetails",checked:false,required:false,textContent:"",dataset:{},listeners:{},addEventListener(type,callback){this.listeners[type]=callback;},focus(){}});
+  }
+  const window={Doodhwala:{}};
+  const document={getElementById(id){return elements.get(id)||null;}};
+  const location={pathname:"/Doodhwala/profile/details/",search:"",hash:"",replace(){throw new Error("unexpected sign-in redirect");}};
+  vm.runInNewContext(runtime,{window,document,location,console:{warn(){},error(){}}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(elements.get("retryLoadDetails").hidden,false,"unavailable client must expose retry");
+  assert.equal(elements.get("fullName").disabled,true,"unavailable client must keep fields locked");
+  assert.equal(elements.get("saveProfile").disabled,true,"unavailable client must keep save disabled");
+  const user={id:"customer-b",email:"customer-b@example.test",user_metadata:{}};
+  window.Doodhwala.supabase={
+    auth:{async getSession(){return {data:{session:{user}},error:null};},onAuthStateChange(){}},
+    from(table){return {select(){return this;},eq(){return this;},order(){return this;},limit(){return this;},async maybeSingle(){return {data:table==="profiles"?{full_name:"Second Customer",phone:"9876543211"}:null,error:null};}};},
+    async rpc(){throw new Error("UI state test must not call RPC");}
+  };
+  elements.get("retryLoadDetails").listeners.click();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(elements.get("retryLoadDetails").hidden,true,"retry should hide after the client becomes available");
+  assert.equal(elements.get("fullName").disabled,false,"fields should unlock after a successful retry");
+  assert.equal(elements.get("fullName").value,"Second Customer","successful retry should load the account's saved name");
+  assert.equal(elements.get("formMessage").dataset.kind,"info","successful retry should not announce a save");
+}
