@@ -177,3 +177,14 @@ Following real-device review, the customer homepage now has an additional presen
 - Preserve product IDs, product-price validation, Add/Plan button guards, compare/save/store routes, pagination, loading/error/empty states and event delegation.
 - Keep product rows and existing interaction controls intact. Any edit to app.js is restricted to presentation rendering and mapping away unsupported display defaults; no query arguments, RPCs, write operations or business rules change.
 - Visually prioritize provider identity, useful facts and a clear store action on phone screens; maintain responsive multi-column layout on larger viewports.
+## 14. Mobile compactness, brand-story truthfulness and footer accessibility
+
+Follow-up real-device review identified that the brand story and metric tiles read as two separate green panels, the metric values are not substantiated by catalogue evidence, and the legal footer is too small for comfortable mobile reading.
+
+- Consolidate the story and its benefit tiles into one visual surface to reduce page length and improve reading order.
+- Replace unsupported numeric metrics with three plain-language benefits grounded in current product behavior: independent local sellers, listed milk choices, and direct ordering from local providers.
+- Keep the three benefits in responsive, high-contrast tiles within the single story surface; do not introduce percentages, counts, averages or absolute claims without a verified source.
+- Raise category supporting-copy size to at least 9px on narrow mobile layouts.
+- Give footer links a minimum 38px tap target (40px on phone layouts), clear borders and a legible 12px label; set the legal-draft disclaimer to 11px minimum with comfortable line height.
+- Preserve the explicit pending-legal-review and unavailable-support disclaimers; do not imply the policies are final or support is staffed.
+- Keep the single Doodhwala Assist launcher mount guard. Do not hide unknown preview/browser overlays with app CSS; full-page screenshot capture may repeat fixed overlays, so confirm in a normal live viewport before diagnosing a duplicated app control.
