@@ -567,12 +567,21 @@ body.profile-page .profile-account-action{
   border-color:#c8dcc9;
   box-shadow:0 16px 34px rgba(24,55,31,.09);
 }
+.home-page .provider .provider-body{padding:18px 17px 16px}
+.home-page .provider .name-row{align-items:flex-start;gap:12px}
 .home-page .provider .provider-name{
   font-family:var(--dw-font-display);
   letter-spacing:-.025em;
 }
-.home-page .provider .provider-price-summary{
-  border-top:1px solid rgba(226,232,225,.75);
+.home-page .provider .milk-row{
+  border:1px solid var(--dw-color-border);
+  border-radius:13px;
+  background:var(--dw-color-surface-muted);
+}
+.home-page .provider .provider-foot{
+  margin-top:auto;
+  padding-top:13px;
+  border-top:1px solid var(--dw-color-border);
 }
 .home-page .chips button{
   min-height:40px;
