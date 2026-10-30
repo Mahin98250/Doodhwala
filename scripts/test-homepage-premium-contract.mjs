@@ -9,6 +9,7 @@ const ui = read("doodhwala-ui-system.css");
 const app = read("app.js");
 const location = read("location.js");
 const nav = read("customer-nav.js");
+const customer10x = read("customer-10x.js");
 
 // Existing runtime contracts: these must survive the visual redesign.
 for (const id of [
@@ -141,3 +142,28 @@ assert.match(ui, /\.home-page \.customer-bottom-nav \.customer-nav-item\.is-cart
   "homepage cart destination must receive its selected treatment only when active");
 
 console.log("Homepage premium contracts passed: truthful provider facts, mobile navigation states, preserved runtime hooks, responsive and accessibility safeguards.");
+
+
+// Homepage story must present grounded product benefits without unsupported metrics.
+const storySection = html.match(/<section class="section story">([\s\S]*?)<\/section>/)?.[1] || "";
+assert.ok(storySection, "homepage brand story section must remain present");
+assert.match(storySection, /<div><span class="eyebrow">WHY DOODHWALA\?<\/span>[\s\S]*?<div class="stats">/,
+  "brand benefits must live inside one shared story surface instead of a detached second panel");
+assert.doesNotMatch(storySection, /<b>(?:100%|0|1)<\/b>/,
+  "homepage must not show unsupported headline statistics");
+assert.match(storySection, /Independent milk sellers|Local sellers/i,
+  "brand story must explain the independent local-seller model");
+assert.match(storySection, /Milk choices|Compare milk options/i,
+  "brand story must explain the customer choice benefit");
+assert.match(storySection, /Direct orders|Order directly/i,
+  "brand story must explain the direct-order benefit");
+assert.match(css, /\.story \.stats\{[^}]*background:transparent/,
+  "benefit tiles must be integrated into the story card instead of rendering a second outer card");
+assert.match(css, /\.stats small\{[^}]*font-size:(?:9|10|11)px/,
+  "benefit captions must remain readable on small screens");
+assert.match(css, /\.site-legal-footer nav a\{[^}]*min-height:38px/,
+  "legal links must have comfortable mobile tap targets");
+assert.match(css, /\.site-legal-footer small\{[^}]*font-size:11px/,
+  "the legal draft disclaimer must remain readable");
+assert.match(customer10x, /if\(document\.querySelector\("\.doodhwala-10x-launcher"\)\)return/,
+  "the Doodhwala assistant launcher must guard against duplicate mounting");
