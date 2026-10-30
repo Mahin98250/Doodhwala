@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/Doodhwala",
+      "destination": "/"
+    },
+    {
+      "source": "/Doodhwala/:path*",
+      "destination": "/:path*"
+    }
+  ]
+}
