@@ -47,3 +47,10 @@
 - GREEN evidence: the focused Node contract passed against the source-shaped fixture after adding the targeted discovery rules. Exact current branch HTML/CSS source assertions passed for all required route hooks and seven style selectors.
 - Added the new discovery contract to static-validation CI. New-head CI/preview run is pending.
 - Task 4: implementation complete pending CI and visual preview (commit `ed58a47`; local fixture → pass; GitHub source assertions → pass).
+
+## Account route coverage extension
+- Extended the screen polish test to include the dedicated Personal Details route and the Sign in/Create Account route, including their existing account form, Google sign-in, phone OTP and password reset IDs.
+- RED evidence: local fixture with Profile/Plans/Orders/Checkout/Notifications/Support/Legal styling already present failed exactly on missing `.details-page .details-shell`.
+- Added route-scoped, token-based refinements to Personal Details and Auth surfaces. Personal detail form fields, account save controls, OTP forms and auth callbacks remain untouched.
+- GREEN evidence: expanded screen contract passed on the source-shaped fixture after the two route selectors were added; exact GitHub branch source assertions confirmed all nine routes load the shared style layer, all nine visual scopes exist, and required Auth/Personal Details hooks are intact.
+- Follow-up to Tasks 5/6: coverage expanded from seven routes to nine routes; no business/session code changed.

@@ -38,7 +38,8 @@
 - `customer-nav.js` — existing seven-destination navigation runtime; inspect and preserve behaviour; modify only if a visual accessibility defect cannot be solved in CSS.
 - `customer-journey-refresh.css` — customer store, product, plans, orders and checkout presentation.
 - `customer-ui-polish.css` — home/plans/orders customer presentation; avoid adding conflicting or duplicated overrides.
-- `profile/index.html` — profile markup and currently co-located profile styling; scope any changes to profile classes.
+- `profile/index.html` and `profile/details/index.html` — profile hub and personal-details surfaces; preserve session and form hooks.
+- `auth/index.html` and `auth.css` — sign-in, account creation, phone OTP and password-reset surfaces; presentation-only changes.
 - `notifications.css`, `support.css`, `legal.html` — account-support surfaces; edit only as needed for coherent shared styling.
 - `scripts/test-customer-app-design-tokens.mjs` — new test for token presence, alias compatibility and required semantic groups.
 - `scripts/test-customer-app-ui-contract.mjs` — new test for navigation destinations, accessibility, responsive and reduced-motion safeguards on the shared UI system.
@@ -103,6 +104,7 @@ No backend, payment, database, auth policy, seller, admin or production configur
 
 **Files:**
 - Modify as required: `index.html`, `marketplace-refresh.css`, `customer-ui-polish.css`, `store/index.html`, `product/index.html`, `market.css`, `customer-journey-refresh.css`.
+- Create: `scripts/test-customer-app-discovery-polish.mjs`
 - Tests: existing homepage/marketplace/store/product source-contract tests; add narrowly scoped assertions where a missing test is found.
 
 **Interfaces:**
@@ -134,11 +136,11 @@ No backend, payment, database, auth policy, seller, admin or production configur
 ### Task 6: Upgrade Profile, notifications, support and legal surfaces
 
 **Files:**
-- Modify as required: `profile/index.html`, `profile-details.js`, `notifications.css`, `notifications.html`, `support.css`, `support.html`, `legal.html`.
+- Modify as required: `profile/index.html`, `profile/details/index.html`, `profile-details.js`, `auth/index.html`, `auth.css`, `notifications.css`, `notifications.html`, `support.css`, `support.html`, `legal.html`.
 - Tests: existing profile/session/notification/support/legal contracts; add tests for uncovered route/link invariants.
 
 **Interfaces:**
-- Consumes: existing account/session state, profile actions, notifications, support actions and legal anchors.
+- Consumes: existing account/session state, profile/personal-details form hooks, sign-in/sign-up/OTP/password-reset hooks, notifications, support actions and legal anchors.
 - Produces: a consistent account hub and clear support/legal hierarchy without inventing settings or changing account permissions.
 
 - [ ] Pin all current profile action destinations, sign-in/sign-out behaviour, legal anchors and notification/support IDs.
