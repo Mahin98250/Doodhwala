@@ -54,3 +54,9 @@
 - Added route-scoped, token-based refinements to Personal Details and Auth surfaces. Personal detail form fields, account save controls, OTP forms and auth callbacks remain untouched.
 - GREEN evidence: expanded screen contract passed on the source-shaped fixture after the two route selectors were added; exact GitHub branch source assertions confirmed all nine routes load the shared style layer, all nine visual scopes exist, and required Auth/Personal Details hooks are intact.
 - Follow-up to Tasks 5/6: coverage expanded from seven routes to nine routes; no business/session code changed.
+
+## Discovery card markup alignment
+- Inspected the actual `app.js` provider renderer on the feature branch and confirmed the live card uses `.provider-body`, `.name-row`, `.milk-row` and `.provider-foot` (not the optional summary row present in an unmerged proposal).
+- Extended the discovery contract to pin the live card subcomponent selectors. The updated local fixture test failed on the expected missing `.home-page .provider .name-row` rule, then passed after styling all three real subcomponents.
+- Removed the unused speculative summary-row style and refined the live provider identity row, milk option rows and footer.
+- This was presentation-only; `app.js` render and all provider-card data hooks were left unchanged.
