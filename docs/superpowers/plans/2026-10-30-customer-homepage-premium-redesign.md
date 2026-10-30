@@ -43,7 +43,7 @@
 - `sw.js` — synchronize the new homepage stylesheet URL in `ASSETS` and `CORE_ASSETS`, and advance the cache revision only if the asset URL changes.
 - `docs/superpowers/specs/2026-10-30-customer-homepage-premium-redesign-design.md` — approved design source; do not alter scope without approval.
 
-No runtime JavaScript, customer navigation, backend, or payment files are planned for modification.
+No marketplace behavior, customer navigation, backend, or payment files are planned for modification. A narrowly scoped `app.js` edit is approved only to derive truthful card display labels and render their markup.
 
 ---
 
@@ -238,9 +238,43 @@ No runtime JavaScript, customer navigation, backend, or payment files are planne
 
 ---
 
+### Task 6: Make nearby provider cards genuinely useful and data-honest
+
+**Files:**
+- Modify: `app.js` (presentation-only provider card view model and markup)
+- Modify: `marketplace-refresh.css` (provider-card visual hierarchy and responsive styling)
+- Modify: `scripts/test-homepage-premium-contract.mjs` (pure view-model behavior and source-contract assertions)
+
+**Interfaces:**
+- Consumes: the current `mapRemoteProvider` result shape: `productPrices`, `milks`, `rating`, `isServiceable`, `distanceKm`, `area`, `delivery`, `productIds`, and `productDailyAvailable`.
+- Produces: `providerCardSummary(p)` with `startingPrice`, `ratingLabel`, `optionCount`, `serviceLabel`, and `serviceState`; the renderer uses it for a compact summary without changing actions or data retrieval.
+
+- [ ] **Step 1: Write the failing view-model tests.**
+  Assert the lowest finite positive price is selected; missing/non-positive prices produce no starting price; absent/zero ratings produce “No ratings yet”; true/false/null serviceability produce distinct labels; and actual milk-row count is shown.
+
+- [ ] **Step 2: Run the source-contract test to confirm it fails because the view-model and truthful card summary are not implemented.**
+  Run: `node scripts/test-homepage-premium-contract.mjs`.
+
+- [ ] **Step 3: Implement the pure provider-card summary and safe mapping.**
+  Keep query inputs and all action handlers untouched. Stop converting absent rating aggregates to `0.0`; remove the hard-coded client `verified: true` presentation signal. Do not change RPCs, filter logic, add/plan guards, save/compare behavior, store navigation, or pagination.
+
+- [ ] **Step 4: Update only provider-card markup.**
+  Add factual starting-price, rating, option-count and delivery-eligibility summaries. Preserve the product rows and all existing data attributes and controls exactly.
+
+- [ ] **Step 5: Refine card styling for fast scanning.**
+  Use a clear provider identity, compact factual summary and strong store action. Keep price and delivery state high-contrast; support long seller names and narrow widths without horizontal overflow.
+
+- [ ] **Step 6: Run the homepage test, full source-contract suite, syntax checks and diff review.**
+  Verify empty/error/loading states and all existing hooks remain intact. Browser/device visual testing remains a separate gate if no connected browser is available.
+
+- [ ] **Step 7: Commit the provider-card refinement to the existing draft PR.**
+  Use a descriptive commit message; do not merge or deploy to production.
+
+---
 ## Execution boundaries
 
 - Work only on `feature/customer-homepage-premium-redesign`.
 - Do not merge or deploy.
-- Stop and request approval before any required change to `app.js`, `location.js`, `customer-nav.js`, backend, payment, billing, or shared customer routes.
+- `app.js` may be changed only for provider-card presentation rendering and null-safe display mapping, with source-contract coverage; do not change query arguments, RPCs, write operations, event semantics, product guards, delivery eligibility, or order behavior.
+- Stop and request approval before any change to `location.js`, `customer-nav.js`, backend, payment, billing, or shared customer routes.
 - Do not claim E2E, coverage, or physical-device validation unless the repository/tooling actually supports and runs those checks.
