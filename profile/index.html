@@ -20,12 +20,12 @@
 .profile-intro{margin:15px 0 24px}.profile-kicker{color:var(--green);font-size:10px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}.profile-intro h1{font-family:Manrope,sans-serif;font-size:clamp(32px,5.5vw,48px);letter-spacing:-.055em;line-height:1.05;margin:10px 0}.profile-intro p{max-width:600px;color:var(--muted);font-size:14px;line-height:1.65;margin:0}
 .profile-account{display:flex;align-items:center;gap:16px;padding:22px;background:linear-gradient(120deg,rgba(255,255,255,.98),rgba(237,247,239,.92));border:1px solid #d5e5d8;border-radius:24px;box-shadow:var(--shadow-sm);margin-bottom:18px}
 .profile-avatar{width:58px;height:58px;border-radius:20px;background:#dceddf;color:var(--green);display:grid;place-items:center;flex:none}.profile-avatar svg{width:29px;height:29px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.profile-account-copy{min-width:0;flex:1}.profile-account-copy h2{font-family:Manrope,sans-serif;font-size:18px;margin:0 0 4px;letter-spacing:-.03em}.profile-account-copy p{color:var(--muted);font-size:12px;margin:0;overflow-wrap:anywhere}.profile-account-action{border:0;border-radius:12px;background:var(--green);color:white;padding:11px 14px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap}
+.profile-account-copy{min-width:0;flex:1}.profile-account-copy h2{font-family:Manrope,sans-serif;font-size:18px;margin:0 0 4px;letter-spacing:-.03em}.profile-account-copy p{color:var(--muted);font-size:12px;margin:0;overflow-wrap:anywhere}.profile-account-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:none}.profile-account-action{border:0;border-radius:12px;background:var(--green);color:white;padding:11px 14px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;min-height:42px;display:inline-flex;align-items:center;justify-content:center}.profile-account-signout{border:1px solid #d5e2d7;border-radius:12px;background:#fff;color:var(--green);padding:10px 13px;min-height:42px;font-size:12px;font-weight:800;cursor:pointer}.profile-account-signout:disabled{opacity:.6;cursor:wait}.profile-account-signout[hidden]{display:none!important}
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.profile-panel{min-width:0;background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:21px;padding:19px;box-shadow:0 6px 20px rgba(20,45,29,.035)}.profile-panel-head{display:flex;align-items:center;gap:11px;margin-bottom:13px}.profile-panel-icon{width:39px;height:39px;border-radius:13px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;flex:none}.profile-panel-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.profile-panel-head h2{font-family:Manrope,sans-serif;font-size:15px;letter-spacing:-.025em;margin:0}.profile-panel-head p{font-size:11px;color:var(--muted);margin:3px 0 0;line-height:1.45}
 .profile-links{display:grid}.profile-link{display:flex;align-items:center;gap:12px;min-width:0;min-height:53px;padding:10px 1px;text-decoration:none;color:var(--ink);border-top:1px solid #edf1ed}.profile-link:first-child{border-top:0}.profile-link-copy{min-width:0;flex:1}.profile-link-copy b{display:block;font-size:12px;font-weight:800}.profile-link-copy small{display:block;color:var(--muted);font-size:10px;line-height:1.45;margin-top:3px}.profile-link .chevron{color:#7c8d80;font-size:19px;line-height:1}.profile-pill{font-size:9px;font-weight:800;background:#f3f6f3;color:#65756a;border-radius:99px;padding:5px 7px;white-space:nowrap}
 .profile-note{display:flex;align-items:flex-start;gap:11px;margin-top:16px;padding:15px 16px;background:#fff8e9;border:1px solid #efe1bc;border-radius:16px;color:#745a25;font-size:11px;line-height:1.6}.profile-note strong{display:block;margin-bottom:2px}.profile-footer{text-align:center;color:var(--muted);font-size:10px;margin-top:22px}.profile-footer a{color:var(--green);font-weight:800}
-@media(max-width:680px){.profile-shell{padding:17px 15px 40px}.profile-header{margin-bottom:20px}.profile-brand img{width:37px;height:37px}.profile-back{padding:9px 11px}.profile-intro{margin:9px 0 19px}.profile-intro p{font-size:13px}.profile-account{padding:16px;border-radius:20px;gap:12px}.profile-avatar{width:49px;height:49px;border-radius:16px}.profile-account-copy h2{font-size:15px}.profile-account-copy p{font-size:11px}.profile-account-action{padding:10px 11px;font-size:11px}.profile-grid{grid-template-columns:1fr;gap:12px}.profile-panel{padding:16px;border-radius:18px}.profile-panel-head{margin-bottom:10px}.profile-link{min-height:51px}.profile-note{margin-top:12px}}
-@media(max-width:360px){.profile-shell{padding-inline:12px}.profile-account{align-items:flex-start;flex-wrap:wrap}.profile-account-action{margin-left:61px}.profile-panel{padding:14px}}
+@media(max-width:680px){.profile-shell{padding:17px 15px 40px}.profile-header{margin-bottom:20px}.profile-brand img{width:37px;height:37px}.profile-back{padding:9px 11px}.profile-intro{margin:9px 0 19px}.profile-intro p{font-size:13px}.profile-account{padding:16px;border-radius:20px;gap:12px}.profile-avatar{width:49px;height:49px;border-radius:16px}.profile-account-copy h2{font-size:15px}.profile-account-copy p{font-size:11px}.profile-account-action{padding:10px 11px;font-size:11px}.profile-account-signout{padding:9px 10px;font-size:11px}.profile-grid{grid-template-columns:1fr;gap:12px}.profile-panel{padding:16px;border-radius:18px}.profile-panel-head{margin-bottom:10px}.profile-link{min-height:51px}.profile-note{margin-top:12px}}
+@media(max-width:360px){.profile-shell{padding-inline:12px}.profile-account{align-items:flex-start;flex-wrap:wrap}.profile-account-actions{margin-left:61px}.profile-panel{padding:14px}}
 @media(prefers-reduced-motion:no-preference){.profile-panel,.profile-account{animation:profile-rise .32s ease both}.profile-panel:nth-child(2){animation-delay:.035s}.profile-panel:nth-child(3){animation-delay:.07s}.profile-panel:nth-child(4){animation-delay:.105s}@keyframes profile-rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}}
 </style>
 </head>
@@ -42,8 +42,8 @@
 </section>
 <section class="profile-account" aria-labelledby="accountTitle">
 <div class="profile-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></div>
-<div class="profile-account-copy"><h2 id="accountTitle">Your Doodhwala account</h2><p id="accountStatus">Sign in to view your account details and manage saved information.</p></div>
-<a class="profile-account-action" id="accountAction" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F">Sign in <span aria-hidden="true">→</span></a>
+<div class="profile-account-copy"><h2 id="accountTitle">Your Doodhwala account</h2><p id="accountStatus" aria-live="polite">Sign in to view your account details and manage saved information.</p></div>
+<div class="profile-account-actions"><a class="profile-account-action" id="accountAction" href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F">Sign in <span aria-hidden="true">→</span></a><button class="profile-account-signout" id="accountSignOut" type="button" hidden>Sign out</button></div>
 </section>
 <div class="profile-grid">
 <section class="profile-panel">
@@ -83,12 +83,65 @@
 <aside class="profile-note"><span aria-hidden="true">ⓘ</span><div><strong>We keep money and account security honest.</strong>Doodhwala does not ask for your password, OTP, UPI PIN or bank login in support messages. Direct seller UPI is not independently bank-verified by this website.</div></aside>
 <footer class="profile-footer">Fresh • Local • Direct <span aria-hidden="true">·</span> <a href="/Doodhwala/legal/">Legal & privacy centre</a></footer>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
 <script src="/Doodhwala/resilience.js?v=20261025.3"></script>
 <script src="/Doodhwala/supabase-config.js"></script>
 <script src="/Doodhwala/supabase-client.js"></script>
 <script src="/Doodhwala/customer-nav.js?v=20261028.4"></script>
 <script>
-(()=>{const $=id=>document.getElementById(id);const db=()=>window.Doodhwala?.supabase;async function syncAccount(){const client=db();if(!client){$("accountStatus").textContent="Sign in to view your account details and manage saved information.";$("accountAction").textContent="Sign in →";return}try{const {data,error}=await client.auth.getSession();if(error)throw error;const user=data?.session?.user;if(!user)return;const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0]||"Doodhwala customer";$("accountTitle").textContent=name;$("accountStatus").textContent=user.email||"Signed in";$("accountAction").href="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F";$("accountAction").textContent="Manage account →"}catch(_){$("accountStatus").textContent="Your account details could not be loaded. Please try again later."}}syncAccount()})();
+(()=> {
+  "use strict";
+  const $=id=>document.getElementById(id);
+  const action=$("accountAction");
+  const signOut=$("accountSignOut");
+  const status=$("accountStatus");
+  const defaultReturn="/Doodhwala/auth/?return=%2FDoodhwala%2Fprofile%2F";
+  function render(user,message){
+    if(user){
+      const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0]||user.phone||"Doodhwala customer";
+      $("accountTitle").textContent=name;
+      status.textContent=message||user.email||user.phone||"Signed in to your Doodhwala account";
+      action.href="/Doodhwala/profile/details/";
+      action.textContent="Manage account →";
+      signOut.hidden=false;
+      return;
+    }
+    $("accountTitle").textContent="Your Doodhwala account";
+    status.textContent=message||"Sign in to view your account details and manage saved information.";
+    action.href=defaultReturn;
+    action.textContent="Sign in →";
+    signOut.hidden=true;
+  }
+  const client=window.Doodhwala?.supabase;
+  if(!client?.auth){render(null,"Secure account service is unavailable. Refresh the page and try again.");return;}
+  let authRevision=0;
+  client.auth.onAuthStateChange((_event,session)=>{
+    authRevision+=1;
+    render(session?.user||null);
+  });
+  client.auth.getSession().then(({data,error})=>{
+    if(error)throw error;
+    if(authRevision===0)render(data?.session?.user||null);
+  }).catch(()=>{
+    if(authRevision===0)render(null,"Your account details could not be loaded. Please refresh and try again.");
+  });
+  signOut.addEventListener("click",async()=>{
+    if(signOut.disabled)return;
+    signOut.disabled=true;
+    signOut.textContent="Signing out…";
+    try{
+      const {error}=await client.auth.signOut({scope:"local"});
+      if(error)throw error;
+      render(null,"You have been signed out on this device.");
+    }catch(error){
+      console.warn("Doodhwala profile sign-out failed",error);
+      status.textContent="Could not sign out. Check your connection and try again.";
+    }finally{
+      signOut.disabled=false;
+      signOut.textContent="Sign out";
+    }
+  });
+})();
 </script>
 <script src="/Doodhwala/pwa-register.js?v=20261022.4"></script>
 </body>
