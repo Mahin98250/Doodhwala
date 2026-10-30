@@ -38,3 +38,12 @@
 - No HTML runtime hooks, page scripts, payment code, order lifecycle, auth/session behaviour, database or policy files were changed in this slice.
 - GREEN evidence: focused Node test passed on the source-shaped local fixture; exact route/style/hook assertions passed against the current branch HTML/CSS fetched from GitHub. Workflow CI result for this new test is pending the next push.
 - Tasks 5 and 6: implementation complete pending CI (commit `d92cd82`; source checks → pass).
+
+## Task 4: home and discovery visual refinement
+- Added `scripts/test-customer-app-discovery-polish.mjs` first.
+- RED evidence: test run against the pre-refinement shared stylesheet fixture failed with the expected missing `.home-page .hero` discovery rule.
+- Added scoped shared-token styling for Home hero/category/provider cards/compare surfaces and for store identity/product detail/catalogue surfaces. Existing base layouts and route HTML were retained.
+- Preserved all existing Home search/filter/sort/compare/cart hooks and store/product catalogue, map, quantity, add-to-cart and plan hooks.
+- GREEN evidence: the focused Node contract passed against the source-shaped fixture after adding the targeted discovery rules. Exact current branch HTML/CSS source assertions passed for all required route hooks and seven style selectors.
+- Added the new discovery contract to static-validation CI. New-head CI/preview run is pending.
+- Task 4: implementation complete pending CI and visual preview (commit `ed58a47`; local fixture → pass; GitHub source assertions → pass).

@@ -77,6 +77,8 @@ jobs:
         run: node scripts/test-customer-nav-visual-contract.mjs
       - name: Test customer app screen polish contracts
         run: node scripts/test-customer-app-screen-polish.mjs
+      - name: Test customer app discovery polish contracts
+        run: node scripts/test-customer-app-discovery-polish.mjs
       - name: Test customer subscription schedule preview and offline cache
         run: node scripts/test-subscription-schedule-preview.mjs
       - name: Test subscription local-date boundaries and cutoff errors
