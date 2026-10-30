@@ -134,9 +134,10 @@ assert.match(css, /\.provider-service-chip\.service-available/,
 assert.match(css, /@media\(max-width:370px\)/,
   "provider cards must retain a compact layout on very narrow devices");
 
-console.log("Homepage premium contracts passed: truthful provider facts, preserved runtime hooks, responsive and accessibility safeguards.");
 
-assert.match(ui, /\.home-page \.customer-nav-item\.is-cart:not\(\.active\)[^{]*\{[^}]*background:transparent!important/,
+assert.match(ui, /\.home-page \.customer-bottom-nav \.customer-nav-item\.is-cart:not\(\.active\)[^{]*\{[^}]*background:transparent!important/,
   "homepage cart destination must not look selected when another navigation item is active");
-assert.match(ui, /\.home-page \.customer-nav-item\.is-cart\.active[^{]*\{[^}]*background:#17603f!important/,
+assert.match(ui, /\.home-page \.customer-bottom-nav \.customer-nav-item\.is-cart\.active[^{]*\{[^}]*background:#17603f!important/,
   "homepage cart destination must receive its selected treatment only when active");
+
+console.log("Homepage premium contracts passed: truthful provider facts, mobile navigation states, preserved runtime hooks, responsive and accessibility safeguards.");
