@@ -69,8 +69,6 @@ for (const [source, label] of [[app, "app.js"], [location, "location.js"], [nav,
   assert.ok(source.length > 0, label + " must remain available for runtime compatibility review");
 }
 
-console.log("Homepage premium contracts passed: approved hierarchy, preserved runtime hooks, honest content, responsive and accessibility safeguards.");
-
 
 // 10X mobile hierarchy: keep the header to brand/location + search, while
 // avoiding duplicate cart/auth/help actions already represented in bottom/profile navigation.
@@ -84,10 +82,10 @@ assert.match(ui, /\.home-page \.hero \.hero-art\{[\s\S]*?min-height:112px;height
 
 // Provider-card truthfulness and scanability: price, rating and delivery labels
 // must be derived from real catalogue values, never from UI defaults.
-const cardSummarySource = app.match(/function providerCardSummary\\(p\\)\\s*\\{[\\s\\S]*?\\n\\}/)?.[0];
+const cardSummarySource = app.match(/function providerCardSummary\(p\)\s*\{[\s\S]*?\n\}/)?.[0];
 assert.ok(cardSummarySource, "app.js must expose the pure providerCardSummary(p) view-model helper");
 const cardSummaryContext = vm.createContext({});
-vm.runInContext(cardSummarySource + "\\nglobalThis.cardSummary = providerCardSummary;", cardSummaryContext);
+vm.runInContext(cardSummarySource + "\nglobalThis.cardSummary = providerCardSummary;", cardSummaryContext);
 const providerCardSummary = cardSummaryContext.cardSummary;
 const populatedCard = providerCardSummary({
   productPrices: [72, "65.5", 0, null, "invalid"],
@@ -112,3 +110,28 @@ assert.match(app, /provider-price-summary/, "provider cards must expose the actu
 assert.match(app, /provider-service-chip/, "provider cards must expose delivery eligibility");
 assert.ok(!app.includes('<span class="verified">Verified</span>'),
   "provider cards must not present an unconditional client-side verified badge");
+
+assert.equal(unknownCard.serviceState, "unknown", "unknown delivery state must remain explicit");
+const outsideCard = providerCardSummary({
+  productPrices: [54],
+  rating: 0,
+  milks: [["Cow milk", "₹54 / L"]],
+  isServiceable: false
+});
+assert.equal(outsideCard.ratingLabel, "No ratings yet", "zero aggregate rating must not be represented as a review score");
+assert.equal(outsideCard.serviceState, "unavailable", "outside-zone sellers must retain an explicit unavailable state");
+assert.equal(outsideCard.serviceLabel, "Outside delivery zone", "outside-zone status must not be softened into an availability claim");
+assert.match(app, /rating:row\.rating_avg==null\|\|!Number\.isFinite\(Number\(row\.rating_avg\)\)\|\|Number\(row\.rating_avg\)<=0\?null:Number\(row\.rating_avg\)/,
+  "missing and zero aggregate ratings must map to null instead of a synthetic score");
+assert.doesNotMatch(app, /verified:true/,
+  "client-side provider mapping must not invent a verified state");
+assert.match(app, /rating:escapeHtml\(providerCardSummary\(p\)\.ratingLabel\)/,
+  "provider comparison must use the same truthful rating label");
+assert.match(css, /\.provider-price-summary/,
+  "provider cards must style their factual starting-price summary");
+assert.match(css, /\.provider-service-chip\.service-available/,
+  "provider cards must visually distinguish confirmed delivery eligibility");
+assert.match(css, /@media\(max-width:370px\)/,
+  "provider cards must retain a compact layout on very narrow devices");
+
+console.log("Homepage premium contracts passed: truthful provider facts, preserved runtime hooks, responsive and accessibility safeguards.");
