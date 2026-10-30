@@ -60,3 +60,11 @@
 - Extended the discovery contract to pin the live card subcomponent selectors. The updated local fixture test failed on the expected missing `.home-page .provider .name-row` rule, then passed after styling all three real subcomponents.
 - Removed the unused speculative summary-row style and refined the live provider identity row, milk option rows and footer.
 - This was presentation-only; `app.js` render and all provider-card data hooks were left unchanged.
+
+## Reduced-motion route coverage (self-review fix)
+- Self-review found the shared reduced-motion rule covered Auth/commerce but did not explicitly scope Home, Profile, Personal Details or Legal.
+- Added an assertion to the nine-route screen contract requiring these route scopes inside the reduced-motion block.
+- RED evidence: the test run against the pre-fix source-shaped fixture failed on `.home-page must explicitly respect reduced-motion preferences`.
+- Expanded the shared motion-suppression selector to include Home, Profile, Personal Details and Legal across the shared route-scoped rules. Existing Admin/provider route scopes remain intact.
+- GREEN evidence: updated local fixture screen contract passed; exact branch CSS regex extraction confirmed all four route scopes appear inside the reduced-motion rule.
+- Latest change is awaiting fresh GitHub Actions validation. Browser/device motion testing remains pending because the connected browser context is unavailable.
