@@ -29,3 +29,12 @@
 - The seven navigation keys, cart count/localStorage behaviour, routing paths, initial view handling and aria-current logic were not changed.
 - A template-string delimiter issue was caught during source verification and corrected before marking the task complete. Full `node --check customer-nav.js` remains pending GitHub Actions CI.
 - Task 3: implementation complete pending CI (commit `3eef388`; branch-source contract checks → pass).
+
+## Tasks 5 and 6: shopping journey and account/support screen polish
+- Added `scripts/test-customer-app-screen-polish.mjs` before the screen-level CSS updates.
+- RED evidence: the focused Node contract run against the pre-screen-polish CSS fixture failed on the missing Profile shell styling contract.
+- Added route-scoped visual refinement for Profile, Plans, Orders, Checkout, Notifications, Support and Legal, using the shared tokens for typography, surfaces, radii, spacing, borders and elevation.
+- Mobile styles keep Profile's seven-destination bottom navigation clear, collapse its panels to one column, and preserve safe-area padding. Shopping forms and card surfaces retain their existing IDs and behaviour.
+- No HTML runtime hooks, page scripts, payment code, order lifecycle, auth/session behaviour, database or policy files were changed in this slice.
+- GREEN evidence: focused Node test passed on the source-shaped local fixture; exact route/style/hook assertions passed against the current branch HTML/CSS fetched from GitHub. Workflow CI result for this new test is pending the next push.
+- Tasks 5 and 6: implementation complete pending CI (commit `d92cd82`; source checks → pass).
