@@ -164,3 +164,16 @@ The implementation owner may decide exact spacing, card proportions, breakpoint 
 - existing functional contracts remain intact;
 - no unsupported data or claims are added; and
 - any scope expansion is brought back for approval.
+
+## 13. Approved 10X provider-discovery refinement
+
+Following real-device review, the customer homepage now has an additional presentation-only refinement for nearby provider cards. This is part of the existing customer-homepage scope and does not change catalogue queries, seller records, eligibility rules, product pricing, or order behavior.
+
+- Add a high-signal card summary using only returned provider/catalogue fields: lowest valid positive product price, count of available milk rows, actual positive rating when present, and the explicit delivery-eligibility state.
+- Treat missing/zero rating aggregates as 'No ratings yet'; never render a synthetic 0.0 rating.
+- Do not display an unconditional 'Verified' badge derived from a hard-coded client flag.
+- Treat missing/non-positive prices as unavailable; do not display a zero or estimated 'starting from' price.
+- Distinguish serviceability true, false, and null; an unknown state must never look like confirmed delivery availability.
+- Preserve product IDs, product-price validation, Add/Plan button guards, compare/save/store routes, pagination, loading/error/empty states and event delegation.
+- Keep product rows and existing interaction controls intact. Any edit to app.js is restricted to presentation rendering and mapping away unsupported display defaults; no query arguments, RPCs, write operations or business rules change.
+- Visually prioritize provider identity, useful facts and a clear store action on phone screens; maintain responsive multi-column layout on larger viewports.
