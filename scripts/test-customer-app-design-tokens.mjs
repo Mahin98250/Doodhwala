@@ -41,7 +41,7 @@ const legacy = new Map([
   ["--green", "#17603f"], ["--green-dark", "#10482f"]
 ]);
 for (const [name, expected] of legacy) {
-  assert.equal(declarations.get(name), expected, `legacy token ${name} must remain ${expected}`);
+  assert.equal(legacyDeclarations.get(name), expected, `legacy token ${name} must remain ${expected}`);
 }
 const aliases = new Map([
   ["--dw-color-brand", "var(--green)"],
