@@ -75,6 +75,8 @@ jobs:
         run: node scripts/test-customer-app-ui-contract.mjs
       - name: Test customer navigation visual contracts
         run: node scripts/test-customer-nav-visual-contract.mjs
+      - name: Test customer navigation interactions
+        run: node scripts/test-customer-navigation-actions.mjs
       - name: Test customer app screen polish contracts
         run: node scripts/test-customer-app-screen-polish.mjs
       - name: Test customer app discovery polish contracts
@@ -103,6 +105,8 @@ jobs:
         run: node scripts/test-auth-contracts.mjs
       - name: Test secure customer personal details editor
         run: node scripts/test-profile-details-contract.mjs
+      - name: Test customer Profile session and SDK bootstrap
+        run: node scripts/test-customer-profile-session.mjs
       - name: Test seller order progression and decision dialogs
         run: node scripts/test-provider-simple-order-workflow.mjs
       - name: Test seller mobile navigation accessibility
