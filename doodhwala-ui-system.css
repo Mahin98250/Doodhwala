@@ -414,8 +414,9 @@ body.profile-page .profile-account-action{
   border-radius:12px;
   background:var(--dw-color-brand);
 }
-:where(.plans-page,.orders-page,.checkout-page)
-:where(.plans-card,.orders-card,.checkout-card){
+.plans-page .plans-card,
+.orders-page .orders-card,
+.checkout-page .checkout-card{
   border:1px solid var(--dw-color-border);
   border-radius:var(--dw-radius-xl);
   background:var(--dw-color-surface);
