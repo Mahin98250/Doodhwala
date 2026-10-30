@@ -86,11 +86,11 @@ body.plans-page,body.orders-page{min-height:100vh;min-height:100svh;display:flex
 /* Mobile home header: keep the brand/location row clean and align every action. */
 @media(max-width:760px){
   .home-page .app main>header{
-    grid-template-columns:minmax(0,1fr) auto auto auto!important;
+    grid-template-columns:minmax(0,1fr) auto auto auto auto!important;
     grid-template-areas:
-      "brand brand location location"
-      "search search search search"
-      "help bell auth bag"!important;
+      "brand brand location location location"
+      "search search search search search"
+      "help bell auth bag bag"!important;
     column-gap:10px!important;
     row-gap:10px!important;
     padding:12px 14px 14px!important;
