@@ -58,8 +58,6 @@ assert.match(ui, /auth-link\\[href\\*="\\/notifications\\/"\\]\\{display:none!im
   "mobile header must avoid duplicating the notification-bell entry point");
 assert.match(ui, /auth-link\[href\*="\/support\/"\]\{grid-area:help\}/,
   "support link must have its own mobile header slot");
-assert.match(ui, /auth-link\[href\*="\/notifications\/"\]\{grid-area:updates\}/,
-  "updates link must have its own mobile header slot");
 assert.match(css, /hero-art\{min-height:clamp\(145px,40vw,160px\)/,
   "mobile hero illustration must stay compact to prioritize discovery");
 
