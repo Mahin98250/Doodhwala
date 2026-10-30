@@ -326,3 +326,74 @@ header{
   .auth-link { font-size:10px; }
   .cart { flex:0 0 auto; }
 }
+
+
+/* Premium homepage refinement — hierarchy, touch feedback and accessible focus. */
+.home-page main > header[data-home-region="utilities"]{
+  box-shadow:0 3px 18px rgba(23,53,31,.035);
+}
+.home-page .hero[data-home-region="hero"]{
+  isolation:isolate;
+}
+.home-page .hero[data-home-region="hero"]::after{
+  content:"";position:absolute;inset:auto -8% -58% 42%;height:72%;
+  border:1px solid rgba(255,255,255,.13);border-radius:50%;
+  pointer-events:none;z-index:0;
+}
+.home-page [data-home-region="categories"]{
+  padding-top:clamp(24px,3vw,38px);
+  padding-bottom:clamp(22px,2.5vw,32px);
+}
+.home-page [data-home-region="nearby-providers"]{
+  padding-top:clamp(22px,2.6vw,34px);
+}
+.subscription-promo{padding-top:10px;padding-bottom:28px}
+.subscription-promo-card{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:clamp(22px,3vw,34px);
+  border:1px solid #dce9d8;border-radius:22px;
+  background:linear-gradient(112deg,#f1f8e9 0%,#fff 62%,#f8fbf3 100%);
+  box-shadow:0 8px 24px rgba(24,55,31,.045);
+}
+.subscription-promo-card>div{min-width:0;max-width:700px}
+.subscription-promo-card .eyebrow{color:#39724b;font-size:9px;font-weight:900;letter-spacing:.13em}
+.subscription-promo-card h2{
+  margin:8px 0 7px;color:#1d3927;
+  font-size:clamp(21px,2.3vw,29px);line-height:1.12;letter-spacing:-.045em;
+}
+.subscription-promo-card p{margin:0;color:#68786c;font-size:12px;line-height:1.65}
+.subscription-promo-link{
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:46px;padding:12px 17px;border-radius:13px;
+  background:#17623e;color:#fff;text-decoration:none;font-size:12px;font-weight:800;
+  box-shadow:0 6px 16px rgba(23,98,62,.14);
+}
+.subscription-promo-link:hover{background:#10482f;transform:translateY(-1px)}
+.home-page button:focus-visible,
+.home-page a:focus-visible,
+.home-page input:focus-visible,
+.home-page select:focus-visible,
+.home-page [role="button"]:focus-visible{
+  outline:3px solid #a7d56a;outline-offset:3px;
+}
+.home-page .quick button,
+.home-page .chips button,
+.home-page .provider button,
+.home-page .subscription-promo-link{
+  -webkit-tap-highlight-color:transparent;
+}
+@media(max-width:760px){
+  .subscription-promo{padding-top:4px;padding-bottom:22px}
+  .subscription-promo-card{display:grid;gap:16px;padding:20px 17px;border-radius:18px}
+  .subscription-promo-card h2{font-size:23px}
+  .subscription-promo-card p{font-size:11px}
+  .subscription-promo-link{width:100%;min-height:46px}
+  .home-page .hero[data-home-region="hero"]::after{inset:auto -25% -58% 28%}
+}
+@media(max-width:370px){
+  .subscription-promo-card{padding:17px 14px}
+  .subscription-promo-card h2{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+  .subscription-promo-link:hover{transform:none}
+}
