@@ -1,7 +1,7 @@
 # Doodhwala Team Task Board
 
 > Shared source of truth for Mahin, teammates, and coding agents. Keep this file current in the same PR as task-related changes.
-> Last updated: 2026-10-28
+> Last updated: 2026-10-30
 > Rule: a checkbox is only checked after the change is merged (or explicitly accepted) and the stated verification is recorded. A coding agent must not mark work done merely because it generated code.
 
 ## How to use this board
@@ -28,14 +28,14 @@
   **Evidence:** [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80) · [Static validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741459) · [SQL migration validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741596).
 
 - [ ] **DW-002 — Responsive UI and interaction audit** ([Issue #74](https://github.com/Mahin98250/Doodhwala/issues/74))  
-  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** TODO (awaiting task acknowledgement) · **Area:** Customer UI / QA  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** Customer UI / QA  
   **Goal:** Check navigation, buttons, forms, loading/empty/error states, and mobile/desktop layouts.  
   **Done when:** Findings are recorded with route, device/viewport, steps to reproduce, expected vs actual result, and severity; critical issues are fixed or converted into tasks.  
   **Master UI plan:** [docs/UI_CLEANUP_MASTER_PLAN.md](docs/UI_CLEANUP_MASTER_PLAN.md) — repository route/style/script map and prioritized checklist; rendered-device QA, accessibility execution and staging E2E remain unverified.  
   **Evidence:** PR/Issue: add link · Checks: not run.
 
 - [ ] **DW-003 — Service worker and offline/reconnect validation** ([Issue #75](https://github.com/Mahin98250/Doodhwala/issues/75))  
-  **Owner:** Unassigned · **Status:** TODO · **Area:** PWA / QA  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** PWA / QA  
   **Goal:** Confirm the latest assets replace stale cached assets and the UI explains offline status accurately.  
   **Done when:** Fresh install, update from previous cache, offline navigation, and reconnect are tested on a real or clearly identified browser/device. Do not imply offline orders are queued unless implemented.  
   **Evidence:** PR/Issue: add link · Checks: not run.
@@ -64,7 +64,7 @@
   **Evidence:** PR/Issue: add link · Checks: code inspection.
 
 - [ ] **DW-005 — Loading, empty, error, and success states** ([Issue #77](https://github.com/Mahin98250/Doodhwala/issues/77))  
-  **Owner:** Unassigned · **Status:** TODO · **Area:** UX  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** UX  
   **Goal:** Make asynchronous actions understandable while preserving existing behavior and accessibility.  
   **Done when:** Selected high-priority screens have consistent, tested states and no false success messages.  
   **Evidence:** PR/Issue: add link · Checks: not run.
@@ -82,6 +82,14 @@
   **Goal:** Check customer, provider, and admin access against actual database policies and server functions.  
   **Done when:** Findings have reproducible tests and fixes or explicit follow-up tasks. No secrets or personal customer data in logs.  
   **Evidence:** PR/Issue: add link · Checks: not run.
+
+- [ ] **DW-012 — Frontend-only UI polish and interaction reliability sprint** ([Issue #146](https://github.com/Mahin98250/Doodhwala/issues/146))  
+  **Owner:** Vaidik Patel (@vaidikpatel22112010-tech) · **Status:** IN PROGRESS · **Area:** Customer UI / Provider UI / Accessibility  
+  **Goal:** Continue #74/#75/#77 and Profile/home UI follow-ups without duplicating open PRs or crossing backend/security boundaries.  
+  **Done when:** Focused frontend fixes are committed on `feat/dw-012-frontend-ui-quality-sprint`, regression checks pass on exact SHAs, overlapping PRs are reconciled, and manual/authenticated checks remain explicitly recorded as BLOCKED/NOT RUN until performed.  
+  **Current evidence:** Source-review and exact-head CI reconciliation comments are recorded on [Issue #146](https://github.com/Mahin98250/Doodhwala/issues/146). No DW-012 implementation commit or PR exists yet; do not treat the audit as completion.  
+  **Branch:** `feat/dw-012-frontend-ui-quality-sprint`  
+  **Remaining:** Identify a unique reproducible UI defect not already covered by #88/#147/#148/#152/#153/#155/#163; obtain Mahin review for overlapping work.
 
 ## Add a task
 
@@ -101,6 +109,7 @@ Copy this template and give each task a unique ID:
 Add newest entries first. Link to the PR/commit and report checks honestly.
 | Date | Task | Person / agent | Summary | Verification / evidence |
 |---|---|---|---|---|
+| 2026-10-30 | DW-012 frontend UI reliability sprint | Vaidik Patel (@vaidikpatel22112010-tech) | Reconciled the live assignments and existing PR coverage for #74, #75, #77 and Profile/home UI; confirmed DW-012 remains in progress and no unique implementation commit has yet been made. | [Issue #146](https://github.com/Mahin98250/Doodhwala/issues/146). Source review and exact-head CI status are documented there; physical-device, keyboard/screen-reader and authenticated persistence checks remain NOT RUN/BLOCKED. |
 | 2026-10-27 | DW-010 feature completion program | Mahin + coding agents | Created a full feature-completion epic covering identity, discovery, checkout/orders, subscriptions, seller/admin operations, provider billing, delivery/GPS, notifications, support/privacy, PWA, mobile-store readiness and safety gates. | [Issue #93](https://github.com/Mahin98250/Doodhwala/issues/93). This is an inventory/implementation gate, not a claim that all items are complete. |
 | 2026-10-27 | DW-011 final test ownership | Vaidik Patel (@vaidikpatel22112010-tech) | Assigned the full-product regression/E2E/security/accessibility/device/load validation task; prepare the test matrix now, run final end-to-end coverage as feature areas become ready, and record evidence honestly. | [Issue #94](https://github.com/Mahin98250/Doodhwala/issues/94). Physical-device tests and authenticated staging journeys remain unverified until actual evidence is recorded. |
 | 2026-10-27 | Provider billing idempotency hardening | Mahin + coding agents | Added a calendar-month boundary/one-provider-month invoice constraint, retry-safe invoice RPC behavior, static contract checks, disposable PostgreSQL fixture/assertions, and a CI job on the existing billing PR branch. | [PR #71](https://github.com/Mahin98250/Doodhwala/pull/71), branch `feat/provider-monthly-billing`, latest commit `9dd71574810966c1023caa48fe65de6f6f130eca`. A dedicated disposable-PostgreSQL workflow is now running for this exact commit; do not mark it passed until the run finishes. |
