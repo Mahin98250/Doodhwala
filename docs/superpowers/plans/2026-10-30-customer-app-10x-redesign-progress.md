@@ -21,3 +21,11 @@
 - GREEN evidence: the focused Node test passed on the source-shaped local fixture. The same route scope, token-use, reduced-motion, focus, safe-area, overflow and seven-navigation destination assertions passed against the current branch source fetched from GitHub.
 - Added both contract tests to `.github/workflows/static-validation.yml`. CI will be authoritative once a draft PR is opened; no CI result is claimed yet.
 - Task 2: complete (commit `d4c37f9` plus workflow/test integration below; local fixture test → pass; exact branch source assertions → pass).
+
+## Task 3: premium mobile navigation
+- Added `scripts/test-customer-nav-visual-contract.mjs` before changing the navigation style string.
+- RED evidence: test run against the previous navigation style fixture failed on the missing shared z-index token.
+- Updated only the existing injected mobile navigation styles: centered max-width glass surface, 78px container, 64px tabs with a 44px minimum target, larger labels, token-based active/cart states, safe-area spacing, preserved badge behaviour and reduced-motion support.
+- The seven navigation keys, cart count/localStorage behaviour, routing paths, initial view handling and aria-current logic were not changed.
+- A template-string delimiter issue was caught during source verification and corrected before marking the task complete. Full `node --check customer-nav.js` remains pending GitHub Actions CI.
+- Task 3: implementation complete pending CI (commit `3eef388`; branch-source contract checks → pass).

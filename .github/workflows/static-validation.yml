@@ -73,6 +73,8 @@ jobs:
         run: node scripts/test-customer-app-design-tokens.mjs
       - name: Test customer app shared UI contracts
         run: node scripts/test-customer-app-ui-contract.mjs
+      - name: Test customer navigation visual contracts
+        run: node scripts/test-customer-nav-visual-contract.mjs
       - name: Test customer subscription schedule preview and offline cache
         run: node scripts/test-subscription-schedule-preview.mjs
       - name: Test subscription local-date boundaries and cutoff errors
