@@ -1,6 +1,74 @@
 /* Doodhwala shared UI system polish: consistent responsive surfaces, controls, and accessible states.
    Intentionally presentation-only; no workflow or business logic is changed. */
 :root{
+  /* Shared customer-app design tokens. Legacy variables remain authoritative aliases. */
+  --dw-color-brand:var(--green);
+  --dw-color-brand-strong:var(--green-dark);
+  --dw-color-brand-soft:var(--green-soft);
+  --dw-color-bg:var(--bg);
+  --dw-color-surface:var(--surface);
+  --dw-color-surface-muted:var(--surface-2);
+  --dw-color-text:var(--ink);
+  --dw-color-text-muted:var(--muted);
+  --dw-color-text-subtle:var(--muted-2);
+  --dw-color-border:var(--line);
+  --dw-color-border-strong:var(--line-strong);
+  --dw-color-accent:var(--cream);
+  --dw-color-success:#216b43;
+  --dw-color-success-soft:#e7f4e9;
+  --dw-color-warning:var(--amber);
+  --dw-color-danger:var(--danger);
+  --dw-color-info:#315f9b;
+  --dw-color-info-soft:#edf4ff;
+
+  --dw-font-body:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --dw-font-display:"Manrope",system-ui,sans-serif;
+  --dw-font-size-xs:11px;
+  --dw-font-size-sm:12px;
+  --dw-font-size-base:14px;
+  --dw-font-size-lg:16px;
+  --dw-font-size-xl:18px;
+  --dw-font-size-2xl:24px;
+  --dw-font-size-3xl:32px;
+  --dw-font-weight-medium:500;
+  --dw-font-weight-semibold:600;
+  --dw-font-weight-bold:700;
+
+  --dw-space-1:4px;
+  --dw-space-2:8px;
+  --dw-space-3:12px;
+  --dw-space-4:16px;
+  --dw-space-5:20px;
+  --dw-space-6:24px;
+  --dw-space-7:32px;
+  --dw-space-8:40px;
+
+  --dw-radius-xs:6px;
+  --dw-radius-sm:var(--radius-sm);
+  --dw-radius-md:var(--radius);
+  --dw-radius-lg:var(--radius-lg);
+  --dw-radius-xl:24px;
+  --dw-radius-full:999px;
+
+  --dw-shadow-sm:var(--shadow-sm);
+  --dw-shadow-md:var(--shadow);
+  --dw-shadow-lg:var(--shadow-lg);
+
+  --dw-motion-fast:140ms;
+  --dw-motion-normal:220ms;
+  --dw-motion-slow:360ms;
+  --dw-motion-ease:cubic-bezier(.2,.75,.25,1);
+
+  /* Reference layers map to existing runtime z-index conventions; do not globally reorder legacy overlays. */
+  --dw-z-base:0;
+  --dw-z-sticky:20;
+  --dw-z-drawer:40;
+  --dw-z-modal:500;
+  --dw-z-bottom-nav:9999;
+  --dw-z-toast:10020;
+  --dw-z-assistant:10030;
+  --dw-z-max:2147483200;
+
   --dw-ui-radius:18px;
   --dw-ui-radius-lg:24px;
   --dw-ui-focus:rgba(35,119,73,.22);
