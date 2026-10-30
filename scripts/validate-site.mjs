@@ -136,7 +136,7 @@ if(localFiles.has("/sw.js")){
   if(!swText.includes("/Doodhwala/provider.js?v=")) errors.push("sw.js -> versioned provider bundle missing from cache assets");
   if(!swText.includes("/Doodhwala/provider.js?v=20261027.1")) errors.push("sw.js -> latest provider feed runtime missing from precache");
   if(!swText.includes("/Doodhwala/auth.js?v=20261012.1")) errors.push("sw.js -> latest password recovery runtime missing from precache");
-  if(!swText.includes('const CACHE="doodhwala-v110"')) errors.push("sw.js -> provider order feed cache revision missing");
+  if(!swText.includes('const CACHE="doodhwala-v111"')) errors.push("sw.js -> provider order feed cache revision missing");
 }
 
 const provider10xPath=path.join(root,"provider-10x.js");
@@ -176,7 +176,7 @@ const adminHtmlPath=path.join(root,"admin.html");
 if(localFiles.has("/admin.html")&&!fs.readFileSync(adminHtmlPath,"utf8").includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("admin.html -> admin live-sync bundle cache version stale");
 if(localFiles.has("/sw.js")){
   const swText=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swText.includes('const CACHE="doodhwala-v110"')) errors.push("sw.js -> admin live-sync cache revision stale");
+  if(!swText.includes('const CACHE="doodhwala-v111"')) errors.push("sw.js -> admin live-sync cache revision stale");
   if(!swText.includes("/Doodhwala/admin.js?v=20261022.3")) errors.push("sw.js -> latest admin bundle missing from precache");
 }
 const adminRealtimeMigration="/supabase/migrations/20261012082403_doodhwala_admin_realtime_data_sync.sql";
@@ -190,13 +190,13 @@ else{
 const supportHtmlPath=path.join(root,"support.html");
 if(localFiles.has("/support.html")){
   const supportHtml=fs.readFileSync(supportHtmlPath,"utf8");
-  for(const contract of ['id="supportForm"','id="faqList"','create_support_ticket','Never share passwords','/Doodhwala/support.css?v=20261022.1','/Doodhwala/support.js?v=20261022.2'])
+  for(const contract of ['id="supportForm"','id="faqList"','create_support_ticket','Never share passwords','/Doodhwala/support.css?v=20261022.1','/Doodhwala/support.js?v=20261029.1'])
     if(!supportHtml.includes(contract) && contract!=="create_support_ticket" && contract!=="Never share passwords") errors.push("support.html -> missing support experience contract "+contract);
   if(!supportHtml.includes("Help & Support")) errors.push("support.html -> help title missing");
 }else errors.push("support page missing");
 if(localFiles.has("/support.js")){
   const supportJs=fs.readFileSync(path.join(root,"support.js"),"utf8");
-  for(const contract of ['db.rpc("create_support_ticket"','auth.getSession()','p_subject:subject','p_description:description','p_order_id:orderId'])
+  for(const contract of ['db.rpc("create_support_ticket"','auth.getSession()','p_subject: subject','p_description: description','p_order_id: orderId'])
     if(!supportJs.includes(contract)) errors.push("support.js -> missing secure ticket submission contract "+contract);
 }
 if(localFiles.has("/index.html")){
@@ -237,7 +237,7 @@ if(localFiles.has("/checkout.html")){
 }
 if(localFiles.has("/sw.js")){
   const swP0=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  if(!swP0.includes('const CACHE="doodhwala-v110"')) errors.push("sw.js -> P0 checkout cache revision missing");
+  if(!swP0.includes('const CACHE="doodhwala-v111"')) errors.push("sw.js -> P0 checkout cache revision missing");
   if(!swP0.includes('/Doodhwala/checkout.js?v=20261025.3')) errors.push("sw.js -> latest checkout runtime missing from precache");
 }
 

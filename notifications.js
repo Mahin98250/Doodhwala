@@ -95,13 +95,33 @@
     if (button) { button.disabled = true; button.textContent = "Saving…"; }
     clearError();
     try {
-      const { error } = await client().rpc("mark_my_notification_read", { p_notification_id: id });
+      const db = client();
+      if (!db) throw new Error("Notifications are unavailable because the app backend is not configured.");
+      const { error } = await db.rpc("mark_my_notification_read", { p_notification_id: id });
       if (error) throw error;
-      await loadPage();
+
+      // The write succeeded. Update the visible state immediately so a later
+      // refresh failure cannot be misreported as a failed mark-read operation.
+      const item = state.items.find(entry => entry.id === id);
+      if (item && !item.read_at) {
+        item.read_at = new Date().toISOString();
+        state.unreadCount = Math.max(0, state.unreadCount - 1);
+      }
+      render();
+      try {
+        await loadPage();
+        status("Notification marked as read.");
+      } catch (_) {
+        setError("This update was marked as read, but the list couldn't refresh. Use Refresh to confirm the latest state.");
+        status("Update marked as read; list refresh needed.");
+      }
     } catch (error) {
       setError(error?.message || "Could not mark this update as read.");
       if (button) { button.disabled = false; button.textContent = "Mark read"; }
-    } finally { state.busy = false; render(); }
+    } finally {
+      state.busy = false;
+      render();
+    }
   }
   $("notificationsRefresh").addEventListener("click", async () => {
     if (state.busy) return;
@@ -112,14 +132,33 @@
   });
   $("notificationsMarkAll").addEventListener("click", async () => {
     if (state.busy || !state.unreadCount) return;
-    state.busy = true; $("notificationsMarkAll").disabled = true; clearError();
+    state.busy = true;
+    $("notificationsMarkAll").disabled = true;
+    clearError();
     try {
-      const { error } = await client().rpc("mark_all_my_notifications_read");
+      const db = client();
+      if (!db) throw new Error("Notifications are unavailable because the app backend is not configured.");
+      const { error } = await db.rpc("mark_all_my_notifications_read");
       if (error) throw error;
-      await loadPage();
-      status("All notifications marked as read.");
-    } catch (error) { setError(error?.message || "Could not mark notifications as read."); }
-    finally { state.busy = false; render(); }
+
+      // Reflect the confirmed write before attempting a separate list refresh.
+      const markedAt = new Date().toISOString();
+      state.items = state.items.map(item => item.read_at ? item : { ...item, read_at: markedAt });
+      state.unreadCount = 0;
+      render();
+      try {
+        await loadPage();
+        status("All notifications marked as read.");
+      } catch (_) {
+        setError("All notifications were marked as read, but the list couldn't refresh. Use Refresh to confirm the latest state.");
+        status("All notifications marked as read; list refresh needed.");
+      }
+    } catch (error) {
+      setError(error?.message || "Could not mark notifications as read.");
+    } finally {
+      state.busy = false;
+      render();
+    }
   });
   $("notificationsLoadMore").addEventListener("click", async () => {
     if (state.busy || !state.hasMore || !state.oldest || !state.oldestId) return;
