@@ -15,7 +15,9 @@ for (const [name, [path, hooks]] of Object.entries(pages)) {
 }
 for (const selector of [
   ".home-page .hero", ".home-page .providers-grid", ".home-page .provider",
-  ".home-page .quick button", ".market-page .store-identity",
+  ".home-page .quick button", ".home-page .provider .name-row",
+  ".home-page .provider .milk-row", ".home-page .provider .provider-foot",
+  ".market-page .store-identity",
   ".market-page .product-info", ".market-page .product-card"
 ]) {
   assert.ok(css.includes(selector), `missing discovery styling for ${selector}`);
