@@ -73,9 +73,9 @@ console.log("Homepage premium contracts passed: approved hierarchy, preserved ru
 
 // 10X mobile hierarchy: keep the header to brand/location + search, while
 // avoiding duplicate cart/auth/help actions already represented in bottom/profile navigation.
-assert.match(ui, /grid-template-areas:[\\s\\S]*?"brand brand location bell"[\\s\\S]*?"search search search search"/,
+assert.match(ui, /grid-template-areas:[\s\S]*?"brand brand location bell"[\s\S]*?"search search search search"/,
   "mobile header must prioritize brand, location, notification and search in two rows");
-assert.match(ui, /\.home-page \.app main > header \.auth-link,[\\s\\S]*?\.home-page \.app main > header \.cart\\{display:none!important\\}/,
+assert.match(ui, /\.home-page \.app main > header \.auth-link,[\s\S]*?\.home-page \.app main > header \.cart\{display:none!important\}/,
   "mobile header must not duplicate profile and cart actions from persistent bottom navigation");
-assert.match(ui, /\.home-page \.hero \.hero-art\\{[\\s\\S]*?min-height:112px;height:112px/,
+assert.match(ui, /\.home-page \.hero \.hero-art\{[\s\S]*?min-height:112px;height:112px/,
   "mobile hero illustration must be compact enough to reveal discovery content sooner");
