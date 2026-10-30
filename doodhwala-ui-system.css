@@ -314,3 +314,18 @@
   .home-page .hero[data-home-region="hero"]{margin-inline:10px;padding-inline:15px}
   .home-page .hero h1{font-size:clamp(29px,7.6vw,33px)}
 }
+
+/* On the homepage, the cart destination is neutral until it is the active route.
+   The shared customer-nav script keeps its stronger cart treatment on other routes. */
+@media(max-width:760px){
+  .home-page .customer-bottom-nav .customer-nav-item.is-cart:not(.active){
+    color:#7b857e!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  .home-page .customer-bottom-nav .customer-nav-item.is-cart.active{
+    color:#fff!important;
+    background:#17603f!important;
+    box-shadow:0 7px 16px rgba(23,34,26,.15)!important;
+  }
+}
