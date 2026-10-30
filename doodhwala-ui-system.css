@@ -242,3 +242,75 @@
   .home-page .app main > header .auth-link[href*="/support/"]{font-size:9px}
   .home-page .app main > header .d10x-bell{width:38px;height:38px}
 }
+
+
+/* Customer homepage 10X mobile pass: prioritize discovery and remove duplicate
+   desktop utilities already represented by the persistent bottom navigation. */
+@media (max-width:760px){
+  .home-page .app main > header{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) 40px!important;
+    grid-template-areas:
+      "brand brand location bell"
+      "search search search search"!important;
+    gap:10px 8px;
+    padding:12px 14px 13px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 5px 18px rgba(24,61,37,.055);
+  }
+  .home-page .app main > header .mobile-logo{grid-area:brand;gap:8px}
+  .home-page .app main > header .mobile-logo img{width:38px;height:38px;flex-basis:38px}
+  .home-page .app main > header .mobile-logo b{font-size:17px;letter-spacing:-.045em}
+  .home-page .app main > header .location-top{
+    width:100%;max-width:none;min-height:42px;padding:6px 8px;border-radius:13px;
+  }
+  .home-page .app main > header .location-top-icon{display:none}
+  .home-page .app main > header .location-top-copy small{font-size:7px}
+  .home-page .app main > header .location-top-copy b{font-size:9px}
+  .home-page .app main > header .d10x-bell{
+    grid-area:bell;justify-self:end;width:38px;height:38px;margin:0;
+    border:1px solid #e3ebe2;border-radius:13px;background:#f7faf5;
+    box-shadow:none;
+  }
+  .home-page .app main > header .auth-link,
+  .home-page .app main > header .cart{display:none!important}
+  .home-page .app main > header .search{
+    min-height:44px;height:44px;border-radius:14px;
+    background:#f5f8f3;border-color:#e6ece3;
+  }
+  .home-page .hero[data-home-region="hero"]{
+    margin:12px 12px 0;padding:20px 17px 14px;gap:9px;border-radius:22px;
+  }
+  .home-page .hero h1{
+    max-width:17ch;font-size:clamp(30px,7.8vw,36px);
+    line-height:1.03;letter-spacing:-.06em;margin:8px 0 10px;
+  }
+  .home-page .hero p{font-size:12px;line-height:1.5;max-width:39ch}
+  .home-page .hero .location-hero-card{
+    min-height:62px;margin:12px 0 8px;padding:9px 11px;
+    display:flex;align-items:center;border-radius:14px;
+  }
+  .home-page .hero .actions{margin-top:9px;gap:6px}
+  .home-page .hero .actions .primary{min-height:48px;border-radius:13px;font-size:12px}
+  .home-page .hero .actions .provider-link{min-height:28px}
+  .home-page .hero .hero-art{
+    min-height:112px;height:112px;margin-top:4px;border-radius:15px;
+  }
+  .home-page .hero .hero-art .sun{width:46px;height:46px;top:10px;right:14px}
+  .home-page .hero .hero-art .house{width:48px;height:48px;bottom:10px;left:18%}
+  .home-page .hero .hero-art .bottle{width:52px;height:65px;right:20%;bottom:3px}
+  .home-page [data-home-region="categories"]{padding-top:22px}
+  .home-page .section-head h2{letter-spacing:-.045em}
+  .home-page .quick button{min-height:76px}
+  .home-page .bottom{
+    left:12px;right:12px;width:auto;bottom:max(8px,env(safe-area-inset-bottom,0px));
+    border:1px solid rgba(222,232,222,.9);border-radius:23px;
+    box-shadow:0 12px 36px rgba(20,48,29,.16);
+    backdrop-filter:blur(22px);
+  }
+}
+@media(max-width:390px){
+  .home-page .app main > header{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.05fr) 38px!important;padding-inline:11px;column-gap:6px}
+  .home-page .app main > header .mobile-logo b{font-size:15px}
+  .home-page .hero[data-home-region="hero"]{margin-inline:10px;padding-inline:15px}
+  .home-page .hero h1{font-size:clamp(29px,7.6vw,33px)}
+}
