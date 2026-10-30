@@ -271,6 +271,40 @@ No marketplace behavior, customer navigation, backend, or payment files are plan
   Use a descriptive commit message; do not merge or deploy to production.
 
 ---
+### Task 7: Consolidate the brand story and improve mobile footer readability
+
+**Files:**
+- Modify: `index.html` — one story card with three grounded benefit labels
+- Modify: `marketplace-refresh.css` — integrated benefit tiles, category caption sizing and footer typography/tap targets
+- Modify: `scripts/test-homepage-premium-contract.mjs` — story structure, honest-benefit and footer accessibility contracts
+- Modify stylesheet version references: `index.html`, `sw.js`, `scripts/test-marketplace-refresh.mjs`, `scripts/test-pwa-offline-contracts.mjs`, `scripts/test-pwa-browser-smoke.mjs`
+
+**Interfaces:**
+- Consumes: existing homepage brand-story section, existing `.stats` presentation hook, legal footer markup and versioned `marketplace-refresh.css` asset.
+- Produces: one consolidated story surface; three plain-language benefit tiles (independent sellers, listed milk choices, direct orders); readable footer links and draft disclaimer; current stylesheet version in the service-worker precache.
+
+- [ ] **Step 1: Add source-contract assertions before markup/style changes.**
+  Assert there is one story card containing all three benefits, no unsupported numeric headline metrics, category captions remain at least 9px, footer links have at least 38px minimum height, and the legal disclaimer is at least 11px.
+
+- [ ] **Step 2: Run the homepage source-contract test and confirm it fails on the current separate panels and unsupported numeric metrics.**
+
+- [ ] **Step 3: Move the benefit tiles inside the existing story surface and replace unsupported metrics with grounded benefit labels.**
+  Preserve the pending legal review disclaimer and do not imply customer support is available.
+
+- [ ] **Step 4: Refine mobile styles.**
+  Make the story a single compact panel, improve caption readability, and give legal links comfortable tap targets. Preserve bottom-navigation safe-area spacing.
+
+- [ ] **Step 5: Advance the homepage stylesheet URL and update all service-worker precache and contract references together.**
+  Do not change the shared cache namespace or unrelated route assets.
+
+- [ ] **Step 6: Run homepage, marketplace refresh, PWA offline contract, service worker and PWA browser smoke checks; review the final diff.**
+
+- [ ] **Step 7: Confirm the Doodhwala Assist launcher remains single-mounted.**
+  Do not attempt to remove a preview/browser toolbar overlay unless it is shown to originate from application markup in a normal viewport.
+
+- [ ] **Step 8: Commit the completed refinement to the existing draft PR.**
+
+---
 ## Execution boundaries
 
 - Work only on `feature/customer-homepage-premium-redesign`.
