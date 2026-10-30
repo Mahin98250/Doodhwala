@@ -50,8 +50,12 @@ assert.match(ui, /\.home-page \.app main > header\s*\{/,
   "mobile utility layout must be scoped to the primary app header");
 assert.doesNotMatch(ui, /\.home-page header\s*\{/,
   "nested homepage dialog headers must not inherit the app header grid");
-assert.match(ui, /grid-template-areas:[\s\S]*?"help updates auth bag"/,
-  "mobile header must give help, updates, sign-in, and cart distinct grid areas");
+assert.match(ui, /grid-template-areas:[\\s\\S]*?"help bell auth bag"/,
+  "mobile header must give support, notification bell, sign-in, and cart distinct grid areas");
+assert.match(ui, /d10x-bell\\s*\\{grid-area:bell;\\}/,
+  "dynamically injected notification bell must occupy its reserved mobile slot");
+assert.match(ui, /auth-link\\[href\\*="\\/notifications\\/"\\]\\{display:none!important\\}/,
+  "mobile header must avoid duplicating the notification-bell entry point");
 assert.match(ui, /auth-link\[href\*="\/support\/"\]\{grid-area:help\}/,
   "support link must have its own mobile header slot");
 assert.match(ui, /auth-link\[href\*="\/notifications\/"\]\{grid-area:updates\}/,
