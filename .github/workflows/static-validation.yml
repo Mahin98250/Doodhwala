@@ -75,6 +75,8 @@ jobs:
         run: node scripts/test-customer-app-ui-contract.mjs
       - name: Test customer navigation visual contracts
         run: node scripts/test-customer-nav-visual-contract.mjs
+      - name: Test customer navigation interactions
+        run: node scripts/test-customer-navigation-actions.mjs
       - name: Test customer app screen polish contracts
         run: node scripts/test-customer-app-screen-polish.mjs
       - name: Test customer app discovery polish contracts
