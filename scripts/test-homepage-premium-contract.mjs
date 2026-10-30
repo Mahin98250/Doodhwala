@@ -39,7 +39,7 @@ for (const marker of [
 assert.equal((html.match(/<h1\b/g) || []).length, 1, "homepage must have exactly one h1");
 assert.match(html, /aria-label="[^"]*(?:main|primary)[^"]*"/i,
   "homepage must expose a named primary navigation or landmark");
-assert.match(html, /prefers-reduced-motion\s*:\s*reduce/, "homepage styling must respect reduced motion");
+assert.match(css, /prefers-reduced-motion\s*:\s*reduce/, "homepage styling must respect reduced motion");
 assert.match(css, /:focus-visible/, "homepage styling must provide visible keyboard focus");
 assert.match(css, /@media\s*\([^)]*(?:max-width|min-width)/, "homepage styling must include responsive breakpoints");
 assert.match(css, /min-width:\s*0|overflow-x:\s*(?:clip|hidden)/,
