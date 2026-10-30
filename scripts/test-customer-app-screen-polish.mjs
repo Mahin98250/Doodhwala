@@ -37,4 +37,9 @@ for (const selector of visualScopes) {
 assert.match(css, /@media\s*\(max-width:760px\)/, "screen refinements must include a mobile layout");
 assert.match(css, /prefers-reduced-motion\s*:\s*reduce/, "screen refinements must retain reduced-motion handling");
 
+const reducedMotionBlock = css.match(/@media\\s*\\(prefers-reduced-motion:\\s*reduce\\)\\s*\\{([\\s\\S]*?)\\n\\}/)?.[1] || "";
+for (const route of [".home-page", ".profile-page", ".details-page", ".legal-page"]) {
+  assert.ok(reducedMotionBlock.includes(route), `${route} must explicitly respect reduced-motion preferences`);
+}
+
 console.log("Customer screen polish contracts passed: nine routes, preserved hooks and shared responsive styling.");
