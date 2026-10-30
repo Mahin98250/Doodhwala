@@ -28,7 +28,7 @@ try {
     const splash = document.getElementById("dwSplash");
     return !!splash && !splash.hidden;
   }, { timeout: 5000 });
-  assert.ok(await page.getByRole("heading", { name: "Doodhwala" }).isVisible(),
+  assert.ok(await page.locator(".dw-splash-wordmark").isVisible(),
     "first visit should show the Doodhwala branded app-start screen");
   assert.ok(await page.getByRole("button", { name: "Skip intro" }).isVisible(),
     "splash must offer a visible skip action on mobile");
@@ -43,6 +43,7 @@ try {
   await page.waitForFunction(async () => {
     const cache = await caches.open("doodhwala-v110");
     return !!(await cache.match("/Doodhwala/offline.html")) &&
+      !!(await cache.match("/Doodhwala/marketplace-refresh.css?v=20261030.1")) &&
       !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")) &&
       !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")) &&
       !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1"));
@@ -68,6 +69,7 @@ try {
       oldDoodhwalaCacheRemoved: !names.includes("doodhwala-v97"),
       unrelatedCachePreserved: names.includes("unrelated-origin-cache-test"),
       offlineFallbackCached: !!(await cache.match("/Doodhwala/offline.html")),
+      homepageRefreshCssCached: !!(await cache.match("/Doodhwala/marketplace-refresh.css?v=20261030.1")),
       checkoutCssExactVariantCached: !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")),
       mascotUnversionedCached: !!(await cache.match("/Doodhwala/assets/mascot.png")),
       sharedUiCssCached: !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")),
@@ -79,6 +81,7 @@ try {
   assert.ok(cacheEvidence.oldDoodhwalaCacheRemoved, "obsolete Doodhwala cache is removed");
   assert.ok(cacheEvidence.unrelatedCachePreserved, "unrelated origin cache remains");
   assert.ok(cacheEvidence.offlineFallbackCached, "offline fallback is cached");
+  assert.ok(cacheEvidence.homepageRefreshCssCached, "versioned premium homepage stylesheet is cached for offline display");
   assert.ok(cacheEvidence.checkoutCssExactVariantCached, "exact versioned checkout CSS is cached");
   assert.ok(cacheEvidence.mascotUnversionedCached, "unversioned mascot URL is cached");
   assert.ok(cacheEvidence.sharedUiCssCached, "shared UI consistency stylesheet is cached");
