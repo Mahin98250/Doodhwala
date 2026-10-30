@@ -5,6 +5,8 @@ const root = new URL("../", import.meta.url);
 const css = fs.readFileSync(new URL("doodhwala-ui-system.css", root), "utf8");
 const pages = {
   profile: ["profile/index.html", ["profile-account", "profile-grid", "profile-panel", "profile-link"]],
+  personalDetails: ["profile/details/index.html", ["personalDetailsForm", "fullName", "phone", "addressFields", "saveProfile"]],
+  auth: ["auth/index.html", ["authForm", "googleAuth", "phoneForm", "passwordResetForm"]],
   plans: ["plans/index.html", ["planForm", "schedulePreview", "planError"]],
   orders: ["orders/index.html", ["ordersList", "ordersState"]],
   checkout: ["checkout/index.html", ["addressForm", "checkoutItems", "placeOrder"]],
@@ -15,13 +17,13 @@ const pages = {
 for (const [name, [path, hooks]] of Object.entries(pages)) {
   const html = fs.readFileSync(new URL(path, root), "utf8");
   assert.ok(html.includes("doodhwala-ui-system.css"), `${name} must load the shared customer design system`);
-  for (const hook of hooks) {
-    assert.ok(html.includes(hook), `${name} must retain existing hook ${hook}`);
-  }
+  for (const hook of hooks) assert.ok(html.includes(hook), `${name} must retain existing hook ${hook}`);
 }
 
 const visualScopes = [
   "body.profile-page .profile-shell",
+  ".details-page .details-shell",
+  ".auth-page .auth-card",
   ".plans-page .plans-card",
   ".orders-page .orders-card",
   ".checkout-page .checkout-card",
@@ -35,4 +37,4 @@ for (const selector of visualScopes) {
 assert.match(css, /@media\s*\(max-width:760px\)/, "screen refinements must include a mobile layout");
 assert.match(css, /prefers-reduced-motion\s*:\s*reduce/, "screen refinements must retain reduced-motion handling");
 
-console.log("Customer screen polish contracts passed: seven routes, preserved hooks and shared responsive styling.");
+console.log("Customer screen polish contracts passed: nine routes, preserved hooks and shared responsive styling.");
