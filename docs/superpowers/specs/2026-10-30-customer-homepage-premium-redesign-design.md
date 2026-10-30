@@ -1,6 +1,6 @@
 # Doodhwala Customer Homepage — Premium Redesign
 
-**Status:** Draft for user approval  
+**Status:** Approved by user on 2026-10-30  
 **Date:** 2026-10-30  
 **Scope:** Customer-facing homepage only  
 **Implementation branch:** `feature/customer-homepage-premium-redesign`
