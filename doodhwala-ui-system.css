@@ -4,6 +4,11 @@
   --dw-ui-radius:18px;
   --dw-ui-radius-lg:24px;
   --dw-ui-focus:rgba(35,119,73,.22);
+  /* Z-index scale (reference-only: --z-index-overlay; runtime: others) */
+  --z-index-dropdown: 100;
+  --z-index-modal: 200;
+  --z-index-toast: 300;
+  --z-index-overlay: 400; /* reference-only, not used directly in production styles */
 }
 :where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page,.legal-page){
   min-width:0;
