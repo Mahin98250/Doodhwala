@@ -33,8 +33,8 @@
 
 ## File Structure
 
-- `styles.css` — existing global variables and base styles; add namespaced tokens without changing legacy computed values.
-- `doodhwala-ui-system.css` — shared customer-facing surfaces, controls, focus, responsive safety and motion refinements.
+- `styles.css` — source of existing legacy variables; retain all existing computed values unchanged during the token migration.
+- `doodhwala-ui-system.css` — shared namespaced design tokens plus customer-facing surfaces, controls, focus, responsive safety and motion refinements.
 - `customer-nav.js` — existing seven-destination navigation runtime; inspect and preserve behaviour; modify only if a visual accessibility defect cannot be solved in CSS.
 - `customer-journey-refresh.css` — customer store, product, plans, orders and checkout presentation.
 - `customer-ui-polish.css` — home/plans/orders customer presentation; avoid adding conflicting or duplicated overrides.
@@ -53,16 +53,17 @@ No backend, payment, database, auth policy, seller, admin or production configur
 ### Task 1: Add compatible shared design tokens
 
 **Files:**
-- Modify: `styles.css`
+- Modify: `doodhwala-ui-system.css`
+- Read: `styles.css`
 - Create: `scripts/test-customer-app-design-tokens.mjs`
 
 **Interfaces:**
 - Consumes: existing `:root` legacy variables (`--bg`, `--surface`, `--ink`, `--muted`, `--line`, `--green`, `--green-dark`, `--green-soft`, `--shadow-sm`, `--shadow`, `--shadow-lg`, `--radius-sm`, `--radius`, `--radius-lg`).
-- Produces: documented `--dw-*` tokens for brand/semantic colours, surfaces, text, borders, typography, spacing, radius, elevation, motion and z-index. Legacy aliases keep their current computed values.
+- Produces: documented `--dw-*` tokens for brand/semantic colours, surfaces, text, borders, typography, spacing, radius, elevation, motion and z-index in the already-shared `doodhwala-ui-system.css`. Legacy aliases keep their current computed values.
 
 - [ ] Write the token contract test asserting all semantic token groups and exact preservation of legacy radius values `10px`, `15px`, and `21px`, plus current legacy colour/shadow mappings.
 - [ ] Run `node scripts/test-customer-app-design-tokens.mjs`; confirm it fails before implementation.
-- [ ] Add the namespaced tokens in `styles.css :root`; keep existing legacy variables and computed values unchanged. Define breakpoints as documentation tokens only, never as CSS media-query variables.
+- [ ] Add the namespaced tokens to the existing `:root` in `doodhwala-ui-system.css`; keep all legacy values in `styles.css` unchanged. Define breakpoints as documentation tokens only, never as CSS media-query variables.
 - [ ] Run the focused token test and existing static validation; confirm both pass.
 - [ ] Commit the token foundation and test.
 

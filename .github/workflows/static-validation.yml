@@ -69,6 +69,10 @@ jobs:
         run: node scripts/test-customer-ui-fixes.mjs
       - name: Test shared responsive UI system across customer, seller and admin pages
         run: node scripts/test-ui-system-polish.mjs
+      - name: Test customer app design token compatibility
+        run: node scripts/test-customer-app-design-tokens.mjs
+      - name: Test customer app shared UI contracts
+        run: node scripts/test-customer-app-ui-contract.mjs
       - name: Test customer subscription schedule preview and offline cache
         run: node scripts/test-subscription-schedule-preview.mjs
       - name: Test subscription local-date boundaries and cutoff errors
