@@ -110,5 +110,5 @@ assert.equal(unknownCard.ratingLabel, "No ratings yet", "missing ratings must no
 assert.equal(unknownCard.serviceLabel, "Choose a location to check delivery", "unknown serviceability must not claim delivery");
 assert.match(app, /provider-price-summary/, "provider cards must expose the actual starting-price summary");
 assert.match(app, /provider-service-chip/, "provider cards must expose delivery eligibility");
-assert.doesNotMatch(app, /<span class="verified">Verified<\\/span>/,
+assert.ok(!app.includes('<span class="verified">Verified</span>'),
   "provider cards must not present an unconditional client-side verified badge");
