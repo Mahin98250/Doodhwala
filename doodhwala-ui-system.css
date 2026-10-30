@@ -4,6 +4,17 @@
   --dw-ui-radius:18px;
   --dw-ui-radius-lg:24px;
   --dw-ui-focus:rgba(35,119,73,.22);
+  /* Z-index scale — documented for layering consistency */
+  --dw-z-base:0;
+  --dw-z-dropdown:100;
+  --dw-z-sticky:200;
+  --dw-z-header:300;
+  --dw-z-drawer:400;
+  --dw-z-backdrop:410;
+  --dw-z-modal:500;
+  --dw-z-toast:600;
+  --dw-z-floating-assistant:700;
+  --dw-z-max:9999;
 }
 :where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.provider-app,.admin-page,.notifications-page,.support-page,.legal-page){
   min-width:0;
