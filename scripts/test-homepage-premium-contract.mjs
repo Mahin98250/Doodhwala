@@ -52,7 +52,7 @@ assert.doesNotMatch(ui, /\.home-page header\s*\{/,
   "nested homepage dialog headers must not inherit the app header grid");
 assert.match(ui, /grid-template-areas:[\s\S]*?"help bell auth bag"/,
   "mobile header must give support, notification bell, sign-in, and cart distinct grid areas");
-assert.match(ui, /d10x-bell\s*\{grid-area:bell;\}/,
+assert.match(ui, /d10x-bell\s*\{[^}]*grid-area:bell;/,
   "dynamically injected notification bell must occupy its reserved mobile slot");
 assert.match(ui, /auth-link\[href\*="\/notifications\/"\]\{display:none!important\}/,
   "mobile header must avoid duplicating the notification-bell entry point");
