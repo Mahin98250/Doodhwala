@@ -105,6 +105,33 @@ body.plans-page,body.orders-page{min-height:100vh;min-height:100svh;display:flex
   .home-page .app main>header .d10x-bell{grid-area:bell;justify-self:center;width:38px;height:38px;margin:0;border-radius:12px}
   .home-page .app main>header .d10x-bell svg{width:18px;height:18px}
 }
+
+@media(max-width:760px){
+  .home-page header{
+    grid-template-areas:
+      "brand location"
+      "search search"
+      "account bell cart"!important;
+  }
+  .home-page header .d10x-bell{
+    grid-area:bell;
+    justify-self:center;
+    width:38px;
+    height:38px;
+    margin:0;
+    border-radius:12px;
+  }
+  .home-page header .d10x-bell svg{
+    width:18px;
+    height:18px;
+  }
+  .home-page header #authLink{
+    grid-area:account;
+  }
+  .home-page header .cart{
+    grid-area:cart;
+  }
+}
 @media(max-width:420px){
   .home-page .app main>header{column-gap:7px!important;padding-inline:12px!important}
   .home-page .app main>header .mobile-logo img{width:32px;height:32px}
