@@ -313,3 +313,29 @@
   .home-page header .location-top-icon{display:none}
   .home-page header .location-top-copy b{font-size:10px}
 }
+
+/* Customer app foundation: apply shared tokens to every customer-owned route,
+   including the separate Profile and Legal surfaces. This is presentation-only. */
+:where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.notifications-page,.support-page,.profile-page,.legal-page){
+  min-width:0;
+  overflow-x:clip;
+  color:var(--dw-color-text);
+}
+:where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.notifications-page,.support-page,.profile-page,.legal-page)
+:where(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=submit]),select,textarea){
+  accent-color:var(--dw-color-brand);
+  font-family:var(--dw-font-body);
+}
+:where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.notifications-page,.support-page,.profile-page,.legal-page)
+:where(.primary,.secondary,.checkout-cta,.plan-submit,.cart,.profile-account-action,.back-shop){
+  font-family:var(--dw-font-body);
+  font-weight:var(--dw-font-weight-bold);
+  transition-duration:var(--dw-motion-normal);
+}
+:where(.home-page,.auth-page,.checkout-page,.plans-page,.orders-page,.market-page,.notifications-page,.support-page,.profile-page,.legal-page)
+:where(button:disabled,input:disabled,select:disabled,textarea:disabled,[aria-disabled=true]){
+  cursor:not-allowed;
+  opacity:.58;
+  box-shadow:none;
+  transform:none;
+}
