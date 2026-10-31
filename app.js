@@ -66,6 +66,21 @@ function filtered(){
  return list;
 }
 
+function providerCardSummary(p){
+ const prices=(Array.isArray(p.productPrices)?p.productPrices:[])
+  .map(value=>Number(value))
+  .filter(value=>Number.isFinite(value)&&value>0);
+ const rating=p.rating==null?null:Number(p.rating);
+ const serviceable=p.isServiceable;
+ return {
+  startingPrice:prices.length?Math.min(...prices):null,
+  ratingLabel:Number.isFinite(rating)&&rating>0?"★ "+rating.toFixed(1):"No ratings yet",
+  optionCount:Array.isArray(p.milks)?p.milks.length:0,
+  serviceState:serviceable===true?"available":serviceable===false?"unavailable":"unknown",
+  serviceLabel:serviceable===true?"Can deliver here":serviceable===false?"Outside delivery zone":"Choose a location to check delivery"
+ };
+}
+
 function render(){
  syncDeliveryFilterControl();
  renderCompareDock();
@@ -76,15 +91,17 @@ function render(){
    else if(dataState==="error")meta.textContent="Marketplace connection unavailable";
    else if(browseMode==="saved")meta.textContent=list.length+" saved provider"+(list.length===1?"":"s");
    else if(readLocation()){const deliverable=list.filter(p=>p.isServiceable===true).length;meta.textContent=deliverable+" provider"+(deliverable===1?"":"s")+" can deliver here"+(list.length>deliverable?" · "+list.length+" nearby":"");}
+   else if(browseMode!=="saved"&&!query.trim()&&activeFilter==="all"&&!onlyServiceable)meta.textContent=list.length?list.length+" local provider"+(list.length===1?"":"s")+" · choose a location to check delivery":"Choose a delivery location to see nearby sellers";
    else meta.textContent=list.length+" local provider"+(list.length===1?"":"s")+" · set a location to check delivery";
  }
  if(!grid)return;
+ grid.setAttribute("aria-busy",dataState==="loading"?"true":"false");
  if(dataState==="loading"){
    grid.innerHTML=Array.from({length:3},()=>'<article class="provider provider-skeleton"><div class="cover"></div><div class="provider-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div><div class="skeleton-box"></div></div></article>').join("");
    return;
  }
  if(dataState==="error"){
-   grid.innerHTML='<div class="no-results"><div style="font-size:32px">↻</div><h3>We could not load the marketplace.</h3><p>Check your connection and try again. Doodhwala will not show fake provider data when the live backend is unavailable.</p><button class="primary" id="retryProviders">Try again →</button></div>';
+   grid.innerHTML='<div class="no-results no-results-error" role="status"><div class="discovery-empty-icon" aria-hidden="true">↻</div><div class="discovery-empty-copy"><h3>We could not load the marketplace.</h3><p>Check your connection and try again. Doodhwala will not show fake provider data when the live backend is unavailable.</p></div><button class="primary discovery-empty-cta" id="retryProviders" type="button">Try again →</button></div>';
    $("retryProviders")?.addEventListener("click",()=>loadRemoteProvidersFromSaved());
    return;
  }
@@ -107,20 +124,33 @@ function render(){
    }
    if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';appendLoadMoreControl();return}
    const hasLocation=!!readLocation();
-   grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg>')+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or change your delivery area. We will show providers who serve the selected location.":"Use your GPS location or choose an area on the map to see providers who can deliver to you.")+'</p>'+'<button class="primary" id="setLocationInline">'+(hasLocation?"Change location →":"Choose location →")+'</button>'+'</div>';
+   const emptyTitle=hasLocation?"No providers serve this location yet.":"Choose your delivery location";
+   const emptyCopy=hasLocation?"No independent providers currently match this delivery area. Try another location to check nearby sellers.":"Set a delivery location to discover independent milk sellers and check who can deliver to you.";
+   const emptyAction=hasLocation?"Change delivery location →":"Choose delivery location →";
+   const emptyIcon=hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" focusable="false"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+   grid.innerHTML='<div class="no-results '+(hasLocation?"no-results-location-set":"no-results-location")+'" role="status"><div class="discovery-empty-icon" aria-hidden="true">'+emptyIcon+'</div><div class="discovery-empty-copy"><h3>'+emptyTitle+'</h3><p>'+emptyCopy+'</p></div><button class="primary discovery-empty-cta" id="setLocationInline" type="button">'+emptyAction+'</button><small class="discovery-empty-note">'+(hasLocation?"You can choose a different area at any time.":"Use your current location or move the pin on the map.")+'</small></div>';
    $("setLocationInline")?.addEventListener("click",()=>window.DoodhwalaLocation?.open?.());
    return;
  }
  grid.innerHTML=list.map(p=>{
    const saved=favorites.includes(p.id);
-   const locationBadge=p.isServiceable===false?'Outside zone':(p.distanceKm!=null?formatDistance(p.distanceKm):"Set location");
+   const summary=providerCardSummary(p);
+   const areaLabel=[p.area,p.city].filter(Boolean).filter((value,index,array)=>array.indexOf(value)===index).join(" · ");
+   const locationBadge=p.distanceKm!=null?formatDistance(p.distanceKm):(p.isServiceable===true?"Can deliver":p.isServiceable===false?"Outside zone":"Set location");
    const badgeClass=p.isServiceable===false?"service-bad":(p.isServiceable===true?"service-good":"service-neutral");
+   const startingPrice=summary.startingPrice===null?"Price unavailable":money(summary.startingPrice)+'<span> / L</span>';
+   const optionLabel=summary.optionCount+" milk option"+(summary.optionCount===1?"":"s");
+   const deliveryLabel=p.delivery&&p.delivery!=="Local route"?"Delivery "+p.delivery:"Delivery details in store";
    return '<article class="provider provider-live" data-provider-card="'+escapeHtml(p.id)+'">'+
      '<div class="cover" data-store="'+escapeHtml(p.id)+'"><span>'+escapeHtml(p.tag)+'</span><div class="provider-emoji">'+milkEmoji(p.type)+'</div><div class="provider-distance '+badgeClass+'">⌖ '+escapeHtml(locationBadge)+'</div></div>'+
-     '<div class="provider-body"><div class="name-row"><div><div class="provider-name">'+escapeHtml(p.name)+'</div><div class="meta">'+escapeHtml(p.area)+' · ★ '+escapeHtml(p.rating)+'</div></div><div class="provider-actions">'+(p.verified?'<span class="verified">Verified</span>':'')+'<button class="save-provider'+(saved?" saved":"")+'" data-save="'+escapeHtml(p.id)+'" aria-label="'+(saved?"Remove from saved":"Save provider")+'">'+(saved?"♥":"♡")+'</button></div></div>'+
-     (p.isServiceable===false?'<div class="service-warning">This provider is outside the current delivery zone.</div>':"")+
+     '<div class="provider-body"><div class="name-row"><div class="provider-identity"><div class="provider-name">'+escapeHtml(p.name)+'</div><div class="meta">'+escapeHtml(areaLabel||"Local provider")+'</div></div><div class="provider-actions"><button class="save-provider'+(saved?" saved":"")+'" data-save="'+escapeHtml(p.id)+'" aria-label="'+(saved?"Remove from saved":"Save provider")+'">'+(saved?"♥":"♡")+'</button></div></div>'+
+     '<div class="provider-price-summary">'+
+       '<div class="provider-price-block"><small>Starting price</small><strong>'+startingPrice+'</strong></div>'+
+       '<div class="provider-card-facts"><span class="provider-rating">'+escapeHtml(summary.ratingLabel)+'</span><span class="provider-option-count">'+escapeHtml(optionLabel)+'</span></div>'+
+       '<span class="provider-service-chip service-'+summary.serviceState+'">'+escapeHtml(summary.serviceLabel)+'</span>'+
+     '</div>'+
      '<div class="milk">'+(p.milks||[]).map((m,i)=>{const pid=p.productIds?.[i];return '<div class="milk-row"><button class="milk-open" data-product="'+escapeHtml(pid||"")+'" data-provider="'+escapeHtml(p.providerId||p.id)+'"><strong>'+escapeHtml(m[0])+'</strong><small>'+escapeHtml(m[1])+'</small></button><div class="milk-actions">'+(pid&&p.isServiceable!==false&&Number.isFinite(Number(p.productPrices?.[i]))&&Number(p.productPrices[i])>0?'<button class="add" data-add="'+escapeHtml(p.id+":"+i)+'">Add</button>':"")+(pid&&p.subscription&&p.productDailyAvailable?.[i]&&p.isServiceable!==false?'<button class="plan-add" data-plan="'+escapeHtml(p.providerId)+'" data-product="'+escapeHtml(pid)+'">Plan</button>':"")+'</div></div>'}).join("")+'</div>'+
-     '<div class="provider-foot"><span>'+(p.delivery||"Local route")+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
+     '<div class="provider-foot"><span>'+escapeHtml(deliveryLabel)+'</span><div class="provider-foot-actions"><button type="button" class="compare-provider" data-compare="'+escapeHtml(p.id)+'" aria-pressed="'+(comparedProviderIds.includes(p.id)?"true":"false")+'">'+(comparedProviderIds.includes(p.id)?"✓ Added":"Compare")+'</button><button class="store-link" data-store="'+escapeHtml(p.providerId||p.id)+'">View store →</button></div></div></div></article>';
  }).join("");
  appendLoadMoreControl();
  grid.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));
@@ -211,7 +241,7 @@ function compareCellProvider(p){
   :'<span class="compare-muted">No active products listed</span>';
  const distance=p.distanceKm==null?'<span class="compare-muted">Set location</span>':escapeHtml(formatDistance(p.distanceKm));
  const daily=p.subscription?'<span class="compare-status is-good">Available</span>':'<span class="compare-muted">Not listed</span>';
- return {name:escapeHtml(p.name||"Local seller"),rating:'★ '+escapeHtml(Number(p.rating||0).toFixed(1)),area:escapeHtml([p.area,p.city].filter(Boolean).join(", ")||"Local area"),milk,distance,delivery,window:escapeHtml(p.delivery||"Local route"),daily,store:escapeHtml(p.providerId||p.id)};
+ return {name:escapeHtml(p.name||"Local seller"),rating:escapeHtml(providerCardSummary(p).ratingLabel),area:escapeHtml([p.area,p.city].filter(Boolean).join(", ")||"Local area"),milk,distance,delivery,window:escapeHtml(p.delivery||"Local route"),daily,store:escapeHtml(p.providerId||p.id)};
 }
 function openCompareDialog(){
  const selected=selectedForComparison(),overlay=$("compareDialog"),content=$("compareContent");
@@ -284,8 +314,9 @@ function mapRemoteProvider(row){
  return {
    id:row.provider_id,providerId:row.provider_id,name:row.provider_name,area:(row.area_name||"Local area"),city:row.city,
    tag:(row.milk_type||"mixed")+" milk",type:row.milk_type||"mixed",emoji:milkEmoji(row.milk_type),
-   rating:Number(row.rating_avg||0).toFixed(1),delivery:row.delivery_from&&row.delivery_to?String(row.delivery_from).slice(0,5)+"–"+String(row.delivery_to).slice(0,5):"Local route",
-   verified:true,latitude:Number(row.latitude),longitude:Number(row.longitude),
+   rating:row.rating_avg==null||!Number.isFinite(Number(row.rating_avg))||Number(row.rating_avg)<=0?null:Number(row.rating_avg),
+   delivery:row.delivery_from&&row.delivery_to?String(row.delivery_from).slice(0,5)+"–"+String(row.delivery_to).slice(0,5):"Local route",
+   latitude:Number(row.latitude),longitude:Number(row.longitude),
    distanceKm:row.distance_km==null?null:Number(row.distance_km),serviceRadiusKm:row.service_radius_km==null?null:Number(row.service_radius_km),
    isServiceable:row.is_serviceable==null?null:Boolean(row.is_serviceable),
    subscription:products.some(p=>p.daily_available),productDailyAvailable:products.map(p=>Boolean(p.daily_available)),

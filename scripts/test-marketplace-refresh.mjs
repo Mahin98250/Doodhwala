@@ -6,7 +6,7 @@ const html = read("index.html");
 const css = read("marketplace-refresh.css");
 const app = read("app.js");
 
-assert.match(html, /marketplace-refresh\.css\?v=20261025\.3/, "homepage must load the cache-busted marketplace refresh");
+assert.match(html, /marketplace-refresh\.css\?v=20261030\.2/, "homepage must load the cache-busted marketplace refresh");
 assert.match(css, /@media\(max-width:760px\)/, "mobile layout rules must exist");
 assert.match(css, /@media\(min-width:1400px\)/, "large-screen layout rules must exist");
 assert.match(css, /prefers-reduced-motion:reduce/, "motion must respect reduced-motion preference");
