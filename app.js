@@ -91,7 +91,7 @@ function render(){
    else if(dataState==="error")meta.textContent="Marketplace connection unavailable";
    else if(browseMode==="saved")meta.textContent=list.length+" saved provider"+(list.length===1?"":"s");
    else if(readLocation()){const deliverable=list.filter(p=>p.isServiceable===true).length;meta.textContent=deliverable+" provider"+(deliverable===1?"":"s")+" can deliver here"+(list.length>deliverable?" · "+list.length+" nearby":"");}
-   else if(browseMode!=="saved"&&!query.trim()&&activeFilter==="all"&&!onlyServiceable)meta.textContent=list.length?list.length+" local provider"+(list.length===1?"":"s")+" · choose a location to check delivery":"Choose a delivery location to see nearby sellers";
+   else if(browseMode!=="saved"&&!query.trim()&&activeFilter==="all"&&!onlyServiceable)meta.textContent=list.length?list.length+" local provider"+(list.length===1?"":"s")+" · set location":"Choose a location";
    else meta.textContent=list.length+" local provider"+(list.length===1?"":"s")+" · set a location to check delivery";
  }
  if(!grid)return;
