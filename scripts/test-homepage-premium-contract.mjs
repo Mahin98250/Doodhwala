@@ -196,4 +196,19 @@ assert.match(ui, /location-top-copy b\{font-size:10px/,
 assert.match(customer10x, /\.doodhwala-10x-launcher\{right:12px;bottom:calc\(96px \+ env\(safe-area-inset-bottom,0px\)\);width:48px;min-width:48px;height:48px/,
   "mobile assistant launcher must remain compact and safely offset from bottom navigation");
 
+
+/* Native keyboard semantics and final mobile usability safeguards. */
+assert.match(html, /<button type="button" class="location-hero-card" id="locationHero" aria-label="Choose delivery location">/,
+  "the hero location selector must be a native button so Enter and Space activate it");
+assert.doesNotMatch(html, /<div class="location-hero-card" id="locationHero" role="button"/,
+  "the hero location selector must not rely on a div pretending to be a button");
+assert.match(app, /function toggleDeliveryFilter\(\)\{\s*if\(!readLocation\(\)\)\{\s*toast\("Choose a delivery location first"\);\s*window\.DoodhwalaLocation\?\.open\?\.\(\);\s*return;/,
+  "delivery-only filtering must request a location instead of presenting a misleading no-provider result");
+assert.match(css, /\.home-page \.story \.eyebrow\{[\s\S]*?color:#d7f0bc!important/,
+  "the brand-story eyebrow must have readable contrast on its dark-green surface");
+assert.match(css, /\.home-page #providers \.chips button\{min-height:44px/,
+  "mobile provider filter chips must meet the 44px touch-target baseline");
+assert.match(css, /\.home-page \.customer-bottom-nav \.customer-nav-item span\{[\s\S]*?font-size:clamp\(8px,2\.15vw,9px\)!important/,
+  "mobile bottom-navigation labels must remain readable across phone widths");
+
 console.log("Homepage premium contracts passed: truthful provider facts, mobile navigation states, preserved runtime hooks, responsive and accessibility safeguards.");
