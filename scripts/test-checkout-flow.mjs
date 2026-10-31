@@ -156,6 +156,11 @@ async function settle() {
   await new Promise((resolve) => setImmediate(resolve));
 }
 
+
+assert.match(checkoutSource, /function notifyCartUpdated\(\)\{window\.dispatchEvent\(new Event\("doodhwala:cart-updated"\)\)\}/, "checkout cart mutations must notify the shared customer cart badge");
+assert.match(checkoutSource, /function removeProviderFromCart\(providerId\)[\s\S]*?notifyCartUpdated\(\)/, "partial provider-order completion must update the shared cart badge");
+assert.match(checkoutSource, /removeItem\(CART_KEY\)[\s\S]*?notifyCartUpdated\(\)/, "clearing the completed cart must update the shared cart badge");
+
 async function testCheckoutFailsClosedWhenPaymentControlsMissing() {
   const h = createHarness({ paymentControlsReady: false });
   await settle();
