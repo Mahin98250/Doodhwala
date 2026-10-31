@@ -218,6 +218,7 @@ async function testMultiProviderPartialFailureRetainsOrderTrail() {
   const remainingCart = JSON.parse(h.storage.get("doodhwala-cart"));
   assert.equal(remainingCart["provider-1:milk-1"], undefined, "a provider order confirmed placed should be removed from the cart");
   assert.ok(remainingCart["provider-2:milk-2"], "the failed provider cart must remain available for retry");
+  assert.deepEqual(h.calls.cartEvents, ["doodhwala:cart-updated"], "partial provider success must refresh the shared cart badge");
   assert.match(h.getElement("checkoutState").textContent, /staging-order-001/, "partial-failure feedback must show the already-placed order ID");
   assert.equal(h.getElement("success").classList.contains("hidden"), true, "partial completion must not pretend the entire multi-provider checkout finished");
   const progress = JSON.parse(h.storage.get("doodhwala-checkout-progress-v1"));
