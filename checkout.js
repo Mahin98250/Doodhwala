@@ -92,7 +92,8 @@ function saveCheckoutProgress(){if(!checkoutProgress)return;if(window.DoodhwalaR
 function checkoutProgressForCurrentCart(){const fingerprint=cartFingerprint();if(!checkoutProgress||checkoutProgress.userId!==sessionUser?.id||checkoutProgress.cartFingerprint!==fingerprint||!Array.isArray(checkoutProgress.orderIds)){checkoutProgress={userId:sessionUser.id,cartFingerprint:fingerprint,orderIds:[],paymentMethod:null};saveCheckoutProgress()}return checkoutProgress}
 function recordCheckoutOrder(orderId){if(!checkoutProgress)return;const id=String(orderId);if(!checkoutProgress.orderIds.includes(id))checkoutProgress.orderIds.push(id)}
 function idempotencyKeyForProvider(providerId){if(!checkoutKeys[providerId])checkoutKeys[providerId]={key:(crypto.randomUUID?.()||String(Date.now())+"-"+Math.random())};saveCheckoutKeys();return checkoutKeys[providerId].key}
-function removeProviderFromCart(providerId){Object.keys(cart).forEach(function(k){if(cart[k]&&cart[k].providerId===providerId)delete cart[k]});if(window.DoodhwalaResilience)window.DoodhwalaResilience.writeStorage(CART_KEY,cart);else try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch(_){}delete checkoutKeys[providerId];saveCheckoutKeys()}
+function notifyCartUpdated(){window.dispatchEvent(new Event("doodhwala:cart-updated"))}
+function removeProviderFromCart(providerId){Object.keys(cart).forEach(function(k){if(cart[k]&&cart[k].providerId===providerId)delete cart[k]});if(window.DoodhwalaResilience)window.DoodhwalaResilience.writeStorage(CART_KEY,cart);else try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch(_){}notifyCartUpdated();delete checkoutKeys[providerId];saveCheckoutKeys()}
 $("applyPromo")?.addEventListener("click",applyPromo);
 $("promoCode")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyPromo()}});
 
@@ -165,6 +166,7 @@ $("placeOrder").onclick=async()=>{
    return;
   }
   if(window.DoodhwalaResilience)window.DoodhwalaResilience.removeItem(CART_KEY);else try{localStorage.removeItem(CART_KEY)}catch(_){}
+  notifyCartUpdated();
   checkoutKeys={};saveCheckoutKeys();
   const completedOrderIds=[...new Set((checkoutProgress?.orderIds||orderIds).map(String))];
   $("checkoutForm").classList.add("hidden");$("success").classList.remove("hidden");
