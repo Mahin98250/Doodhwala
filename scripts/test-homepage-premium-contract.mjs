@@ -184,8 +184,10 @@ assert.match(app, /discovery-empty-cta/,
   "provider empty and error states must expose a clear primary action");
 assert.match(css, /\.home-page \.no-results-location[\s\S]*?grid-template-columns:52px minmax\(0,1fr\)/,
   "mobile location empty state must remain compact and readable");
-assert.match(css, /\.home-page \.site-legal-footer\{padding-bottom:24px\}/,
-  "the mobile legal footer must not add a second oversized navigation spacer");
+assert.match(ui, /body\.home-page\.has-customer-nav\{padding-bottom:0!important\}/,
+  "homepage body must not add a second bottom-navigation spacer after main reserves space");
+assert.match(ui, /\.home-page \.site-legal-footer\{padding-bottom:28px!important\}/,
+  "homepage legal footer must keep a compact bottom inset");
 assert.match(ui, /location-top-copy small\{font-size:8px/,
   "the mobile delivery label must remain readable");
 assert.match(ui, /location-top-copy b\{font-size:10px/,
