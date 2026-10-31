@@ -17,6 +17,7 @@ let comparedProviderIds=[];
 let dataState="loading";
 let favorites=[];
 let cart={};
+let cartPersistenceAvailable=true;
 
 try{favorites=JSON.parse(localStorage.getItem("doodhwala-favorites")||"[]")}catch(_){favorites=[]}
 try{cart=JSON.parse(localStorage.getItem("doodhwala-cart")||"{}")}catch(_){cart={}}
@@ -141,7 +142,9 @@ function add(key){
  cart[itemKey]??={key:itemKey,provider:p.name,milk:m[0],price:money(unitPrice)+" / L",unitPrice,qty:0,emoji:milkEmoji(p.type),providerId:p.providerId,productId};
  cart[itemKey].qty+=1;const persisted=saveCart();updateCart();toast(persisted?m[0]+" added":"Added, but this device could not save your cart. Keep this tab open.");
 }
-function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);window.dispatchEvent(new Event("doodhwala:cart-updated"));return persisted}
+function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);cartPersistenceAvailable=persisted;window.dispatchEvent(new Event("doodhwala:cart-updated"));return persisted}
+window.addEventListener("storage",event=>{if(event.key!=="doodhwala-cart"&&event.key!==null)return;try{const next=event.newValue?JSON.parse(event.newValue):{};cart=next&&typeof next==="object"&&!Array.isArray(next)?next:{};cartPersistenceAvailable=true}catch(_){cart={};cartPersistenceAvailable=false}updateCart()});
+
 function writeLocalState(key,value){if(window.DoodhwalaResilience?.writeStorage)return window.DoodhwalaResilience.writeStorage(key,value);try{localStorage.setItem(key,JSON.stringify(value));return true}catch(_){return false}}
 function entries(){return Object.values(cart).filter(x=>Number(x.qty)>0)}
 function updateCart(){
@@ -270,12 +273,12 @@ document.addEventListener("keydown",event=>{
 $("explore")?.addEventListener("click",()=>navigateHomeView("providers"));
 $("filterButton")?.addEventListener("click",()=>$("chips")?.scrollIntoView({behavior:"smooth",block:"center"}));
 
-function openCart(){document.body.classList.add("drawer-open")}
+function openCart(){updateCart();document.body.classList.add("drawer-open")}
 function closeCart(){document.body.classList.remove("drawer-open")}
 window.openCart=openCart;window.closeCart=closeCart;
 $("openCart")?.addEventListener("click",openCart);$("openCartMobile")?.addEventListener("click",openCart);$("closeCart")?.addEventListener("click",closeCart);$("backdrop")?.addEventListener("click",closeCart);
 $("how")?.addEventListener("click",()=>document.body.classList.add("modal-open"));$("closeModal")?.addEventListener("click",()=>document.body.classList.remove("modal-open"));$("modalBackdrop")?.addEventListener("click",e=>{if(e.target.id==="modalBackdrop")document.body.classList.remove("modal-open")});
-$("checkout")?.addEventListener("click",()=>{if(!entries().length){toast("Your cart is empty");return}location.href="/Doodhwala/checkout/"});
+$("checkout")?.addEventListener("click",()=>{if(!entries().length){toast("Your cart is empty");return}if(!cartPersistenceAvailable&&!saveCart()){toast("Checkout is paused because this device could not save your cart. Enable site storage and try again.");return}location.href="/Doodhwala/checkout/"});
 ["locationBtn","locationTop","locationHero"].forEach(id=>{const el=$(id);if(el)el.addEventListener("click",()=>window.DoodhwalaLocation?.open?.())});
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>navigateHomeView(b.dataset.go)));
 

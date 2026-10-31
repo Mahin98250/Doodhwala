@@ -31,4 +31,16 @@ assert.ok(home.includes('data-filter="cow"') && home.includes('data-filter="buff
 assert.ok(home.includes('id="search"') && home.includes('id="providerSort"') && home.includes('id="deliverableOnly"'),
   "home discovery controls must remain present");
 
-console.log("Customer navigation interaction contracts passed: all seven destinations, active state, history, cart sync and discovery controls.");
+
+const app = read("app.js");
+const checkoutPage = read("checkout/index.html");
+assert.ok(app.includes("let cartPersistenceAvailable=true;"), "cart must track whether it was safely persisted");
+assert.ok(app.includes('function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);cartPersistenceAvailable=persisted;'), "cart writes must record persistence success or failure");
+assert.ok(app.includes('window.addEventListener("storage",event=>{if(event.key!=="doodhwala-cart"&&event.key!==null)'), "cart must listen for cross-tab storage updates");
+assert.ok(app.includes("cart=next&&typeof next===") && app.includes("updateCart()});"), "cross-tab cart changes must update the drawer");
+assert.ok(app.includes('if(!cartPersistenceAvailable&&!saveCart()){toast("Checkout is paused because this device could not save your cart.'), "checkout must block navigation when the cart cannot be persisted");
+assert.ok(app.includes('location.href="/Doodhwala/checkout/"'), "checkout entry must use the canonical checkout route");
+assert.ok(app.includes('function openCart(){updateCart();document.body.classList.add("drawer-open")}'), "opening the cart must refresh its rendered contents");
+assert.ok(checkoutPage.includes('id="checkoutItems"') && checkoutPage.includes('src="/Doodhwala/checkout.js'), "the checkout route must load the checkout UI and controller");
+
+console.log("Customer navigation, cart persistence and checkout entry contracts passed.");
