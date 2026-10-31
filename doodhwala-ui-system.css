@@ -336,3 +336,10 @@
   .home-page .app main > header .location-top-copy small{font-size:8px;line-height:1.2}
   .home-page .app main > header .location-top-copy b{font-size:10px;line-height:1.25}
 }
+
+/* The homepage already reserves space inside main for the persistent nav.
+   Avoid adding a second body-level spacer on top of that reservation. */
+@media(max-width:760px){
+  body.home-page.has-customer-nav{padding-bottom:0!important}
+  .home-page .site-legal-footer{padding-bottom:28px!important}
+}
