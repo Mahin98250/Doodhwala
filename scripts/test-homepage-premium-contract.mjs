@@ -202,6 +202,13 @@ assert.match(html, /<button type="button" class="location-hero-card" id="locatio
   "the hero location selector must be a native button so Enter and Space activate it");
 assert.doesNotMatch(html, /<div class="location-hero-card" id="locationHero" role="button"/,
   "the hero location selector must not rely on a div pretending to be a button");
+/* User feedback must actually be mounted, announced, and clear the persistent nav area. */
+assert.match(app, /function toast\(message\)\{[\s\S]*?document\.body\.appendChild\(t\)/,
+  "homepage feedback toast must be inserted into the document before being shown");
+assert.match(app, /t\.setAttribute\("role","status"\);t\.setAttribute\("aria-live","polite"\)/,
+  "homepage feedback toast must be announced politely to assistive technology");
+assert.match(app, /bottom:calc\(96px \+ env\(safe-area-inset-bottom,0px\)\)/,
+  "homepage toast must stay above the persistent mobile navigation and device safe area");
 assert.match(app, /function toggleDeliveryFilter\(\)\{\s*if\(!readLocation\(\)\)\{\s*toast\("Choose a delivery location first"\);\s*window\.DoodhwalaLocation\?\.open\?\.\(\);\s*return;/,
   "delivery-only filtering must request a location instead of presenting a misleading no-provider result");
 assert.match(css, /\.home-page \.story \.eyebrow\{[\s\S]*?color:#d7f0bc!important/,
