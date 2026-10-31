@@ -611,7 +611,6 @@ header{
     font-size:10px;line-height:1.4;text-align:center;
   }
   .home-page .provider-skeleton .cover{height:72px;min-height:72px}
-  .home-page .site-legal-footer{padding-bottom:24px}
 }
 @media(max-width:390px){
   .home-page .section#providers .section-head h2{font-size:21px}
