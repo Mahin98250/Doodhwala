@@ -52,7 +52,7 @@ function createHarness(options = {}) {
     is_default: true
   };
 
-  const calls = { addressUpdates: [], addressInserts: [], rpc: [] };
+  const calls = { addressUpdates: [], addressInserts: [], rpc: [], cartEvents: [] };
   let createOrderAttempts = 0;
   let idempotencySequence = 0;
   const failedProviders = options.failedProviders || new Set();
@@ -133,7 +133,8 @@ function createHarness(options = {}) {
   };
   const window = {
     DoodhwalaResilience: resilience,
-    addEventListener() {}
+    addEventListener() {},
+    dispatchEvent(event) { calls.cartEvents.push(event.type); return true; }
   };
   const document = { getElementById: getElement, querySelector() { return { value: "cod" }; } };
   const Doodhwala = { configured: true, supabase };
@@ -200,6 +201,7 @@ async function testAddressUpdateAndSuccessfulOrder() {
   assert.equal(h.getElement("success").classList.contains("hidden"), false, "successful order should show the success state");
   assert.match(h.getElement("successText").textContent, /staging-order-001/);
   assert.equal(h.storage.has("doodhwala-cart"), false, "cart should clear after confirmed order creation");
+  assert.deepEqual(h.calls.cartEvents, ["doodhwala:cart-updated", "doodhwala:cart-updated"], "provider removal and final cart clearing must both refresh the shared cart badge");
 }
 
 async function testMultiProviderPartialFailureRetainsOrderTrail() {
