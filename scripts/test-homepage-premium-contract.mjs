@@ -176,8 +176,8 @@ assert.match(html, /<div id="providersGrid" class="providers-grid" role="region"
   "provider results must expose a labelled live region");
 assert.match(app, /grid\.setAttribute\("aria-busy",dataState==="loading"\?"true":"false"\)/,
   "provider results must announce their loading state");
-assert.match(app, /Choose a delivery location to see nearby sellers/,
-  "a missing location must not be presented as zero available providers");
+assert.match(app, /"Choose a location"/,
+  "a missing location must use concise delivery-location guidance instead of a zero-provider count");
 assert.match(app, /no-results-location/,
   "the empty delivery-location state must use a dedicated presentation");
 assert.match(app, /discovery-empty-cta/,
