@@ -91,15 +91,17 @@ function render(){
    else if(dataState==="error")meta.textContent="Marketplace connection unavailable";
    else if(browseMode==="saved")meta.textContent=list.length+" saved provider"+(list.length===1?"":"s");
    else if(readLocation()){const deliverable=list.filter(p=>p.isServiceable===true).length;meta.textContent=deliverable+" provider"+(deliverable===1?"":"s")+" can deliver here"+(list.length>deliverable?" · "+list.length+" nearby":"");}
+   else if(browseMode!=="saved"&&!query.trim()&&activeFilter==="all"&&!onlyServiceable)meta.textContent=list.length?list.length+" local provider"+(list.length===1?"":"s")+" · choose a location to check delivery":"Choose a delivery location to see nearby sellers";
    else meta.textContent=list.length+" local provider"+(list.length===1?"":"s")+" · set a location to check delivery";
  }
  if(!grid)return;
+ grid.setAttribute("aria-busy",dataState==="loading"?"true":"false");
  if(dataState==="loading"){
    grid.innerHTML=Array.from({length:3},()=>'<article class="provider provider-skeleton"><div class="cover"></div><div class="provider-body"><div class="skeleton-line long"></div><div class="skeleton-line short"></div><div class="skeleton-box"></div></div></article>').join("");
    return;
  }
  if(dataState==="error"){
-   grid.innerHTML='<div class="no-results"><div style="font-size:32px">↻</div><h3>We could not load the marketplace.</h3><p>Check your connection and try again. Doodhwala will not show fake provider data when the live backend is unavailable.</p><button class="primary" id="retryProviders">Try again →</button></div>';
+   grid.innerHTML='<div class="no-results no-results-error" role="status"><div class="discovery-empty-icon" aria-hidden="true">↻</div><div class="discovery-empty-copy"><h3>We could not load the marketplace.</h3><p>Check your connection and try again. Doodhwala will not show fake provider data when the live backend is unavailable.</p></div><button class="primary discovery-empty-cta" id="retryProviders" type="button">Try again →</button></div>';
    $("retryProviders")?.addEventListener("click",()=>loadRemoteProvidersFromSaved());
    return;
  }
@@ -122,7 +124,11 @@ function render(){
    }
    if(browseMode==="saved"){grid.innerHTML='<div class="no-results"><div style="font-size:32px">♡</div><h3>No saved providers yet</h3><p>Tap the heart on a provider to save it for later.</p></div>';appendLoadMoreControl();return}
    const hasLocation=!!readLocation();
-   grid.innerHTML='<div class="no-results"><div style="font-size:32px">'+(hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg>')+'</div><h3>'+(hasLocation?"No providers serve this location yet.":"Set your delivery location")+'</h3><p>'+(hasLocation?"Try another location or change your delivery area. We will show providers who serve the selected location.":"Use your GPS location or choose an area on the map to see providers who can deliver to you.")+'</p>'+'<button class="primary" id="setLocationInline">'+(hasLocation?"Change location →":"Choose location →")+'</button>'+'</div>';
+   const emptyTitle=hasLocation?"No providers serve this location yet.":"Choose your delivery location";
+   const emptyCopy=hasLocation?"No independent providers currently match this delivery area. Try another location to check nearby sellers.":"Set a delivery location to discover independent milk sellers and check who can deliver to you.";
+   const emptyAction=hasLocation?"Change delivery location →":"Choose delivery location →";
+   const emptyIcon=hasLocation?milkEmoji("mixed"):'<svg viewBox="0 0 24 24" focusable="false"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+   grid.innerHTML='<div class="no-results '+(hasLocation?"no-results-location-set":"no-results-location")+'" role="status"><div class="discovery-empty-icon" aria-hidden="true">'+emptyIcon+'</div><div class="discovery-empty-copy"><h3>'+emptyTitle+'</h3><p>'+emptyCopy+'</p></div><button class="primary discovery-empty-cta" id="setLocationInline" type="button">'+emptyAction+'</button><small class="discovery-empty-note">'+(hasLocation?"You can choose a different area at any time.":"Use your current location or move the pin on the map.")+'</small></div>';
    $("setLocationInline")?.addEventListener("click",()=>window.DoodhwalaLocation?.open?.());
    return;
  }
