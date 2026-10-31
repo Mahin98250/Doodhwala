@@ -167,4 +167,28 @@ assert.match(css, /\.site-legal-footer small\{[^}]*font-size:11px/,
 assert.match(customer10x, /if\(document\.querySelector\("\.doodhwala-10x-launcher"\)\)return/,
   "the Doodhwala assistant launcher must guard against duplicate mounting");
 
+// Mobile discovery audit: no-location copy, compact actionable state, and safe live updates.
+assert.match(html, /<input\b(?=[^>]*id="search")(?=[^>]*type="search")(?=[^>]*aria-label="Search milk, providers or areas")[^>]*>/,
+  "homepage search must have a search input type and accessible name");
+assert.match(html, /<h2 id="providersTitle">Independent milk sellers<\/h2>/,
+  "nearby provider heading must be stable and available to assistive technology");
+assert.match(html, /<div id="providersGrid" class="providers-grid" role="region" aria-labelledby="providersTitle" aria-live="polite" aria-busy="true"><\/div>/,
+  "provider results must expose a labelled live region");
+assert.match(app, /grid\.setAttribute\("aria-busy",dataState==="loading"\?"true":"false"\)/,
+  "provider results must announce their loading state");
+assert.match(app, /Choose a delivery location to see nearby sellers/,
+  "a missing location must not be presented as zero available providers");
+assert.match(app, /no-results-location/,
+  "the empty delivery-location state must use a dedicated presentation");
+assert.match(app, /discovery-empty-cta/,
+  "provider empty and error states must expose a clear primary action");
+assert.match(css, /\.home-page \.no-results-location[\s\S]*?grid-template-columns:52px minmax\(0,1fr\)/,
+  "mobile location empty state must remain compact and readable");
+assert.match(css, /\.home-page \.site-legal-footer\{padding-bottom:24px\}/,
+  "the mobile legal footer must not add a second oversized navigation spacer");
+assert.match(ui, /location-top-copy small\{font-size:8px/,
+  "the mobile delivery label must remain readable");
+assert.match(ui, /location-top-copy b\{font-size:10px/,
+  "the mobile selected-location value must remain readable");
+
 console.log("Homepage premium contracts passed: truthful provider facts, mobile navigation states, preserved runtime hooks, responsive and accessibility safeguards.");
