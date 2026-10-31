@@ -140,7 +140,7 @@ function createHarness(options = {}) {
   window.Doodhwala = Doodhwala;
 
   const context = vm.createContext({
-    window, document, Doodhwala, localStorage,
+    window, document, Doodhwala, localStorage, Event,
     crypto: { randomUUID() { idempotencySequence += 1; return "stable-test-idempotency-key-" + idempotencySequence; } },
     console: { warn() {}, error() {}, log() {} },
     structuredClone,
