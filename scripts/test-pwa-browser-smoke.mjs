@@ -41,9 +41,9 @@ try {
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, { timeout: 15000 });
   await page.waitForFunction(async () => {
-    const cache = await caches.open("doodhwala-v110");
+    const cache = await caches.open("doodhwala-v111");
     return !!(await cache.match("/Doodhwala/offline.html")) &&
-      !!(await cache.match("/Doodhwala/marketplace-refresh.css?v=20261030.2")) &&
+      !!(await cache.match("/Doodhwala/marketplace-refresh.css?v=20261031.1")) &&
       !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")) &&
       !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")) &&
       !!(await cache.match("/Doodhwala/customer-ui-stability.css?v=20261028.1"));
@@ -55,7 +55,7 @@ try {
   const queryResponse = await page.goto(queryUrl, { waitUntil: "domcontentloaded" });
   assert.ok(queryResponse && queryResponse.ok(), "query-string route loads online");
   await page.waitForFunction(async url => {
-    const cache = await caches.open("doodhwala-v110");
+    const cache = await caches.open("doodhwala-v111");
     return !!(await cache.match(url));
   }, queryUrl, { timeout: 10000 });
   await page.screenshot({ path: path.join(evidenceDir, "orders-query-online.png"), fullPage: true });
@@ -63,13 +63,13 @@ try {
 
   const cacheEvidence = await page.evaluate(async () => {
     const names = await caches.keys();
-    const cache = await caches.open("doodhwala-v110");
+    const cache = await caches.open("doodhwala-v111");
     return {
       names,
       oldDoodhwalaCacheRemoved: !names.includes("doodhwala-v97"),
       unrelatedCachePreserved: names.includes("unrelated-origin-cache-test"),
       offlineFallbackCached: !!(await cache.match("/Doodhwala/offline.html")),
-      homepageRefreshCssCached: !!(await cache.match("/Doodhwala/marketplace-refresh.css?v=20261030.2")),
+      homepageRefreshCssCached: !!(await cache.match("/Doodhwala/marketplace-refresh.css?v=20261031.1")),
       checkoutCssExactVariantCached: !!(await cache.match("/Doodhwala/customer-journey-refresh.css?v=20261025.1")),
       mascotUnversionedCached: !!(await cache.match("/Doodhwala/assets/mascot.png")),
       sharedUiCssCached: !!(await cache.match("/Doodhwala/doodhwala-ui-system.css?v=20261028.2")),
