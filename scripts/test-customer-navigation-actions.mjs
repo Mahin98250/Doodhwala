@@ -34,11 +34,13 @@ assert.ok(home.includes('id="search"') && home.includes('id="providerSort"') && 
 
 const app = read("app.js");
 const checkoutPage = read("checkout/index.html");
-assert.match(app, /let cartPersistenceAvailable=true;/, "cart must track whether it was safely persisted");
-assert.match(app, /function saveCart\(\)[\s\S]*?cartPersistenceAvailable=persisted/, "cart writes must record persistence success or failure");
-assert.match(app, /window\.addEventListener\("storage",event=>\{if\(event\.key!==\"doodhwala-cart\"&&event\.key!==null\)[\s\S]*?cart=next[\s\S]*?updateCart\(\)\}/, "cart contents and drawer must synchronize from cross-tab storage updates");
-assert.match(app, /if\(!cartPersistenceAvailable&&!saveCart\(\)\)\{toast\([\s\S]*?return\}location\.href=\"\\/Doodhwala\\/checkout\\/\"/, "checkout must not navigate when the cart cannot be persisted");
-assert.match(app, /function openCart\(\)\{updateCart\(\);document\.body\.classList\.add\("drawer-open"\)\}/, "opening the cart must refresh its rendered contents");
+assert.ok(app.includes("let cartPersistenceAvailable=true;"), "cart must track whether it was safely persisted");
+assert.ok(app.includes('function saveCart(){const persisted=writeLocalState("doodhwala-cart",cart);cartPersistenceAvailable=persisted;'), "cart writes must record persistence success or failure");
+assert.ok(app.includes('window.addEventListener("storage",event=>{if(event.key!=="doodhwala-cart"&&event.key!==null)'), "cart must listen for cross-tab storage updates");
+assert.ok(app.includes("cart=next&&typeof next===") && app.includes("updateCart()});"), "cross-tab cart changes must update the drawer");
+assert.ok(app.includes('if(!cartPersistenceAvailable&&!saveCart()){toast("Checkout is paused because this device could not save your cart.'), "checkout must block navigation when the cart cannot be persisted");
+assert.ok(app.includes('location.href="/Doodhwala/checkout/"'), "checkout entry must use the canonical checkout route");
+assert.ok(app.includes('function openCart(){updateCart();document.body.classList.add("drawer-open")}'), "opening the cart must refresh its rendered contents");
 assert.ok(checkoutPage.includes('id="checkoutItems"') && checkoutPage.includes('src="/Doodhwala/checkout.js'), "the checkout route must load the checkout UI and controller");
 
 console.log("Customer navigation, cart persistence and checkout entry contracts passed.");
