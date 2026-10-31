@@ -559,3 +559,66 @@ header{
   .home-page .story .stats small{font-size:8.5px}
   .home-page .site-legal-footer nav a{padding-inline:7px;font-size:11px}
 }
+
+
+/* Stage 1–2 mobile polish: compact discovery flow and legible empty states. */
+@media(max-width:760px){
+  .home-page [data-home-region="categories"]{padding-bottom:10px}
+  .home-page .section#providers[data-home-region="nearby-providers"]{padding-top:10px}
+  .home-page .section#providers .section-head{align-items:flex-start;gap:12px}
+  .home-page .section#providers .filter-button{flex:0 0 auto;min-width:88px;min-height:44px}
+  .home-page .section#providers .chips{margin-bottom:10px}
+  .home-page #providers .discover-toolbar{
+    display:flex;flex-direction:column;align-items:stretch;gap:8px;margin-top:10px;
+  }
+  .home-page #providers .discover-control-group{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;
+  }
+  .home-page #providers .deliverable-filter,
+  .home-page #providers .sort-control,
+  .home-page #providers .sort-control select{width:100%;min-width:0}
+  .home-page #providers .deliverable-filter,
+  .home-page #providers .sort-control select{min-height:46px;font-size:12px}
+  .home-page #providers .sort-control select{padding-inline:11px}
+  .home-page .providers-grid>.no-results{
+    grid-column:1/-1;width:100%;min-width:0;
+  }
+  .home-page .no-results-location,
+  .home-page .no-results-location-set,
+  .home-page .no-results-error{
+    display:grid;grid-template-columns:52px minmax(0,1fr);
+    align-items:center;gap:11px 13px;min-height:0;
+    padding:18px;border-radius:18px;text-align:left;
+  }
+  .home-page .discovery-empty-icon{
+    display:grid;place-items:center;width:52px;height:52px;
+    border-radius:16px;background:#eaf4df;color:#246541;
+    font-size:25px;line-height:1;
+  }
+  .home-page .discovery-empty-icon svg{
+    width:25px;height:25px;fill:none;stroke:currentColor;
+    stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  }
+  .home-page .discovery-empty-copy{min-width:0}
+  .home-page .discovery-empty-copy h3{margin:0 0 5px;font-size:16px;line-height:1.25}
+  .home-page .discovery-empty-copy p{margin:0;font-size:11px;line-height:1.5}
+  .home-page .discovery-empty-cta{
+    grid-column:1/-1;width:100%;min-height:46px;margin:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .home-page .discovery-empty-note{
+    grid-column:1/-1;margin:0;color:#718075;
+    font-size:10px;line-height:1.4;text-align:center;
+  }
+  .home-page .provider-skeleton .cover{height:72px;min-height:72px}
+  .home-page .site-legal-footer{padding-bottom:24px}
+}
+@media(max-width:390px){
+  .home-page .section#providers .section-head h2{font-size:21px}
+  .home-page .no-results-location,
+  .home-page .no-results-location-set,
+  .home-page .no-results-error{grid-template-columns:46px minmax(0,1fr);gap:10px;padding:15px}
+  .home-page .discovery-empty-icon{width:46px;height:46px;border-radius:14px}
+  .home-page .discovery-empty-copy h3{font-size:15px}
+  .home-page #providers .discover-control-group{gap:7px}
+}
