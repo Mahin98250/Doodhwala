@@ -329,3 +329,10 @@
     box-shadow:0 7px 16px rgba(23,34,26,.15)!important;
   }
 }
+
+
+/* Location control text must remain readable at real phone widths. */
+@media(max-width:760px){
+  .home-page .app main > header .location-top-copy small{font-size:8px;line-height:1.2}
+  .home-page .app main > header .location-top-copy b{font-size:10px;line-height:1.25}
+}
