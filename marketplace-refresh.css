@@ -649,3 +649,14 @@ header{
   }
   .home-page .customer-bottom-nav .customer-nav-item{min-height:58px}
 }
+/* The mobile brand mark is a real Home link, not a decorative button. */
+.home-page a.mobile-logo{
+  color:inherit;
+  text-decoration:none;
+  cursor:pointer;
+}
+.home-page a.mobile-logo:focus-visible{
+  outline:3px solid rgba(35,119,73,.28);
+  outline-offset:4px;
+  border-radius:12px;
+}
