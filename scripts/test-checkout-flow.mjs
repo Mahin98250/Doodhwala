@@ -162,6 +162,10 @@ assert.match(checkoutSource, /function notifyCartUpdated\(\)\{window\.dispatchEv
 assert.match(checkoutSource, /function removeProviderFromCart\(providerId\)[\s\S]*?notifyCartUpdated\(\)/, "partial provider-order completion must update the shared cart badge");
 assert.match(checkoutSource, /removeItem\(CART_KEY\)[\s\S]*?notifyCartUpdated\(\)/, "clearing the completed cart must update the shared cart badge");
 
+
+assert.match(checkoutSource, /if\(!entries\.length\)\{const placeButton=\$\("placeOrder"\);if\(placeButton\)placeButton\.disabled=true/, "empty checkout must disable Place Order");
+assert.match(checkoutSource, /placeButton\.disabled=\!\(valid\.length===entries\.length&&valid\.length>0&&grouped\(\)\.length>0\)/, "checkout must enable Place Order only when all cart items are valid and linked to a provider");
+
 async function testCheckoutFailsClosedWhenPaymentControlsMissing() {
   const h = createHarness({ paymentControlsReady: false });
   await settle();
