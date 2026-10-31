@@ -621,3 +621,31 @@ header{
   .home-page .discovery-empty-copy h3{font-size:15px}
   .home-page #providers .discover-control-group{gap:7px}
 }
+
+/* Stage 3–4 polish: native hero action, readable brand story, and thumb-friendly controls. */
+.home-page .location-hero-card{
+  appearance:none;
+  -webkit-appearance:none;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.home-page .location-hero-card:focus-visible{
+  outline:3px solid rgba(215,240,188,.78);
+  outline-offset:3px;
+}
+.home-page .story .eyebrow{
+  display:inline-block;
+  margin-bottom:9px;
+  color:#d7f0bc!important;
+  font-weight:900;
+}
+@media(max-width:760px){
+  .home-page #providers .chips button{min-height:44px;padding-block:10px}
+  .home-page .customer-bottom-nav .customer-nav-item span{
+    font-size:clamp(8px,2.15vw,9px)!important;
+    line-height:1.1;
+  }
+  .home-page .customer-bottom-nav .customer-nav-item{min-height:58px}
+}
