@@ -198,6 +198,13 @@ assert.match(customer10x, /\.doodhwala-10x-launcher\{right:12px;bottom:calc\(96p
 
 
 /* Native keyboard semantics and final mobile usability safeguards. */
+assert.match(html, /<a href="\\/Doodhwala\\/" class="mobile-logo" aria-label="Doodhwala home">/,
+  "mobile brand mark must be a working Home link rather than an inert button");
+assert.doesNotMatch(html, /<button class="mobile-logo">/,
+  "mobile brand mark must not be rendered as an unhandled button");
+assert.match(css, /\\.home-page a\\.mobile-logo\\{[\\s\\S]*?text-decoration:none/,
+  "mobile brand Home link must inherit the premium header styling without link underlines");
+
 assert.match(html, /<button type="button" class="location-hero-card" id="locationHero" aria-label="Choose delivery location">/,
   "the hero location selector must be a native button so Enter and Space activate it");
 assert.doesNotMatch(html, /<div class="location-hero-card" id="locationHero" role="button"/,
