@@ -191,4 +191,7 @@ assert.match(ui, /location-top-copy small\{font-size:8px/,
 assert.match(ui, /location-top-copy b\{font-size:10px/,
   "the mobile selected-location value must remain readable");
 
+assert.match(customer10x, /\.doodhwala-10x-launcher\{right:12px;bottom:calc\(96px \+ env\(safe-area-inset-bottom,0px\)\);width:48px;min-width:48px;height:48px/,
+  "mobile assistant launcher must remain compact and safely offset from bottom navigation");
+
 console.log("Homepage premium contracts passed: truthful provider facts, mobile navigation states, preserved runtime hooks, responsive and accessibility safeguards.");
