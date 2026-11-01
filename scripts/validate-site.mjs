@@ -301,6 +301,8 @@ for(const [file,expected] of [["/checkout.html","return=%2FDoodhwala%2Fcheckout%
 
 
 const cleanRoutes=["auth","plans","orders","provider","notifications","support","checkout","legal","product","store","admin","offline"];
+
+// Design token validation will be added here
 for(const route of cleanRoutes){
   if(!localFiles.has("/"+route+"/index.html")) errors.push("clean route missing /"+route+"/index.html");
 }
