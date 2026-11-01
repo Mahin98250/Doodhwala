@@ -31,4 +31,9 @@ assert.ok(home.includes('data-filter="cow"') && home.includes('data-filter="buff
 assert.ok(home.includes('id="search"') && home.includes('id="providerSort"') && home.includes('id="deliverableOnly"'),
   "home discovery controls must remain present");
 
+const market = read("customer-market-10x.js");
+assert.ok(market.includes('const BASE="/Doodhwala/";'), "customer dashboard must use the canonical GitHub Pages base path");
+assert.ok(!market.includes('BASE+"/Doodhwala/'), "customer dashboard routes must not append the repository base path twice");
+assert.ok(market.includes('BASE+"orders/"'), "customer order actions must resolve beneath the repository base path");
+
 console.log("Customer navigation interaction contracts passed: all seven destinations, active state, history, cart sync and discovery controls.");
