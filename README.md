@@ -160,6 +160,7 @@ The journey passes only when the same order can be followed end-to-end by its re
 - **GitHub profile:** https://github.com/Mahin98250
 - **Portfolio repository:** https://github.com/Mahin98250/Porfolio
 - **More projects:** https://github.com/Mahin98250?tab=repositories
+- **Contributor:** Vaidik Patel (@vaidikpatel22112010-tech) — https://github.com/vaidikpatel22112010-tech
 
 > Live demo links will be added only after the deployment URL is verified.
 

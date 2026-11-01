@@ -1,6 +1,6 @@
 # Contributing to Doodhwala
 
-Doodhwala is built collaboratively by the project owner, teammates, and coding agents.
+Doodhwala is built collaboratively by the project owner (Mahin Patel), teammates (Vaidik Patel), and coding agents.
 
 ## Start here
 
