@@ -1,0 +1,169 @@
+/* ==========================================================================
+   Doodhwala Design Token Reference
+   ==========================================================================
+   This file documents the complete design token system for the Doodhwala app.
+   Tokens are defined in styles.css :root and should be imported via styles.css.
+   Do not @import this file directly — it is for documentation only.
+
+   Usage in component CSS:
+     .my-component {
+       background: var(--dw-surface);
+       color: var(--dw-text);
+       border-radius: var(--dw-radius);
+       padding: var(--dw-space-4);
+       box-shadow: var(--dw-shadow);
+       transition: background var(--dw-motion-ui) var(--dw-motion-ease);
+     }
+
+   Glass surfaces (use sparingly, only for headers/overlays/location panels):
+     .my-glass-panel {
+       background: var(--dw-glass-bg);
+       backdrop-filter: blur(var(--dw-glass-blur));
+       border: 1px solid var(--dw-glass-border);
+     }
+     @supports not (backdrop-filter: blur(1px)) {
+       .my-glass-panel { background: var(--dw-surface-elevated); }
+     }
+
+   Reduced motion:
+     @media (prefers-reduced-motion: reduce) {
+       .my-component { transition: none !important; animation: none !important; }
+     }
+
+   ========================================================================== */
+
+/* --- Color: Canvas & Surface --- */
+/* --dw-canvas: #f5f7f3;          // Main app background */
+/* --dw-surface: #ffffff;         // Forms, cards, critical task surfaces */
+/* --dw-surface-soft: #f8faf7;    // Quiet inset surfaces */
+/* --dw-surface-elevated: #ffffff; // Elevated surfaces (modals, drawers) */
+
+/* --- Color: Text --- */
+/* --dw-text: #17221a;            // Primary text */
+/* --dw-text-muted: #6f7c73;      // Supporting text (validate contrast for small text) */
+/* --dw-text-muted-2: #94a098;    // Low-emphasis text */
+/* --dw-text-on-brand: #ffffff;   // Text on brand backgrounds */
+
+/* --- Color: Border & Divider --- */
+/* --dw-border: #e2e8e1;          // Standard dividers, card boundaries */
+/* --dw-border-strong: #d3ddd4;   // Stronger dividers, focus rings */
+
+/* --- Color: Brand (Green) --- */
+/* --dw-brand: #17603f;           // Primary actions, key brand accent */
+/* --dw-brand-strong: #10482f;    // Active/pressed, high-emphasis brand states */
+/* --dw-brand-soft: #e3f1e7;      // Soft selection, status backgrounds */
+/* --dw-brand-wash: #f0f7f2;      // Very light brand tint */
+
+/* --- Color: Accent (Cream/Amber) --- */
+/* --dw-accent: #fff7e8;          // Warm accent backgrounds */
+/* --dw-amber: #b47716;           // Warning states only */
+
+/* --- Color: Semantic --- */
+/* --dw-success: #17603f;         // Success states */
+/* --dw-warning: #b47716;         // Warning states */
+/* --dw-danger: #a3483e;          // Destructive/error states */
+/* --dw-info: #17603f;            // Informational states */
+
+/* --- Color: Glass / Translucent Surfaces --- */
+/* --dw-glass-bg: rgba(255,255,255,.76);      // Headers, floating nav, location panels */
+/* --dw-glass-border: rgba(255,255,255,.78);  // Visible edge against variable backgrounds */
+/* --dw-glass-blur: 16px;                      // Standard glass blur */
+/* --dw-glass-blur-strong: 24px;               // Stronger glass blur (use sparingly) */
+
+/* --- Shadow / Elevation --- */
+/* --dw-shadow-sm: 0 3px 12px rgba(20,45,29,.06);   // Subtle elevation */
+/* --dw-shadow: 0 14px 38px rgba(20,45,29,.09);     // Standard card elevation */
+/* --dw-shadow-lg: 0 24px 70px rgba(20,45,29,.14);  // Modal/drawer elevation */
+/* --dw-shadow-xl: 0 32px 80px rgba(20,45,29,.18);  // Maximum elevation */
+
+/* --- Border Radius --- */
+/* --dw-radius-sm: 10px;    // Inputs, small chips */
+/* --dw-radius: 16px;       // Standard cards, buttons */
+/* --dw-radius-lg: 22px;    // Dialogs, feature panels */
+/* --dw-radius-xl: 28px;    // Hero panels, major sections */
+/* --dw-radius-full: 999px; // Pills, badges, avatars */
+
+/* --- Spacing Scale (4px base) --- */
+/* --dw-space-1: 4px;   --dw-space-2: 8px;   --dw-space-3: 12px; */
+/* --dw-space-4: 16px;  --dw-space-5: 20px;  --dw-space-6: 24px; */
+/* --dw-space-7: 28px;  --dw-space-8: 32px;  --dw-space-10: 40px; */
+/* --dw-space-12: 48px; */
+
+/* --- Typography --- */
+/* --dw-font-sans: "DM Sans", ...;     // Body text, UI labels */
+/* --dw-font-display: "Manrope", ...;  // Headings, brand wordmark */
+/* --dw-text-xs: 0.75rem;    // 12px - captions, labels */
+/* --dw-text-sm: 0.8125rem;  // 13px - small body */
+/* --dw-text-base: 0.875rem; // 14px - default body */
+/* --dw-text-lg: 1rem;       // 16px - large body */
+/* --dw-text-xl: 1.125rem;   // 18px - small headings */
+/* --dw-text-2xl: 1.25rem;   // 20px - medium headings */
+/* --dw-text-3xl: 1.5rem;    // 24px - large headings */
+/* --dw-text-4xl: 1.875rem;  // 30px - section titles */
+/* --dw-text-5xl: 2.25rem;   // 36px - page titles */
+/* --dw-text-6xl: 3rem;      // 48px - hero titles */
+/* --dw-leading-tight: 1.1;     // Headings */
+/* --dw-leading-normal: 1.5;    // Body text */
+/* --dw-leading-relaxed: 1.75;  // Long-form reading */
+/* --dw-font-weight-normal: 400; */
+/* --dw-font-weight-medium: 500; */
+/* --dw-font-weight-semibold: 600; */
+/* --dw-font-weight-bold: 700; */
+/* --dw-font-weight-extrabold: 800; */
+
+/* --- Motion / Animation --- */
+/* --dw-motion-fast: 150ms;   // Press/hover feedback */
+/* --dw-motion-ui: 220ms;     // Ordinary transitions */
+/* --dw-motion-slow: 300ms;   // Complex transitions */
+/* --dw-motion-ease: cubic-bezier(0.2, 0.75, 0.25, 1);        // Standard easing */
+/* --dw-motion-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);      // Entrance animations */
+
+/* --- Breakpoints --- */
+/* --dw-bp-sm: 420px;   // Small phones */
+/* --dw-bp-md: 760px;   // Tablets / mobile landscape */
+/* --dw-bp-lg: 1100px;  // Laptops */
+/* --dw-bp-xl: 1300px;  // Wide desktop */
+
+/* --- Z-Index Scale --- */
+/* --dw-z-dropdown: 100; */
+/* --dw-z-sticky: 200; */
+/* --dw-z-modal-backdrop: 300; */
+/* --dw-z-modal: 310; */
+/* --dw-z-toast: 400; */
+/* --dw-z-tooltip: 500; */
+/* --dw-z-transition-overlay: 1000; */
+
+/* ==========================================================================
+   GLASS USAGE RULES (from UI_CLEANUP_MASTER_PLAN)
+   ==========================================================================
+   1. Keep default content surfaces opaque (--dw-surface).
+   2. Use glass ONLY for: app headers, floating navigation, location pickers,
+      small utility overlays, and the startup/transition layer.
+   3. NEVER put glass behind: core reading surfaces, checkout totals, form
+      labels, prices, seller order statuses, data tables, error/success messages.
+   4. Always retain a visible edge (--dw-glass-border) against both light and
+      green-tinted backdrops; glass cannot be the only source of separation.
+   5. Add @supports fallback to solid surface for browsers without backdrop-filter.
+   6. Avoid stacking multiple blurred layers; prefer less blur on low-end devices.
+
+   ==========================================================================
+   MOTION RULES (from UI_CLEANUP_MASTER_PLAN)
+   ==========================================================================
+   1. Brand intro and page transition are the ONLY cinematic sequences.
+   2. They must be skippable/short, cannot hide errors, cannot block route
+      changes, and must clean up on interruption.
+   3. Everyday actions use immediate feedback + short transitions (--dw-motion-ui).
+   4. Honor prefers-reduced-motion: reduce on EVERY layer.
+   5. Avoid large parallax, repeated card choreography, motion obscuring status.
+   6. Performance gate: test on lower-end mobile; avoid layout-thrashing.
+
+   ==========================================================================
+   DENSITY & RESPONSIVE CONTRACT
+   ==========================================================================
+   - Base spacing steps: 4, 8, 12, 16, 20, 24, 28, 32, 40, 48px
+   - No page-specific random spacing values without documented reason.
+   - Balanced content density: readable sections, no oversized vertical gaps.
+   - Maintain primary task access at 320px width.
+   - Handle safe-area insets, avoid horizontal overflow, support browser zoom.
+   - DM Sans for body, Manrope for headings/brand; system fallbacks always work.
+*/
