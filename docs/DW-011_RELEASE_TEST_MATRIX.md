@@ -5,7 +5,66 @@
 **QA task:** [DW-011 / #94](https://github.com/Mahin98250/Doodhwala/issues/94)  
 **Inventory baseline:** main tree `fa41464ba69b320b0ae345ad9f01ffb3cc050722`  
 **Initial matrix commit tested by CI:** `5f08d08e463531cce04dda247324ee5f310f1ade`  
-**Status:** Inventory prepared; full authenticated backend E2E is **BLOCKED** pending an isolated staging project and project-lead confirmation of a test-ready target. This is a plan/evidence ledger, not a claim that the entire product has passed.
+**Status refreshed 2026-10-29:** PR #105 remains merged. The historical five-check baseline below is for main commit `3c102f69a7922346340253823730c9dbcf3900b6` only; it is not evidence for the current main head. Current main head observed from the repository commit search is `dba11d39ae149d0b57fb36003da7d9330aba8b0b`. Its combined commit status reports Vercel success, but the connector did not expose push-triggered GitHub Actions runs for that SHA, so current-main workflow results are **NOT VERIFIED HERE**. Full authenticated backend E2E remains **BLOCKED** pending an approved isolated staging project.
+
+## Evidence refresh — 2026-10-29
+
+### P0-A — PR #113 historical static failure and final disposition
+
+The reported failure at historical candidate SHA `b50580bbc8232d22460eb7b335b6242cc070855b` is reproducible from the recorded source/test mismatch:
+- `scripts/test-product-runtime.mjs` at that SHA expected service-worker cache `doodhwala-v101`, while `sw.js` declared `doodhwala-v103`.
+- The same test expected milk-transition assets `20261027.6`, while `product.html` and the worker precache list used `20261027.8`.
+- The PR description was stale too (v102 / `20261027.7`).
+- The first failed assertion prevented later assertions in that test from being evaluated. This was a stale source/test/description contract, not by itself proof of an animation runtime defect.
+
+**No commit was pushed to the PR #113 branch as part of this diagnosis.** GitHub now shows PR #113 merged on 2026-10-28 at final head `a1af2ff92794310792ce92f170b7c4aecbf78f9b`. All four workflows passed on that final head:
+- **PASS — Static validation:** [run 40614198562](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198562).
+- **PASS — PWA offline browser evidence:** [run 40614198400](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198400).
+- **PASS — SQL migration validation:** [run 40614198410](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198410).
+- **PASS — In-app notification validation:** [run 40614198412](https://github.com/Mahin98250/Doodhwala/actions/runs/40614198412).
+- Final-head combined Vercel status: **PASS** (preview status URL: https://vercel.com/patelmahin140-4489s-projects/doodhwala-next-preview/AMjWu7pkJmAfoPkf26r32Ce9583k).
+
+The current main tree observed at `dba11d39ae149d0b57fb36003da7d9330aba8b0b` now declares cache `doodhwala-v110`, the product-runtime contract expects v110, and `product.html` plus the worker use transition asset version `20261027.8`. This confirms those version references are reconciled in current source. It does not retroactively make the old `b50580b` run pass; the four passing runs above are for the later final PR head.
+
+### P0-B — consolidate #111 and #114 without losing evidence
+
+PR [#111](https://github.com/Mahin98250/Doodhwala/pull/111) is the recommended canonical evidence-refresh PR because it is already non-draft and its three recorded checks pass on head `0eec9dc502c2eb55c8c9e63bb071bca46e1e0ee2`:
+- **PASS — Static validation:** [run 40496414580](https://github.com/Mahin98250/Doodhwala/actions/runs/40496414580).
+- **PASS — SQL migration validation:** [run 40496414592](https://github.com/Mahin98250/Doodhwala/actions/runs/40496414592).
+- **PASS — In-app notification validation:** [run 40496414627](https://github.com/Mahin98250/Doodhwala/actions/runs/40496414627).
+
+PR [#114](https://github.com/Mahin98250/Doodhwala/pull/114) is a draft duplicate on head `11420a7015ff9d4701c36ca569610f9ab0a1c0a2`; its recorded static, SQL and notification checks also pass:
+- **PASS — In-app notification validation:** [run 40516655091](https://github.com/Mahin98250/Doodhwala/actions/runs/40516655091).
+- **PASS — Static validation:** [run 40516655164](https://github.com/Mahin98250/Doodhwala/actions/runs/40516655164).
+- **PASS — SQL migration validation:** [run 40516655173](https://github.com/Mahin98250/Doodhwala/actions/runs/40516655173).
+
+The unique value in #114 is its explicit five-run historical evidence table and the clear statement that those runs cover the old main SHA `3c102f69a7922346340253823730c9dbcf3900b6`, not newer commits, plus its detailed BLOCKED/NOT RUN release-gate section. Preserve that content when refreshing #111; do not imply those old runs test the present main head. Neither PR has a PWA browser or Pages deployment run on its own PR head in the recorded run list. Do not merge or close either without Mahin's approval.
+
+### P0-C — reconcile PWA PRs #106, #90 and #112
+
+- PR [#106](https://github.com/Mahin98250/Doodhwala/pull/106) is merged; it is the implementation baseline for scoped cache cleanup, required offline fallback, exact asset variants, and awaited cache persistence.
+- PR [#90](https://github.com/Mahin98250/Doodhwala/pull/90) is still an old draft branch (`d8cb4b4a980a2f57b1b7a384726fa1d637930fe2`) diverged from current main (33 commits ahead / 20 behind). Its historical checks passed: [static run 40371393861](https://github.com/Mahin98250/Doodhwala/actions/runs/40371393861), [SQL run 40371393852](https://github.com/Mahin98250/Doodhwala/actions/runs/40371393852), [PWA browser run 40371394649](https://github.com/Mahin98250/Doodhwala/actions/runs/40371394649). Those results do not validate its stale v95 cache expectation against current v110. Do not merge #90 as-is; current main already contains the key PWA test/workflow and cache-safety behavior. Recommend superseding #90 after confirming no unique code remains missing.
+- PR [#112](https://github.com/Mahin98250/Doodhwala/pull/112) is documentation-only and its audit describes v99/v110 transition points inconsistently with current main. The root `PWA_OFFLINE_AUDIT.md` currently says v98 while current main uses v110; refresh the audit to distinguish the current snapshot from historical PR #90 evidence.
+- **BLOCKED / NOT RUN:** installed-PWA update while an old tab is open and physical Android/iOS offline/reconnect checks. Chromium simulation is not device proof.
+
+### P1-A — responsive UI/accessibility audit #88
+
+PR [#88](https://github.com/Mahin98250/Doodhwala/pull/88) remains draft. Its four recorded GitHub Actions workflows passed on head `7dd3717625762da00ab81f97fb3d7c9e1dec4ac3`:
+- **PASS — UI regression contracts:** [run 40372311864](https://github.com/Mahin98250/Doodhwala/actions/runs/40372311864).
+- **PASS — Static validation:** [run 40372312097](https://github.com/Mahin98250/Doodhwala/actions/runs/40372312097).
+- **PASS — UI browser viewport evidence:** [run 40372312018](https://github.com/Mahin98250/Doodhwala/actions/runs/40372312018).
+- **PASS — SQL migration validation:** [run 40372312068](https://github.com/Mahin98250/Doodhwala/actions/runs/40372312068).
+
+The recorded Chromium evidence covers 320, 390, 768, 1024 and 1440 CSS-pixel viewports and a bounded set of navigation/cart/search/retry/geolocation/auth/checkout interactions. **NOT RUN:** manual keyboard-only review, screen-reader testing, physical-device/touch-target verification, and real authenticated product/price/cart correctness. **FAIL (external status only):** the Vercel check for this old PR head reports a build-rate-limit URL; this is not a GitHub Actions test failure. Keep #88 draft until gaps are verified or tracked as explicit follow-up issues.
+
+### P0-D — isolated staging preparation
+
+**BLOCKED:** no isolated Supabase staging project/schema is provisioned and approved. Prepare customer A/B, seller A/B, non-admin/admin role tests; cross-owner negative RLS/RPC cases; duplicate-order/retry/idempotency; subscription cutoff/pause/skip; notification/Realtime; and rollback/cleanup plans. Execution, deployed authorization verification, staging load and backup/restore remain blocked until Mahin confirms a safe isolated target. Never substitute production.
+
+### Current release recommendation
+
+**NOT READY FOR RELEASE.** Historical/static/browser CI is useful and several focused workflows pass, but staging-authenticated E2E, deployed RLS/RPC/Realtime authorization, manual accessibility/device checks, and staging load/backup-restore evidence remain blocked or not run. GitHub Pages deployment evidence on the historical main SHA is not current release certification. Vercel is tracked separately from GitHub Actions and GitHub Pages.
+
 
 ## Status and evidence rules
 
@@ -37,6 +96,18 @@
 - `.github/workflows/production-readiness-probe.yml` and `.github/workflows/production-reporting-smoke.yml` — read-only/production reporting probes only; do not use them to create test orders or run load.
 - `.github/workflows/staging-scalability-load-test.yml` — must remain blocked until an isolated staging target and explicit environment safeguards are verified.
 - UI evidence already exists in draft PR [#88](https://github.com/Mahin98250/Doodhwala/pull/88) and PWA evidence in draft PR [#90](https://github.com/Mahin98250/Doodhwala/pull/90). Those narrow browser tests are not a substitute for authenticated feature E2E.
+
+### Latest main CI and deployment evidence — 2026-10-27
+
+Latest observed main commit: `3c102f69a7922346340253823730c9dbcf3900b6` (route fix). The following GitHub Actions runs completed successfully on that exact commit:
+
+- **PASS — Static validation:** [run 40490032917](https://github.com/Mahin98250/Doodhwala/actions/runs/40490032917).
+- **PASS — SQL migration validation:** [run 40490033166](https://github.com/Mahin98250/Doodhwala/actions/runs/40490033166), including disposable-PostgreSQL nearby-search and payment-audit fixture checks.
+- **PASS — In-app notification validation:** [run 40490033062](https://github.com/Mahin98250/Doodhwala/actions/runs/40490033062), including notification UI contracts and disposable-PostgreSQL migration assertions.
+- **PASS — PWA offline browser evidence:** [run 40490032811](https://github.com/Mahin98250/Doodhwala/actions/runs/40490032811).
+- **PASS — GitHub Pages build/deployment job:** [run 40490031833](https://github.com/Mahin98250/Doodhwala/actions/runs/40490031833).
+
+These results establish that the listed CI checks and Pages deployment job passed on the observed main commit. They do **not** establish that authenticated Supabase Auth/RLS/Realtime/RPC flows, payment processing, backup/restore, load testing, or physical Android/iOS behavior passed. The live-page smoke workflow is scheduled/dispatch-only and was not among these latest five runs. Manual/device and staging-only rows below must remain BLOCKED or NOT RUN until there is evidence from the appropriate safe environment.
 
 ### CI evidence on the matrix branch
 - **PASS — Static validation** on commit `5f08d08e463531cce04dda247324ee5f310f1ade`: [run 40474626708](https://github.com/Mahin98250/Doodhwala/actions/runs/40474626708). The workflow's source/contract checks passed, including auth contracts, cross-account/provider isolation contracts, checkout/retry, discovery/pagination, payment contracts, resilience, support/legal contracts, service-worker checks, and site validation. This is not authenticated Supabase E2E.
