@@ -52,7 +52,7 @@ function createHarness(options = {}) {
     is_default: true
   };
 
-  const calls = { addressUpdates: [], addressInserts: [], rpc: [] };
+  const calls = { addressUpdates: [], addressInserts: [], rpc: [], cartEvents: [] };
   let createOrderAttempts = 0;
   let idempotencySequence = 0;
   const failedProviders = options.failedProviders || new Set();
@@ -133,14 +133,15 @@ function createHarness(options = {}) {
   };
   const window = {
     DoodhwalaResilience: resilience,
-    addEventListener() {}
+    addEventListener() {},
+    dispatchEvent(event) { calls.cartEvents.push(event.type); return true; }
   };
   const document = { getElementById: getElement, querySelector() { return { value: "cod" }; } };
   const Doodhwala = { configured: true, supabase };
   window.Doodhwala = Doodhwala;
 
   const context = vm.createContext({
-    window, document, Doodhwala, localStorage,
+    window, document, Doodhwala, localStorage, Event,
     crypto: { randomUUID() { idempotencySequence += 1; return "stable-test-idempotency-key-" + idempotencySequence; } },
     console: { warn() {}, error() {}, log() {} },
     structuredClone,
@@ -155,6 +156,15 @@ async function settle() {
   await new Promise((resolve) => setImmediate(resolve));
   await new Promise((resolve) => setImmediate(resolve));
 }
+
+
+assert.match(checkoutSource, /function notifyCartUpdated\(\)\{window\.dispatchEvent\(new Event\("doodhwala:cart-updated"\)\)\}/, "checkout cart mutations must notify the shared customer cart badge");
+assert.match(checkoutSource, /function removeProviderFromCart\(providerId\)[\s\S]*?notifyCartUpdated\(\)/, "partial provider-order completion must update the shared cart badge");
+assert.match(checkoutSource, /removeItem\(CART_KEY\)[\s\S]*?notifyCartUpdated\(\)/, "clearing the completed cart must update the shared cart badge");
+
+
+assert.match(checkoutSource, /if\(!entries\.length\)\{const placeButton=\$\("placeOrder"\);if\(placeButton\)placeButton\.disabled=true/, "empty checkout must disable Place Order");
+assert.match(checkoutSource, /placeButton\.disabled=\!\(valid\.length===entries\.length&&valid\.length>0&&grouped\(\)\.length>0\)/, "checkout must enable Place Order only when all cart items are valid and linked to a provider");
 
 async function testCheckoutFailsClosedWhenPaymentControlsMissing() {
   const h = createHarness({ paymentControlsReady: false });
@@ -195,6 +205,7 @@ async function testAddressUpdateAndSuccessfulOrder() {
   assert.equal(h.getElement("success").classList.contains("hidden"), false, "successful order should show the success state");
   assert.match(h.getElement("successText").textContent, /staging-order-001/);
   assert.equal(h.storage.has("doodhwala-cart"), false, "cart should clear after confirmed order creation");
+  assert.deepEqual(h.calls.cartEvents, ["doodhwala:cart-updated", "doodhwala:cart-updated"], "provider removal and final cart clearing must both refresh the shared cart badge");
 }
 
 async function testMultiProviderPartialFailureRetainsOrderTrail() {
@@ -211,6 +222,7 @@ async function testMultiProviderPartialFailureRetainsOrderTrail() {
   const remainingCart = JSON.parse(h.storage.get("doodhwala-cart"));
   assert.equal(remainingCart["provider-1:milk-1"], undefined, "a provider order confirmed placed should be removed from the cart");
   assert.ok(remainingCart["provider-2:milk-2"], "the failed provider cart must remain available for retry");
+  assert.deepEqual(h.calls.cartEvents, ["doodhwala:cart-updated"], "partial provider success must refresh the shared cart badge");
   assert.match(h.getElement("checkoutState").textContent, /staging-order-001/, "partial-failure feedback must show the already-placed order ID");
   assert.equal(h.getElement("success").classList.contains("hidden"), true, "partial completion must not pretend the entire multi-provider checkout finished");
   const progress = JSON.parse(h.storage.get("doodhwala-checkout-progress-v1"));
