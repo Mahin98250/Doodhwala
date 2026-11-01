@@ -4,6 +4,18 @@ import vm from "node:vm";
 
 const read = path => fs.readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const html = read("index.html");
+const shareImage = "https://raw.githubusercontent.com/Mahin98250/Doodhwala/main/assets/file_000000004e348208818597bb0c6b4309.png";
+for (const marker of [
+  '<meta property="og:type" content="website">',
+  '<meta property="og:site_name" content="Doodhwala">',
+  '<meta property="og:title" content="Doodhwala — Your Local Milk Marketplace">',
+  '<meta property="og:description" content="Discover independent milk sellers near you. Compare milk options and order directly from your local provider.">',
+  '<meta property="og:image" content="' + shareImage + '">',
+  '<meta name="twitter:card" content="summary_large_image">',
+  '<meta name="twitter:image" content="' + shareImage + '">'
+]) {
+  assert.ok(html.includes(marker), "homepage must expose social sharing metadata: " + marker);
+}
 const css = read("marketplace-refresh.css");
 const ui = read("doodhwala-ui-system.css");
 const app = read("app.js");
