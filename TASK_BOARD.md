@@ -20,10 +20,10 @@
 ### P0 — Reliability and release safety
 
 - [ ] **DW-001 — End-to-end order journey audit** ([Issue #73](https://github.com/Mahin98250/Doodhwala/issues/73))  
-  **Owner:** Mahin Patel (@Mahin98250) · **Status:** IN PROGRESS (offline preflight; full staging blocked) · **Area:** QA / Customer + Provider  
+  **Owner:** Mahin Patel (@Mahin98250) · **Status:** IN PROGRESS (staging provisioned; reconciliation and E2E acceptance pending) · **Area:** QA / Customer + Provider  
   **Goal:** Verify customer checkout → provider queue → provider status updates → customer tracking in an isolated staging project.  
   **Done when:** Evidence records the same staging order ID across both roles; status survives reload/reconnect; no duplicate order on retry; mobile flow is checked. Never create synthetic test orders in production. Offline multi-provider partial-failure/retry regression coverage is implemented in [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80); this does not replace staging acceptance.  
-  **Depends on:** Authorized staging project and test accounts. Full staging remains blocked because no isolated test project is provisioned; do not incur unapproved charges or write test orders to production.  
+  **Depends on:** Synthetic staging test accounts and reviewed schema/migration baseline. Staging project `jbcekiaiyxcatueixeqh` exists and was read-only verified active/healthy on 2026-10-29. Full acceptance remains blocked until migration/schema reconciliation and authenticated browser evidence are recorded. Do not incur unapproved charges or write test orders to production.  
   **Branch:** `qa/dw-001-order-retry-recovery`  
   **Evidence:** [PR #80](https://github.com/Mahin98250/Doodhwala/pull/80) · [Static validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741459) · [SQL migration validation passed](https://github.com/Mahin98250/Doodhwala/actions/runs/40309741596).
 
@@ -97,6 +97,8 @@ Copy this template and give each task a unique ID:
   **Evidence:** PR/Issue: add link · Checks: not run.
 
 ## Work log
+
+| 2026-10-29 | Enterprise readiness audit baseline | Mahin + coding agents | Read-only inventory found staging active/healthy (87 migrations) and production active/healthy (67 migrations), with different regions and public object counts. Prioritize migration reconciliation, authenticated staging E2E, role-isolation proof and recovery evidence before new features. | [Enterprise readiness audit](docs/ENTERPRISE_READINESS_AUDIT_2026-10-29.md); [refreshed staging baseline](docs/STAGING_BASELINE.md). No writes, migrations, deployment or payment attempts were made. |
 
 Add newest entries first. Link to the PR/commit and report checks honestly.
 | Date | Task | Person / agent | Summary | Verification / evidence |
