@@ -4,6 +4,11 @@
   --motion-fast:150ms;
   --motion-ui:220ms;
   --motion-smooth:cubic-bezier(.2,.75,.25,1);
+  /* Z-index scale (reference-only: --z-index-overlay; runtime: others) */
+  --z-index-dropdown: 100;
+  --z-index-modal: 200;
+  --z-index-toast: 300;
+  --z-index-overlay: 400; /* reference-only, not used directly in production styles */
 }
 html{scroll-padding-top:88px}
 body{overscroll-behavior-y:contain}

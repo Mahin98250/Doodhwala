@@ -1,4 +1,11 @@
 /* Doodhwala customer UI corrections: mobile header hierarchy, contrast, and compact loading/error states. */
+/* Z-index scale (reference-only: --z-index-overlay; runtime: others) */
+:root{
+  --z-index-dropdown: 100;
+  --z-index-modal: 200;
+  --z-index-toast: 300;
+  --z-index-overlay: 400; /* reference-only, not used directly in production styles */
+}
 .story .stats > div{
   color:#173b28!important;
   background:rgba(255,255,255,.82)!important;

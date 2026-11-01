@@ -9,6 +9,11 @@
   --market-muted:#66756b;
   --market-border:#e4eadf;
   --market-card-shadow:0 10px 28px rgba(22,54,31,.065);
+  /* Z-index scale (reference-only: --z-index-overlay; runtime: others) */
+  --z-index-dropdown: 100;
+  --z-index-modal: 200;
+  --z-index-toast: 300;
+  --z-index-overlay: 400; /* reference-only, not used directly in production styles */
 }
 body{
   background:#f7f9f4;
