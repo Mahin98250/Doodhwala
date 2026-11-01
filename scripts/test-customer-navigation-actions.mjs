@@ -31,4 +31,10 @@ assert.ok(home.includes('data-filter="cow"') && home.includes('data-filter="buff
 assert.ok(home.includes('id="search"') && home.includes('id="providerSort"') && home.includes('id="deliverableOnly"'),
   "home discovery controls must remain present");
 
-console.log("Customer navigation interaction contracts passed: all seven destinations, active state, history, cart sync and discovery controls.");
+
+const customerTools = read("customer-10x.js");
+assert.match(customerTools, /body\.querySelectorAll\("\[data-read\]"\)[\s\S]*?b\.disabled=true[\s\S]*?b\.textContent="Saving…"/, "mark-read action must expose a disabled loading state");
+assert.match(customerTools, /try\{await root\.markNotificationRead\(b\.dataset\.read\);await loadPanel\("notifications"\)\}catch\(err\)/, "mark-read action must handle backend failures");
+assert.match(customerTools, /b\.disabled=false;b\.textContent=originalText[\s\S]*?toast\(err\?\.message\|\|"Could not mark notification as read\./, "mark-read failures must restore the control and show feedback");
+
+console.log("Customer navigation and notification interaction contracts passed.");

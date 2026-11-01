@@ -144,7 +144,7 @@
       if(tab==="notifications"){
         const rows=await root.loadNotifications(25),unread=rows.filter(x=>!x.is_read).length;document.querySelector(".doodhwala-10x-launcher .dot")?.classList.toggle("show",unread>0);
         body.innerHTML=rows.length?rows.map(n=>'<div class="d10-item"><b>'+escapeHtml(n.title)+'</b><p>'+escapeHtml(n.body)+'</p><span class="d10-muted">'+escapeHtml(new Date(n.created_at).toLocaleString("en-IN"))+'</span>'+(!n.is_read?'<br><button class="d10-secondary" data-read="'+n.id+'">Mark read</button>':"")+'</div>').join(""):'<div class="d10-empty">No notifications yet.</div>';
-        body.querySelectorAll("[data-read]").forEach(b=>b.onclick=async()=>{await root.markNotificationRead(b.dataset.read);loadPanel("notifications")});return;
+        body.querySelectorAll("[data-read]").forEach(b=>b.onclick=async()=>{if(b.disabled)return;const originalText=b.textContent;b.disabled=true;b.textContent="Saving…";b.setAttribute("aria-busy","true");try{await root.markNotificationRead(b.dataset.read);await loadPanel("notifications")}catch(err){b.disabled=false;b.textContent=originalText;b.removeAttribute("aria-busy");toast(err?.message||"Could not mark notification as read. Please try again.")}});return;
       }
       if(tab==="tracking"){
         const ids=findOrderIds();body.innerHTML=ids.length?ids.map(id=>'<div class="d10-item"><b>Order '+escapeHtml(id.slice(0,8))+'</b><p>Open live tracking to see the latest delivery state.</p><button class="d10-action" data-track="'+id+'">Track live →</button></div>').join(""):'<div class="d10-empty">Open Orders to start live tracking.</div>';
