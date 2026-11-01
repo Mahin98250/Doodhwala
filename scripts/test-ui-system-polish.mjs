@@ -43,7 +43,7 @@ assert.match(customer, /\.no-results>div:first-child svg/, "customer empty-state
 assert.match(customer, /grid-template-columns:minmax\(0,1fr\)!important/, "provider cards must collapse safely on narrow screens");
 
 const sw = fs.readFileSync(new URL("sw.js", root), "utf8");
-assert.match(sw, /const CACHE="doodhwala-v110"/, "UI release must advance the PWA cache revision");
+assert.match(sw, /const CACHE="doodhwala-v111"/, "UI release must advance the PWA cache revision");
 assert.ok(sw.includes(homeHref), "refreshed home stylesheet must be precached for offline shell consistency");
 assert.ok(sw.includes(customerHref), "customer empty-state stylesheet must be precached");
 

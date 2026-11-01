@@ -5,9 +5,9 @@ const SECRET_KEYS = (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECR
 const SERVICE_KEY = SECRET_KEYS.default || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const PUBLISHABLE_KEYS = (() => { try { return Object.values(JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}")); } catch { return []; } })();
 const ALLOWED_ORIGINS = new Set(["https://mahin98250.github.io"]);
-const METHODS = new Set(["upi", "card", "netbanking", "wallet", "cod"]);
+const ONLINE_METHODS = new Set(["upi", "card", "netbanking", "wallet"]);
+const METHODS = new Set([...ONLINE_METHODS, "cod"]);
 const MAX_BODY_BYTES = 8_000;
-const rateBuckets = new Map<string, { start: number; count: number }>();
 
 function json(body: unknown, status: number, origin: string | null) {
   const headers = new Headers({ "Content-Type": "application/json", "Cache-Control": "no-store", "Vary": "Origin" });
@@ -20,17 +20,9 @@ function json(body: unknown, status: number, origin: string | null) {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-function limited(req: Request) {
-  const ip = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown";
-  const now = Date.now();
-  let b = rateBuckets.get(ip);
-  if (!b || now - b.start > 60_000) { b = { start: now, count: 0 }; rateBuckets.set(ip, b); }
-  b.count++;
-  if (rateBuckets.size > 4000) for (const [k, v] of rateBuckets) if (now - v.start > 60_000) rateBuckets.delete(k);
-  return b.count > 30;
-}
-
-async function rest(path: string, init: RequestInit = {}) {
+// Server-only helper for database REST calls. Service-role credentials stay in this function.
+// Do not return these headers or the service key to the browser.
+async function rest(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers || {});
   headers.set("apikey", SERVICE_KEY);
   headers.set("Authorization", "Bearer " + SERVICE_KEY);
@@ -43,7 +35,6 @@ async function main(req: Request) {
   if (req.method === "OPTIONS") return json({ ok: true }, 200, origin);
   if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ error: "origin_not_allowed" }, 403, null);
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
-  if (limited(req)) return json({ error: "rate_limited" }, 429, origin);
   if (!PROJECT_URL || !SERVICE_KEY || !PUBLISHABLE_KEYS.length) return json({ error: "payment_service_not_configured" }, 503, origin);
 
   const auth = req.headers.get("authorization") || "";
@@ -58,6 +49,25 @@ async function main(req: Request) {
   if (!userResponse.ok) return json({ error: "invalid_session" }, 401, origin);
   const user = await userResponse.json();
   if (!user?.id) return json({ error: "invalid_session" }, 401, origin);
+  // The shared database counter is authoritative across Edge Function isolates.
+  // If it is unreachable or returns an unexpected payload, fail closed rather than
+  // silently fall back to a process-local limiter.
+  try {
+    const rateLimitResponse = await rest("rpc/doodhwala_payment_api_allow_request", {
+      method: "POST",
+      body: JSON.stringify({ p_user_id: String(user.id) }),
+    });
+    if (!rateLimitResponse.ok) {
+      return json({ error: "rate_limit_unavailable", gateway_ready: false, money_moved: false }, 503, origin);
+    }
+    const allowed: unknown = await rateLimitResponse.json();
+    if (allowed === false) return json({ error: "rate_limited" }, 429, origin);
+    if (allowed !== true) {
+      return json({ error: "rate_limit_unavailable", gateway_ready: false, money_moved: false }, 503, origin);
+    }
+  } catch {
+    return json({ error: "rate_limit_unavailable", gateway_ready: false, money_moved: false }, 503, origin);
+  }
 
   const declaredLength = Number(req.headers.get("content-length") || 0);
   if (declaredLength > MAX_BODY_BYTES) return json({ error: "request_too_large" }, 413, origin);
@@ -103,7 +113,22 @@ async function main(req: Request) {
   const idempotencyKey = String(body.idempotency_key || "");
   if (!/^[0-9a-f-]{36}$/i.test(orderId)) return json({ error: "invalid_order_id" }, 400, origin);
   if (!METHODS.has(method)) return json({ error: "unsupported_payment_method" }, 400, origin);
+  if (method === "cod") {
+    return json({ error: "cod_uses_order_payment_flow", gateway_ready: false, money_moved: false }, 409, origin);
+  }
   if (!/^[A-Za-z0-9:_-]{12,120}$/.test(idempotencyKey)) return json({ error: "invalid_idempotency_key" }, 400, origin);
+
+  // No acquiring-provider adapter and verified webhook processor are registered yet.
+  // Fail closed before order lookup or ledger insertion: creating a bookkeeping row
+  // must never make an unconfigured online method appear selectable or payable.
+  if (ONLINE_METHODS.has(method)) {
+    return json({
+      error: "payment_provider_not_configured",
+      gateway_ready: false,
+      next_step: "payment_provider_setup_required",
+      money_moved: false,
+    }, 503, origin);
+  }
 
   const orderResponse = await rest("orders?id=eq." + encodeURIComponent(orderId) + "&customer_id=eq." + encodeURIComponent(user.id) + "&select=id,customer_id,provider_id,status,total&limit=1");
   if (!orderResponse.ok) return json({ error: "order_lookup_failed" }, 502, origin);
